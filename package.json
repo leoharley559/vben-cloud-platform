@@ -1,5 +1,5 @@
 {
-  "name": "vben-admin-monorepo",
+  "name": "vben-admin-demo",
   "version": "5.7.0",
   "private": true,
   "keywords": [
@@ -16,7 +16,10 @@
   ],
   "homepage": "https://github.com/vbenjs/vue-vben-admin",
   "bugs": "https://github.com/vbenjs/vue-vben-admin/issues",
-  "repository": "vbenjs/vue-vben-admin.git",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/leoharley559/vben-admin-demo.git"
+  },
   "license": "MIT",
   "author": {
     "name": "vben",
