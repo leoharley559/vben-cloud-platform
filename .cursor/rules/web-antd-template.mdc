@@ -1,0 +1,38 @@
+---
+description: web-antd 后台模版 AI 编码约定
+globs:
+  - apps/web-antd/**
+  - api-docs/**
+---
+
+# AI 编码规则（web-antd 模版）
+
+## 项目上下文
+
+- 主应用在 `apps/web-antd/`，使用 Vue 3 + Vite 8 + Ant Design Vue + vben 5.7
+- 接口文档放在 `api-docs/swagger/` 或 `api-docs/postman/`
+- 学习示例：`api-docs/swagger/example.openapi.json`（虚构，勿当生产接口）
+- 环境变量以 `apps/web-antd/.env.example` 为准
+
+## 生成代码时必须遵守
+
+1. API 封装放在 `apps/web-antd/src/api/<模块>/index.ts`，使用 `#/api/request` 的 `requestClient`
+2. 类型放在 `apps/web-antd/src/types/` 或 API 文件内的 namespace
+3. 路由放在 `apps/web-antd/src/router/routes/modules/<模块>.ts`，使用懒加载 `import()`
+4. 页面放在 `apps/web-antd/src/views/<模块>/`
+5. 文案 key 写入 `src/locales/langs/zh-CN/page.json` 与 `en-US/page.json`
+6. 列表页优先参考 `views/dashboard` 与 `adapter/form.ts`、`adapter/vxe-table.ts`
+7. 不要修改 `packages/` 除非明确要求框架级改动
+8. 成功响应 code 以 `VITE_API_SUCCESS_CODE` 为准，不要写死
+
+## 引用 Swagger / Postman 时
+
+- 先读 `api-docs/` 下对应文件
+- 路径、方法、请求体、响应体与文档保持一致
+- 登录/鉴权接口先对照 `src/api/core/auth.ts` 是否需调整
+
+## 禁止
+
+- 不要恢复已删除的 demos / vben 外链 / about 菜单
+- 不要在业务代码硬编码 API 域名，使用 `import.meta.env`
+- 不要新增 element/naive/tdesign 相关依赖

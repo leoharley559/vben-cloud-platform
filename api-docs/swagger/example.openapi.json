@@ -1,0 +1,476 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "示例后台 API（虚构数据，仅用于模版演示）",
+    "description": "本文件为团队模版内置的 OpenAPI 示例，接口路径与字段均为虚构。\n\n- 与内置 backend-mock 的 `/auth/*`、`/user/info` 等路径风格一致，便于对照学习。\n- 业务模块以「订单管理」为例，演示列表 / 详情 / 新增 / 编辑 / 删除的常规 CRUD 约定。\n- 统一响应体：`{ code, data, message }`，成功时 `code = 0`（与 `VITE_API_SUCCESS_CODE=0` 对应）。\n\n**请勿将本文件当作真实生产接口。** 新项目请替换为后端导出的正式 Swagger。",
+    "version": "1.0.0-example"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5320/api",
+      "description": "本地 backend-mock（开发）"
+    },
+    {
+      "url": "https://api.example.com/api",
+      "description": "示例生产环境（虚构）"
+    }
+  ],
+  "tags": [
+    { "name": "认证", "description": "登录、登出、刷新 Token、权限码" },
+    { "name": "用户", "description": "当前登录用户信息" },
+    { "name": "订单", "description": "虚构业务模块示例" }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "账号密码登录",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" },
+              "example": {
+                "username": "vben",
+                "password": "123456"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/LoginResult" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example",
+                    "username": "vben",
+                    "realName": "示例管理员",
+                    "roles": ["admin"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "退出登录",
+        "operationId": "logout",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "退出成功",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "刷新 Access Token",
+        "operationId": "refreshToken",
+        "responses": {
+          "200": {
+            "description": "刷新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "string", "description": "新的 accessToken" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/codes": {
+      "get": {
+        "tags": ["认证"],
+        "summary": "获取当前用户权限码",
+        "operationId": "getAccessCodes",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "example": ["AC_100100", "AC_100110"]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/info": {
+      "get": {
+        "tags": ["用户"],
+        "summary": "获取当前登录用户信息",
+        "operationId": "getUserInfo",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/UserInfo" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/order/list": {
+      "get": {
+        "tags": ["订单"],
+        "summary": "订单分页列表（虚构示例）",
+        "operationId": "getOrderList",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/PageParam" },
+          { "$ref": "#/components/parameters/PageSizeParam" },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "订单号 / 客户名模糊搜索",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "订单状态",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "paid", "shipped", "cancelled"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/PageResultOrder" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/order": {
+      "post": {
+        "tags": ["订单"],
+        "summary": "创建订单（虚构示例）",
+        "operationId": "createOrder",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/OrderCreateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/Order" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/order/{id}": {
+      "get": {
+        "tags": ["订单"],
+        "summary": "订单详情（虚构示例）",
+        "operationId": "getOrderDetail",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPathParam" }],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/Order" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["订单"],
+        "summary": "更新订单（虚构示例）",
+        "operationId": "updateOrder",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPathParam" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/OrderUpdateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/Order" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["订单"],
+        "summary": "删除订单（虚构示例）",
+        "operationId": "deleteOrder",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPathParam" }],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "请求头：Authorization: Bearer <accessToken>"
+      }
+    },
+    "parameters": {
+      "PageParam": {
+        "name": "page",
+        "in": "query",
+        "description": "页码，从 1 开始",
+        "schema": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "PageSizeParam": {
+        "name": "pageSize",
+        "in": "query",
+        "description": "每页条数",
+        "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 10 }
+      },
+      "IdPathParam": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "资源主键 ID"
+      }
+    },
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "required": ["code", "data"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "业务状态码，0 表示成功（与 VITE_API_SUCCESS_CODE 对应）",
+            "example": 0
+          },
+          "message": {
+            "type": "string",
+            "description": "提示信息",
+            "example": "ok"
+          },
+          "data": {
+            "description": "业务数据，类型随接口变化"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": {
+          "username": { "type": "string", "example": "vben" },
+          "password": { "type": "string", "format": "password", "example": "123456" }
+        }
+      },
+      "LoginResult": {
+        "type": "object",
+        "properties": {
+          "accessToken": { "type": "string" },
+          "username": { "type": "string" },
+          "realName": { "type": "string" },
+          "roles": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "UserInfo": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string" },
+          "username": { "type": "string" },
+          "realName": { "type": "string" },
+          "avatar": { "type": "string", "format": "uri" },
+          "roles": { "type": "array", "items": { "type": "string" } },
+          "homePath": { "type": "string", "example": "/analytics" }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "ord_10001" },
+          "orderNo": { "type": "string", "example": "SO-2026-0001" },
+          "customerName": { "type": "string", "example": "示例客户有限公司" },
+          "amount": { "type": "number", "format": "double", "example": 1999.5 },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "paid", "shipped", "cancelled"],
+            "example": "pending"
+          },
+          "remark": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "OrderCreateRequest": {
+        "type": "object",
+        "required": ["customerName", "amount"],
+        "properties": {
+          "customerName": { "type": "string" },
+          "amount": { "type": "number" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "paid", "shipped", "cancelled"],
+            "default": "pending"
+          },
+          "remark": { "type": "string" }
+        }
+      },
+      "OrderUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "customerName": { "type": "string" },
+          "amount": { "type": "number" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "paid", "shipped", "cancelled"]
+          },
+          "remark": { "type": "string" }
+        }
+      },
+      "PageResultOrder": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Order" }
+          },
+          "total": { "type": "integer", "example": 100 }
+        }
+      }
+    }
+  }
+}
