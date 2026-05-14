@@ -7,8 +7,23 @@
 
 [![license](https://img.shields.io/github/license/anncwb/vue-vben-admin.svg)](LICENSE)
 
-  <h1>Vue Vben Admin</h1>
+  <h1>Vue Vben Admin · 团队 web-antd 模版</h1>
 </div>
+
+> **团队同事请看：** 完整说明见 **[模版使用说明.md](./模版使用说明.md)**。  
+> 克隆本仓库后，已内置 Mock 开发配置，**无需再复制 `.env`**，执行下面命令即可开工：
+
+```bash
+corepack enable && corepack prepare pnpm@10.33.0 --activate
+pnpm install
+pnpm dev
+```
+
+- 前端：http://localhost:5666/
+- Mock 账号：`vben` / `123456`
+- 业务代码目录：`apps/web-antd/src/`
+
+---
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=vbenjs_vue-vben-admin&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=vbenjs_vue-vben-admin) [![codeql](https://github.com/vbenjs/vue-vben-admin/actions/workflows/codeql.yml/badge.svg)](https://github.com/vbenjs/vue-vben-admin/actions/workflows/codeql.yml) [![build](https://github.com/vbenjs/vue-vben-admin/actions/workflows/build.yml/badge.svg)](https://github.com/vbenjs/vue-vben-admin/actions/workflows/build.yml) [![ci](https://github.com/vbenjs/vue-vben-admin/actions/workflows/ci.yml/badge.svg)](https://github.com/vbenjs/vue-vben-admin/actions/workflows/ci.yml) [![deploy](https://github.com/vbenjs/vue-vben-admin/actions/workflows/deploy.yml/badge.svg)](https://github.com/vbenjs/vue-vben-admin/actions/workflows/deploy.yml)
 
