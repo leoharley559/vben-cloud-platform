@@ -3,7 +3,7 @@
 基于 [vue-vben-admin 5.7.0](https://github.com/vbenjs/vue-vben-admin) 裁剪的 **Ant Design Vue 专用模版**，用于将 `cloudPlatform` 全量改版迁移至此。
 
 | 项 | 说明 |
-|---|---|
+| --- | --- |
 | 项目仓库 | `git@github-leoharley559:leoharley559/vben-cloud-platform.git` |
 | GitHub | https://github.com/leoharley559/vben-cloud-platform |
 | 主应用 | `apps/web-antd` |
@@ -26,11 +26,11 @@ pnpm install
 pnpm dev
 ```
 
-| 项 | 值 |
-|---|---|
-| 前端地址 | http://localhost:5666/ |
-| Mock 账号 | `vben` / `123456` |
-| 业务代码 | `apps/web-antd/src/` |
+| 项        | 值                     |
+| --------- | ---------------------- |
+| 前端地址  | http://localhost:5666/ |
+| Mock 账号 | `vben` / `123456`      |
+| 业务代码  | `apps/web-antd/src/`   |
 
 仓库已内置 `.env` / `.env.development`（Mock 模式），**无需复制 `.env.example` 即可启动**。
 

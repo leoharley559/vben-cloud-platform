@@ -35,7 +35,7 @@
 ## 2. 关键决策（开工前定死）
 
 | 决策项 | 建议 | 原因 |
-|--------|------|------|
+| --- | --- | --- |
 | 目标仓库 | 本仓库 `vben-cloud-platform` | 模版已裁剪干净，业务只写 `apps/web-antd/src/` |
 | 权限模式 | **`backend`（后端菜单）** | 旧系统登录后由 `getUserInfo → Nav` 动态生成路由，与现网 RBAC 一致 |
 | UI 组件库 | Ant Design Vue（模版默认） | Element → AntD 需逐页改写，不能直接拷贝 `.vue` |
@@ -59,7 +59,7 @@ flowchart LR
 ```
 
 | 阶段 | 目标 | 预估周期 | 验收标准 |
-|------|------|----------|----------|
+| --- | --- | --- | --- |
 | **P0** | 环境、请求层、加密、环境变量、目录规范 | 1–2 周 | 能连现网/测试 API，打通登录 + 菜单 |
 | **P1** | 登录多入口、权限、布局、全局配置 | 2–3 周 | 登录后菜单与旧站一致，按钮权限可用 |
 | **P2** | 全局组件、工具、i18n、玩家详情骨架 | 2–4 周 | 列表页「筛选 + 表格 + 分页」有标准范式 |
@@ -94,7 +94,7 @@ apps/web-antd/src/
 对照旧文件：`cloudPlatform/src/utils/request.js`、`crypto.js`、`auth.js`
 
 | 能力 | 旧实现 | 新落点 |
-|------|--------|--------|
+| --- | --- | --- |
 | baseURL / 代理 | `BASE_API` | `.env.*` + `vite.config.ts` 代理 |
 | Token | Cookie `Cloud-Token` | 统一到 `accessStore`，请求头对齐后端约定 |
 | AuthToken 刷新 | App 内约 290s 轮询 | `auth` store / 定时任务 |
@@ -134,7 +134,7 @@ apps/web-antd/src/
 ### 5.1 登录多入口
 
 | 旧路由 | 说明 | 新建议 |
-|--------|------|--------|
+| --- | --- | --- |
 | `/login` | 标准登录 | `/auth/login` 对接 `/public/user/login` |
 | `/plogin` | Web 登录 | 独立认证页 |
 | `/teamlogin` | 团队登录 | 独立认证页 |
@@ -145,7 +145,7 @@ apps/web-antd/src/
 ### 5.2 权限双轨对齐
 
 | 旧机制 | 新机制 |
-|--------|--------|
+| --- | --- |
 | 菜单：后端 Nav | `backend` 动态路由 |
 | `GLOBAL.checkPermission(menuId)` | `hasAccessByCodes` / 封装同名工具 |
 | `checkPermissionByKey` + 各模块 `permissionKeyList` | 权限码写入 `accessCodes`，`v-access:code` |
@@ -179,7 +179,7 @@ apps/web-antd/src/
 ### 6.1 必须先迁移的共享件
 
 | 优先级 | 旧能力 | 新落点 |
-|--------|--------|--------|
+| --- | --- | --- |
 | P0 | ChannelSelect / PackageSelect / AccountSelect / FilterForm | `components/global/` |
 | P0 | 金额 / 大数 / 日期工具 | `utils/` |
 | P0 | 权限工具 | `utils/permission.ts` |
@@ -201,13 +201,13 @@ apps/web-antd/src/
 
 ### 6.3 Element UI → Ant Design Vue 对照
 
-| Element UI | Ant Design Vue / Vben |
-|------------|----------------------|
-| `el-table` | `Table` / `useVbenVxeGrid` |
-| `el-form` | `Form` / `useVbenForm` |
-| `el-dialog` | `Modal` / `Drawer` |
-| `el-pagination` | 表格内置分页 |
-| `v-permission` | `v-access:code` |
+| Element UI      | Ant Design Vue / Vben      |
+| --------------- | -------------------------- |
+| `el-table`      | `Table` / `useVbenVxeGrid` |
+| `el-form`       | `Form` / `useVbenForm`     |
+| `el-dialog`     | `Modal` / `Drawer`         |
+| `el-pagination` | 表格内置分页               |
+| `v-permission`  | `v-access:code`            |
 
 ---
 
@@ -216,7 +216,7 @@ apps/web-antd/src/
 ### 批 1 — 底座业务（P3）
 
 | 序号 | 模块 | 旧 views 路径 | 旧 api 路径 | 页面量级 |
-|------|------|---------------|-------------|----------|
+| --- | --- | --- | --- | --- |
 | 1 | 仪表盘 | `views/dashboard/` | `api/dashboard/` | 11 |
 | 2 | 系统管理 | `views/systemManage/` | `api/systemManage/` | 18 |
 | 3 | 游戏管理 | `views/gameManage/` | `api/gameManage/` | 165 |
@@ -227,7 +227,7 @@ apps/web-antd/src/
 ### 批 2 — 资金与推广（P4）
 
 | 序号 | 模块 | 旧 views 路径 | 旧 api 路径 | 页面量级 |
-|------|------|---------------|-------------|----------|
+| --- | --- | --- | --- | --- |
 | 5 | 代理网赚 | `views/netcash/` | `api/netcash/` | 107 |
 | 6 | 推广管理 | `views/generalizeManage/` | `api/promotion/` | 13 |
 | 7 | 会员管理 | `views/memberManage/` | `api/memberManage/` | 27 |
@@ -235,25 +235,25 @@ apps/web-antd/src/
 
 ### 批 3 — 实时通信（P5，技术风险最高）
 
-| 序号 | 模块 | 技术点 | 页面量级 |
-|------|------|--------|----------|
-| 9 | 客服管理 | WS + Protobuf + VOIP | 95 |
-| 10 | 币商管理 | 独立 `BS_*` WebSocket | 45 |
-| 11 | 聊天室 | `tsapp/net/websocket` + chatroom protobuf | 90 |
-| 12 | 直播管理 | 直播间/竞猜/PK | 87 |
+| 序号 | 模块     | 技术点                                    | 页面量级 |
+| ---- | -------- | ----------------------------------------- | -------- |
+| 9    | 客服管理 | WS + Protobuf + VOIP                      | 95       |
+| 10   | 币商管理 | 独立 `BS_*` WebSocket                     | 45       |
+| 11   | 聊天室   | `tsapp/net/websocket` + chatroom protobuf | 90       |
+| 12   | 直播管理 | 直播间/竞猜/PK                            | 87       |
 
 建议：先抽 **独立 `utils/ws/` 或 `composables/realtime/`**，再迁 UI。
 
 ### 批 4 — 数据与边缘（P6）
 
-| 序号 | 模块 | 旧 views 路径 | 页面量级 |
-|------|------|---------------|----------|
-| 13 | 运营数据 | `operationalData/` | 34 |
-| 14 | 数据闭环 | `dataClose/` | 85 |
-| 15 | 推广数据 | `generalizeData/` | 13 |
-| 16 | 电销中心 | `telesalesCenter/` + VOIP Bria | 24 |
-| 17 | 体育管理 | `sportsManager/` | 1 |
-| 18 | 移动端 H5 | `mobile/` + `mobileCloud/` | 31 |
+| 序号 | 模块      | 旧 views 路径                  | 页面量级 |
+| ---- | --------- | ------------------------------ | -------- |
+| 13   | 运营数据  | `operationalData/`             | 34       |
+| 14   | 数据闭环  | `dataClose/`                   | 85       |
+| 15   | 推广数据  | `generalizeData/`              | 13       |
+| 16   | 电销中心  | `telesalesCenter/` + VOIP Bria | 24       |
+| 17   | 体育管理  | `sportsManager/`               | 1        |
+| 18   | 移动端 H5 | `mobile/` + `mobileCloud/`     | 31       |
 
 ### 批 5 — HRMS（独立评估）
 
@@ -285,14 +285,14 @@ apps/web-antd/src/
 
 ## 9. 团队分工与协作
 
-| 角色 | 负责 |
-|------|------|
-| 基建 1–2 人 | P0–P2：请求/权限/全局组件/玩家详情 |
-| 业务组 A | 系统管理 + 游戏管理 |
-| 业务组 B | 运营管理（含活动） |
-| 业务组 C | 代理 + 推广 + 会员 |
-| 业务组 D | 客服/币商/聊天室/直播（需 WS 经验） |
-| 业务组 E | 报表 + 电销 + H5 |
+| 角色        | 负责                                |
+| ----------- | ----------------------------------- |
+| 基建 1–2 人 | P0–P2：请求/权限/全局组件/玩家详情  |
+| 业务组 A    | 系统管理 + 游戏管理                 |
+| 业务组 B    | 运营管理（含活动）                  |
+| 业务组 C    | 代理 + 推广 + 会员                  |
+| 业务组 D    | 客服/币商/聊天室/直播（需 WS 经验） |
+| 业务组 E    | 报表 + 电销 + H5                    |
 
 **分支策略**：`main`（基建） / `feat/<域>` / 定期合入；禁止改 `packages/` 除非框架升级。
 
@@ -326,7 +326,7 @@ apps/web-antd/src/
 ## 12. 风险清单
 
 | 风险 | 说明 | 缓解 |
-|------|------|------|
+| --- | --- | --- |
 | 体量巨大 | 1200+ 页无法一次性搬完 | 分域交付，双端并行 |
 | 本质是重写 | Vue2 Options + Element → Vue3 + AntD | 建立页面范式，禁止直接拷贝 |
 | 实时模块 | 客服/聊天室/币商依赖 Protobuf + 多 WS | 独立专项，先抽 WS 层 |
@@ -341,25 +341,25 @@ apps/web-antd/src/
 > 用于跟踪迁移进度，建议在项目管理工具中维护在线版本。
 
 | 域 | 旧 views | 旧 api | 页面数 | 优先级 | 阶段 | 负责人 | 状态 |
-|----|----------|--------|--------|--------|------|--------|------|
-| 仪表盘 | `dashboard/` | `dashboard/` | 11 | P1 | P3 | | 未开始 |
-| 系统管理 | `systemManage/` | `systemManage/` | 18 | P0 | P3 | | 未开始 |
-| 游戏管理 | `gameManage/` | `gameManage/` | 165 | P1 | P3 | | 未开始 |
-| 运营管理 | `operationalManage/` | `operationManage/` | 267 | P1 | P3 | | 未开始 |
-| 运营数据 | `operationalData/` | `operationalData/` | 34 | P2 | P6 | | 未开始 |
-| 数据闭环 | `dataClose/` | `dataClose/` | 85 | P2 | P6 | | 未开始 |
-| 推广数据 | `generalizeData/` | `generalizeData/` | 13 | P2 | P6 | | 未开始 |
-| 推广管理 | `generalizeManage/` | `promotion/` | 13 | P1 | P4 | | 未开始 |
-| 代理网赚 | `netcash/` | `netcash/` | 107 | P1 | P4 | | 未开始 |
-| 币商管理 | `coinDealer/` | `coinDealer/` | 45 | P2 | P5 | | 未开始 |
-| 客服管理 | `serviceManage/` | `serviceManage/` | 95 | P2 | P5 | | 未开始 |
-| 聊天室 | `chatroomManage/` | `chatroomManage/` | 90 | P2 | P5 | | 未开始 |
-| 直播管理 | `liveManage/` | `liveManage/` | 87 | P2 | P5 | | 未开始 |
-| 会员管理 | `memberManage/` | `memberManage/` | 27 | P1 | P4 | | 未开始 |
-| 电销中心 | `telesalesCenter/` | `telesalesCenter/` | 24 | P3 | P6 | | 未开始 |
-| 体育管理 | `sportsManager/` | `sportsManager/` | 1 | P3 | P6 | | 未开始 |
-| 移动端 H5 | `mobile/` + `mobileCloud/` | — | 31 | P3 | P6 | | 未开始 |
-| HRMS | `hm-hrms/` | `hm-hrms/apps/web-antd/src/api/` | 12+ | 独立 | 批5 | | 未开始 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 仪表盘 | `dashboard/` | `dashboard/` | 11 | P1 | P3 |  | 未开始 |
+| 系统管理 | `systemManage/` | `systemManage/` | 18 | P0 | P3 |  | 未开始 |
+| 游戏管理 | `gameManage/` | `gameManage/` | 165 | P1 | P3 |  | 未开始 |
+| 运营管理 | `operationalManage/` | `operationManage/` | 267 | P1 | P3 |  | 未开始 |
+| 运营数据 | `operationalData/` | `operationalData/` | 34 | P2 | P6 |  | 未开始 |
+| 数据闭环 | `dataClose/` | `dataClose/` | 85 | P2 | P6 |  | 未开始 |
+| 推广数据 | `generalizeData/` | `generalizeData/` | 13 | P2 | P6 |  | 未开始 |
+| 推广管理 | `generalizeManage/` | `promotion/` | 13 | P1 | P4 |  | 未开始 |
+| 代理网赚 | `netcash/` | `netcash/` | 107 | P1 | P4 |  | 未开始 |
+| 币商管理 | `coinDealer/` | `coinDealer/` | 45 | P2 | P5 |  | 未开始 |
+| 客服管理 | `serviceManage/` | `serviceManage/` | 95 | P2 | P5 |  | 未开始 |
+| 聊天室 | `chatroomManage/` | `chatroomManage/` | 90 | P2 | P5 |  | 未开始 |
+| 直播管理 | `liveManage/` | `liveManage/` | 87 | P2 | P5 |  | 未开始 |
+| 会员管理 | `memberManage/` | `memberManage/` | 27 | P1 | P4 |  | 未开始 |
+| 电销中心 | `telesalesCenter/` | `telesalesCenter/` | 24 | P3 | P6 |  | 未开始 |
+| 体育管理 | `sportsManager/` | `sportsManager/` | 1 | P3 | P6 |  | 未开始 |
+| 移动端 H5 | `mobile/` + `mobileCloud/` | — | 31 | P3 | P6 |  | 未开始 |
+| HRMS | `hm-hrms/` | `hm-hrms/apps/web-antd/src/api/` | 12+ | 独立 | 批5 |  | 未开始 |
 
 ---
 
