@@ -1,5 +1,5 @@
 {
-  "name": "vben-admin-demo",
+  "name": "vben-cloud-platform",
   "version": "5.7.0",
   "private": true,
   "keywords": [
@@ -14,11 +14,11 @@
     "vue vben admin pro",
     "vue3"
   ],
-  "homepage": "https://github.com/vbenjs/vue-vben-admin",
-  "bugs": "https://github.com/vbenjs/vue-vben-admin/issues",
+  "homepage": "https://github.com/leoharley559/vben-cloud-platform",
+  "bugs": "https://github.com/leoharley559/vben-cloud-platform/issues",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/leoharley559/vben-admin-demo.git"
+    "url": "git+ssh://git@github.com/leoharley559/vben-cloud-platform.git"
   },
   "license": "MIT",
   "author": {
