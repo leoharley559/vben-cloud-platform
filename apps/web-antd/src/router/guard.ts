@@ -59,6 +59,14 @@ function setupAccessGuard(router: Router) {
             preferences.app.defaultHomePath,
         );
       }
+      if (
+        (to.path === '/mlogin' || to.path === '/mobilelogin') &&
+        accessStore.accessToken
+      ) {
+        return to.path === '/mobilelogin'
+          ? '/mobileCloud/index'
+          : '/mobile/index';
+      }
       return true;
     }
 
@@ -92,7 +100,7 @@ function setupAccessGuard(router: Router) {
 
     // 生成路由表
     // 当前登录用户拥有的角色标识列表
-    const userInfo = userStore.userInfo || (await authStore.fetchUserInfo());
+    const userInfo = userStore.userInfo || (await authStore.initSession());
     const userRoles = userInfo.roles ?? [];
 
     // 生成菜单和路由

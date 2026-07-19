@@ -52,36 +52,21 @@ onMounted(() => {
 <template>
   <div class="relative flex min-h-full flex-col">
     <div
-      v-if="
-        description ||
-        $slots.description ||
-        title ||
-        $slots.title ||
-        $slots.extra
-      "
+      v-if="$slots.description || $slots.title || $slots.extra"
       ref="headerRef"
       :class="
         cn(
-          'relative flex items-end border-b border-border bg-card px-6 py-4',
+          'relative flex items-center border-b border-border bg-card px-4 py-2',
           headerClass,
         )
       "
     >
-      <div class="flex-auto">
-        <slot name="title">
-          <div v-if="title" class="mb-2 flex text-lg font-semibold">
-            {{ title }}
-          </div>
-        </slot>
-
-        <slot name="description">
-          <p v-if="description" class="text-muted-foreground">
-            {{ description }}
-          </p>
-        </slot>
+      <div class="flex min-w-0 flex-auto items-center gap-2">
+        <slot name="title"></slot>
+        <slot name="description"></slot>
       </div>
 
-      <div v-if="$slots.extra">
+      <div v-if="$slots.extra" class="ml-3 shrink-0">
         <slot name="extra"></slot>
       </div>
     </div>

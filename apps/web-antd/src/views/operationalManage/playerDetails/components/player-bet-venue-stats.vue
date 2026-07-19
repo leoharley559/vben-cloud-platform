@@ -1,0 +1,250 @@
+<script lang="ts" setup>
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { PlayerBetVenueStatItem } from '#/types/player-detail';
+
+import { computed, onMounted, ref, watch } from 'vue';
+
+import { Button, DatePicker, Select, Space } from 'ant-design-vue';
+import dayjs from 'dayjs';
+
+import { fetchPlayerBetVenueStatApi } from '#/api/operationManage/bet-detail';
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useGameConfig } from '#/composables/use-game-config';
+import {
+  BET_STATUS_OPTIONS,
+  BET_TIME_TYPE_OPTIONS,
+  calcBetWinLoss,
+} from '#/utils/bet-detail';
+import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { formatAmountFromCent } from '#/utils/format-amount';
+
+defineOptions({ name: 'PlayerBetVenueStats' });
+
+const props = defineProps<{
+  loginAccount?: string;
+  playerId: number | string;
+}>();
+
+const { ensureGameConfig, gameConfig } = useGameConfig();
+
+const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+const summary = ref({
+  Count: 0,
+  SumBetGold: 0,
+  SumTotalBetGold: 0,
+  SumValidWater: 0,
+  SumWinGold: 0,
+});
+
+const filterGameIds = ref<Array<number | string>>([]);
+const filterStatus = ref<string>();
+const filterSelectTimeType = ref(1);
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+  dayjs.unix(defaultRange.BeginTime),
+  dayjs.unix(defaultRange.EndTime),
+]);
+
+const platformGameOptions = computed(() =>
+  Object.entries(gameConfig.value.platformGameList).map(([value, game]) => ({
+    label: game.gameName || value,
+    value,
+  })),
+);
+
+function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
+  const [begin, end] = filterDateRange.value || [];
+  return {
+    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    DataSearchType: 2,
+    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    GameIds: filterGameIds.value,
+    LoginAccount: props.loginAccount || '',
+    PlayerId: String(props.playerId),
+    SelectTimeType: filterSelectTimeType.value,
+    Status: filterStatus.value || '',
+    ...extra,
+  };
+}
+
+const gridOptions: VxeTableGridOptions<PlayerBetVenueStatItem> = {
+  columns: [
+    {
+      field: 'GameType',
+      formatter: ({ cellValue }) =>
+        gameConfig.value.platformGameType[String(cellValue)] ||
+        String(cellValue ?? '-'),
+      minWidth: 140,
+      title: '场馆名称',
+    },
+    {
+      field: 'Count',
+      minWidth: 100,
+      title: '注单数',
+    },
+    {
+      field: 'SumWinGold',
+      minWidth: 120,
+      slots: { default: 'winLoss' },
+      title: '输赢情况',
+    },
+    {
+      field: 'SumTotalBetGold',
+      formatter: ({ cellValue, row }) =>
+        formatAmountFromCent(cellValue || row.SumBetGold),
+      minWidth: 120,
+      title: '投注金额',
+    },
+    {
+      field: 'SumValidWater',
+      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+      minWidth: 120,
+      title: '有效投注',
+    },
+  ],
+  height: 'auto',
+  pagerConfig: {
+    pageSize: 20,
+  },
+  proxyConfig: {
+    autoLoad: false,
+    ajax: {
+      query: async ({ page }) => {
+        const result = await fetchPlayerBetVenueStatApi({
+          ...getQueryParams(),
+          Page: page.currentPage,
+          PageSize: page.pageSize,
+        });
+
+        summary.value = {
+          Count: Number(result?.MoreItems?.Count || 0),
+          SumBetGold: Number(result?.MoreItems?.SumBetGold || 0),
+          SumTotalBetGold: Number(result?.MoreItems?.SumTotalBetGold || 0),
+          SumValidWater: Number(result?.MoreItems?.SumValidWater || 0),
+          SumWinGold: Number(result?.MoreItems?.SumWinGold || 0),
+        };
+
+        return {
+          items: result?.Items || [],
+          total: result?.Pagination?.MaxCount || 0,
+        };
+      },
+    },
+  },
+  showFooter: true,
+  footerMethod: () => [
+    [
+      '总计',
+      String(summary.value.Count),
+      formatAmountFromCent(summary.value.SumWinGold - summary.value.SumBetGold),
+      formatAmountFromCent(
+        summary.value.SumTotalBetGold || summary.value.SumBetGold,
+      ),
+      formatAmountFromCent(summary.value.SumValidWater),
+    ],
+  ],
+};
+
+const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
+
+const loading = computed(() => gridApi.grid?.loading ?? false);
+
+function handleSearch() {
+  gridApi.reload();
+}
+
+function handleReset() {
+  filterGameIds.value = [];
+  filterStatus.value = undefined;
+  filterSelectTimeType.value = 1;
+  filterDateRange.value = [
+    dayjs.unix(defaultRange.BeginTime),
+    dayjs.unix(defaultRange.EndTime),
+  ];
+  gridApi.reload();
+}
+
+watch(
+  () => [props.playerId, props.loginAccount],
+  () => {
+    if (props.playerId) {
+      gridApi.reload();
+    }
+  },
+);
+
+onMounted(async () => {
+  await ensureGameConfig();
+  if (props.playerId) {
+    gridApi.reload();
+  }
+});
+</script>
+
+<template>
+  <div>
+    <div class="mb-4 flex flex-wrap items-end gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500">场馆</span>
+        <Select
+          v-model:value="filterGameIds"
+          allow-clear
+          mode="multiple"
+          :max-tag-count="1"
+          :options="platformGameOptions"
+          placeholder="全部"
+          style="width: 200px"
+        />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500">状态</span>
+        <Select
+          v-model:value="filterStatus"
+          allow-clear
+          :options="BET_STATUS_OPTIONS"
+          placeholder="全部"
+          style="width: 120px"
+        />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500">时间类型</span>
+        <Select
+          v-model:value="filterSelectTimeType"
+          :options="BET_TIME_TYPE_OPTIONS"
+          style="width: 120px"
+        />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500">日期</span>
+        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      </div>
+
+      <Space>
+        <Button :loading="loading" type="primary" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
+      </Space>
+    </div>
+
+    <Grid>
+      <template #winLoss="{ row }">
+        <span
+          :class="
+            calcBetWinLoss(1, row.SumWinGold, row.SumBetGold) < 0
+              ? 'text-red-500'
+              : 'text-green-600'
+          "
+        >
+          {{
+            formatAmountFromCent(
+              calcBetWinLoss(1, row.SumWinGold, row.SumBetGold),
+            )
+          }}
+        </span>
+      </template>
+    </Grid>
+  </div>
+</template>

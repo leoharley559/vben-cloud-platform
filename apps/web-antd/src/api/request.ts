@@ -1,109 +1,255 @@
-/**
- * 该文件可自行根据业务逻辑进行调整
- */
 import type { RequestClientOptions } from '@vben/request';
 
 import { useAppConfig } from '@vben/hooks';
 import { preferences } from '@vben/preferences';
-import {
-  authenticateResponseInterceptor,
-  defaultResponseInterceptor,
-  errorMessageResponseInterceptor,
-  RequestClient,
-} from '@vben/request';
+import { RequestClient } from '@vben/request';
 import { useAccessStore } from '@vben/stores';
 
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import qs from 'qs';
 
-import { useAuthStore } from '#/store';
-
-import { refreshTokenApi } from './core';
+import type { CloudApiResponse } from '#/types/cloud-platform';
+import {
+  getAuthToken,
+  getCloudToken,
+  getHelpLink,
+  getLanguageCookie,
+} from '#/utils/auth-token';
+import { decryptResponse, encryptData, isDevMode } from '#/utils/crypto';
+import { ensureAuthToken } from '#/utils/ensure-auth-token';
+import {
+  FORCE_LOGOUT_CODE,
+  LOGOUT_ERROR_CODES,
+  mapErrorMessage,
+  PASSTHROUGH_ERROR_CODES,
+} from '#/utils/error-code-mapping';
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
+const voipBaseURL = import.meta.env.VITE_VOIP_BASE_API;
+const apiSuccessCode = Number(import.meta.env.VITE_API_SUCCESS_CODE ?? 200);
 
-const apiSuccessCode = Number(import.meta.env.VITE_API_SUCCESS_CODE ?? 0);
+let logoutModalVisible = false;
+
+function isVoipRequest(url = '') {
+  return !!voipBaseURL && url.startsWith(voipBaseURL);
+}
+
+function isPublicRequest(url = '') {
+  return (
+    url.includes('/user/login') ||
+    url.includes('/public/user/captcha') ||
+    url.includes('/user/vlogin') ||
+    url.includes('/user/sendcode') ||
+    url.includes('/user/logout') ||
+    url.includes('/api/')
+  );
+}
+
+function normalizeResponseData<T>(responseData: CloudApiResponse<T>) {
+  if (
+    responseData.respond &&
+    typeof responseData.respond === 'object' &&
+    responseData.respond !== null
+  ) {
+    responseData.Data = responseData.respond;
+  }
+  if (responseData.status !== undefined) {
+    responseData.Code = responseData.status;
+  } else if (responseData.Code !== undefined) {
+    responseData.status = responseData.Code;
+  }
+  return responseData;
+}
+
+function transformRequestBody(
+  data: unknown,
+  headers: InternalAxiosRequestConfig['headers'],
+) {
+  if (!data) {
+    return data;
+  }
+
+  const contentType = String(headers?.['Content-Type'] || '');
+
+  if (contentType.includes('multipart/form-data')) {
+    return data;
+  }
+
+  if (contentType.includes('application/json')) {
+    const payload = encryptData(JSON.stringify(data));
+    if (!isDevMode && headers) {
+      headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    }
+    return payload;
+  }
+
+  if (typeof data === 'string') {
+    return encryptData(data);
+  }
+
+  let serialized = '';
+  for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+    serialized += `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}&`;
+  }
+  return encryptData(serialized);
+}
+
+function showLogoutModal(content: string, force = false) {
+  if (logoutModalVisible) {
+    return;
+  }
+  logoutModalVisible = true;
+  Modal.warning({
+    closable: false,
+    content,
+    keyboard: false,
+    maskClosable: false,
+    okText: '重新登录',
+    title: force ? '账号已在别处登录' : '登录状态已失效',
+    onOk: async () => {
+      logoutModalVisible = false;
+      const { useAuthStore } = await import('#/store');
+      await useAuthStore().logout(false);
+      window.location.reload();
+    },
+  });
+}
 
 function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   const client = new RequestClient({
     ...options,
     baseURL,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    paramsSerializer: (params) => {
+      const serialized = qs.stringify(params, { arrayFormat: 'brackets' });
+      return encryptData(serialized);
+    },
+    timeout: 60_000,
+    transformRequest: [(data, headers) => transformRequestBody(data, headers)],
   });
 
-  /**
-   * 重新认证逻辑
-   */
-  async function doReAuthenticate() {
-    console.warn('Access token or refresh token is invalid or expired. ');
-    const accessStore = useAccessStore();
-    const authStore = useAuthStore();
-    accessStore.setAccessToken(null);
-    if (
-      preferences.app.loginExpiredMode === 'modal' &&
-      accessStore.isAccessChecked
-    ) {
-      accessStore.setLoginExpired(true);
-    } else {
-      await authStore.logout();
-    }
-  }
-
-  /**
-   * 刷新token逻辑
-   */
-  async function doRefreshToken() {
-    const accessStore = useAccessStore();
-    const resp = await refreshTokenApi();
-    const newToken = resp.data;
-    accessStore.setAccessToken(newToken);
-    return newToken;
-  }
-
-  function formatToken(token: null | string) {
-    return token ? `Bearer ${token}` : null;
-  }
-
-  // 请求头处理
   client.addRequestInterceptor({
-    fulfilled: async (config) => {
+    fulfilled: (config) => {
       const accessStore = useAccessStore();
+      const token = getCloudToken() || accessStore.accessToken;
+      const requestUrl = config.url || '';
 
-      config.headers.Authorization = formatToken(accessStore.accessToken);
-      config.headers['Accept-Language'] = preferences.app.locale;
+      if (isVoipRequest(requestUrl)) {
+        config.baseURL = voipBaseURL;
+        config.headers['Content-Type'] = 'application/json';
+        return config;
+      }
+
+      if (!isDevMode && !config.params && !config.data) {
+        config.params = { content: 'empty' };
+      }
+
+      // 每次请求前确保 AuthToken（登录页也会发请求）
+      const authToken = ensureAuthToken() || getAuthToken();
+
+      if (isPublicRequest(requestUrl) || token) {
+        config.headers.Token = token;
+        config.headers.Language = getLanguageCookie() || preferences.app.locale;
+        config.headers.AuthToken = authToken;
+      }
+
+      // 协助工单：旧站以 Cookie 传 HelpLink；请求头一并带上以提高兼容性
+      const helpLink = getHelpLink();
+      if (helpLink) {
+        config.headers.HelpLink = helpLink;
+      }
+
       return config;
     },
   });
 
-  // 处理返回的响应数据格式
-  client.addResponseInterceptor(
-    defaultResponseInterceptor({
-      codeField: 'code',
-      dataField: 'data',
-      successCode: apiSuccessCode,
-    }),
-  );
+  client.addResponseInterceptor({
+    fulfilled: (response: AxiosResponse<CloudApiResponse>) => {
+      if (isVoipRequest(response.config.url)) {
+        return response;
+      }
 
-  // token过期的处理
-  client.addResponseInterceptor(
-    authenticateResponseInterceptor({
-      client,
-      doReAuthenticate,
-      doRefreshToken,
-      enableRefreshToken: preferences.app.enableRefreshToken,
-      formatToken,
-    }),
-  );
+      decryptResponse(response);
+      let responseData = response.data;
 
-  // 通用的错误处理,如果没有进入上面的错误处理逻辑，就会进入这里
-  client.addResponseInterceptor(
-    errorMessageResponseInterceptor((msg: string, error) => {
-      // 这里可以根据业务进行定制,你可以拿到 error 内的信息进行定制化处理，根据不同的 code 做不同的提示，而不是直接使用 message.error 提示 msg
-      // 当前mock接口返回的错误字段是 error 或者 message
-      const responseData = error?.response?.data ?? {};
-      const errorMessage = responseData?.error ?? responseData?.message ?? '';
-      // 如果没有错误信息，则会根据状态码进行提示
-      message.error(errorMessage || msg);
-    }),
-  );
+      if (responseData && typeof responseData === 'string') {
+        try {
+          responseData = JSON.parse(responseData);
+        } catch {
+          const statusMatch =
+            String(responseData).match(/"status"\s*:\s*(\d+)/) ||
+            String(responseData).match(/"Code"\s*:\s*(\d+)/);
+          if (statusMatch) {
+            responseData = {
+              Code: Number(statusMatch[1]),
+              Data: null,
+              message: '',
+              status: Number(statusMatch[1]),
+            };
+          }
+        }
+      }
+
+      response.data = normalizeResponseData(responseData as CloudApiResponse);
+
+      const status = Number(response.data.status);
+      const requestUrl = response.config.url || '';
+
+      // 登录相关接口的 403 只提示，不整页跳转（缺 AuthToken / 无权限时常见）
+      if (status === 403) {
+        const errorMsg = response.data.message || '无访问权限(403)';
+        if (
+          requestUrl.includes('/user/login') ||
+          requestUrl.includes('/user/vlogin') ||
+          requestUrl.includes('/user/islogin') ||
+          requestUrl.includes('/public/user/')
+        ) {
+          message.error(errorMsg);
+          return Promise.reject(response.data);
+        }
+        message.error(errorMsg);
+        return Promise.reject(response.data);
+      }
+
+      if (status === apiSuccessCode) {
+        if (response.config.responseReturn === 'raw') {
+          return response;
+        }
+        if (response.config.responseReturn === 'body') {
+          return response.data;
+        }
+        return response.data.Data;
+      }
+
+      if (PASSTHROUGH_ERROR_CODES.includes(status)) {
+        return response;
+      }
+
+      if (LOGOUT_ERROR_CODES.includes(status)) {
+        showLogoutModal(`${response.data.message || '登录已失效'}(${status})`);
+        return Promise.reject(response.data);
+      }
+
+      if (status === FORCE_LOGOUT_CODE) {
+        showLogoutModal('您的账号已在别处登录，请重新登录', true);
+        return Promise.reject(response.data);
+      }
+
+      const errorMsg =
+        mapErrorMessage(status, response.data.message) ||
+        response.data.message ||
+        '网络请求失败';
+      message.error(errorMsg);
+      return Promise.reject(response.data);
+    },
+    rejected: (error) => {
+      message.error('网络请求超时，请稍后重试');
+      return Promise.reject(error);
+    },
+  });
 
   return client;
 }
@@ -112,4 +258,12 @@ export const requestClient = createRequestClient(apiURL, {
   responseReturn: 'data',
 });
 
-export const baseRequestClient = new RequestClient({ baseURL: apiURL });
+export const baseRequestClient = createRequestClient(apiURL, {
+  responseReturn: 'raw',
+});
+
+export const voipRequestClient = voipBaseURL
+  ? createRequestClient(voipBaseURL, {
+      responseReturn: 'data',
+    })
+  : requestClient;

@@ -1,0 +1,4 @@
+/* 全局收紧 Card 内容区内边距 */
+.ant-card .ant-card-body {
+  padding: 10px 15px;
+}

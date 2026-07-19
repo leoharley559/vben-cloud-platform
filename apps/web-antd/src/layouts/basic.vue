@@ -222,7 +222,13 @@ watch(
       <UserDropdown
         :avatar
         :menus
-        :text="userStore.userInfo?.realName"
+        :text="
+          String(
+            userStore.userInfo?.realName ||
+              userStore.userInfo?.username ||
+              '管理员',
+          )
+        "
         description="ann.vben@gmail.com"
         tag-text="Pro"
         @logout="handleLogout"

@@ -11,6 +11,11 @@ import {
 
 import { Button, Image } from 'ant-design-vue';
 
+import {
+  getTableListHeightPx,
+  TABLE_LIST_MIN_HEIGHT,
+} from '#/utils/table-height';
+
 import { useVbenForm } from './form';
 
 setupVbenVxeTable({
@@ -22,11 +27,12 @@ setupVbenVxeTable({
         columnConfig: {
           resizable: true,
         },
-        minHeight: 180,
         formConfig: {
           // 全局禁用vxe-table的表单配置，使用formOptions
           enabled: false,
         },
+        height: getTableListHeightPx(),
+        minHeight: TABLE_LIST_MIN_HEIGHT,
         proxyConfig: {
           autoLoad: true,
           response: {
@@ -43,7 +49,6 @@ setupVbenVxeTable({
       } as VxeTableGridOptions,
     });
 
-    // 表格配置项可以用 cellRender: { name: 'CellImage' },
     vxeUI.renderer.add('CellImage', {
       renderTableDefault(renderOpts, params) {
         const { props } = renderOpts;
@@ -52,7 +57,6 @@ setupVbenVxeTable({
       },
     });
 
-    // 表格配置项可以用 cellRender: { name: 'CellLink' },
     vxeUI.renderer.add('CellLink', {
       renderTableDefault(renderOpts) {
         const { props } = renderOpts;
@@ -63,15 +67,44 @@ setupVbenVxeTable({
         );
       },
     });
-
-    // 这里可以自行扩展 vxe-table 的全局配置，比如自定义格式化
-    // vxeUI.formats.add
   },
   useVbenForm,
 });
 
+/**
+ * height:'auto' → 按视口计算的固定像素高度，表体占满下方留白；
+ * 弹窗等已显式传 number 高度的不覆盖。
+ */
 export const useVbenVxeGrid = <T extends Record<string, any>>(
   ...rest: Parameters<typeof useGrid<T, ComponentType, ComponentPropsMap>>
-) => useGrid<T, ComponentType, ComponentPropsMap>(...rest);
+) => {
+  const [options, ...others] = rest;
+  const gridOptions = options?.gridOptions;
+  if (!gridOptions) {
+    return useGrid(...rest);
+  }
+
+  const height = gridOptions.height;
+  const isAutoHeight = height === 'auto' || height === undefined;
+  if (!isAutoHeight) {
+    return useGrid(...rest);
+  }
+
+  const enhanced = {
+    ...options,
+    gridOptions: {
+      ...gridOptions,
+      height: getTableListHeightPx(),
+      minHeight: gridOptions.minHeight ?? TABLE_LIST_MIN_HEIGHT,
+    },
+  };
+
+  return useGrid(
+    enhanced as Parameters<
+      typeof useGrid<T, ComponentType, ComponentPropsMap>
+    >[0],
+    ...(others as []),
+  );
+};
 
 export type * from '@vben/plugins/vxe-table';

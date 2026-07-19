@@ -42,9 +42,20 @@
     "@vben/utils": "workspace:*",
     "@vueuse/core": "catalog:",
     "ant-design-vue": "catalog:",
+    "bignumber.js": "^9.3.1",
+    "crypto-js": "^4.2.0",
     "dayjs": "catalog:",
+    "echarts": "catalog:",
+    "js-cookie": "^3.0.5",
     "pinia": "catalog:",
+    "qs": "catalog:",
     "vue": "catalog:",
     "vue-router": "catalog:"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "@types/js-cookie": "^3.0.6",
+    "@types/qs": "^6.9.18",
+    "axios": "catalog:"
   }
 }

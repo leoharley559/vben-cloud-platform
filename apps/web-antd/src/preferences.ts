@@ -16,8 +16,13 @@ interface WebAntdPreferencesExtension {
  * !!! 更改配置后请清空缓存，否则可能不生效
  */
 export const overridesPreferences = defineOverridesPreferences({
-  // overrides
   app: {
+    // mixed：前端工作台 + 后端 Nav 菜单并存（迁移期）
+    accessMode: 'mixed',
+    defaultHomePath: '/workspace',
+    enableRefreshToken: false,
+    // 迁移期固定简体中文，菜单文案来自 cloudPlatform zh-CN
+    locale: 'zh-CN',
     name: import.meta.env.VITE_APP_TITLE,
   },
 });

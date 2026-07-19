@@ -6,9 +6,15 @@ import { preferences, usePreferences } from '@vben/preferences';
 
 import { App, ConfigProvider, theme } from 'ant-design-vue';
 
+import { useAuthTokenPoller } from '#/composables/use-auth-token-poller';
 import { antdLocale } from '#/locales';
+import { ensureAuthToken } from '#/utils/ensure-auth-token';
 
 defineOptions({ name: 'App' });
+
+/** 登录页也在 Auth 布局下，必须在这里初始化 AuthToken */
+ensureAuthToken();
+useAuthTokenPoller();
 
 const { isDark } = usePreferences();
 const { tokens } = useAntdDesignTokens();

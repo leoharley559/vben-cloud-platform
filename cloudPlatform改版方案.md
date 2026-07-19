@@ -51,23 +51,23 @@
 flowchart LR
   P0[P0 基建对齐] --> P1[P1 登录权限布局]
   P1 --> P2[P2 共享能力]
-  P2 --> P3[P3 核心业务批1]
-  P3 --> P4[P4 核心业务批2]
-  P4 --> P5[P5 实时通信]
-  P5 --> P6[P6 报表/移动端/收尾]
-  P6 --> P7[P7 切流下线旧站]
+  P2 --> P3[P3 菜单热度加深]
+  P3 --> P4[P4 推广与实时通信]
+  P4 --> P5[P5 边缘模块]
+  P5 --> P6[P6 切流下线旧站]
 ```
+
+> **现行原则（已调整）**：业务加深顺序对齐**左侧一级菜单使用频率**，不再按「系统→游戏→运营」旧批序硬推。系统管理已基本完成，作为底座保留；客服/币商/WS 等仍单独排期。
 
 | 阶段 | 目标 | 预估周期 | 验收标准 |
 | --- | --- | --- | --- |
 | **P0** | 环境、请求层、加密、环境变量、目录规范 | 1–2 周 | 能连现网/测试 API，打通登录 + 菜单 |
 | **P1** | 登录多入口、权限、布局、全局配置 | 2–3 周 | 登录后菜单与旧站一致，按钮权限可用 |
 | **P2** | 全局组件、工具、i18n、玩家详情骨架 | 2–4 周 | 列表页「筛选 + 表格 + 分页」有标准范式 |
-| **P3** | 系统管理 + 游戏管理 + 运营管理 | 最长 | 三大域主流程可操作 |
-| **P4** | 代理网赚 + 推广 + 会员 | 中 | 代理/推广主流程可操作 |
-| **P5** | 客服 / 币商 / 聊天室 / 直播（WS + Protobuf） | 高难度 | 实时链路可联调 |
-| **P6** | 数据报表 + 电销 + 移动端 H5 + 体育 | 中 | 报表核对、H5 可用 |
-| **P7** | 灰度切流、旧站下线、文档归档 | 1–2 周 | 正式环境只走新前端 |
+| **P3** | **按左侧菜单热度加深**：数据汇总 → 日常运营 → 会员 → 产品 → 代理 → 报表/分析；系统管理已基本完成作底座 | 最长 | 菜单一级模块主流程可操作 |
+| **P4** | 推广管理 + 客服/币商/聊天室/直播（WS） | 高难度 | 推广可操作；实时链路可联调 |
+| **P5** | 电销 + 移动端 H5 + 体育 + 收尾 | 中 | 边缘模块可用 |
+| **P6** | 灰度切流、旧站下线、文档归档 | 1–2 周 | 正式环境只走新前端 |
 
 ---
 
@@ -211,9 +211,35 @@ apps/web-antd/src/
 
 ---
 
-## 7. 业务模块迁移顺序
+## 7. 业务模块迁移顺序（按左侧菜单）
 
-### 批 1 — 底座业务（P3）
+> 菜单中文名来自旧站 `lang`：`operationalData=数据汇总`、`operationalManage=日常运营`、`memberManage=会员管理`、`gameManage=产品管理`、`netcash=代理管理`、`dataClose=报表/分析`、`systemManage=系统管理`。
+
+### 菜单驱动优先级（现行）
+
+| 序 | 左侧菜单 | 代码域 | views | 当前状态 | 下一刀建议 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **数据汇总** | 运营数据 | `operationalData/` | MVP 顶层齐（多为只读报表） | 核对筛选/导出/金额单位；补缺失汇总页与对拍 |
+| 2 | **日常运营** | 运营管理 | `operationalManage/` | 写操作已深；含公告/邮件创建编辑、积分调整提交+审核 PassPopup(83) | 活动创建向导暂缓；公告富文本多语言 |
+| 3 | **会员管理** | 会员管理 | `memberManage/` | 钱包/称号齐；玩家列表批量+备注；导出 PassPopup(34/35/90/95) | 对拍剩余 |
+| 4 | **产品管理** | 游戏管理 | `gameManage/` | 出款银行+提现账户 CRUD MVP + 返水增删 + 兑换码生成 + 充值通用规则（堵塞提示/姓名数量/首存最低/取消设置） | 签约账户；包体/渠道创建向导；充值方式次数/通道报警 |
+| 5 | **代理管理** | 代理网赚 | `netcash/` | 提款/佣金/红利/额度/代理新建编辑；DK；团队+副线；下级改线；详情手机/佣金；财务支付宝账户 CRUD | 批量转代；银行卡/USDT 账户；代理分组树 CRUD |
+| 6 | **报表/分析** | 数据闭环 | `dataClose/` | MVP 顶层齐 | 核对导出与口径；LTV/统计页对拍 |
+| 7 | **系统管理** | 系统管理 | `systemManage/` | **表单加深基本完成** | 仅修 bug / 权限对拍，不再优先新功能 |
+
+**同批穿插（不挡主线）**
+
+| 菜单/域 | 说明 |
+| --- | --- |
+| 推广管理 `generalizeManage/` | 已有团队推广向导 + 提现账号 SMS；可在代理管理之后穿插 |
+| 客服/币商/聊天室/直播 | WS 专项，仍独立排期，不插入菜单热度主线前段 |
+
+### 历史批次对照（归档，不再作为执行序）
+
+<details>
+<summary>原批 1–4 划分（已由上方菜单序替代）</summary>
+
+#### 批 1 — 底座业务（P3）
 
 | 序号 | 模块 | 旧 views 路径 | 旧 api 路径 | 页面量级 |
 | --- | --- | --- | --- | --- |
@@ -222,45 +248,28 @@ apps/web-antd/src/
 | 3 | 游戏管理 | `views/gameManage/` | `api/gameManage/` | 165 |
 | 4 | 运营管理 | `views/operationalManage/` | `api/operationManage/` | 267 |
 
-**强依赖**：运营管理依赖「玩家详情」共享模块，务必与批 1 同步推进。
+#### 批 2 — 资金与推广（P4）
 
-### 批 2 — 资金与推广（P4）
+| 序号 | 模块     | 旧 views 路径             | 旧 api 路径         | 页面量级 |
+| ---- | -------- | ------------------------- | ------------------- | -------- |
+| 5    | 代理网赚 | `views/netcash/`          | `api/netcash/`      | 107      |
+| 6    | 推广管理 | `views/generalizeManage/` | `api/promotion/`    | 13       |
+| 7    | 会员管理 | `views/memberManage/`     | `api/memberManage/` | 27       |
 
-| 序号 | 模块 | 旧 views 路径 | 旧 api 路径 | 页面量级 |
-| --- | --- | --- | --- | --- |
-| 5 | 代理网赚 | `views/netcash/` | `api/netcash/` | 107 |
-| 6 | 推广管理 | `views/generalizeManage/` | `api/promotion/` | 13 |
-| 7 | 会员管理 | `views/memberManage/` | `api/memberManage/` | 27 |
-| 8 | 财务相关 | 嵌入推广/代理页 | `api/financeCenter/` | — |
+#### 批 3 — 实时通信（P5）
 
-### 批 3 — 实时通信（P5，技术风险最高）
+客服 / 币商 / 聊天室 / 直播（WS + Protobuf）
 
-| 序号 | 模块     | 技术点                                    | 页面量级 |
-| ---- | -------- | ----------------------------------------- | -------- |
-| 9    | 客服管理 | WS + Protobuf + VOIP                      | 95       |
-| 10   | 币商管理 | 独立 `BS_*` WebSocket                     | 45       |
-| 11   | 聊天室   | `tsapp/net/websocket` + chatroom protobuf | 90       |
-| 12   | 直播管理 | 直播间/竞猜/PK                            | 87       |
+#### 批 4 — 数据与边缘（P6）
 
-建议：先抽 **独立 `utils/ws/` 或 `composables/realtime/`**，再迁 UI。
+运营数据 / 数据闭环 / 推广数据 / 电销 / 体育 / H5
 
-### 批 4 — 数据与边缘（P6）
+</details>
 
-| 序号 | 模块      | 旧 views 路径                  | 页面量级 |
-| ---- | --------- | ------------------------------ | -------- |
-| 13   | 运营数据  | `operationalData/`             | 34       |
-| 14   | 数据闭环  | `dataClose/`                   | 85       |
-| 15   | 推广数据  | `generalizeData/`              | 13       |
-| 16   | 电销中心  | `telesalesCenter/` + VOIP Bria | 24       |
-| 17   | 体育管理  | `sportsManager/`               | 1        |
-| 18   | 移动端 H5 | `mobile/` + `mobileCloud/`     | 31       |
+### ~~批 5 — HRMS~~（**不在本次云后台改版范围**）
 
-### 批 5 — HRMS（独立评估）
-
-- 路径：`cloudPlatform/hm-hrms/`
-- 已是 Vue 3 + Vben Admin monorepo
-- 评估「合并进本仓库 `apps/`」或「继续独立子域名部署」
-- **不要**按 Vue2 页面方式重写
+- 路径：`cloudPlatform/hm-hrms/`（人事/考勤/排班等，独立 Vue3 应用）
+- **本次不迁移、不合并、不做评估**；与云后台运营业务解耦，后续如需再单独立项
 
 ---
 
@@ -318,8 +327,8 @@ apps/web-antd/src/
 3. **移植 `request` + `crypto` + Token/AuthToken**，联调真实登录
 4. **落地全局组件与列表页脚手架**（ChannelSelect + Form + Grid 模板页）
 5. **做模块对照表**（飞书/Excel）：域 | 旧页面路径 | 旧 API | 优先级 | Owner | 状态
-6. **先迁「系统管理」小闭环** 验证范式，再开「游戏管理 / 运营管理」两条并行线
-7. **玩家详情、WebSocket 两条专项**单独排期，避免拖死主线
+6. **按左侧菜单热度加深**：数据汇总 → 日常运营 → 会员 → 产品 → 代理 → 报表/分析；系统管理仅维护
+7. **客服/币商 WebSocket 专项**单独排期，避免拖死主线
 
 ---
 
@@ -342,24 +351,24 @@ apps/web-antd/src/
 
 | 域 | 旧 views | 旧 api | 页面数 | 优先级 | 阶段 | 负责人 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 仪表盘 | `dashboard/` | `dashboard/` | 11 | P1 | P3 |  | 未开始 |
-| 系统管理 | `systemManage/` | `systemManage/` | 18 | P0 | P3 |  | 未开始 |
-| 游戏管理 | `gameManage/` | `gameManage/` | 165 | P1 | P3 |  | 未开始 |
-| 运营管理 | `operationalManage/` | `operationManage/` | 267 | P1 | P3 |  | 未开始 |
-| 运营数据 | `operationalData/` | `operationalData/` | 34 | P2 | P6 |  | 未开始 |
-| 数据闭环 | `dataClose/` | `dataClose/` | 85 | P2 | P6 |  | 未开始 |
-| 推广数据 | `generalizeData/` | `generalizeData/` | 13 | P2 | P6 |  | 未开始 |
-| 推广管理 | `generalizeManage/` | `promotion/` | 13 | P1 | P4 |  | 未开始 |
-| 代理网赚 | `netcash/` | `netcash/` | 107 | P1 | P4 |  | 未开始 |
-| 币商管理 | `coinDealer/` | `coinDealer/` | 45 | P2 | P5 |  | 未开始 |
-| 客服管理 | `serviceManage/` | `serviceManage/` | 95 | P2 | P5 |  | 未开始 |
-| 聊天室 | `chatroomManage/` | `chatroomManage/` | 90 | P2 | P5 |  | 未开始 |
-| 直播管理 | `liveManage/` | `liveManage/` | 87 | P2 | P5 |  | 未开始 |
-| 会员管理 | `memberManage/` | `memberManage/` | 27 | P1 | P4 |  | 未开始 |
-| 电销中心 | `telesalesCenter/` | `telesalesCenter/` | 24 | P3 | P6 |  | 未开始 |
-| 体育管理 | `sportsManager/` | `sportsManager/` | 1 | P3 | P6 |  | 未开始 |
-| 移动端 H5 | `mobile/` + `mobileCloud/` | — | 31 | P3 | P6 |  | 未开始 |
-| HRMS | `hm-hrms/` | `hm-hrms/apps/web-antd/src/api/` | 12+ | 独立 | 批5 |  | 未开始 |
+| 仪表盘 | `dashboard/` | `dashboard/` | 11 | P1 | P3 |  | **数据总览对拍**：Panel 指标卡+折线/柱图+自选日期、banner 四卡、充值成功率/提现时效/在线风控、游戏/玩家盈亏、渠道今日表+导出；在线总览另页 |
+| 系统管理 | `systemManage/` | `systemManage/` | 18 | **菜单#7** | P3 |  | **表单加深基本完成**；仅修 bug / 对拍 |
+| 游戏管理 | `gameManage/` | `gameManage/` | 165 | **菜单#4** | P3 |  | 表单加深续：三方代付密钥+通道费率/限额、VIP升级系数/图标方案+行编辑、返水配置/规则/手动发放/批量审核+方案增删、包体备注、渠道邀请码、出款银行开关/批量、提现账户普通支付宝增删改、兑换码随机生成、充值通用规则·堵塞提示(11139)+姓名数量(11140)+首存最低(13115)+取消设置(11613) |
+| 运营管理 | `operationalManage/` | `operationManage/` | 267 | **菜单#2** | P3 |  | 写操作：公告/邮件（含创建编辑 MVP，删除权限对齐 10076）/票券/红利/排行榜/礼品/活动下架；滚动大奖；玩家详情全套 + 游戏风控 + 通道充值补单/补空单 + 充值黑名单 + 充值失败记录/CP补单 + 提现全套（含出款到账异常）+ 导出 PassPopup(17) + 调账审核 PassPopup(49) + 积分调整提交/审核 PassPopup(83)；活动创建向导/公告富文本多语言暂缓 |
+| 运营数据 | `operationalData/` | `operationalData/` | 34 | **菜单#1** | P3 |  | 对拍加深：日期格式(YYYY-MM-DD)/默认区间、渠道 SearchType、充值字段 SumPayMergerMoney、投注报表列、老板日报 TimeNumber+员工统计列、公司日报汇总卡片；导出/渠道筛选待续 |
+| 数据闭环 | `dataClose/` | `dataClose/` | 85 | **菜单#6** | P3 |  | MVP 顶层齐（含 LTV）；报表对拍待加深 |
+| 推广数据 | `generalizeData/` | `generalizeData/` | 13 | P2 | P4 |  | MVP 顶层齐 |
+| 推广管理 | `generalizeManage/` | `promotion/` | 13 | P1 | P4 |  | MVP 顶层齐；代理设定支持单条编辑/批量设置/恢复默认；新增团队推广向导（addPromote）+ 列表入口（10912）；提现账号增删改 + 短信验证码 |
+| 代理网赚 | `netcash/` | `netcash/` | 107 | **菜单#5** | P3 |  | MVP 顶层齐；写操作加深：提款开始/通过/拒绝 + 黑名单删除、佣金行发放/一键发放、代理新建编辑、红利发放+审核、额度申请/审核（代理+平台）；DK；团队+副线；下级改线；详情手机(11258)+佣金(11501)+财务支付宝账户增删改(11260/61/62) |
+| 币商管理 | `coinDealer/` | `coinDealer/` | 45 | P2 | P4 |  | MVP 列表/Tab；WS 工作台占位 |
+| 客服管理 | `serviceManage/` | `serviceManage/` | 95 | P2 | P4 |  | 工作台薄切片（连接/聊天/发文本/忙碌/接单/转单/结束）+ 进线监控插话转单 |
+| 聊天室 | `chatroomManage/` | `chatroomManage/` | 90 | P2 | P4 |  | MVP 顶层齐；进房 WS 占位 |
+| 直播管理 | `liveManage/` | `liveManage/` | 87 | P2 | P4 |  | MVP 顶层齐 |
+| 会员管理 | `memberManage/` | `memberManage/` | 27 | **菜单#3** | P3 |  | MVP 顶层齐；钱包 PassPopup(8/9/18)；游戏称号 CRUD；玩家列表批量编辑(11460)+备注抽屉；验证码/身份验证已齐；查询页导出 PassPopup(34/35/90/95) |
+| 电销中心 | `telesalesCenter/` | `telesalesCenter/` | 24 | P3 | P5 |  | MVP 顶层齐；VOIP 占位 |
+| 体育管理 | `sportsManager/` | `sportsManager/` | 1 | P3 | P5 |  | MVP |
+| 移动端 H5 | `mobile/` + `mobileCloud/` | — | 31 | P3 | P5 |  | MVP 壳 |
+| HRMS | `hm-hrms/` | — | — | — | — |  | **不在本次范围** |
 
 ---
 

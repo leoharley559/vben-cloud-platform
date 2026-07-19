@@ -92,6 +92,24 @@ const coreRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    meta: {
+      hideInTab: true,
+      title: '移动端登录',
+    },
+    name: 'MobileTeamLogin',
+    path: '/mlogin',
+    component: () => import('#/views/mobile/auth/mlogin/index.vue'),
+  },
+  {
+    meta: {
+      hideInTab: true,
+      title: '云终端登录',
+    },
+    name: 'MobileCloudLogin',
+    path: '/mobilelogin',
+    component: () => import('#/views/mobileCloud/auth/mobilelogin/index.vue'),
+  },
 ];
 
 export { coreRoutes, fallbackNotFoundRoute };

@@ -1,47 +1,76 @@
-# Dependencies
-node_modules
-.pnpm-store
+# Dependencies and package-manager caches
+node_modules/
+.pnpm-store*/
+.npm/
 
-# Build
-dist
+# Build outputs
+dist/
+dist-*/
+*-dist/
+build/
+out/
 dist.zip
-.turbo
 *.tsbuildinfo
 
-# Nitro mock
-.nitro
-.output
+# Turbo / Vite / Nitro generated files
+.turbo/
+.vite/
+.vite-inspect/
+.nitro/
+.output/
+.vitepress/cache/
+.vitepress/dist/
+.vitepress/dist.zip
+vite.config.*.timestamp-*
 
-# Logs
+# Test outputs
+coverage/
+playwright-report/
+blob-report/
+test-results/
+.vitest/
+junit.xml
+
+# Logs and runtime files
 *.log
+*.log.*
 npm-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+*.pid
+*.pid.lock
+
+# Local environment overrides (may contain secrets)
+.env.local
+.env.*.local
+
+# Tool caches and temporary files
+.cache/
+.eslintcache
+.stylelintcache
+.oxlintcache
+.temp/
+.tmp/
+temp/
+tmp/
 
 # Editor
-.idea
+.idea/
+.history/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # OS
 .DS_Store
+.AppleDouble
+.LSOverride
 Thumbs.db
-
-# Test
-coverage
-playwright-report
-test-results
-
-# Local env overrides (do not commit secrets)
-.env.local
-.env.*.local
-.env.development.local
-.env.production.local
-
-# Cache
-.eslintcache
-.stylelintcache
-*.local
-
-# Vite
-vite.config.ts.timestamp-*
+Desktop.ini

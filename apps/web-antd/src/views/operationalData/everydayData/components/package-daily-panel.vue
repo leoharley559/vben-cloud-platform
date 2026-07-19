@@ -1,0 +1,354 @@
+<script lang="ts" setup>
+import { computed, onMounted, ref, watch } from 'vue';
+
+import {
+  Button,
+  Card,
+  DatePicker,
+  Input,
+  Select,
+  Space,
+  Spin,
+} from 'ant-design-vue';
+import dayjs, { type Dayjs } from 'dayjs';
+
+import AccountSelect from '#/components/global/account-select.vue';
+import ChannelSelect from '#/components/global/channel-select.vue';
+import {
+  fetchIosAppStoreDataApi,
+  fetchIosAppStoreListApi,
+  fetchIosAppStoreTodayExportApi,
+  type IosAppStoreItem,
+} from '#/api/operationalData/everyday-data';
+import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
+import {
+  calcDailyReportRow,
+  calcDailyReportRows,
+  type DailyReportRow,
+} from '#/utils/everyday-data-calc';
+import {
+  defaultDailyReportRange,
+  defaultMonthlyReportRange,
+  toDateStrings,
+} from '#/utils/everyday-data-date';
+import { exportRowsToCsv, type CsvColumn } from '#/utils/export-csv';
+import {
+  buildPackageStyleExportColumns,
+  joinMultiValue,
+  normalizeSearchValue,
+} from '#/utils/everyday-report-format';
+
+import DailyReportTable from './daily-report-table.vue';
+
+defineOptions({ name: 'PackageDailyPanel' });
+
+const { checkPermission } = useCloudPermission();
+const { memberTypeOptions, packageOptions } = useOperationOptions();
+
+const canRealtime = computed(() => checkPermission(10_696));
+const canHistory = computed(() => checkPermission(10_697));
+const canExport = computed(() => checkPermission(10_698));
+const canExportToday = computed(() => checkPermission(12_021));
+
+const reportType = ref(1);
+const packageId = ref<number | string>('');
+const adminSearchType = ref(0);
+const channelSearchType = ref(0);
+const adminSearch = ref<Array<number | string> | number | string>([]);
+const channelSearch = ref<Array<number | string> | number | string>([]);
+const appUrl = ref<Array<string>>([]);
+const dataSearchType = ref(0);
+const dateRange = ref<[Dayjs, Dayjs]>();
+
+const loading = ref(false);
+const todayExportLoading = ref(false);
+const appUrlOptions = ref<Array<{ label: string; value: string }>>([]);
+const realTimeData = ref<DailyReportRow[]>([]);
+const historyData = ref<DailyReportRow[]>([]);
+
+const dateFormat = computed(() =>
+  reportType.value === 2 ? 'YYYY-MM' : 'YYYY-MM-DD',
+);
+const pickerMode = computed(() => (reportType.value === 2 ? 'month' : 'date'));
+
+const exportColumns = buildPackageStyleExportColumns('推广收入');
+
+const todayExportColumns: CsvColumn<DailyReportRow>[] = [
+  {
+    header: '上架包',
+    value: (row) => String(row.AppStoreKeyName || ''),
+  },
+  ...exportColumns,
+];
+
+function initDateRange(type = reportType.value) {
+  const range =
+    type === 2 ? defaultMonthlyReportRange() : defaultDailyReportRange();
+  dateRange.value = [dayjs(range[0]), dayjs(range[1])];
+}
+
+function buildQuery() {
+  const { beginTime, endTime } = toDateStrings(
+    dateRange.value,
+    dateFormat.value,
+  );
+  const adminValue = normalizeSearchValue(
+    adminSearch.value,
+    adminSearchType.value,
+  );
+  const channelValue = normalizeSearchValue(
+    channelSearch.value,
+    channelSearchType.value,
+  );
+  return {
+    AdminGroupIds: '',
+    AdminIds: adminValue,
+    AdminSearch: adminValue,
+    AdminSearchType: adminSearchType.value,
+    AppUrl: joinMultiValue(appUrl.value),
+    BeginTime: beginTime,
+    ChannelIds: channelValue,
+    ChannelSearch: channelValue,
+    ChannelSearchType: channelSearchType.value,
+    DataSearchType: dataSearchType.value,
+    EndTime: endTime,
+    PackageId: packageId.value || '',
+    ReportType: reportType.value,
+  };
+}
+
+async function loadAppUrlOptions() {
+  try {
+    const data = await fetchIosAppStoreListApi();
+    appUrlOptions.value = (data.Items || []).map((item: IosAppStoreItem) => ({
+      label: item.AppName || item.AppUrl || String(item.Id || ''),
+      value: String(item.AppUrl || ''),
+    }));
+  } catch {
+    appUrlOptions.value = [];
+  }
+}
+
+async function loadData() {
+  loading.value = true;
+  try {
+    const data = await fetchIosAppStoreDataApi(buildQuery());
+    const todayRow = data.TodayItems
+      ? (calcDailyReportRow({ ...data.TodayItems }) as DailyReportRow)
+      : null;
+    realTimeData.value = todayRow ? [todayRow] : [];
+
+    const items = calcDailyReportRows((data.Items || []) as DailyReportRow[]);
+    items.sort((a, b) =>
+      String(b.ReportDay || '').localeCompare(String(a.ReportDay || '')),
+    );
+
+    if (data.BannerItems && Object.keys(data.BannerItems).length > 0) {
+      const totalRow = calcDailyReportRow({
+        ...data.BannerItems,
+        ReportDay: '总计',
+      }) as DailyReportRow;
+      historyData.value = [...items, totalRow];
+    } else {
+      historyData.value = items;
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function handleSearch() {
+  await loadData();
+}
+
+function handleReset() {
+  reportType.value = 1;
+  packageId.value = '';
+  adminSearchType.value = 0;
+  channelSearchType.value = 0;
+  adminSearch.value = [];
+  channelSearch.value = [];
+  appUrl.value = [];
+  dataSearchType.value = 0;
+  initDateRange(1);
+  void handleSearch();
+}
+
+function handleExportHistory() {
+  exportRowsToCsv(historyData.value, exportColumns, '上架包日报-历史数据');
+}
+
+async function handleExportToday() {
+  todayExportLoading.value = true;
+  try {
+    const { endTime } = toDateStrings(dateRange.value, dateFormat.value);
+    const data = await fetchIosAppStoreTodayExportApi({
+      BeginTime: endTime,
+      EndTime: endTime,
+      IsExp: true,
+    });
+    const rows = calcDailyReportRows((data.Items || []) as DailyReportRow[]);
+    exportRowsToCsv(rows, todayExportColumns, '上架包今日数据');
+  } finally {
+    todayExportLoading.value = false;
+  }
+}
+
+watch(reportType, (value) => {
+  initDateRange(value);
+});
+
+watch(adminSearchType, (type) => {
+  adminSearch.value = type === 0 ? [] : '';
+});
+
+watch(channelSearchType, (type) => {
+  channelSearch.value = type === 0 ? [] : '';
+});
+
+onMounted(() => {
+  initDateRange();
+  void loadAppUrlOptions();
+  void handleSearch();
+});
+</script>
+
+<template>
+  <div class="flex flex-col gap-4">
+    <div class="mb-1">
+      <Space wrap class="w-full">
+        <Space.Compact>
+          <Select
+            v-model:value="adminSearchType"
+            :options="[
+              { label: '账号模糊', value: 0 },
+              { label: '账号精准', value: 1 },
+            ]"
+            style="width: 110px"
+          />
+          <AccountSelect
+            v-if="adminSearchType === 0"
+            v-model="adminSearch"
+            style="width: 220px"
+          />
+          <Input
+            v-else
+            v-model:value="adminSearch as string"
+            allow-clear
+            placeholder="请输入账号"
+            style="width: 220px"
+          />
+        </Space.Compact>
+
+        <Space.Compact>
+          <Select
+            v-model:value="channelSearchType"
+            :options="[
+              { label: '渠道模糊', value: 0 },
+              { label: '渠道精准', value: 1 },
+            ]"
+            style="width: 110px"
+          />
+          <ChannelSelect
+            v-if="channelSearchType === 0"
+            v-model="channelSearch"
+            style="width: 220px"
+          />
+          <Input
+            v-else
+            v-model:value="channelSearch as string"
+            allow-clear
+            placeholder="请输入渠道"
+            style="width: 220px"
+          />
+        </Space.Compact>
+
+        <Space>
+          <span class="text-sm text-gray-500">产品</span>
+          <Select
+            v-model:value="packageId"
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            allow-clear
+            placeholder="全部产品"
+            style="width: 180px"
+          />
+        </Space>
+
+        <Space>
+          <span class="text-sm text-gray-500">上架包</span>
+          <Select
+            v-model:value="appUrl"
+            :options="appUrlOptions"
+            allow-clear
+            mode="multiple"
+            placeholder="全部上架包"
+            style="width: 220px"
+          />
+        </Space>
+
+        <Space>
+          <span class="text-sm text-gray-500">数据类型</span>
+          <Select
+            v-model:value="dataSearchType"
+            :options="memberTypeOptions"
+            style="width: 120px"
+          />
+        </Space>
+
+        <Select
+          v-model:value="reportType"
+          :options="[
+            { label: '日报', value: 1 },
+            { label: '月报', value: 2 },
+          ]"
+          style="width: 100px"
+        />
+
+        <Space>
+          <span class="text-sm text-gray-500">日期</span>
+          <DatePicker.RangePicker
+            v-model:value="dateRange"
+            :format="dateFormat"
+            :picker="pickerMode"
+            style="width: 260px"
+          />
+        </Space>
+
+        <Button type="primary" @click="handleSearch">查询</Button>
+        <Button @click="handleReset">重置</Button>
+      </Space>
+
+      <div class="mt-3 flex justify-end gap-2">
+        <Button
+          v-if="canExportToday"
+          :loading="todayExportLoading"
+          type="default"
+          @click="handleExportToday"
+        >
+          导出今日数据
+        </Button>
+        <Button v-if="canExport" type="primary" @click="handleExportHistory">
+          导出 Excel
+        </Button>
+      </div>
+    </div>
+
+    <Card v-if="canRealtime" size="small" title="实时数据">
+      <Spin :spinning="loading">
+        <DailyReportTable :list="realTimeData" variant="package" />
+      </Spin>
+    </Card>
+
+    <Card v-if="canHistory" size="small" title="历史数据">
+      <Spin :spinning="loading">
+        <DailyReportTable :list="historyData" variant="package" />
+      </Spin>
+    </Card>
+  </div>
+</template>

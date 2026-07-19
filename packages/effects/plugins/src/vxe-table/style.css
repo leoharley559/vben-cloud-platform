@@ -51,7 +51,7 @@
   --vxe-ui-font-primary-lighten-color: hsl(var(--primary) / 60%);
   --vxe-ui-font-primary-darken-color: hsl(var(--primary));
 
-  height: auto !important;
+  /* 不强制 height:auto，由业务通过 height/minHeight 控制列表区占满视口 */
 
   /* --vxe-ui-table-fixed-scrolling-box-shadow-color: rgb(0 0 0 / 80%); */
 }

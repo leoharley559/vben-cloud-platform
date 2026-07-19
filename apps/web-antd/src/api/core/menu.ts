@@ -1,10 +1,20 @@
 import type { RouteRecordStringComponent } from '@vben/types';
 
-import { requestClient } from '#/api/request';
+import { useCloudPlatformStore } from '#/store/cloud-platform';
+import { convertNavToVbenRoutes } from '#/utils/menu-adapter';
 
 /**
- * 获取用户所有菜单
+ * 从已加载的 Nav 生成 Vben backend 菜单
  */
 export async function getAllMenusApi() {
-  return requestClient.get<RouteRecordStringComponent[]>('/menu/all');
+  const cloudStore = useCloudPlatformStore();
+
+  if (!cloudStore.navMenus.length) {
+    throw new Error('菜单数据未加载，请先获取用户信息');
+  }
+
+  return convertNavToVbenRoutes(
+    cloudStore.navMenus,
+    cloudStore.projectConfig,
+  ) as RouteRecordStringComponent[];
 }
