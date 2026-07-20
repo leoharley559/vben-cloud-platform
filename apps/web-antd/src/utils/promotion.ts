@@ -4,7 +4,7 @@ import type {
   TeamQueryItem,
 } from '#/types/promotion';
 
-import { formatAmountFromCent } from '#/utils/format-amount';
+import BigNumber from 'bignumber.js';
 
 export const PROMOTER_STATUS_MAP: Record<number, string> = {
   1: '启用',
@@ -155,38 +155,37 @@ export function enrichPromoterList(
 }
 
 export function sumTeamQueryStats(list: TeamQueryItem[] = []) {
-  return list.reduce(
-    (acc, row) => {
-      acc.reg += Number(row.SumNextReg || 0) + Number(row.SumSelfReg || 0);
-      acc.pay +=
-        Number(row.SumNextPayMergerNum || 0) +
-        Number(row.SumSelfPayMergerNum || 0);
-      acc.payMoney +=
-        Number(row.SumNextPayMergerMoney || 0) +
-        Number(row.SumSelfPayMergerMoney || 0);
-      acc.betMoney +=
-        Number(row.SumNextBetGameMoney || 0) +
-        Number(row.SumSelfBetGameMoney || 0);
-      acc.taxMoney +=
-        Number(row.SumNextGameTax || 0) + Number(row.SumSelfGameTax || 0);
-      acc.incomeMoney +=
-        Number(row.SumNextIncomeMoney || 0) +
-        Number(row.SumSelfIncomeMoney || 0);
-      return acc;
-    },
-    {
-      betMoney: 0,
-      incomeMoney: 0,
-      pay: 0,
-      payMoney: 0,
-      reg: 0,
-      taxMoney: 0,
-    },
-  );
+  const result = {
+    betMoney: 0,
+    incomeMoney: 0,
+    pay: 0,
+    payMoney: 0,
+    reg: 0,
+    taxMoney: 0,
+  };
+  for (const row of list) {
+    result.reg += Number(row.SumNextReg || 0) + Number(row.SumSelfReg || 0);
+    result.pay +=
+      Number(row.SumNextPayMergerNum || 0) +
+      Number(row.SumSelfPayMergerNum || 0);
+    result.payMoney +=
+      Number(row.SumNextPayMergerMoney || 0) +
+      Number(row.SumSelfPayMergerMoney || 0);
+    result.betMoney +=
+      Number(row.SumNextBetGameMoney || 0) +
+      Number(row.SumSelfBetGameMoney || 0);
+    result.taxMoney +=
+      Number(row.SumNextGameTax || 0) + Number(row.SumSelfGameTax || 0);
+    result.incomeMoney +=
+      Number(row.SumNextIncomeMoney || 0) +
+      Number(row.SumSelfIncomeMoney || 0);
+  }
+  return result;
 }
 
 export function formatTeamQueryMoney(value?: number) {
-  return formatAmountFromCent(value);
+  const amount = new BigNumber(value || 0);
+  return amount.isNaN() ? '0.00' : amount.dividedBy(100).toFormat(2);
 }
 
 export const WITHDRAW_MONEY_TYPE_MAP: Record<number, string> = {

@@ -1,12 +1,14 @@
 <script lang="ts" setup>
 import type { SteamerGroupItem } from '#/types/promotion';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
+import { useTabs } from '@vben/hooks';
 
 import {
+  Alert,
   Button,
   Card,
   Checkbox,
@@ -14,14 +16,17 @@ import {
   Divider,
   Form,
   Input,
+  message,
   Radio,
+  Result,
   Select,
   Steps,
   Table,
   Tag,
-  message,
+  Tooltip,
 } from 'ant-design-vue';
 
+import { getProjectConfigApi } from '#/api/core/project';
 import {
   createPromoterApi,
   fetchPromoterDetailApi,
@@ -33,6 +38,7 @@ import {
 } from '#/api/promotion/steamer-group';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
+import { createRequestHash } from '#/utils/crypto';
 import {
   PROMOTER_FUNCTION_MAP,
   PROMOTER_SETTLE_TYPE_MAP,
@@ -42,13 +48,30 @@ defineOptions({ name: 'AddGeneralize' });
 
 const route = useRoute();
 const router = useRouter();
+const { closeCurrentTab } = useTabs();
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
-const canQingLiu = computed(() => checkPermission(12577));
+const canQingLiu = computed(() => checkPermission(12_577));
 const editId = computed(() => String(route.query.id || ''));
 const isEdit = computed(() =>
   Boolean(editId.value && editId.value !== 'undefined'),
+);
+const isRootTeam = computed(() => {
+  const teamInfo = projectConfig.value?.AccountTeamInfo as
+    | undefined
+    | { AgentId?: number; Id?: number };
+  return (
+    teamInfo?.Id !== undefined &&
+    teamInfo.AgentId !== undefined &&
+    Number(teamInfo.Id) === 0 &&
+    Number(teamInfo.AgentId) === 0
+  );
+});
+const canViewPage = computed(() =>
+  isEdit.value
+    ? checkPermission(10_909)
+    : checkPermission(10_913) && isRootTeam.value,
 );
 
 const loading = ref(false);
@@ -66,6 +89,7 @@ const formNote = ref('');
 const formSettleType = ref(1);
 const formSettlePrice = ref('');
 const formSettleRate = ref('');
+const formStatus = ref<number>();
 const formFunctions = ref<string[]>([]);
 const formTeamIds = ref<Array<number | string>>([]);
 const formQingLiu = ref(false);
@@ -93,7 +117,11 @@ const confirmRows = computed(() => [
   },
   {
     content: formTeamIds.value
-      .map((id) => steamerGroups.value.find((g) => g.Id === id)?.TypeName || id)
+      .map(
+        (id) =>
+          steamerGroups.value.find((group) => String(group.Id) === String(id))
+            ?.TypeName || id,
+      )
       .join('、'),
     key: 'team',
     type: '直播分组',
@@ -108,11 +136,34 @@ const confirmRows = computed(() => [
 const isRateSettleType = computed(() =>
   [4, 5, 6, 7].includes(formSettleType.value),
 );
+const groupCheckAll = computed({
+  get: () =>
+    steamerGroups.value.length > 0 &&
+    formTeamIds.value.length === steamerGroups.value.length,
+  set: (checked: boolean) => {
+    if (!canQingLiu.value) return;
+    formTeamIds.value = checked
+      ? steamerGroups.value
+          .map((item) => item.Id)
+          .filter(
+            (id): id is number | string =>
+              id !== undefined && id !== null,
+          )
+      : (defaultSteamerGroupId.value === undefined
+        ? []
+        : [defaultSteamerGroupId.value]);
+  },
+});
+const groupIndeterminate = computed(
+  () =>
+    formTeamIds.value.length > 0 &&
+    formTeamIds.value.length < steamerGroups.value.length,
+);
 
 function getRealAdminType() {
   const parentInfo = projectConfig.value?.ParentInfo as
-    | { AdminType?: number }
-    | undefined;
+    | undefined
+    | { AdminType?: number };
   return parentInfo?.AdminType ?? 0;
 }
 
@@ -129,13 +180,15 @@ function isFunctionDisabled(value: string) {
       .filter(Boolean);
     return !allowed.includes(value);
   } catch {
-    return false;
+    return true;
   }
 }
 
 async function loadSteamerGroups() {
   const result = await fetchSteamerGroupListApi();
-  const items = [...(result.Items || [])];
+  const items = [...(result.Items || [])].filter(
+    (item) => item.Id !== undefined && item.Id !== null,
+  );
   items.sort((a, b) => Number(b.IsDefault) - Number(a.IsDefault));
   steamerGroups.value = items.map((item) => ({
     ...item,
@@ -159,30 +212,41 @@ async function loadDetail() {
     formName.value = detail.Name || '';
     formContact.value = detail.ContactInf || '';
     formNote.value = detail.Note || '';
+    formStatus.value = detail.Status;
     formSettleType.value = detail.SettleType || 1;
-    formSettlePrice.value = detail.SettlePrice
-      ? String(detail.SettlePrice)
-      : '';
+    formSettlePrice.value =
+      detail.SettlePrice === undefined || detail.SettlePrice === null
+        ? ''
+        : String(detail.SettlePrice);
     if ([4, 5, 6, 7].includes(Number(detail.SettleType))) {
-      formSettleRate.value = detail.SettlePrice
-        ? String(detail.SettlePrice)
-        : '';
+      formSettleRate.value =
+        detail.SettlePrice === undefined || detail.SettlePrice === null
+          ? ''
+          : String(detail.SettlePrice);
     }
     const roleData = detail.RoleDataField;
-    if (typeof roleData === 'string' && roleData) {
-      const parsed = JSON.parse(roleData) as { HaveFunction?: string };
-      formFunctions.value = parsed.HaveFunction
-        ? parsed.HaveFunction.split(',').filter(Boolean)
-        : [];
+    if (roleData) {
+      try {
+        const parsed =
+          typeof roleData === 'string'
+            ? (JSON.parse(roleData) as { HaveFunction?: string })
+            : roleData;
+        formFunctions.value = parsed.HaveFunction
+          ? parsed.HaveFunction.split(',').filter(Boolean)
+          : [];
+      } catch {
+        formFunctions.value = [];
+      }
     }
     const directGroup = await fetchSteamerDirectGroupApi({
       AdminId: detail.AdminId ?? detail.Id,
     });
     formQingLiu.value = Boolean(directGroup.CanQingLiu);
     formTeamIds.value =
-      directGroup.Teams?.filter((item) => item.Checked).map(
-        (item) => item.Id!,
-      ) || [];
+      directGroup.Teams?.filter(
+        (item) =>
+          item.Checked && item.Id !== undefined && item.Id !== null,
+      ).map((item) => item.Id!) || [];
   } finally {
     loading.value = false;
   }
@@ -197,22 +261,31 @@ function validateStepOne() {
     message.warning('账号用户名格式不正确');
     return false;
   }
-  if (!isEdit.value) {
-    if (!formPassword.value) {
-      message.warning('请输入密码');
-      return false;
-    }
-    if (!/^[a-z0-9_]{6,20}$/i.test(formPassword.value)) {
-      message.warning('密码格式不正确');
-      return false;
-    }
-    if (formPassword.value !== formConfirmPassword.value) {
+  if (!isEdit.value && !formPassword.value) {
+    message.warning('请输入密码');
+    return false;
+  }
+  if (
+    formPassword.value &&
+    !/^[a-z0-9_]{6,20}$/i.test(formPassword.value)
+  ) {
+    message.warning('密码必须为 6～20 位字母、数字或下划线');
+    return false;
+  }
+  if ((formPassword.value || formConfirmPassword.value) && formPassword.value !== formConfirmPassword.value) {
       message.warning('两次密码不一致');
       return false;
     }
-  }
   if (!formName.value.trim()) {
     message.warning('请输入账号姓名');
+    return false;
+  }
+  if (formName.value.trim().length > 20) {
+    message.warning('账号姓名最多 20 个字符');
+    return false;
+  }
+  if (formNote.value && formNote.value.length > 255) {
+    message.warning('备注最多 255 个字符');
     return false;
   }
   return true;
@@ -220,15 +293,19 @@ function validateStepOne() {
 
 function validateStepTwo() {
   if (isRateSettleType.value) {
-    if (!formSettleRate.value) {
-      message.warning('请输入分成比例');
+    if (
+      !/^([0-9]\d?(\.\d{1,2})?|0\.\d{1,2}|100)$/.test(
+        formSettleRate.value,
+      )
+    ) {
+      message.warning('分成比例须为 0～100，最多两位小数');
       return false;
     }
-  } else if (!formSettlePrice.value) {
-    message.warning('请输入结算单价');
+  } else if (!/^(0|[1-9]\d*)$/.test(formSettlePrice.value)) {
+    message.warning('结算单价须为非负整数');
     return false;
   }
-  if (!formTeamIds.value.length) {
+  if (formTeamIds.value.length === 0) {
     message.warning('请至少选择一个直播分组');
     return false;
   }
@@ -249,13 +326,18 @@ function handlePrev() {
   activeStep.value = Math.max(activeStep.value - 1, 0);
 }
 
+function handleGroupChange(values: Array<boolean | number | string>) {
+  if (values.length > 0 || defaultSteamerGroupId.value === undefined) return;
+  formTeamIds.value = [defaultSteamerGroupId.value];
+  message.info('至少需要保留一个直播分组');
+}
+
 function buildPayload() {
   const payload: Record<string, unknown> = {
     ConfirmPassword: formConfirmPassword.value,
-    ContactInf: formContact.value,
-    Id: isEdit.value ? editId.value : undefined,
-    Name: formName.value,
-    Note: formNote.value,
+    ContactInf: formContact.value.trim(),
+    Name: formName.value.trim(),
+    Note: formNote.value.trim(),
     Password: formPassword.value,
     QingLiu: formQingLiu.value,
     RoleDataField: JSON.stringify({
@@ -263,22 +345,31 @@ function buildPayload() {
     }),
     SettleType: formSettleType.value,
     TeamIds: formTeamIds.value,
-    Username: formUsername.value,
+    Username: formUsername.value.trim(),
+    SettlePrice: isRateSettleType.value
+      ? formSettleRate.value
+      : formSettlePrice.value,
   };
-  if (isRateSettleType.value) {
-    payload.SettlePrice = formSettleRate.value;
+  if (isEdit.value) {
+    payload.Id = editId.value;
+    if (formStatus.value !== undefined) payload.Status = formStatus.value;
   } else {
-    payload.SettlePrice = formSettlePrice.value;
-  }
-  if (!isEdit.value) {
-    payload.Hash = String(Date.now());
+    payload.Hash = createRequestHash();
   }
   return payload;
 }
 
 async function handleSubmit() {
-  if (!validateStepOne() || !validateStepTwo()) {
+  if (!canViewPage.value) {
+    message.error(isEdit.value ? '无编辑推广账号权限' : '无创建渠道推广权限');
+    return;
+  }
+  if (!validateStepOne()) {
     activeStep.value = 0;
+    return;
+  }
+  if (!validateStepTwo()) {
+    activeStep.value = 1;
     return;
   }
   saving.value = true;
@@ -291,32 +382,81 @@ async function handleSubmit() {
       await createPromoterApi(payload);
       message.success('创建成功');
     }
-    router.push({ path: '/generalizeManage/generalizeManageact' });
+    await handleBack();
+    void getProjectConfigApi().catch(() => {
+      message.warning('项目配置刷新失败，请稍后刷新页面');
+    });
   } finally {
     saving.value = false;
   }
 }
 
-function handleBack() {
-  router.push({ path: '/generalizeManage/generalizeManageact' });
+async function handleBack() {
+  await closeCurrentTab();
+  await router.push({ path: '/generalizeManage/generalizeManageact' });
 }
 
+async function loadPage() {
+  if (!canViewPage.value) {
+    return;
+  }
+  const results = await Promise.allSettled([
+    loadSteamerGroups(),
+    loadDetail(),
+  ]);
+  if (results[0]?.status === 'rejected') {
+    message.warning('直播分组加载失败，请稍后重试');
+  }
+  if (results[1]?.status === 'rejected' && isEdit.value) {
+    message.warning('推广账号详情加载失败，请稍后重试');
+  }
+}
+
+function resetForm() {
+  activeStep.value = 0;
+  formUsername.value = '';
+  formPassword.value = '';
+  formConfirmPassword.value = '';
+  formName.value = '';
+  formContact.value = '';
+  formNote.value = '';
+  formSettleType.value = 1;
+  formSettlePrice.value = '';
+  formSettleRate.value = '';
+  formStatus.value = undefined;
+  formFunctions.value = [];
+  formTeamIds.value = [];
+  formQingLiu.value = false;
+  steamerGroups.value = [];
+  defaultSteamerGroupId.value = undefined;
+}
+
+watch(editId, async (current, previous) => {
+  if (current === previous) return;
+  resetForm();
+  await loadPage();
+});
+
+watch(canViewPage, async (allowed, previous) => {
+  if (allowed && !previous) await loadPage();
+});
+
 onMounted(async () => {
-  await loadSteamerGroups();
-  await loadDetail();
+  await loadPage();
 });
 </script>
 
 <template>
   <Page
+    v-if="canViewPage"
     auto-content-height
     :description="
       isEdit ? '推广管理 · 编辑推广账号' : '推广管理 · 创建推广账号'
     "
     :title="isEdit ? '编辑推广账号' : '创建推广账号'"
   >
-    <Card :loading="loading">
-      <Steps :current="activeStep" class="mb-8">
+    <Card :loading="loading" class="promotion-form-card" :bordered="false">
+      <Steps :current="activeStep" class="step-header">
         <Steps.Step title="账号信息" />
         <Steps.Step title="协作配置" />
         <Steps.Step title="信息确认" />
@@ -342,13 +482,18 @@ onMounted(async () => {
             />
           </Form.Item>
           <Form.Item label="账号姓名" required>
-            <Input v-model:value="formName" />
+            <Input v-model:value="formName" :maxlength="20" show-count />
           </Form.Item>
           <Form.Item label="联系方式">
-            <Input v-model:value="formContact" />
+            <Input v-model:value="formContact" :maxlength="255" />
           </Form.Item>
           <Form.Item label="备注">
-            <Input v-model:value="formNote" />
+            <Input.TextArea
+              v-model:value="formNote"
+              :auto-size="{ minRows: 2, maxRows: 5 }"
+              :maxlength="255"
+              show-count
+            />
           </Form.Item>
         </Form>
       </div>
@@ -376,6 +521,27 @@ onMounted(async () => {
                 suffix="元/个"
               />
             </div>
+            <Alert
+              v-if="isRateSettleType && formSettleRate"
+              class="mt-3"
+              show-icon
+              type="info"
+            >
+              <template #message>
+                当前合作模式按
+                <b>{{ formSettleRate }}%</b>
+                {{
+                  formSettleType === 4
+                    ? '税收'
+                    : formSettleType === 5
+                      ? '利润'
+                      : formSettleType === 6
+                        ? '杀数'
+                        : '流水'
+                }}
+                分成结算
+              </template>
+            </Alert>
           </Form.Item>
           <Form.Item label="功能权限">
             <CheckboxGroup v-model:value="formFunctions">
@@ -389,13 +555,41 @@ onMounted(async () => {
               </Checkbox>
             </CheckboxGroup>
           </Form.Item>
-          <Form.Item label="直播分组" required>
-            <CheckboxGroup v-model:value="formTeamIds">
-              <div class="flex flex-col gap-2">
+          <Form.Item required>
+            <template #label>
+              <span>
+                直播分组
+                <Tooltip
+                  title="设置该推广账号可查看和管理的直播分组；无分组权限时保留原有选择。"
+                >
+                  <span class="group-help">?</span>
+                </Tooltip>
+              </span>
+            </template>
+            <Alert
+              v-if="steamerGroups.length === 0"
+              class="mb-3"
+              message="暂无可用直播分组，暂时无法提交"
+              show-icon
+              type="warning"
+            />
+            <Checkbox
+              v-model:checked="groupCheckAll"
+              :disabled="!canQingLiu"
+              :indeterminate="groupIndeterminate"
+              class="mb-3"
+            >
+              全选
+            </Checkbox>
+            <CheckboxGroup
+              v-model:value="formTeamIds"
+              @change="handleGroupChange"
+            >
+              <div class="group-box">
                 <Checkbox
                   v-for="item in steamerGroups"
                   :key="String(item.Id)"
-                  :disabled="!canQingLiu && !item.IsDefault"
+                  :disabled="!canQingLiu"
                   :value="item.Id"
                 >
                   {{ item.TypeName }}
@@ -404,7 +598,7 @@ onMounted(async () => {
             </CheckboxGroup>
           </Form.Item>
           <Form.Item label="清流房间">
-            <Radio.Group v-model:value="formQingLiu" :disabled="!canQingLiu">
+            <Radio.Group v-model:value="formQingLiu">
               <Radio :value="true">是</Radio>
               <Radio :value="false">否</Radio>
             </Radio.Group>
@@ -439,12 +633,30 @@ onMounted(async () => {
         >
           <template #bodyCell="{ column, record }">
             <template
-              v-if="column.key === 'content' && record.key === 'function'"
+              v-if="
+                column.key === 'content' &&
+                ['function', 'team'].includes(record.key)
+              "
             >
-              <Tag v-for="item in formFunctions" :key="item" class="mb-1">
-                {{ PROMOTER_FUNCTION_MAP[item] || item }}
+              <Tag
+                v-for="item in String(record.content)
+                  .split('、')
+                  .filter(Boolean)"
+                :key="item"
+                class="mb-1 mr-1"
+                color="green"
+              >
+                {{ item }}
               </Tag>
             </template>
+            <Tag
+              v-else-if="
+                column.key === 'content' && record.key === 'qingliu'
+              "
+              :color="formQingLiu ? 'green' : 'default'"
+            >
+              {{ record.content }}
+            </Tag>
           </template>
         </Table>
       </div>
@@ -461,4 +673,57 @@ onMounted(async () => {
       </div>
     </Card>
   </Page>
+  <Result
+    v-else
+    status="403"
+    sub-title="无创建或编辑推广账号权限"
+    title="403"
+  />
 </template>
+
+<style scoped>
+.promotion-form-card {
+  max-width: 1080px;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
+}
+
+.step-header {
+  padding: 18px 24px 28px;
+  margin-bottom: 24px;
+  background: hsl(var(--muted) / 40%);
+  border-radius: 10px;
+}
+
+.group-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 260px;
+  padding: 12px;
+  overflow-y: auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+}
+
+.group-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  font-size: 11px;
+  color: #fff;
+  cursor: help;
+  background: #8c8c8c;
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .group-box {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

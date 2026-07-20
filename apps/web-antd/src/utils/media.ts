@@ -13,6 +13,10 @@ export function getUploadMd5ImageUrl() {
   return import.meta.env.VITE_UPLOAD_MD5_IMG || '/api/resource/uploadimagemd5';
 }
 
+export function getUploadFileUrl() {
+  return import.meta.env.VITE_UPLOAD_URL || '/api/uploadfile';
+}
+
 export function splitImagePaths(value?: string) {
   if (!value) {
     return [];

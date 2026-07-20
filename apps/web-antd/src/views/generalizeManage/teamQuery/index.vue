@@ -7,17 +7,20 @@ import { computed, onMounted, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 
 import {
+  Alert,
   Breadcrumb,
   Button,
+  Card,
   DatePicker,
   Input,
+  message,
   Result,
   Statistic,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchTeamQueryListApi } from '#/api/promotion/team-query';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchTeamQueryListApi } from '#/api/promotion/team-query';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   formatCommissionRate,
@@ -29,10 +32,10 @@ defineOptions({ name: 'TeamQuery' });
 
 const { adminInfo, checkPermission, projectConfig } = useCloudPermission();
 
-const canViewPage = computed(() => checkPermission(10867));
+const canViewPage = computed(() => checkPermission(10_867));
 
-const defaultBegin = dayjs().subtract(31, 'day').startOf('day');
-const defaultEnd = dayjs().subtract(1, 'day').endOf('day');
+const defaultBegin = dayjs().subtract(30, 'day').startOf('day');
+const defaultEnd = dayjs().endOf('day');
 
 const filterAdminUsername = ref('');
 const filterAdminId = ref<number | string>('');
@@ -42,19 +45,24 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 ]);
 const breadcrumbItems = ref<Array<{ id: number | string; name: string }>>([]);
 const summary = ref(sumTeamQueryStats());
+let latestRequestId = 0;
+let latestResult: { items: TeamQueryItem[]; total: number } = {
+  items: [],
+  total: 0,
+};
 
 const canDrillDown = computed(() => {
   const accountInfo = projectConfig.value?.AccountInfo as
-    | { AdminId?: number | string }
-    | undefined;
+    | undefined
+    | { AdminId?: number | string };
   const agentAccount = projectConfig.value?.AgentAccount as
-    | { Id?: number | string }
-    | undefined;
+    | undefined
+    | { Id?: number | string };
   return String(accountInfo?.AdminId) === String(agentAccount?.Id);
 });
 
 function getAdminName() {
-  const admin = adminInfo.value?.Admin as { Username?: string } | undefined;
+  const admin = adminInfo.value?.Admin as undefined | { Username?: string };
   return admin?.Username || String(adminInfo.value?.Account || '我的账号');
 }
 
@@ -63,23 +71,51 @@ function resetBreadcrumb() {
   filterAdminId.value = '';
 }
 
-function getQueryParams() {
+function getQueryParams(page?: { currentPage?: number; pageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     AdminId: filterAdminId.value,
     AdminUsername: filterAdminUsername.value,
-    BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
-    EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
-    Page: 1,
-    PageSize: 200,
+    BeginTime: begin ? begin.unix() : defaultBegin.unix(),
+    EndTime: end ? end.unix() : defaultEnd.unix(),
+    Page: page?.currentPage || 1,
+    PageSize: page?.pageSize || 20,
+    Sort: '',
   };
 }
 
-async function loadData() {
-  const result = await fetchTeamQueryListApi(getQueryParams());
-  const items = result.Items || [];
-  summary.value = sumTeamQueryStats(items);
-  return items;
+async function loadData(page?: { currentPage?: number; pageSize?: number }) {
+  const requestId = ++latestRequestId;
+  const [begin, end] = filterDateRange.value || [];
+  if (!begin || !end) {
+    message.warning('请选择统计时间');
+    latestResult = { items: [], total: 0 };
+    summary.value = sumTeamQueryStats();
+    return { items: [], total: 0 };
+  }
+  if (end.diff(begin, 'day') > 30) {
+    message.warning('统计时间最多选择 31 个自然日');
+    latestResult = { items: [], total: 0 };
+    summary.value = sumTeamQueryStats();
+    return { items: [], total: 0 };
+  }
+  try {
+    const result = await fetchTeamQueryListApi(getQueryParams(page));
+    if (requestId !== latestRequestId) return latestResult;
+    const items = result.Items;
+    latestResult = {
+      items,
+      total: Number(result.Pagination?.MaxCount || items.length),
+    };
+    summary.value = sumTeamQueryStats(items);
+    return latestResult;
+  } catch (error) {
+    if (requestId === latestRequestId) {
+      latestResult = { items: [], total: 0 };
+      summary.value = sumTeamQueryStats();
+    }
+    throw error;
+  }
 }
 
 const gridOptions: VxeTableGridOptions<TeamQueryItem> = {
@@ -155,13 +191,14 @@ const gridOptions: VxeTableGridOptions<TeamQueryItem> = {
     },
   ],
   height: 'auto',
-  pagerConfig: { enabled: false },
+  pagerConfig: {
+    currentPage: 1,
+    pageSize: 20,
+    pageSizes: [10, 20, 50, 100],
+  },
   proxyConfig: {
     ajax: {
-      query: async () => {
-        const items = await loadData();
-        return { items, total: items.length };
-      },
+      query: async ({ page }) => loadData(page),
     },
   },
 };
@@ -169,6 +206,13 @@ const gridOptions: VxeTableGridOptions<TeamQueryItem> = {
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 function handleSearch() {
+  resetBreadcrumb();
+  gridApi.reload();
+}
+
+function handleReset() {
+  filterAdminUsername.value = '';
+  filterDateRange.value = [defaultBegin, defaultEnd];
   resetBreadcrumb();
   gridApi.reload();
 }
@@ -210,69 +254,142 @@ onMounted(() => {
     description="推广管理 · 分销列表"
     title="分销列表"
   >
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterAdminUsername"
-        allow-clear
-        placeholder="推广账号"
-        style="width: 240px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>推广账号</template>
-      </Input>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">统计时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+    <Card class="team-query-card" :bordered="false">
+      <div class="query-panel">
+        <Input
+          v-model:value="filterAdminUsername"
+          allow-clear
+          placeholder="请输入推广账号"
+          style="width: 260px"
+          @keydown.space.prevent
+          @press-enter="handleSearch"
+        >
+          <template #addonBefore>推广账号</template>
+        </Input>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">统计时间</span>
+          <DatePicker.RangePicker
+            v-model:value="filterDateRange"
+            format="YYYY-MM-DD HH:mm:ss"
+            show-time
+          />
+        </div>
+        <Button type="primary" @click="handleSearch">查询</Button>
+        <Button @click="handleReset">重置</Button>
       </div>
-      <Button type="primary" @click="handleSearch">查询</Button>
-    </div>
 
-    <div class="mb-4 rounded bg-gray-50 p-3">
-      <div class="mb-2 text-sm text-gray-500">层级关系</div>
-      <Breadcrumb>
-        <Breadcrumb.Item
-          v-for="(item, index) in breadcrumbItems"
-          :key="`${item.id}-${index}`"
-        >
-          <a @click.prevent="handleBreadcrumbClick(index)">{{ item.name }}</a>
-        </Breadcrumb.Item>
-      </Breadcrumb>
-    </div>
+      <div class="hierarchy-panel">
+        <div class="mb-2 text-sm text-gray-500">层级关系</div>
+        <Breadcrumb>
+          <Breadcrumb.Item
+            v-for="(item, index) in breadcrumbItems"
+            :key="`${item.id}-${index}`"
+          >
+            <a @click.prevent="handleBreadcrumbClick(index)">{{ item.name }}</a>
+          </Breadcrumb.Item>
+        </Breadcrumb>
+      </div>
 
-    <div class="mb-4 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-      <Statistic title="注册人数总计" :value="summary.reg" />
-      <Statistic title="充值人数总计" :value="summary.pay" />
-      <Statistic
-        title="充值金额总计"
-        :value="formatTeamQueryMoney(summary.payMoney)"
-      />
-      <Statistic
-        title="流水金额总计"
-        :value="formatTeamQueryMoney(summary.betMoney)"
-      />
-      <Statistic
-        title="预计税收总计"
-        :value="formatTeamQueryMoney(summary.taxMoney)"
-      />
-      <Statistic
-        title="预计收入总计"
-        :value="formatTeamQueryMoney(summary.incomeMoney)"
-      />
-    </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <Statistic title="注册人数总计" :value="summary.reg" />
+        </div>
+        <div class="summary-item">
+          <Statistic title="充值人数总计" :value="summary.pay" />
+        </div>
+        <div class="summary-item">
+          <Statistic
+            title="充值金额总计"
+            :value="formatTeamQueryMoney(summary.payMoney)"
+          />
+        </div>
+        <div class="summary-item">
+          <Statistic
+            title="流水金额总计"
+            :value="formatTeamQueryMoney(summary.betMoney)"
+          />
+        </div>
+        <div class="summary-item">
+          <Statistic
+            title="预计税收总计"
+            :value="formatTeamQueryMoney(summary.taxMoney)"
+          />
+        </div>
+        <div class="summary-item">
+          <Statistic
+            title="预计收入总计"
+            :value="formatTeamQueryMoney(summary.incomeMoney)"
+          />
+        </div>
+      </div>
 
-    <Grid>
-      <template #adminUsername="{ row }">
-        <Button
-          v-if="canDrillDown"
-          size="small"
-          type="link"
-          @click="handleDrillDown(row)"
-        >
-          {{ row.AdminUsername }}
-        </Button>
-        <span v-else>{{ row.AdminUsername }}</span>
-      </template>
-    </Grid>
+      <div class="mb-3 text-base font-medium">下级列表</div>
+      <Alert
+        class="mb-3"
+        message="税收：单人游戏按流水的 1.5%，多人游戏按流水的 2.5%；收入按税收与分成比例计算。"
+        show-icon
+        type="info"
+      />
+      <Grid>
+        <template #adminUsername="{ row }">
+          <Button
+            v-if="canDrillDown"
+            size="small"
+            type="link"
+            @click="handleDrillDown(row)"
+          >
+            {{ row.AdminUsername }}
+          </Button>
+          <span v-else>{{ row.AdminUsername }}</span>
+        </template>
+      </Grid>
+    </Card>
   </Page>
   <Result v-else status="403" sub-title="无分销列表查看权限" title="403" />
 </template>
+
+<style scoped>
+.team-query-card {
+  min-height: calc(100vh - 180px);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
+}
+
+.query-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  margin-bottom: 16px;
+  background: hsl(var(--muted) / 35%);
+  border-radius: 10px;
+}
+
+.hierarchy-panel {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: hsl(var(--muted) / 25%);
+  border-left: 3px solid hsl(var(--primary));
+  border-radius: 8px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.summary-item {
+  padding: 14px;
+  background: hsl(var(--muted) / 25%);
+  border-radius: 8px;
+}
+
+@media (max-width: 1200px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+}
+</style>

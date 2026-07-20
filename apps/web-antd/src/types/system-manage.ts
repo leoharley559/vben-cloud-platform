@@ -1,6 +1,6 @@
 export interface AdminListQuery {
-  BeginTime?: string;
-  EndTime?: string;
+  BeginTime?: number | string;
+  EndTime?: number | string;
   Keyword?: string;
   Page: number;
   PageSize: number;

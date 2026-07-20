@@ -2,18 +2,35 @@ import { requestClient } from '#/api/request';
 import type { NetcashListQuery, NetcashListResult } from '#/types/netcash';
 import { trimSpace } from '#/utils/string';
 
-export function fetchTeamListApi(query: NetcashListQuery) {
-  return requestClient.get<NetcashListResult>(
+function normalizeList(result?: NetcashListResult | null) {
+  return {
+    ...result,
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    Pagination: result?.Pagination || {},
+  };
+}
+
+export async function fetchTeamListApi(query: NetcashListQuery) {
+  const result = await requestClient.get<NetcashListResult | null>(
     '/backend/agentnetcashteam/list',
     { params: trimSpace(query) },
   );
+  return normalizeList(result);
 }
 
-export function fetchTeamRecordListApi(query: NetcashListQuery) {
-  return requestClient.get<NetcashListResult>(
+export async function fetchTeamRecordListApi(query: NetcashListQuery) {
+  const result = await requestClient.get<NetcashListResult | null>(
     '/backend/agentnetcashteam/record',
     { params: query },
   );
+  return normalizeList(result);
+}
+
+export async function fetchTeamPrincipalListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<NetcashListResult | null>('/backend/agentnetcash/list', {
+    params: trimSpace(query),
+  });
+  return normalizeList(result);
 }
 
 export function createTeamApi(data: Record<string, unknown>) {
@@ -35,11 +52,12 @@ export function addTeamDeputyApi(data: {
   return requestClient.post('/backend/agentnetcashteamdeputy/', data);
 }
 
-export function fetchTeamDeputyListApi(query: Record<string, unknown>) {
-  return requestClient.get<NetcashListResult>(
+export async function fetchTeamDeputyListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<NetcashListResult | null>(
     '/backend/agentnetcashteamdeputy/list',
     { params: query },
   );
+  return normalizeList(result);
 }
 
 export function removeTeamDeputyApi(adminId: number | string) {

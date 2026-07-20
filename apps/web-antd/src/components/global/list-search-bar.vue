@@ -1,7 +1,9 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import type { Dayjs } from 'dayjs';
 
-import { Button, Input, Select, Space } from 'ant-design-vue';
+import { ref, watch } from 'vue';
+
+import { Button, DatePicker, Input, Select, Space } from 'ant-design-vue';
 
 export interface ListSearchOption {
   label: string;
@@ -9,9 +11,11 @@ export interface ListSearchOption {
 }
 
 export interface ListSearchParams {
+  BeginTime: number | string;
+  EndTime: number | string;
+  Keyword: string;
   filterKey: string;
   filterValue: string;
-  Keyword: string;
 }
 
 defineOptions({ name: 'ListSearchBar' });
@@ -19,20 +23,28 @@ defineOptions({ name: 'ListSearchBar' });
 const props = withDefaults(
   defineProps<{
     addText?: string;
+    dateLabel?: string;
     keywordPlaceholder?: string;
     loading?: boolean;
     options?: ListSearchOption[];
     showAdd?: boolean;
+    /** 对齐旧站 SearchTypeTwo show-date-time，默认 true */
+    showDateTime?: boolean;
+    /** datetimerange | daterange */
+    dateTimeType?: 'daterange' | 'datetimerange';
   }>(),
   {
     addText: '新增',
-    keywordPlaceholder: '请输入关键词',
+    dateLabel: '时间',
+    dateTimeType: 'datetimerange',
+    keywordPlaceholder: '请输入',
     loading: false,
     options: () => [
       { label: '全部', value: 'All' },
       { label: '账号', value: 'Username' },
     ],
     showAdd: false,
+    showDateTime: true,
   },
 );
 
@@ -44,13 +56,35 @@ const emit = defineEmits<{
 
 const filterKey = ref(props.options[0]?.value || 'All');
 const filterValue = ref('');
+const dateRange = ref<[Dayjs, Dayjs] | undefined>();
+
+watch(
+  () => props.options,
+  (options) => {
+    if (!options.some((item) => item.value === filterKey.value)) {
+      filterKey.value = options[0]?.value || 'All';
+    }
+  },
+  { deep: true },
+);
+
+function toUnix(value: Dayjs | undefined, edge: 'end' | 'start') {
+  if (!value) return '';
+  if (props.dateTimeType === 'daterange') {
+    return edge === 'start' ? value.startOf('day').unix() : value.endOf('day').unix();
+  }
+  return value.unix();
+}
 
 function buildParams(): ListSearchParams {
   const value = filterValue.value.trim();
+  const [begin, end] = dateRange.value || [];
   return {
+    BeginTime: toUnix(begin, 'start'),
+    EndTime: toUnix(end, 'end'),
+    Keyword: value,
     filterKey: filterKey.value,
     filterValue: value,
-    Keyword: value,
   };
 }
 
@@ -61,13 +95,20 @@ function handleSearch() {
 function handleReset() {
   filterKey.value = props.options[0]?.value || 'All';
   filterValue.value = '';
+  dateRange.value = undefined;
   emit('reset');
   emit('search', buildParams());
 }
+
+defineExpose({
+  buildParams,
+  reset: handleReset,
+  search: handleSearch,
+});
 </script>
 
 <template>
-  <div class="mb-4 flex flex-wrap items-center gap-2">
+  <div class="mb-3 flex flex-wrap items-center gap-2">
     <Space.Compact>
       <Select
         v-model:value="filterKey"
@@ -78,15 +119,25 @@ function handleReset() {
         v-model:value="filterValue"
         allow-clear
         :placeholder="keywordPlaceholder"
-        style="width: 240px"
+        style="width: 220px"
         @press-enter="handleSearch"
       />
     </Space.Compact>
 
+    <div v-if="showDateTime" class="flex items-center gap-2">
+      <span class="whitespace-nowrap text-sm text-gray-500">{{ dateLabel }}</span>
+      <DatePicker.RangePicker
+        v-model:value="dateRange"
+        allow-clear
+        :show-time="dateTimeType === 'datetimerange'"
+        class="min-w-[360px]"
+      />
+    </div>
+
     <Button :loading="loading" type="primary" @click="handleSearch">
       查询
     </Button>
-    <Button @click="handleReset">重置</Button>
+    <Button :disabled="loading" @click="handleReset">重置</Button>
     <Button v-if="showAdd" type="primary" @click="emit('add')">
       {{ addText }}
     </Button>

@@ -4,11 +4,11 @@ import type { DropChangeItem } from '#/types/promotion';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Result, message } from 'ant-design-vue';
+import { Button, message, Result } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchDropChangeListApi } from '#/api/promotion/promote-data';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchDropChangeListApi } from '#/api/promotion/promote-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { exportRowsToCsv } from '#/utils/export-csv';
 
@@ -17,7 +17,7 @@ import PromoteDataSearch from './promote-data-search.vue';
 defineOptions({ name: 'DropChangeList' });
 
 const { checkPermission } = useCloudPermission();
-const canViewPage = computed(() => checkPermission(10887));
+const canViewPage = computed(() => checkPermission(10_887));
 
 const searchRef = ref<InstanceType<typeof PromoteDataSearch>>();
 const exportLoading = ref(false);

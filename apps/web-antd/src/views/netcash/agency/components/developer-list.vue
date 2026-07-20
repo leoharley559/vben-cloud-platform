@@ -1,22 +1,40 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, Input } from 'ant-design-vue';
+import { Button, DatePicker, Form, Input, message, Modal, Space } from 'ant-design-vue';
+import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { fetchDeveloperNamesListApi } from '#/api/netcash/agency';
-import { formatNetcashDateTime } from '#/utils/netcash';
+import {
+  createDeveloperNameApi,
+  deleteDeveloperNameApi,
+  fetchDeveloperNamesListApi,
+  updateDeveloperNameApi,
+} from '#/api/netcash/agency';
+import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 defineOptions({ name: 'DeveloperList' });
 
+const { checkPermission } = useCloudPermission();
+const canView = computed(() => checkPermission(12_181));
+const canCreate = computed(() => checkPermission(12_182));
+const canEdit = computed(() => checkPermission(12_183));
+const canDelete = computed(() => checkPermission(12_184));
 const developerName = ref('');
+const dateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
+const modalOpen = ref(false);
+const submitting = ref(false);
+const mode = ref<'create' | 'edit'>('create');
+const form = reactive({ DeveloperName: '', Id: '' as number | string, Remark: '' });
 
-function getQueryParams(page: { currentPage: number; pageSize: number }) {
+function queryParams(page: { currentPage: number; pageSize: number }) {
   return {
+    BeginTime: dateRange.value?.[0]?.startOf('day').unix() || 0,
     CurrPage: page.currentPage,
     DeveloperName: developerName.value,
+    EndTime: dateRange.value?.[1]?.endOf('day').unix() || 0,
     Page: page.currentPage,
     PageSize: page.pageSize,
   };
@@ -24,52 +42,108 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
 
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
-    { field: 'DeveloperName', minWidth: 160, title: '发展人名称' },
-    { field: 'Remark', minWidth: 200, title: '备注' },
-    {
-      field: 'CreateTime',
-      formatter: ({ cellValue }) => formatNetcashDateTime(cellValue as string),
-      minWidth: 180,
-      title: '创建时间',
-    },
+    { type: 'seq', width: 60, title: '序号' },
+    { field: 'DeveloperName', minWidth: 180, title: '发展人名称' },
+    { field: 'Remark', minWidth: 220, title: '备注' },
+    { field: 'actions', fixed: 'right', minWidth: 150, slots: { default: 'actions' }, title: '操作' },
   ],
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchDeveloperNamesListApi(
-          getQueryParams(page) as never,
-        );
-        const items = result.Items || [];
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        const result = await fetchDeveloperNamesListApi(queryParams(page));
+        const items = result?.Items || [];
+        return { items, total: Number(result?.Pagination?.MaxCount || items.length) };
       },
     },
   },
 };
-
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
-onMounted(() => {
+function openCreate() {
+  mode.value = 'create';
+  Object.assign(form, { DeveloperName: '', Id: '', Remark: '' });
+  modalOpen.value = true;
+}
+function openEdit(row: Record<string, unknown>) {
+  mode.value = 'edit';
+  Object.assign(form, {
+    DeveloperName: String(row.DeveloperName || ''),
+    Id: row.Id as number | string,
+    Remark: String(row.Remark || ''),
+  });
+  modalOpen.value = true;
+}
+async function submit() {
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(form.DeveloperName)) {
+    message.warning('发展人名称仅支持 3-20 位英文、数字或下划线');
+    return;
+  }
+  submitting.value = true;
+  try {
+    const payload = { DeveloperName: form.DeveloperName, Id: form.Id, Remark: form.Remark };
+    await (mode.value === 'create'
+      ? createDeveloperNameApi(payload)
+      : updateDeveloperNameApi(payload));
+    message.success('操作成功');
+    modalOpen.value = false;
+    gridApi.reload();
+  } finally {
+    submitting.value = false;
+  }
+}
+function remove(row: Record<string, unknown>) {
+  Modal.confirm({
+    content: `确认删除发展人「${row.DeveloperName || ''}」？`,
+    okType: 'danger',
+    title: '删除发展人',
+    onOk: async () => {
+      await deleteDeveloperNameApi({ Id: row.Id as number | string });
+      message.success('删除成功');
+      gridApi.reload();
+    },
+  });
+}
+function reset() {
+  developerName.value = '';
+  dateRange.value = undefined;
   gridApi.reload();
-});
+}
+onMounted(() => canView.value && gridApi.reload());
 </script>
 
 <template>
-  <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="developerName"
-        allow-clear
-        placeholder="发展人名称"
-        style="width: 220px"
-      />
+  <div v-if="canView">
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+      <Input v-model:value="developerName" allow-clear placeholder="发展人名称" style="width: 220px" />
+      <DatePicker.RangePicker v-model:value="dateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <span class="text-xs text-gray-400"> 新建/编辑发展人待下一迭代迁移 </span>
+      <Button @click="reset">重置</Button>
+      <Button v-if="canCreate" type="primary" @click="openCreate">新增发展人</Button>
     </div>
-    <Grid />
+    <Grid>
+      <template #actions="{ row }">
+        <Space>
+          <Button v-if="canEdit" type="link" size="small" @click="openEdit(row)">编辑</Button>
+          <Button v-if="canDelete" danger type="link" size="small" @click="remove(row)">删除</Button>
+        </Space>
+      </template>
+    </Grid>
+    <Modal
+      v-model:open="modalOpen"
+      :confirm-loading="submitting"
+      :title="mode === 'create' ? '新增发展人' : '编辑发展人'"
+      @ok="submit"
+    >
+      <Form layout="vertical">
+        <Form.Item label="发展人名称" required>
+          <Input v-model:value="form.DeveloperName" :maxlength="20" />
+        </Form.Item>
+        <Form.Item label="备注">
+          <Input.TextArea v-model:value="form.Remark" :maxlength="200" :rows="3" />
+        </Form.Item>
+      </Form>
+    </Modal>
   </div>
 </template>

@@ -46,6 +46,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 defineOptions({ name: 'ChannelBatchModal' });
 
 const props = defineProps<{
+  dataFlag?: 0 | 1;
   open: boolean;
   rows: ChannelRow[];
 }>();
@@ -468,6 +469,7 @@ function buildPayload(): ChannelBatchPayload {
   const payload: Record<string, unknown> = {
     ActionType: actionType.value,
     Ids: props.rows.map((row) => row.Id).join(','),
+    ...(props.dataFlag === undefined ? {} : { DataFlag: props.dataFlag }),
   };
   const promoterAdminId =
     props.rows[0]?.PromoterAdminId ?? props.rows[0]?.AdminId;

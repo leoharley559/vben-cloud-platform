@@ -5,8 +5,8 @@ export const AGENCY_STATUS_MAP: Record<number, string> = {
 
 export const AGENCY_TYPE_MAP: Record<number, string> = {
   1: '普通代理',
-  2: '信用代理',
-  3: '虚拟代理',
+  2: '正式代理',
+  3: '测试代理',
 };
 
 export const AGENCY_ACCOUNT_TYPE_MAP: Record<number, string> = {

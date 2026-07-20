@@ -43,8 +43,11 @@ export interface ChannelMoreItems {
 export interface ChannelListQuery {
   ChannelId?: '' | ChannelId;
   ChannelName?: string;
+  ChannelType?: number;
+  DataSearchType?: number;
   InvitationCode?: string;
   IsHidden?: number | string;
+  IsHiddenAgent?: number | string;
   Keyword?: string;
   NetCashDomain?: string;
   NetCashH5Domain?: string;
@@ -66,6 +69,7 @@ export interface ChannelRow {
   AppPackageConfigId?: ChannelId;
   ChannelId?: ChannelId;
   ChannelName?: string;
+  CreateTime?: number | string;
   DefaultTagSelected?: number;
   DefaultTagVenueSetting?: DefaultTagVenueSetting;
   Domain?: string;
@@ -218,6 +222,7 @@ export interface ChannelRepackQuery {
 export interface ChannelPackageOption {
   Id?: ChannelId;
   PackageAlias?: string;
+  PackageId?: ChannelId;
   PackageName?: string;
   PackageType?: number;
   [key: string]: unknown;

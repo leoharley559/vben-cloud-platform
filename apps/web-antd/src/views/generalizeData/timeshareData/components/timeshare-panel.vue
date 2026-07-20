@@ -1,20 +1,22 @@
 <script lang="ts" setup>
 import type { EchartsUIType } from '@vben/plugins/echarts';
+
 import type { TimeshareHourItem } from '#/types/promotion';
 
 import { computed, ref, watch } from 'vue';
 
 import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
 
-import { Table } from 'ant-design-vue';
+import { Empty, Table } from 'ant-design-vue';
 
+import { antTableScrollY } from '#/utils/table-height';
 import {
   buildTimeshareChart,
   buildTimeshareTable,
+  TIMESHARE_METRIC_MAP,
   type TimeshareChartType,
   type TimeshareMetricKey,
 } from '#/utils/timeshare-data';
-import { antTableScrollY } from '#/utils/table-height';
 
 const props = defineProps<{
   chartType: TimeshareChartType;
@@ -24,6 +26,7 @@ const props = defineProps<{
 
 const chartRef = ref<EchartsUIType>();
 const { renderEcharts } = useEcharts(chartRef);
+const sharedLegendSelected: Record<string, boolean> = {};
 
 const tableData = computed(() => buildTimeshareTable(props.data, props.metric));
 
@@ -54,12 +57,18 @@ const tableColumns = computed(() => {
   return columns;
 });
 
-function renderChart() {
-  if (props.chartType === 'table' || !props.data.length) {
+async function renderChart() {
+  if (props.chartType === 'table' || props.data.length === 0) {
     return;
   }
   const chart = buildTimeshareChart(props.data, props.metric, props.chartType);
-  renderEcharts({
+  const selected = Object.fromEntries(
+    chart.legend.map((day, index) => [
+      day,
+      sharedLegendSelected[day] ?? index === 0,
+    ]),
+  );
+  const instance = await renderEcharts({
     grid: {
       bottom: 20,
       containLabel: true,
@@ -69,19 +78,34 @@ function renderChart() {
     },
     legend: {
       data: chart.legend,
+      selected,
       top: 0,
     },
     series: chart.series,
-    tooltip: { trigger: 'axis' },
+    title: {
+      left: 'center',
+      text: TIMESHARE_METRIC_MAP[props.metric].label,
+      top: 24,
+    },
+    tooltip: { axisPointer: { type: 'cross' }, trigger: 'axis' },
     xAxis: {
       data: chart.xAxis,
       type: 'category',
     },
     yAxis: {
+      minInterval: 1,
       splitNumber: 4,
       type: 'value',
     },
   });
+  instance?.off('legendselectchanged');
+  instance?.on(
+    'legendselectchanged',
+    (event: unknown) => {
+      const payload = event as { selected?: Record<string, boolean> };
+      Object.assign(sharedLegendSelected, payload.selected || {});
+    },
+  );
 }
 
 watch(
@@ -94,7 +118,8 @@ watch(
 </script>
 
 <template>
-  <div v-if="chartType === 'table'" class="overflow-auto">
+  <Empty v-if="data.length === 0" class="py-24" description="暂无时段数据" />
+  <div v-else-if="chartType === 'table'" class="overflow-auto">
     <Table
       bordered
       :columns="tableColumns"

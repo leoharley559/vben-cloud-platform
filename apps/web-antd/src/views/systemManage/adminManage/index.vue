@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { VbenFormProps } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type {
   AdminDialogMode,
@@ -8,12 +7,11 @@ import type {
   CloudRoleOption,
 } from '#/types/system-manage';
 
-import { computed, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
 import {
-  Button,
   Dropdown,
   Menu,
   message,
@@ -23,6 +21,7 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { getProjectConfigApi } from '#/api';
 import {
   createAdminApi,
   deleteAdminApi,
@@ -30,11 +29,12 @@ import {
   fetchAdminListApi,
   updateAdminApi,
 } from '#/api/systemManage/admin';
-import { getProjectConfigApi } from '#/api';
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import ListSearchBar from '#/components/global/list-search-bar.vue';
+import type { ListSearchParams } from '#/components/global/list-search-bar.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { ADMIN_MANAGE_SECURITY_PAGE_ID } from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   parseAdminDetail,
   serializeAdminPayload,
@@ -48,23 +48,38 @@ const { adminInfo, checkPermission } = useCloudPermission();
 
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const adminFormModalRef = ref<InstanceType<typeof AdminFormModal>>();
+const searchLoading = ref(false);
 
 const pendingMode = ref<AdminDialogMode>('create');
 const pendingForm = ref<AdminFormModel | null>(null);
 const pendingDeleteId = ref<number>();
 
 const canViewList = computed(
-  () => checkPermission(10018) || checkPermission(10019),
+  () => checkPermission(10_018) || checkPermission(10_019),
 );
-const canViewTable = computed(() => checkPermission(10018));
-const canAdd = computed(() => checkPermission(10019));
-const canEdit = computed(() => checkPermission(10020));
-const canDelete = computed(() => checkPermission(10021));
-const canSwitchStatus = computed(() => checkPermission(10022));
+const canViewTable = computed(() => checkPermission(10_018));
+const canAdd = computed(() => checkPermission(10_019));
+const canEdit = computed(() => checkPermission(10_020));
+const canDelete = computed(() => checkPermission(10_021));
+const canSwitchStatus = computed(() => checkPermission(10_022));
 
 const roleOptions = computed<CloudRoleOption[]>(() => {
   const list = adminInfo.value?.CRole;
   return Array.isArray(list) ? list : [];
+});
+
+/** 对齐旧站 SearchTypeTwo：全部 / 账户账号 → Keyword */
+const searchOptions = [
+  { label: '全部', value: 'All' },
+  { label: '账户账号', value: 'Username' },
+];
+
+const listQuery = reactive({
+  BeginTime: '' as number | string,
+  EndTime: '' as number | string,
+  Keyword: '',
+  Sort: '',
+  Status: '' as number | string,
 });
 
 function formatRoleNames(role?: string) {
@@ -99,50 +114,18 @@ function statusText(status?: number) {
   return status === 1 ? '启用' : '停用';
 }
 
-const formOptions: VbenFormProps = {
-  collapsed: false,
-  commonConfig: {
-    componentProps: {
-      class: 'w-full',
-    },
-  },
-  schema: [
-    {
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: '账号 / 关键词',
-      },
-      fieldName: 'Keyword',
-      label: '关键词',
-    },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [
-          { label: '全部', value: '' },
-          { label: '启用', value: '1' },
-          { label: '停用', value: '2' },
-        ],
-        placeholder: '状态',
-      },
-      fieldName: 'Status',
-      label: '状态',
-    },
-  ],
-  showCollapseButton: false,
-  submitOnChange: true,
-  wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-};
-
 const gridOptions: VxeTableGridOptions<AdminListItem> = {
   columns: [
     {
       field: 'Status',
+      filters: [
+        { label: '启用', value: 1 },
+        { label: '停用', value: 2 },
+      ],
+      filterMultiple: true,
       slots: { default: 'status' },
       title: '状态',
-      width: 90,
+      width: 100,
     },
     {
       field: 'LoginType',
@@ -181,53 +164,90 @@ const gridOptions: VxeTableGridOptions<AdminListItem> = {
       width: 100,
     },
   ],
+  filterConfig: {
+    remote: true,
+  },
   height: 'auto',
   pagerConfig: {
     pageSize: 20,
   },
   proxyConfig: {
+    autoLoad: false,
     ajax: {
-      query: async ({ page, sort }, formValues) => {
+      query: async ({ page, sort, filters }) => {
         const sortField = sort?.field;
         const sortOrder = sort?.order;
         let sortParam = '';
         if (sortField && sortOrder) {
-          sortParam = `${sortField} ${sortOrder === 'asc' ? 'asc' : 'desc'}`;
+          sortParam =
+            sortOrder === 'asc' ? String(sortField) : `-${String(sortField)}`;
         }
+        listQuery.Sort = sortParam;
 
-        const result = await fetchAdminListApi({
-          BeginTime: '',
-          EndTime: '',
-          Keyword: formValues?.Keyword || '',
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-          Sort: sortParam,
-          Status: formValues?.Status || '',
-        });
+        // 对齐旧站表头 Status 列 filters → Status CSV
+        const statusFilter = (filters || []).find(
+          (item) => item.field === 'Status',
+        );
+        const statusValues = (statusFilter?.values || []) as Array<
+          number | string
+        >;
+        listQuery.Status = statusValues.length > 0 ? statusValues.join(',') : '';
 
-        return {
-          items: result?.Items || [],
-          total: result?.Pagination?.MaxCount || 0,
-        };
+        searchLoading.value = true;
+        try {
+          const result = await fetchAdminListApi({
+            BeginTime: listQuery.BeginTime || '',
+            EndTime: listQuery.EndTime || '',
+            Keyword: listQuery.Keyword || '',
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+            Sort: listQuery.Sort,
+            Status: listQuery.Status,
+          });
+          return {
+            items: result?.Items || [],
+            total: result?.Pagination?.MaxCount || 0,
+          };
+        } finally {
+          searchLoading.value = false;
+        }
       },
     },
   },
   rowConfig: {
     keyField: 'Id',
   },
+  sortConfig: {
+    remote: true,
+  },
   toolbarConfig: {
     refresh: true,
-    search: true,
+    search: false,
   },
 };
 
 const [Grid, gridApi] = useVbenVxeGrid({
-  formOptions,
   gridOptions,
 });
 
 function reloadList() {
-  gridApi.reload();
+  void gridApi.reload();
+}
+
+function handleSearch(params: ListSearchParams) {
+  // 旧站 All / Username 均写入 Keyword
+  listQuery.Keyword = params.Keyword || '';
+  listQuery.BeginTime = params.BeginTime || '';
+  listQuery.EndTime = params.EndTime || '';
+  void gridApi.reload();
+}
+
+function handleResetSearch() {
+  listQuery.Keyword = '';
+  listQuery.BeginTime = '';
+  listQuery.EndTime = '';
+  listQuery.Sort = '';
+  listQuery.Status = '';
 }
 
 function requestSecureConfirm() {
@@ -327,6 +347,12 @@ async function submitWithValidCode(validCode?: string) {
 async function handlePassConfirm(data: Record<string, unknown>) {
   await submitWithValidCode(String(data.ValidCode || ''));
 }
+
+onMounted(() => {
+  if (canViewTable.value) {
+    void gridApi.reload();
+  }
+});
 </script>
 
 <template>
@@ -336,53 +362,63 @@ async function handlePassConfirm(data: Record<string, unknown>) {
     description="系统管理 · 员工账号"
     title="员工账号"
   >
-    <Grid v-if="canViewTable">
-      <template #toolbar-actions>
-        <Button v-if="canAdd" type="primary" @click="handleCreate">
-          新建账号
-        </Button>
-      </template>
+    <div v-if="canViewTable" class="bg-card rounded-md p-4">
+      <ListSearchBar
+        :loading="searchLoading"
+        :options="searchOptions"
+        :show-add="canAdd"
+        add-text="新建账号"
+        date-label="创建时间"
+        date-time-type="datetimerange"
+        keyword-placeholder="请输入"
+        show-date-time
+        @add="handleCreate"
+        @reset="handleResetSearch"
+        @search="handleSearch"
+      />
 
-      <template #status="{ row }">
-        <Tag :color="row.Status === 1 ? 'success' : 'error'">
-          {{ statusText(row.Status) }}
-        </Tag>
-      </template>
+      <Grid>
+        <template #status="{ row }">
+          <Tag :color="row.Status === 1 ? 'success' : 'error'">
+            {{ statusText(row.Status) }}
+          </Tag>
+        </template>
 
-      <template #loginType="{ row }">
-        <Tag :color="row.LoginType === 3 ? 'success' : 'default'">
-          {{ row.LoginType === 3 ? '已绑定' : '未绑定' }}
-        </Tag>
-      </template>
+        <template #loginType="{ row }">
+          <Tag :color="row.LoginType === 3 ? 'success' : 'default'">
+            {{ row.LoginType === 3 ? '已绑定' : '未绑定' }}
+          </Tag>
+        </template>
 
-      <template #action="{ row }">
-        <Dropdown :trigger="['click']">
-          <a class="text-primary">操作</a>
-          <template #overlay>
-            <Menu>
-              <Menu.Item v-if="canEdit" @click="handleEdit(row)">
-                编辑
-              </Menu.Item>
-              <Menu.Item
-                v-if="canSwitchStatus && row.Status === 1"
-                @click="handleSwitchStatus(row, 2)"
-              >
-                停用
-              </Menu.Item>
-              <Menu.Item
-                v-if="canSwitchStatus && row.Status === 2"
-                @click="handleSwitchStatus(row, 1)"
-              >
-                启用
-              </Menu.Item>
-              <Menu.Item v-if="canDelete" danger @click="handleDelete(row)">
-                删除
-              </Menu.Item>
-            </Menu>
-          </template>
-        </Dropdown>
-      </template>
-    </Grid>
+        <template #action="{ row }">
+          <Dropdown :trigger="['click']">
+            <a class="text-primary">操作</a>
+            <template #overlay>
+              <Menu>
+                <Menu.Item v-if="canEdit" @click="handleEdit(row)">
+                  编辑
+                </Menu.Item>
+                <Menu.Item
+                  v-if="canSwitchStatus && row.Status === 1"
+                  @click="handleSwitchStatus(row, 2)"
+                >
+                  停用
+                </Menu.Item>
+                <Menu.Item
+                  v-if="canSwitchStatus && row.Status === 2"
+                  @click="handleSwitchStatus(row, 1)"
+                >
+                  启用
+                </Menu.Item>
+                <Menu.Item v-if="canDelete" danger @click="handleDelete(row)">
+                  删除
+                </Menu.Item>
+              </Menu>
+            </template>
+          </Dropdown>
+        </template>
+      </Grid>
+    </div>
 
     <Result
       v-else

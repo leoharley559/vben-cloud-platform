@@ -17,5 +17,13 @@ export const VOUCHER_ISSUE_RECORD_EXPORT_PAGE_ID = 88;
 export const RELATION_QUERY_EXPORT_PAGE_ID = 91;
 export const VISIT_STATISTIC_EXPORT_PAGE_ID = 33;
 export const PLAYER_LIST_EXPORT_PAGE_ID = 32;
+/** 玩家统计报表导出 PageId=46 */
+export const PLAYER_STATISTICS_EXPORT_PAGE_ID = 46;
 /** 称号拥有者列表导出 */
 export const GAME_TITLE_OWNER_EXPORT_PAGE_ID = 75;
+/** 粘度分析-一次性用户详情导出 PageId=92 */
+export const KEEP_DATA_ONETIME_EXPORT_PAGE_ID = 92;
+/** 粘度分析-注册/新增人数导出 PageId=93 */
+export const KEEP_DATA_FIRST_REG_EXPORT_PAGE_ID = 93;
+/** 粘度分析-区间留存新增人数导出 PageId=94 */
+export const KEEP_DATA_QUJIAN_EXPORT_PAGE_ID = 94;

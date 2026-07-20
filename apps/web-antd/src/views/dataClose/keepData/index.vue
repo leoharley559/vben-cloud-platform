@@ -5,81 +5,56 @@ import { Page } from '@vben/common-ui';
 
 import { Card, Result, Tabs } from 'ant-design-vue';
 
-import {
-  fetchKeepDataExtantListApi,
-  fetchKeepDataLoginRetentionListApi,
-  fetchKeepDataLtvListApi,
-  fetchKeepDataOneTimeUserListApi,
-  fetchKeepDataSectionRetentionListApi,
-} from '#/api/dataClose/keep-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
-import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
-
-import { keepDataUserColumns } from '../shared/columns';
+import KeepExtantPanel from './components/extant-panel.vue';
+import KeepLoginRetentionPanel from './components/login-retention-panel.vue';
+import KeepLtvPanel from './components/ltv-panel.vue';
+import KeepOneTimeUserPanel from './components/one-time-user-panel.vue';
+import KeepSectionRetentionPanel from './components/section-retention-panel.vue';
 
 defineOptions({ name: 'KeepData' });
 
 const { checkPermission } = useCloudPermission();
-const listFilters = ['date', 'package'] as OperationListConfig['filters'];
 
 const tabs = computed(() =>
   [
     {
-      config: {
-        columns: keepDataUserColumns,
-        fetchApi: fetchKeepDataExtantListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
+      component: KeepExtantPanel,
       key: 'extant',
-      permission: 10526,
+      permission: 10_526,
+      show: checkPermission(10_526),
       tab: '留存',
-      tip: '矩阵留存表完整展示待下一迭代迁移，当前为列表预览。',
     },
     {
-      config: {
-        columns: keepDataUserColumns,
-        fetchApi: fetchKeepDataLoginRetentionListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
+      component: KeepLoginRetentionPanel,
       key: 'login',
-      permission: 10527,
+      permission: 10_527,
+      show: checkPermission(10_527),
       tab: '登录留存',
-      tip: '登录留存矩阵表待下一迭代迁移。',
     },
     {
-      config: {
-        columns: keepDataUserColumns,
-        fetchApi: fetchKeepDataSectionRetentionListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
+      component: KeepSectionRetentionPanel,
       key: 'section',
-      permission: 10528,
+      permission: 10_528,
+      show: checkPermission(10_528),
       tab: '区间留存',
-      tip: '区间留存矩阵表待下一迭代迁移。',
     },
     {
-      config: {
-        columns: keepDataUserColumns,
-        fetchApi: fetchKeepDataLtvListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
+      component: KeepLtvPanel,
       key: 'ltv',
-      permission: 10529,
+      permission: 10_529,
+      show: checkPermission(10_529),
       tab: 'LTV数据',
-      tip: 'LTV 矩阵表待下一迭代迁移。',
     },
     {
-      config: {
-        columns: keepDataUserColumns,
-        fetchApi: fetchKeepDataOneTimeUserListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
+      component: KeepOneTimeUserPanel,
       key: 'oneTime',
+      permission: 0,
+      show: true,
       tab: '一次性用户',
     },
-  ].filter((item) => !item.permission || checkPermission(item.permission)),
+  ].filter((item) => item.show),
 );
 
 const canViewPage = computed(() => tabs.value.length > 0);
@@ -94,25 +69,16 @@ onMounted(() => {
   <Page
     v-if="canViewPage"
     auto-content-height
-    description="数据闭环 · 留存数据"
-    title="留存数据"
+    description="数据闭环 · 粘度分析矩阵（留存 / LTV / 一次性用户）"
+    title="粘度分析"
   >
-    <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+    <Card size="small">
+      <Tabs v-model:active-key="activeTab" size="small" type="line">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <div
-            v-if="item.tip && activeTab === item.key"
-            class="mb-4 text-xs text-gray-400"
-          >
-            {{ item.tip }}
-          </div>
-          <OperationListPanel
-            v-if="activeTab === item.key"
-            :config="item.config"
-          />
+          <component :is="item.component" v-if="activeTab === item.key" />
         </Tabs.TabPane>
       </Tabs>
     </Card>
   </Page>
-  <Result v-else status="403" sub-title="无留存数据查看权限" title="403" />
+  <Result v-else status="403" sub-title="无粘度分析查看权限" title="403" />
 </template>

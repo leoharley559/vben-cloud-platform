@@ -63,16 +63,16 @@ onMounted(() => {
     <Card>
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-if="canAgencyList" key="agency" tab="代理列表">
-          <AgencyList v-if="activeTab === 'agency'" />
+          <AgencyList />
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canRegisterList" key="register" tab="注册列表">
-          <RegisterList v-if="activeTab === 'register'" />
+          <RegisterList />
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canAreaMasking" key="area" tab="区域屏蔽">
-          <AreamaskingPanel v-if="activeTab === 'area'" />
+          <AreamaskingPanel />
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canDeveloperList" key="developer" tab="发展人列表">
-          <DeveloperList v-if="activeTab === 'developer'" />
+          <DeveloperList />
         </Tabs.TabPane>
       </Tabs>
     </Card>

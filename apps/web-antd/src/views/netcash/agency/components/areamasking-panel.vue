@@ -65,10 +65,10 @@ async function loadData() {
       fetchCountriesConfigListApi({ Page: 1, PageSize: 9999, PageType: 1 }),
       fetchGameCountriesApi({ PageType: 1 }),
     ]);
-    configurationList.value = (configResult.Items ||
+    configurationList.value = (configResult?.Items ||
       []) as unknown as CountryItem[];
     const countriesForBackstage = String(
-      stateResult.CountriesForBackstage || '',
+      stateResult?.CountriesForBackstage || '',
     );
     selectedIds.value = countriesForBackstage
       .split(',')

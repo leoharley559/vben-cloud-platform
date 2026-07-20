@@ -1,5 +1,11 @@
 <script lang="ts" setup>
-import type { NetcashGridConfig } from '../components/netcash-grid-panel.vue';
+import type { CreditPanelConfig } from '../credit-components/credit-data-panel.vue';
+
+import type {
+  PlatformCreditApplyPayload,
+  PlatformCreditApplyRecordQuery,
+  PlatformNetCashLogQuery,
+} from '#/types/netcash';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
@@ -8,6 +14,7 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
+  Descriptions,
   Form,
   Input,
   InputNumber,
@@ -22,221 +29,271 @@ import {
 import {
   applyPlatformCreditApi,
   approvePlatformCreditAdjustmentApi,
+  getPlatformAgentCreditLimitApi,
   getPlatformCreditLimitApplyRecordListApi,
   getPlatformNetCashLogListApi,
   rejectPlatformCreditAdjustmentApi,
 } from '#/api/netcash/credit-limit-platform';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { createRequestHash } from '#/utils/crypto';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   CREDIT_APPROVE_STATUS_MAP,
   formatNetcashDateTime,
 } from '#/utils/netcash';
+import { isSameAcctActionRestricted } from '#/utils/security-restriction';
 
-import NetcashGridPanel from '../components/netcash-grid-panel.vue';
+import CreditDataPanel from '../credit-components/credit-data-panel.vue';
 
 defineOptions({ name: 'CreditLimitPlatformManage' });
 
 const { checkPermission } = useCloudPermission();
+const canApply = computed(() => checkPermission(11_793));
+const canApprove = computed(() => checkPermission(11_796));
+const canReject = computed(() => checkPermission(11_797));
+const panelRefs = reactive<Record<string, InstanceType<typeof CreditDataPanel>>>({});
+const amount = (value: unknown) => formatAmountFromCent(Number(value || 0));
+const date = (value: unknown) => formatNetcashDateTime(value as string);
+const walletMap: Record<number, string> = { 2: '代存', 3: '代客' };
 
-const canApplyPlatformCredit = computed(() => checkPermission(11_793));
-const canApprovePlatformCredit = computed(() => checkPermission(11_796));
-const canRejectPlatformCredit = computed(() => checkPermission(11_797));
+const commonFilters = [
+  {
+    field: 'WalletType',
+    label: '调整类型',
+    options: [
+      { label: '全部', value: '' },
+      { label: '代存', value: 2 },
+      { label: '代客', value: 3 },
+    ],
+    type: 'select' as const,
+  },
+  {
+    field: 'AdjustType',
+    label: '调整方式',
+    options: [
+      { label: '全部', value: '' },
+      { label: '增加', value: 1 },
+      { label: '扣除', value: 2 },
+    ],
+    type: 'select' as const,
+  },
+  {
+    fields: ['BeginApplyTime', 'EndApplyTime'] as [string, string],
+    label: '申请时间',
+    type: 'dateRange' as const,
+  },
+];
+const commonColumns = [
+  { field: 'OrderId', title: '订单号' },
+  {
+    field: 'WalletType',
+    formatter: (value: unknown) => walletMap[Number(value)] || '未知',
+    title: '调整类型',
+  },
+  {
+    field: 'AdjustAmount',
+    formatter: (value: unknown) => (Number(value) >= 0 ? '增加' : '扣除'),
+    title: '调整方式',
+  },
+  { field: 'AdjustAmount', formatter: amount, title: '调整金额（元）' },
+  { field: 'ApplyAccount', title: '申请人' },
+  { field: 'ApplyTime', formatter: date, minWidth: 165, title: '申请时间' },
+];
 
-const gridRefs = ref<Array<InstanceType<typeof NetcashGridPanel>>>([]);
-
-function reloadCurrentGrid() {
-  gridRefs.value[0]?.reload();
-}
-
-const applyForm = reactive({
-  AdjustAmount: undefined as number | undefined,
-  AdjustType: 1 as 1 | 2,
-  WalletType: 2 as 2 | 3,
-});
-const applySubmitting = ref(false);
-
-async function submitApplyForm() {
-  if (!applyForm.AdjustAmount || applyForm.AdjustAmount <= 0) {
-    message.warning('请输入调整金额');
-    return;
-  }
-  applySubmitting.value = true;
-  try {
-    const cents = Math.round(applyForm.AdjustAmount * 100);
-    await applyPlatformCreditApi({
-      AdjustAmount: applyForm.AdjustType === 1 ? cents : -cents,
-      WalletType: applyForm.WalletType,
-    });
-    message.success('提交成功');
-    applyForm.AdjustAmount = undefined;
-  } finally {
-    applySubmitting.value = false;
-  }
-}
-
-const remarkModalOpen = ref(false);
-const remarkModalRow = ref<null | Record<string, unknown>>(null);
-const remarkModalIsApprove = ref(true);
-const remarkValue = ref('');
-const remarkSubmitting = ref(false);
-
-const remarkModalTitle = computed(() =>
-  remarkModalIsApprove.value ? '通过平台额度申请' : '拒绝平台额度申请',
-);
-
-function openRemarkModal(row: Record<string, unknown>, isApprove: boolean) {
-  remarkModalRow.value = row;
-  remarkModalIsApprove.value = isApprove;
-  remarkValue.value = '';
-  remarkModalOpen.value = true;
-}
-
-async function submitRemarkModal() {
-  if (!remarkModalRow.value) {
-    return;
-  }
-  remarkSubmitting.value = true;
-  try {
-    const api = remarkModalIsApprove.value
-      ? approvePlatformCreditAdjustmentApi
-      : rejectPlatformCreditAdjustmentApi;
-    await api({
-      FinishNote: remarkValue.value,
-      Ids: String(remarkModalRow.value.Id),
-    });
-    message.success('操作成功');
-    remarkModalOpen.value = false;
-    reloadCurrentGrid();
-  } finally {
-    remarkSubmitting.value = false;
-  }
-}
+const pendingConfig: CreditPanelConfig = {
+  actionWidth: 150,
+  baseQuery: { AgentType: 1, Status: 1 },
+  columns: commonColumns,
+  fetchApi: (query) =>
+    getPlatformCreditLimitApplyRecordListApi(
+      query as PlatformCreditApplyRecordQuery,
+    ),
+  filters: commonFilters,
+  showActions: true,
+  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '申请金额合计' }],
+};
+const recordConfig: CreditPanelConfig = {
+  baseQuery: { AgentType: 1, Status: '-1' },
+  columns: [
+    ...commonColumns,
+    { field: 'FinishAccount', title: '审核人' },
+    { field: 'FinishTime', formatter: date, minWidth: 165, title: '审核时间' },
+    {
+      field: 'Status',
+      formatter: (value: unknown) =>
+        CREDIT_APPROVE_STATUS_MAP[Number(value)] || '-',
+      title: '状态',
+    },
+  ],
+  exportFileName: '平台额度调整记录',
+  fetchApi: (query) =>
+    getPlatformCreditLimitApplyRecordListApi(
+      query as PlatformCreditApplyRecordQuery,
+    ),
+  filters: [
+    ...commonFilters,
+    {
+      field: 'Status',
+      label: '状态',
+      options: [
+        { label: '全部', value: '-1' },
+        { label: '待审核', value: 1 },
+        { label: '通过', value: 2 },
+        { label: '拒绝', value: 3 },
+      ],
+      type: 'select',
+    },
+  ],
+  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '调整金额合计' }],
+};
+const logConfig: CreditPanelConfig = {
+  baseQuery: { AgentType: 1, TransferType: 3, WalletType: 0 },
+  columns: [
+    { field: 'OrderId', title: '订单号' },
+    { field: 'UpdateTime', formatter: date, minWidth: 165, title: '帐变时间' },
+    {
+      field: 'WalletType',
+      formatter: (value) => walletMap[Number(value)] || '未知',
+      title: '调整类型',
+    },
+    {
+      field: 'AdjustAmount',
+      formatter: (value) => (Number(value) >= 0 ? '增加' : '扣除'),
+      title: '调整方式',
+    },
+    { field: 'AdjustAmount', formatter: amount, title: '调整金额（元）' },
+    { field: 'AdjustAmountBef', formatter: amount, title: '调整前额度（元）' },
+    { field: 'AdjustAmountAft', formatter: amount, title: '调整后额度（元）' },
+    { field: 'ReviewNote', minWidth: 180, title: '备注' },
+  ],
+  exportFileName: '平台额度帐变记录',
+  fetchApi: (query) =>
+    getPlatformNetCashLogListApi(query as PlatformNetCashLogQuery),
+  filters: [
+    commonFilters[0]!,
+    commonFilters[1]!,
+    {
+      fields: ['TransferStartTime', 'TransferEndTime'],
+      label: '帐变时间',
+      type: 'dateRange',
+    },
+  ],
+  summaries: [
+    { amount: true, field: 'TotalAdjustAmount', label: '调整金额合计' },
+    {
+      amount: true,
+      field: 'TotalBeforeAdjustAmount',
+      label: '调整前额度合计',
+    },
+    {
+      amount: true,
+      field: 'TotalAfterAdjustAmount',
+      label: '调整后额度合计',
+    },
+  ],
+};
 
 const tabs = computed(() =>
   [
-    {
-      config: null,
-      key: 'apply',
-      permission: 11_792,
-      tab: '平台额度申请',
-    },
-    {
-      config: {
-        actionWidth: 160,
-        columns: [
-          { field: 'OrderId', title: '单号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          {
-            field: 'ApplyAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '申请额度',
-          },
-          {
-            field: 'Status',
-            formatter: (value) =>
-              CREDIT_APPROVE_STATUS_MAP[Number(value)] || String(value ?? '-'),
-            title: '状态',
-          },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '申请时间',
-          },
-        ],
-        extraQuery: { Status: 1 },
-        fetchApi: (query: Record<string, unknown>) =>
-          getPlatformCreditLimitApplyRecordListApi(query as never),
-        filters: ['username', 'date', 'status'],
-        showActions: true,
-        statusOptions: Object.entries(CREDIT_APPROVE_STATUS_MAP).map(
-          ([value, label]) => ({
-            label,
-            value: Number(value),
-          }),
-        ),
-      } satisfies NetcashGridConfig,
-      key: 'pending',
-      permission: 11_794,
-      tab: '平台额度审核',
-    },
-    {
-      config: {
-        columns: [
-          { field: 'OrderId', title: '单号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          {
-            field: 'ApplyAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '申请额度',
-          },
-          {
-            field: 'Status',
-            formatter: (value) =>
-              CREDIT_APPROVE_STATUS_MAP[Number(value)] || String(value ?? '-'),
-            title: '状态',
-          },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '申请时间',
-          },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          getPlatformCreditLimitApplyRecordListApi(query as never),
-        filters: ['username', 'date', 'status'],
-        statusOptions: Object.entries(CREDIT_APPROVE_STATUS_MAP).map(
-          ([value, label]) => ({
-            label,
-            value: Number(value),
-          }),
-        ),
-      } satisfies NetcashGridConfig,
-      key: 'adjustRecord',
-      permission: 11_798,
-      tab: '平台额度调整记录',
-    },
-    {
-      config: {
-        columns: [
-          { field: 'AgentAccount', title: '代理账号' },
-          {
-            field: 'ApplyAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '变更金额',
-          },
-          {
-            field: 'AmountBefore',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '变更前额度',
-          },
-          {
-            field: 'AmountAfter',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '变更后额度',
-          },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          getPlatformNetCashLogListApi(query as never),
-        filters: ['username', 'date'],
-      } satisfies NetcashGridConfig,
-      key: 'log',
-      permission: 11_800,
-      tab: '平台额度帐变记录',
-    },
-  ].filter((item) => checkPermission(item.permission)),
+    { inner: 11_792, key: 'apply', outer: 11_792, tab: '平台额度申请' },
+    { config: pendingConfig, inner: 11_795, key: 'pending', outer: 11_794, tab: '平台额度审核' },
+    { config: recordConfig, inner: 11_799, key: 'record', outer: 11_798, tab: '平台额度调整记录' },
+    { config: logConfig, inner: 11_799, key: 'log', outer: 11_800, tab: '平台额度帐变记录' },
+  ].filter((tab) => checkPermission(tab.outer)),
 );
-
-const canViewPage = computed(() => tabs.value.length > 0);
 const activeTab = ref('apply');
+const canViewPage = computed(() => tabs.value.length > 0);
+
+const creditInfo = reactive({ Credit: 0, Dkcredit: 0 });
+async function loadCreditInfo() {
+  const result = await getPlatformAgentCreditLimitApi({ Page: 1, PageSize: 1 });
+  const item = result?.Items || result || {};
+  creditInfo.Credit = Number(item.Credit || 0);
+  creditInfo.Dkcredit = Number(item.Dkcredit || 0);
+}
+
+const applyForm = reactive<{
+  AdjustAmount?: number;
+  AdjustType: 1 | 2;
+  WalletType: 2 | 3;
+}>({
+  AdjustAmount: undefined as number | undefined,
+  AdjustType: 1,
+  WalletType: 2,
+});
+const applySubmitting = ref(false);
+function resetApplyForm() {
+  applyForm.AdjustAmount = undefined;
+  applyForm.AdjustType = 1;
+  applyForm.WalletType = 2;
+}
+function submitApply() {
+  if (!applyForm.AdjustAmount || applyForm.AdjustAmount <= 0) {
+    message.warning('请输入正确的调整金额');
+    return;
+  }
+  const amountYuan = applyForm.AdjustAmount.toFixed(2);
+  Modal.confirm({
+    content: `确认申请${applyForm.AdjustType === 1 ? '增加' : '扣除'}额度：${amountYuan} 元？`,
+    okText: '确认',
+    title: '提示',
+    onOk: async () => {
+      applySubmitting.value = true;
+      try {
+        const cents = Math.round(Number(applyForm.AdjustAmount) * 100);
+        const payload: PlatformCreditApplyPayload = {
+          AdjustAmount: applyForm.AdjustType === 1 ? cents : -cents,
+          Hash: createRequestHash(),
+          WalletType: applyForm.WalletType,
+        };
+        await applyPlatformCreditApi(payload);
+        message.success('申请成功');
+        resetApplyForm();
+        await loadCreditInfo();
+      } finally {
+        applySubmitting.value = false;
+      }
+    },
+  });
+}
+
+const reviewOpen = ref(false);
+const reviewSubmitting = ref(false);
+const reviewApprove = ref(true);
+const reviewRow = ref<Record<string, unknown>>();
+const finishNote = ref('');
+function openReview(row: Record<string, unknown>, approve: boolean) {
+  reviewRow.value = row;
+  reviewApprove.value = approve;
+  finishNote.value = '';
+  reviewOpen.value = true;
+}
+async function submitReview() {
+  if (!reviewRow.value) return;
+  reviewSubmitting.value = true;
+  try {
+    await (reviewApprove.value
+      ? approvePlatformCreditAdjustmentApi
+      : rejectPlatformCreditAdjustmentApi)({
+      FinishNote: finishNote.value,
+      Hash: createRequestHash(),
+      Ids: String(reviewRow.value.Id),
+    });
+    message.success('审核成功');
+    reviewOpen.value = false;
+    panelRefs.pending?.reload();
+    await loadCreditInfo();
+  } finally {
+    reviewSubmitting.value = false;
+  }
+}
+function canReviewRow(row: Record<string, unknown>) {
+  return !isSameAcctActionRestricted(23, row.CreateAdminId as number | string);
+}
 
 onMounted(() => {
   activeTab.value = tabs.value[0]?.key || 'apply';
+  if (checkPermission(11_792) || checkPermission(11_795)) void loadCreditInfo();
 });
 </script>
 
@@ -244,87 +301,117 @@ onMounted(() => {
   <Page
     v-if="canViewPage"
     auto-content-height
-    description="代理网赚 · 平台额度管理"
+    description="完整迁移平台额度申请、审核、调整记录与帐变记录"
     title="平台额度管理"
   >
     <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+      <Tabs v-model:active-key="activeTab" size="small" type="line">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <div v-if="item.key === 'apply'" style="max-width: 480px">
-            <Form v-if="canApplyPlatformCredit" layout="vertical">
-              <Form.Item label="钱包类型">
+          <Result
+            v-if="!checkPermission(item.inner)"
+            status="403"
+            sub-title="无此模块查看权限"
+            title="403"
+          />
+          <div v-else-if="item.key === 'apply'" class="max-w-xl">
+            <Descriptions bordered class="mb-5" :column="2" size="small">
+              <Descriptions.Item label="代存额度">
+                {{ formatAmountFromCent(creditInfo.Credit) }}
+              </Descriptions.Item>
+              <Descriptions.Item label="代客额度">
+                {{ formatAmountFromCent(creditInfo.Dkcredit) }}
+              </Descriptions.Item>
+            </Descriptions>
+            <Form layout="vertical">
+              <Form.Item label="调整类型" required>
                 <Radio.Group v-model:value="applyForm.WalletType">
                   <Radio :value="2">代存</Radio>
                   <Radio :value="3">代客</Radio>
                 </Radio.Group>
               </Form.Item>
-              <Form.Item label="调整方式">
+              <Form.Item label="调整方式" required>
                 <Radio.Group v-model:value="applyForm.AdjustType">
                   <Radio :value="1">增加</Radio>
                   <Radio :value="2">扣除</Radio>
                 </Radio.Group>
               </Form.Item>
-              <Form.Item label="调整金额（元）">
+              <Form.Item label="调整金额（元）" required>
                 <InputNumber
                   v-model:value="applyForm.AdjustAmount"
                   :min="0.01"
-                  placeholder="请输入调整金额"
-                  style="width: 100%"
+                  :precision="2"
+                  class="w-full"
                 />
               </Form.Item>
-              <Form.Item>
+              <Space>
                 <Button
+                  v-if="canApply"
                   :loading="applySubmitting"
                   type="primary"
-                  @click="submitApplyForm"
+                  @click="submitApply"
                 >
                   提交申请
                 </Button>
-              </Form.Item>
+                <Button @click="resetApplyForm">
+                  重置
+                </Button>
+              </Space>
             </Form>
           </div>
-          <NetcashGridPanel
+          <CreditDataPanel
             v-else-if="item.config && activeTab === item.key"
-            ref="gridRefs"
+            :ref="(el) => el && (panelRefs[item.key] = el as never)"
             :config="item.config"
           >
             <template v-if="item.key === 'pending'" #actions="{ row }">
               <Space :size="0">
                 <Button
-                  v-if="canApprovePlatformCredit && Number(row.Status) === 1"
+                  v-if="canApprove"
+                  :disabled="!canReviewRow(row)"
                   size="small"
                   type="link"
-                  @click="openRemarkModal(row, true)"
+                  @click="openReview(row, true)"
                 >
                   通过
                 </Button>
                 <Button
-                  v-if="canRejectPlatformCredit && Number(row.Status) === 1"
+                  v-if="canReject"
+                  :disabled="!canReviewRow(row)"
                   danger
                   size="small"
                   type="link"
-                  @click="openRemarkModal(row, false)"
+                  @click="openReview(row, false)"
                 >
                   拒绝
                 </Button>
               </Space>
             </template>
-          </NetcashGridPanel>
+          </CreditDataPanel>
         </Tabs.TabPane>
       </Tabs>
     </Card>
 
     <Modal
-      v-model:open="remarkModalOpen"
-      :confirm-loading="remarkSubmitting"
-      :title="remarkModalTitle"
-      @ok="submitRemarkModal"
+      v-model:open="reviewOpen"
+      :confirm-loading="reviewSubmitting"
+      :title="reviewApprove ? '通过平台额度申请' : '拒绝平台额度申请'"
+      @ok="submitReview"
     >
-      <Input.TextArea
-        v-model:value="remarkValue"
-        placeholder="备注（选填）"
-        :rows="4"
-      />
+      <Form layout="vertical">
+        <Form.Item label="调整内容">
+          <Input
+            :value="
+              `${walletMap[Number(reviewRow?.WalletType)] || '未知'} / ${
+                Number(reviewRow?.AdjustAmount) >= 0 ? '增加' : '扣除'
+              } / ${formatAmountFromCent(Number(reviewRow?.AdjustAmount))} 元`
+            "
+            disabled
+          />
+        </Form.Item>
+        <Form.Item label="审核备注">
+          <Input.TextArea v-model:value="finishNote" :maxlength="100" :rows="4" />
+        </Form.Item>
+      </Form>
     </Modal>
   </Page>
   <Result v-else status="403" sub-title="无平台额度管理查看权限" title="403" />

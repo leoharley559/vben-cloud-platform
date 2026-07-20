@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { TimeshareHourItem } from '#/types/promotion';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -9,15 +9,16 @@ import {
   Button,
   Card,
   DatePicker,
-  Input,
+  message,
   Radio,
   Result,
   Tabs,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchTimeshareDataApi } from '#/api/promotion/timeshare-data';
+import AccountSelect from '#/components/global/account-select.vue';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import {
@@ -33,37 +34,52 @@ defineOptions({ name: 'TimeshareData' });
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
-const defaultBegin = dayjs().subtract(7, 'day');
+const defaultBegin = dayjs().subtract(6, 'day');
 const defaultEnd = dayjs();
 
 const loading = ref(false);
 const chartType = ref<TimeshareChartType>('bar');
 const activeTab = ref<TimeshareMetricKey>('addNumber');
-const filterAdminId = ref('');
-const filterChannelId = ref('');
+const filterAdminIds = ref<Array<number | string>>([]);
+const filterChannelIds = ref<Array<number | string>>([]);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   defaultBegin,
   defaultEnd,
 ]);
 const rawData = ref<TimeshareHourItem[][]>([]);
+let latestRequestId = 0;
 
 const realAdminType = computed(() => {
   const parentInfo = projectConfig.value?.ParentInfo as
-    | { AdminType?: number }
-    | undefined;
-  return Number(parentInfo?.AdminType || 0);
+    | undefined
+    | { AdminType?: number };
+  return parentInfo?.AdminType;
 });
 
 function canViewMetric(metric: TimeshareMetricKey) {
-  const permission = TIMESHARE_METRIC_MAP[metric].permission;
-  if (realAdminType.value !== 2) {
+  if (realAdminType.value === 1) {
     return true;
   }
-  return checkPermission(permission);
+  if (metric === 'addPayMoney' || metric === 'addPayNum') {
+    return checkPermission(10_882) && checkPermission(10_883);
+  }
+  if (metric === 'addExchangeMoney' || metric === 'addExchangeNum') {
+    return checkPermission(10_884) && checkPermission(10_885);
+  }
+  return checkPermission(TIMESHARE_METRIC_MAP[metric].permission);
 }
 
+const metricOrder: TimeshareMetricKey[] = [
+  'addNumber',
+  'addDevice',
+  'allLogin',
+  'addPayMoney',
+  'addPayNum',
+  'addExchangeMoney',
+  'addExchangeNum',
+];
 const visibleTabs = computed(() =>
-  (Object.keys(TIMESHARE_METRIC_MAP) as TimeshareMetricKey[]).filter((metric) =>
+  metricOrder.filter((metric) =>
     canViewMetric(metric),
   ),
 );
@@ -73,26 +89,44 @@ const canViewPage = computed(() => visibleTabs.value.length > 0);
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    AdminId: filterAdminId.value,
+    AdminId: filterAdminIds.value.join(','),
     BeginTime: begin
       ? begin.format('YYYY-MM-DD')
       : defaultBegin.format('YYYY-MM-DD'),
-    ChannelId: filterChannelId.value,
+    ChannelId: filterChannelIds.value.join(','),
     EndTime: end ? end.format('YYYY-MM-DD') : defaultEnd.format('YYYY-MM-DD'),
   };
 }
 
 async function loadData() {
+  const [begin, end] = filterDateRange.value || [];
+  if (!begin || !end) {
+    message.warning('请选择日期范围');
+    return;
+  }
+  if (end.diff(begin, 'day') > 6) {
+    message.warning('日期范围最多选择 7 天');
+    return;
+  }
+  const requestId = ++latestRequestId;
   loading.value = true;
   try {
     const result = await fetchTimeshareDataApi(getQueryParams());
+    if (requestId !== latestRequestId) return;
     rawData.value = result.Items || [];
-    if (!rawData.value.length) {
+    if (rawData.value.length === 0) {
       message.info('暂无数据');
     }
   } finally {
-    loading.value = false;
+    if (requestId === latestRequestId) loading.value = false;
   }
+}
+
+function reset() {
+  filterAdminIds.value = [];
+  filterChannelIds.value = [];
+  filterDateRange.value = [defaultBegin, defaultEnd];
+  loadData();
 }
 
 function resolveDefaultTab() {
@@ -105,6 +139,12 @@ onMounted(() => {
     loadData();
   }
 });
+
+watch(visibleTabs, (tabs) => {
+  if (!tabs.includes(activeTab.value)) {
+    activeTab.value = tabs[0] || 'addNumber';
+  }
+});
 </script>
 
 <template>
@@ -114,22 +154,19 @@ onMounted(() => {
     description="推广数据 · 时段报表"
     title="时段报表"
   >
-    <Card :loading="loading">
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterAdminId"
-          allow-clear
-          placeholder="推广账号 ID"
-          style="width: 180px"
-        />
-        <Input
-          v-model:value="filterChannelId"
-          allow-clear
-          placeholder="渠道 ID"
-          style="width: 180px"
-        />
+    <Card :loading="loading" class="timeshare-card" :bordered="false">
+      <div class="timeshare-query">
+        <div class="query-field">
+          <span>推广账号</span>
+          <AccountSelect v-model="filterAdminIds" style="width: 240px" />
+        </div>
+        <div class="query-field">
+          <span>渠道</span>
+          <ChannelSelect v-model="filterChannelIds" style="width: 240px" />
+        </div>
         <DatePicker.RangePicker v-model:value="filterDateRange" />
         <Button type="primary" @click="loadData">查询</Button>
+        <Button @click="reset">重置</Button>
         <div class="ml-auto">
           <Radio.Group v-model:value="chartType" button-style="solid">
             <Radio.Button value="bar">柱状图</Radio.Button>
@@ -161,3 +198,31 @@ onMounted(() => {
   </Page>
   <Result v-else status="403" sub-title="无时段报表查看权限" title="403" />
 </template>
+
+<style scoped>
+.timeshare-card {
+  min-height: calc(100vh - 180px);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
+}
+
+.timeshare-query {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  padding: 14px;
+  margin-bottom: 16px;
+  background: hsl(var(--muted) / 35%);
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+}
+
+.query-field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+}
+</style>

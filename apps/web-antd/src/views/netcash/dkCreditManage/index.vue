@@ -1,101 +1,432 @@
 <script lang="ts" setup>
-import type { NetcashGridConfig } from '../components/netcash-grid-panel.vue';
+import type { CreditPanelConfig } from '../credit-components/credit-data-panel.vue';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
 import {
+  Alert,
   Button,
   Card,
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Result,
+  Select,
   Space,
+  Table,
   Tabs,
-  message,
+  Tag,
+  Upload,
 } from 'ant-design-vue';
 
 import {
+  approveCreditLimitApi,
+  getAgentCreditLimitApi,
+  rejectCreditLimitApi,
+} from '#/api/netcash/credit-limit';
+import {
   adjustDkPlayerMoneyApi,
   applyDkCreditApi,
+  createDkAccountApi,
+  deductDkAccountCreditApi,
+  editDkAccountApi,
   fetchDkCreditRecordApi,
   getAgentDkAccountLimitApi,
   getDkAccountLimitListApi,
   getDkCreditLimitApplyRecordListApi,
   getDkNetCashLogListApi,
+  getDkPlayerListApi,
+  getDkSharedConfigApi,
   getPlayerAvailableDeductCreditApi,
+  queryDkPlayersByExcelApi,
 } from '#/api/netcash/dk-credit';
-import {
-  approveCreditLimitApi,
-  rejectCreditLimitApi,
-} from '#/api/netcash/credit-limit';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useProjectConfig } from '#/composables/use-project-config';
+import { createRequestHash } from '#/utils/crypto';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   CREDIT_APPROVE_STATUS_MAP,
   formatNetcashDateTime,
 } from '#/utils/netcash';
+import { isSameAcctActionRestricted } from '#/utils/security-restriction';
 
-import NetcashGridPanel from '../components/netcash-grid-panel.vue';
+import CreditDataPanel from '../credit-components/credit-data-panel.vue';
 
 defineOptions({ name: 'DkCreditManage' });
 
 const { checkPermission } = useCloudPermission();
-
-const canApplyCredit = computed(() => checkPermission(11_881));
+const { projectConfig } = useProjectConfig();
+const panelRefs = reactive<Record<string, InstanceType<typeof CreditDataPanel>>>({});
+const amount = (value: unknown) => formatAmountFromCent(Number(value || 0));
+const date = (value: unknown) => formatNetcashDateTime(value as string);
+const canApply = computed(() => checkPermission(11_881));
 const canTopup = computed(() => checkPermission(11_882));
 const canDeduct = computed(() => checkPermission(11_896));
-const canApproveCredit = computed(() => checkPermission(11_894));
-const canRejectCredit = computed(() => checkPermission(11_895));
+const canBatch = computed(() => checkPermission(11_897));
+const canApprove = computed(() => checkPermission(11_894));
+const canReject = computed(() => checkPermission(11_895));
 
-const gridRefs = ref<Array<InstanceType<typeof NetcashGridPanel>>>([]);
-
-function reloadCurrentGrid() {
-  gridRefs.value[0]?.reload();
+const playerStatusMap: Record<number, string> = {
+  0: '正常',
+  1: '优质',
+  2: '关注',
+  3: '封号',
+  4: '禁提',
+  6: '暂时关闭',
+  8: '测试',
+};
+function maskInfo(value: unknown) {
+  return value ? String(value).replaceAll(/\w(?=\w{4})/g, '*') : '-';
+}
+function maskName(value: unknown) {
+  const text = String(value || '');
+  return text ? `${text.slice(0, 1)}${'*'.repeat(Math.min(text.length - 1, 11))}` : '-';
+}
+function changeType(row: Record<string, unknown>) {
+  if (Number(row.TransferType) === 3) {
+    return Number(row.AdjustAmount) > 0 ? '申请额度' : '扣除额度';
+  }
+  if (Number(row.TransferType) === 5) {
+    return Number(row.AdjustAmount) < 0 ? '上分' : '下分';
+  }
+  return '未知';
 }
 
-const creditInfo = reactive({
-  AppliableAmount: 0,
-  Credit: 0,
-  TotalCreditLimit: 0,
-});
-const applyForm = reactive({
-  AdjustAmount: undefined as number | undefined,
-  ApplyNote: '',
-});
-const applySubmitting = ref(false);
-const applyModalOpen = ref(false);
+function withMillisecondRange(
+  query: Record<string, unknown>,
+  fields: Array<[string, string]>,
+) {
+  const normalized = { ...query };
+  for (const [beginField, endField] of fields) {
+    if (normalized[beginField]) {
+      normalized[beginField] = Number(normalized[beginField]) * 1000;
+    }
+    if (normalized[endField]) {
+      normalized[endField] = Number(normalized[endField]) * 1000;
+    }
+  }
+  return normalized;
+}
 
+const playerConfig: CreditPanelConfig = {
+  actionWidth: 120,
+  baseQuery: { BindPhone: '-1', PlayerLevelId: -1, VipLevel: '-1' },
+  columns: [
+    { field: 'LoginAccount', title: '会员账号' },
+    { field: 'PackageName', title: '产品包' },
+    { field: 'Gold', formatter: amount, title: '主钱包（元）' },
+    { field: 'VipLevel', formatter: (value) => `VIP ${value ?? '-'}`, title: '会员等级' },
+    {
+      field: 'BindPhone',
+      formatter: (_value, row) =>
+        `手机：${maskInfo(row.BindPhone)} / 邮箱：${maskInfo(row.Email)}`,
+      minWidth: 230,
+      title: '联系方式',
+    },
+    { field: 'RealName', formatter: maskName, title: '真实姓名' },
+    { field: 'PromoterUserName', title: '所属代理' },
+    {
+      field: 'Status',
+      formatter: (value) => playerStatusMap[Number(value)] || String(value ?? '-'),
+      title: '状态',
+    },
+  ],
+  fetchApi: (query) => {
+    if (!String(query.LoginAccount || '').trim()) {
+      return Promise.resolve({
+        Items: [],
+        Pagination: { MaxCount: 0 },
+        Total: {},
+      });
+    }
+    return getDkPlayerListApi(query as never);
+  },
+  filters: [
+    {
+      field: 'LoginAccount',
+      label: '会员账号',
+      placeholder: '必须输入会员账号',
+    },
+    {
+      field: 'PackageId',
+      label: '产品包',
+      options: [
+        { label: '全部', value: '' },
+        ...(projectConfig.value?.RealPackageIdNameMap || []).map((item) => ({
+          label: item.PackageName,
+          value: item.PackageId,
+        })),
+      ],
+      type: 'select',
+    },
+  ],
+  showActions: canTopup.value || canDeduct.value,
+  summaries: [{ amount: true, field: 'SumGold', label: '主钱包合计' }],
+};
+
+const pendingConfig: CreditPanelConfig = {
+  actionWidth: 150,
+  baseQuery: { AgentType: 3, Status: 1, WalletType: 3 },
+  columns: [
+    { field: 'AgentAccount', title: '系统账号' },
+    { field: 'AgentNickName', title: '账号昵称' },
+    { field: 'TotalCreditLimit', formatter: amount, title: '总额度（元）' },
+    { field: 'AppliableAmount', formatter: amount, title: '剩余可申请（元）' },
+    { field: 'AdjustAmount', formatter: amount, title: '本次申请（元）' },
+    { field: 'ApplyTime', formatter: date, minWidth: 165, title: '申请时间' },
+    { field: 'ApplyNote', minWidth: 180, title: '申请备注' },
+  ],
+  fetchApi: (query) => getDkCreditLimitApplyRecordListApi(query as never),
+  filters: [
+    { field: 'AgentAccount', label: '系统账号' },
+    { field: 'AgentNickName', label: '账号昵称' },
+  ],
+  showActions: canApprove.value || canReject.value,
+  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '申请额度合计' }],
+};
+
+const rechargeConfig: CreditPanelConfig = {
+  baseQuery: {
+    AgentType: 3,
+    IsBO: 1,
+    PlayerInfo: 1,
+    TransferType: 5,
+    WalletType: 3,
+  },
+  columns: [
+    { field: 'OrderId', title: '订单号' },
+    { field: 'CreateTime', formatter: date, minWidth: 165, title: '操作时间' },
+    {
+      field: 'ApplyAmount',
+      formatter: (value) => (Number(value) < 0 ? '上分' : '下分'),
+      title: '操作类型',
+    },
+    { field: 'AdminAccount', title: '操作人' },
+    { field: 'Remarks', minWidth: 180, title: '备注' },
+    { field: 'ReferenceAccount', title: '会员账号' },
+    { field: 'PackageName', title: '产品包' },
+    { field: 'PromoterName', title: '所属代理' },
+    {
+      field: 'ApplyAmount',
+      formatter: (value) => amount(-Number(value || 0)),
+      title: '操作金额（元）',
+    },
+    {
+      field: 'WithdrawWaterMultiply',
+      formatter: (value) => Number(value || 0).toFixed(2),
+      title: '流水倍数',
+    },
+    { field: 'PlayerWallet', formatter: () => '主钱包', title: '玩家钱包' },
+    {
+      field: 'Status',
+      formatter: (value) => ({ 0: '-', 2: '成功', 3: '拒绝' })[Number(value)] || '-',
+      title: '状态',
+    },
+  ],
+  exportFileName: checkPermission(11_905) ? '充值下分记录' : undefined,
+  fetchApi: (query) =>
+    fetchDkCreditRecordApi(
+      withMillisecondRange(query, [['BeginTime', 'EndTime']]) as never,
+    ),
+  filters: [
+    { field: 'AccountName', label: '操作人' },
+    { field: 'PlayerAccount', label: '会员账号' },
+    {
+      field: 'AdjustType',
+      label: '操作类型',
+      options: [
+        { label: '全部', value: '' },
+        { label: '上分', value: 2 },
+        { label: '下分', value: 1 },
+      ],
+      type: 'select',
+    },
+    { field: 'PromoterName', label: '所属代理' },
+    { field: 'Remarks', label: '备注' },
+    { fields: ['BeginTime', 'EndTime'], label: '操作时间', type: 'dateRange' },
+  ],
+  summaries: [{ amount: true, field: 'TotalAmount', label: '操作金额合计' }],
+};
+
+const accountConfig: CreditPanelConfig = {
+  actionWidth: 200,
+  baseQuery: { AgentType: 3, Status: 1, WalletType: 3 },
+  columns: [
+    { field: 'CreateTime', formatter: date, minWidth: 165, title: '创建时间' },
+    { field: 'AgentAccount', title: '系统账号' },
+    { field: 'AgentNickName', title: '账号昵称' },
+    { field: 'TotalCreditLimit', formatter: amount, title: '总额度（元）' },
+    { field: 'AccumulateCredit', formatter: amount, title: '累计额度申请（元）' },
+    { field: 'Credit', formatter: amount, title: '可用额度（元）' },
+    { field: 'AccumulateRecharge', formatter: amount, title: '累计充值（元）' },
+    { field: 'AccumulateDeduct', formatter: amount, title: '累计下分（元）' },
+    {
+      field: 'AccumulateCreditDeduct',
+      formatter: amount,
+      title: '累计额度扣除（元）',
+    },
+  ],
+  fetchApi: (query) => getDkAccountLimitListApi(query as never),
+  filters: [
+    { field: 'AgentAccount', label: '系统账号' },
+    { field: 'AgentNickName', label: '账号昵称' },
+  ],
+  showActions: checkPermission(11_891) || checkPermission(11_898),
+  summaries: [
+    { amount: true, field: 'TotalCredit', label: '可用额度合计' },
+    {
+      amount: true,
+      field: 'TotalAccumulateRecharge',
+      label: '累计充值合计',
+    },
+  ],
+};
+
+const adjustRecordConfig: CreditPanelConfig = {
+  baseQuery: { AgentType: 3, Status: '-1', WalletType: 3 },
+  columns: [
+    { field: 'TransferType', formatter: (_value, row) => changeType(row), title: '变更类型' },
+    { field: 'AgentAccount', title: '系统账号' },
+    { field: 'AgentNickName', title: '账号昵称' },
+    { field: 'AdjustAmount', formatter: amount, title: '额度变更（元）' },
+    { field: 'ApplyTime', formatter: date, minWidth: 165, title: '申请时间' },
+    { field: 'ApplyAccount', title: '申请人' },
+    { field: 'FinishTime', formatter: date, minWidth: 165, title: '审核时间' },
+    { field: 'FinishAccount', title: '审核人' },
+    {
+      field: 'Status',
+      formatter: (value) => CREDIT_APPROVE_STATUS_MAP[Number(value)] || '-',
+      title: '审核结果',
+    },
+  ],
+  exportFileName: checkPermission(11_902) ? '代客额度调整记录' : undefined,
+  fetchApi: (query) =>
+    getDkCreditLimitApplyRecordListApi(
+      withMillisecondRange(query, [['BeginFinishTime', 'EndFinishTime']]) as never,
+    ),
+  filters: [
+    { field: 'AgentAccount', label: '系统账号' },
+    { field: 'AgentNickName', label: '账号昵称' },
+    {
+      field: 'AdjustType',
+      label: '变更类型',
+      options: [
+        { label: '全部', value: '' },
+        { label: '申请额度', value: 3 },
+        { label: '扣除额度', value: 4 },
+      ],
+      type: 'select',
+    },
+    {
+      field: 'Status',
+      label: '审核结果',
+      options: [
+        { label: '全部', value: '-1' },
+        { label: '通过', value: 2 },
+        { label: '拒绝', value: 3 },
+      ],
+      type: 'select',
+    },
+    {
+      fields: ['BeginFinishTime', 'EndFinishTime'],
+      label: '审核时间',
+      type: 'dateRange',
+    },
+  ],
+  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '额度变更合计' }],
+};
+
+const logConfig: CreditPanelConfig = {
+  baseQuery: { AgentType: 3, WalletType: 3 },
+  columns: [
+    { field: 'TransferType', formatter: (_value, row) => changeType(row), title: '变更类型' },
+    { field: 'AdminAccount', title: '系统账号' },
+    { field: 'AgentNickName', title: '账号昵称' },
+    { field: 'AdjustAmount', formatter: amount, title: '额度变更（元）' },
+    { field: 'AdjustAmountBef', formatter: amount, title: '变更前额度（元）' },
+    { field: 'AdjustAmountAft', formatter: amount, title: '变更后额度（元）' },
+    { field: 'UpdateTime', formatter: date, minWidth: 165, title: '帐变时间' },
+    { field: 'ReviewNote', minWidth: 180, title: '备注' },
+  ],
+  exportFileName: checkPermission(11_903) ? '代客额度帐变记录' : undefined,
+  fetchApi: (query) =>
+    getDkNetCashLogListApi(
+      withMillisecondRange(query, [
+        ['TransferStartTime', 'TransferEndTime'],
+      ]) as never,
+    ),
+  filters: [
+    { field: 'AdminAccount', label: '系统账号' },
+    { field: 'AgentNickName', label: '账号昵称' },
+    {
+      field: 'AdjustType',
+      label: '变更类型',
+      options: [
+        { label: '全部', value: '' },
+        { label: '上分', value: 1 },
+        { label: '申请额度', value: 3 },
+        { label: '扣除额度', value: 4 },
+      ],
+      type: 'select',
+    },
+    {
+      fields: ['TransferStartTime', 'TransferEndTime'],
+      label: '帐变时间',
+      type: 'dateRange',
+    },
+  ],
+  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '额度变更合计' }],
+};
+
+const tabs = computed(() =>
+  [
+    { config: playerConfig, inner: 11_906, key: 'player', outer: 11_880, tab: '代客充值' },
+    { config: pendingConfig, inner: 11_893, key: 'pending', outer: 11_883, tab: '额度审核' },
+    { config: rechargeConfig, inner: 11_904, key: 'recharge', outer: 11_884, tab: '充值/下分记录' },
+    { config: accountConfig, inner: 11_889, key: 'account', outer: 11_885, tab: '账号列表' },
+    { config: adjustRecordConfig, inner: 11_899, key: 'record', outer: 11_887, tab: '额度调整记录' },
+    { config: logConfig, inner: 11_900, key: 'log', outer: 11_888, tab: '额度帐变记录' },
+  ].filter((tab) => checkPermission(tab.outer)),
+);
+const activeTab = ref('player');
+const canViewPage = computed(() => tabs.value.length > 0);
+
+const creditInfo = reactive({ AppliableAmount: 0, Credit: 0, TotalCreditLimit: 0 });
+const platformCredit = ref(0);
 async function loadCreditInfo() {
-  if (!canApplyCredit.value) {
-    return;
-  }
-  try {
-    const data = await getAgentDkAccountLimitApi();
-    const items = (
-      data?.Items && typeof data.Items === 'object' ? data.Items : data
-    ) as Record<string, unknown>;
-    creditInfo.Credit = Number(items?.Credit || 0) / 100;
-    creditInfo.AppliableAmount = Number(items?.AppliableAmount || 0) / 100;
-    creditInfo.TotalCreditLimit = Number(items?.TotalCreditLimit || 0) / 100;
-  } catch {
-    // ignore
-  }
+  const result = await getAgentDkAccountLimitApi();
+  const item = (result?.Items || result || {}) as Record<string, unknown>;
+  creditInfo.Credit = Number(item.Credit || 0);
+  creditInfo.AppliableAmount = Number(item.AppliableAmount || 0);
+  creditInfo.TotalCreditLimit = Number(item.TotalCreditLimit || 0);
+}
+async function loadPlatformCredit() {
+  const result = await getAgentCreditLimitApi({ Page: 1, PageSize: 1 });
+  const item = (result?.Items || result || {}) as Record<string, unknown>;
+  platformCredit.value = Number(item.Dkcredit || 0);
 }
 
-function openApplyModal() {
+const applyOpen = ref(false);
+const applySubmitting = ref(false);
+const applyForm = reactive({ AdjustAmount: undefined as number | undefined, ApplyNote: '' });
+function openApply() {
   applyForm.AdjustAmount = undefined;
   applyForm.ApplyNote = '';
-  applyModalOpen.value = true;
+  applyOpen.value = true;
   void loadCreditInfo();
 }
-
-async function submitApplyForm() {
-  if (!applyForm.AdjustAmount || applyForm.AdjustAmount === 0) {
-    message.warning('请输入申请额度');
+async function submitApply() {
+  const max = creditInfo.AppliableAmount / 100;
+  if (!applyForm.AdjustAmount || applyForm.AdjustAmount <= 0 || applyForm.AdjustAmount > max) {
+    message.warning(`申请额度必须大于 0 且不超过 ${max.toFixed(2)} 元`);
+    return;
+  }
+  if (!applyForm.ApplyNote.trim()) {
+    message.warning('请输入申请备注');
     return;
   }
   applySubmitting.value = true;
@@ -104,102 +435,109 @@ async function submitApplyForm() {
       AdjustAmount: Math.round(applyForm.AdjustAmount * 100),
       AgentType: 3,
       ApplyNote: applyForm.ApplyNote,
+      Hash: createRequestHash(),
       TransferType: 3,
       WalletType: 3,
     });
-    message.success('提交成功');
-    applyModalOpen.value = false;
-    void loadCreditInfo();
-    reloadCurrentGrid();
+    message.success('申请成功');
+    applyOpen.value = false;
+    await loadCreditInfo();
   } finally {
     applySubmitting.value = false;
   }
 }
 
-const adjustModalOpen = ref(false);
+const adjustOpen = ref(false);
 const adjustSubmitting = ref(false);
 const adjustForm = reactive({
   Amount: undefined as number | undefined,
   AvailableDeductAmount: 0,
-  Gold: '',
+  Gold: 0,
   PayPassword: '',
   PlayerId: 0,
   PlayerWallet: 0,
   ReferenceAccount: '',
   Remarks: '',
   WithdrawWaterMultiply: undefined as number | undefined,
-  dialogType: 'adjust' as 'adjust' | 'deduct',
+  mode: 'topup' as 'deduct' | 'topup',
 });
-
-function openAdjustModal(row: Record<string, unknown>) {
-  adjustForm.dialogType = 'adjust';
-  adjustForm.PlayerId = Number(row.PlayerId);
-  adjustForm.ReferenceAccount = String(row.LoginAccount || '');
-  adjustForm.Amount = undefined;
-  adjustForm.WithdrawWaterMultiply = undefined;
-  adjustForm.PayPassword = '';
-  adjustForm.Remarks = '';
-  adjustForm.PlayerWallet = 0;
-  adjustForm.Gold = (Number(row.Gold || 0) / 100).toFixed(2);
-  adjustForm.AvailableDeductAmount = 0;
-  adjustModalOpen.value = true;
+function openTopup(row: Record<string, unknown>) {
+  Object.assign(adjustForm, {
+    Amount: undefined,
+    AvailableDeductAmount: 0,
+    Gold: Number(row.Gold || 0) / 100,
+    PayPassword: '',
+    PlayerId: Number(row.PlayerId),
+    PlayerWallet: 0,
+    ReferenceAccount: String(row.LoginAccount || ''),
+    Remarks: '',
+    WithdrawWaterMultiply: undefined,
+    mode: 'topup',
+  });
+  adjustOpen.value = true;
 }
-
-async function openDeductModal(row: Record<string, unknown>) {
-  try {
-    const result = await getPlayerAvailableDeductCreditApi({
-      PlayerId: String(row.PlayerId),
-    });
-    const data = (result?.Items || result) as Record<string, unknown>;
-    const available = Number(data?.AvailableDeductAmount || 0);
-    const gold = Number(data?.Gold || 0);
-    if (!available || available <= 0 || gold <= 0) {
-      message.error('无可下分额度');
-      return;
-    }
-    adjustForm.dialogType = 'deduct';
-    adjustForm.PlayerId = Number(data.PlayerId || row.PlayerId);
-    adjustForm.ReferenceAccount = String(
-      data.LoginAccount || row.LoginAccount || '',
-    );
-    adjustForm.Amount = undefined;
-    adjustForm.WithdrawWaterMultiply = undefined;
-    adjustForm.PayPassword = '';
-    adjustForm.Remarks = '';
-    adjustForm.Gold = (gold / 100).toFixed(2);
-    adjustForm.AvailableDeductAmount = Math.min(available, gold) / 100;
-    adjustModalOpen.value = true;
-  } catch {
-    // request interceptor already tips
+async function openDeduct(row: Record<string, unknown>) {
+  const result = await getPlayerAvailableDeductCreditApi({
+    PlayerId: String(row.PlayerId),
+  });
+  const item = (result?.Items || result || {}) as Record<string, unknown>;
+  const available = Math.min(
+    Number(item.AvailableDeductAmount || 0),
+    Number(item.Gold || 0),
+  );
+  if (available <= 0) {
+    message.warning('无可下分额度');
+    return;
   }
+  Object.assign(adjustForm, {
+    Amount: undefined,
+    AvailableDeductAmount: available / 100,
+    Gold: Number(item.Gold || 0) / 100,
+    PayPassword: '',
+    PlayerId: Number(item.PlayerId || row.PlayerId),
+    PlayerWallet: 0,
+    ReferenceAccount: String(item.LoginAccount || row.LoginAccount || ''),
+    Remarks: '',
+    WithdrawWaterMultiply: undefined,
+    mode: 'deduct',
+  });
+  adjustOpen.value = true;
 }
-
-async function submitAdjustForm() {
+async function submitAdjust() {
   if (!adjustForm.Amount || adjustForm.Amount <= 0) {
-    message.warning('请输入金额');
+    message.warning('请输入正确金额');
     return;
   }
   if (
-    adjustForm.dialogType === 'deduct' &&
+    adjustForm.mode === 'deduct' &&
     adjustForm.Amount > adjustForm.AvailableDeductAmount
   ) {
     message.warning('超过可下分额度');
     return;
   }
+  if (
+    adjustForm.mode === 'topup' &&
+    (!Number.isInteger(adjustForm.WithdrawWaterMultiply) ||
+      Number(adjustForm.WithdrawWaterMultiply) < 1)
+  ) {
+    message.warning('流水倍数必须为大于 0 的整数');
+    return;
+  }
+  if (!adjustForm.Remarks.trim() || !adjustForm.PayPassword) {
+    message.warning('备注和支付密码为必填项');
+    return;
+  }
   adjustSubmitting.value = true;
   try {
-    const amountCent = Math.round(
-      adjustForm.dialogType === 'adjust'
-        ? adjustForm.Amount * 100
-        : -adjustForm.Amount * 100,
-    );
     await adjustDkPlayerMoneyApi({
+      Hash: createRequestHash(),
       Items: JSON.stringify([
         {
-          Amount: amountCent,
-          PayPassword: adjustForm.PayPassword,
+          Amount: Math.round(
+            (adjustForm.mode === 'topup' ? 1 : -1) * adjustForm.Amount * 100,
+          ),
           PlayerId: adjustForm.PlayerId,
-          PlayerWallet: adjustForm.PlayerWallet,
+          PlayerWallet: 0,
           ReferenceAccount: adjustForm.ReferenceAccount,
           Remarks: adjustForm.Remarks,
           WithdrawWaterMultiply: Math.round(
@@ -208,247 +546,284 @@ async function submitAdjustForm() {
         },
       ]),
       PayPassword: adjustForm.PayPassword,
-    });
+    } as never);
     message.success('操作成功');
-    adjustModalOpen.value = false;
-    reloadCurrentGrid();
+    adjustOpen.value = false;
+    panelRefs.player?.reload();
+    await loadCreditInfo();
   } finally {
     adjustSubmitting.value = false;
   }
 }
 
-const remarkModalOpen = ref(false);
-const remarkModalRow = ref<null | Record<string, unknown>>(null);
-const remarkModalIsApprove = ref(true);
-const remarkValue = ref('');
-const remarkSubmitting = ref(false);
-
-const remarkModalTitle = computed(() =>
-  remarkModalIsApprove.value ? '通过额度调整申请' : '拒绝额度调整申请',
-);
-
-function openRemarkModal(row: Record<string, unknown>, isApprove: boolean) {
-  remarkModalRow.value = row;
-  remarkModalIsApprove.value = isApprove;
-  remarkValue.value = '';
-  remarkModalOpen.value = true;
+interface BatchRow {
+  Amount: number;
+  PackageName: string;
+  PlayerId: number;
+  PlayerWallet: number;
+  ReferenceAccount: string;
+  Remarks: string;
+  WithdrawWaterMultiply: number;
 }
-
-async function submitRemarkModal() {
-  if (!remarkModalRow.value) {
+const batchOpen = ref(false);
+const batchSubmitting = ref(false);
+const batchRows = ref<BatchRow[]>([]);
+const batchPassword = ref('');
+const batchSelectedKeys = ref<number[]>([]);
+const batchStats = computed(() => {
+  const selected = batchSelectedKeys.value
+    .map((index) => batchRows.value[index])
+    .filter((row): row is BatchRow => row !== undefined);
+  return {
+    imported: batchRows.value.length,
+    invalid: batchRows.value.filter((row) => !row.PlayerId).length,
+    selected: selected.length,
+    selectedAmount: selected.reduce((sum, row) => sum + row.Amount, 0),
+    valid: batchRows.value.filter((row) => row.PlayerId).length,
+  };
+});
+function openBatch() {
+  batchRows.value = [];
+  batchPassword.value = '';
+  batchSelectedKeys.value = [];
+  batchOpen.value = true;
+}
+async function downloadBatchTemplate() {
+  const { utils, writeFile } = await import('xlsx');
+  const sheet = utils.json_to_sheet([
+    {
+      产品包: '示例产品',
+      会员账号: 'member001',
+      充值金额: 100,
+      流水倍数: 1,
+      申请备注: '批量充值',
+    },
+  ]);
+  const book = utils.book_new();
+  utils.book_append_sheet(book, sheet, '模板');
+  writeFile(book, '代客批量充值模板.xlsx');
+}
+async function beforeBatchUpload(file: File) {
+  if (file.size > 1024 * 1024) {
+    message.warning('文件不能超过 1MB');
+    return false;
+  }
+  const { read, utils } = await import('xlsx');
+  const workbook = read(await file.arrayBuffer());
+  const firstSheet = workbook.Sheets[workbook.SheetNames[0] || ''];
+  const rows = firstSheet
+    ? (utils.sheet_to_json(firstSheet) as Array<Record<string, unknown>>)
+    : [];
+  const valid = rows.filter(
+    (row) =>
+      row.会员账号 &&
+      row.产品包 &&
+      Number(row.充值金额) > 0 &&
+      Number.isInteger(Number(row.流水倍数)) &&
+      Number(row.流水倍数) >= 1 &&
+      row.申请备注,
+  );
+  if (valid.length !== rows.length || valid.length === 0) {
+    message.warning('导入格式错误或存在空行/无效金额');
+    return false;
+  }
+  const accountPackageKeys = valid.map(
+    (row) => `${String(row.会员账号).trim()}::${String(row.产品包).trim()}`,
+  );
+  if (new Set(accountPackageKeys).size !== accountPackageKeys.length) {
+    message.warning('同一产品包中存在重复会员账号，请清理后重新导入');
+    return false;
+  }
+  const result = await queryDkPlayersByExcelApi({
+    LoginAccount: valid.map((row) => row.会员账号).join(','),
+    MultiAmount: valid.map((row) => row.充值金额).join(','),
+    PackageName: valid.map((row) => row.产品包).join(','),
+  });
+  const items = result.Items || [];
+  batchRows.value = valid.map((row, index) => {
+    const player = items[index] || {};
+    return {
+      Amount: Number(row.充值金额),
+      PackageName: String(row.产品包),
+      PlayerId: Number(player.PlayerId || 0),
+      PlayerWallet: 0,
+      ReferenceAccount: String(player.LoginAccount || row.会员账号),
+      Remarks: String(row.申请备注),
+      WithdrawWaterMultiply: Number(row.流水倍数),
+    };
+  });
+  batchSelectedKeys.value = batchRows.value
+    .map((row, index) => (row.PlayerId ? index : -1))
+    .filter((index) => index >= 0);
+  return false;
+}
+async function submitBatch() {
+  const selected = batchSelectedKeys.value.map((index) => batchRows.value[index]!);
+  if (selected.length === 0 || !batchPassword.value) {
+    message.warning('请选择有效记录并输入支付密码');
     return;
   }
-  remarkSubmitting.value = true;
+  batchSubmitting.value = true;
   try {
-    const api = remarkModalIsApprove.value
-      ? approveCreditLimitApi
-      : rejectCreditLimitApi;
-    await api({
-      FinishNote: remarkValue.value,
-      Ids: String(remarkModalRow.value.Id),
-    });
-    message.success('操作成功');
-    remarkModalOpen.value = false;
-    reloadCurrentGrid();
+    await adjustDkPlayerMoneyApi({
+      Hash: createRequestHash(),
+      Items: JSON.stringify(
+        selected.map((row) => ({
+          ...row,
+          Amount: Math.round(row.Amount * 100),
+        })),
+      ),
+      PayPassword: batchPassword.value,
+    } as never);
+    message.success('批量充值成功');
+    batchOpen.value = false;
+    await loadCreditInfo();
   } finally {
-    remarkSubmitting.value = false;
+    batchSubmitting.value = false;
   }
 }
 
-const tabs = computed(() =>
-  [
-    {
-      config: {
-        actionWidth: 160,
-        columns: [
-          { field: 'LoginAccount', title: '游戏账号' },
-          { field: 'PackageName', title: '产品包' },
-          {
-            field: 'Gold',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '主钱包',
-          },
-          {
-            field: 'VipLevel',
-            formatter: (value) => `VIP ${value ?? '-'}`,
-            title: 'VIP',
-          },
-          { field: 'PromoterUserName', title: '所属代理' },
-          {
-            field: 'Status',
-            formatter: (value) =>
-              Number(value) === 1 ? '正常' : String(value ?? '-'),
-            title: '状态',
-          },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          getDkAccountLimitListApi(query as never),
-        filters: ['login', 'package'],
-        showActions: canTopup.value || canDeduct.value,
-      } satisfies NetcashGridConfig,
-      key: 'adjust',
-      permission: 11_880,
-      tab: '代客充值',
-    },
-    {
-      config: {
-        actionWidth: 140,
-        columns: [
-          { field: 'AgentAccount', title: '代理账号' },
-          { field: 'AgentNickName', title: '代理昵称' },
-          {
-            field: 'ApplyAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '申请额度',
-          },
-          {
-            field: 'Status',
-            formatter: (value) =>
-              CREDIT_APPROVE_STATUS_MAP[Number(value)] || String(value ?? '-'),
-            title: '状态',
-          },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '申请时间',
-          },
-        ],
-        extraQuery: { Status: 1 },
-        fetchApi: (query: Record<string, unknown>) =>
-          getDkCreditLimitApplyRecordListApi(query as never),
-        filters: ['username', 'date', 'status'],
-        showActions: canApproveCredit.value || canRejectCredit.value,
-        statusOptions: Object.entries(CREDIT_APPROVE_STATUS_MAP).map(
-          ([value, label]) => ({ label, value: Number(value) }),
-        ),
-      } satisfies NetcashGridConfig,
-      key: 'pending',
-      permission: 11_883,
-      tab: '额度审核',
-    },
-    {
-      config: {
-        columns: [
-          { field: 'AgentAccount', title: '代理账号' },
-          { field: 'LoginAccount', title: '游戏账号' },
-          {
-            field: 'Amount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '金额',
-          },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-          { field: 'Operator', title: '操作人' },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          fetchDkCreditRecordApi(query as never),
-        filters: ['agent', 'login', 'date'],
-      } satisfies NetcashGridConfig,
-      key: 'recharge',
-      permission: 11_884,
-      tab: '充值/下分记录',
-    },
-    {
-      config: {
-        columns: [
-          { field: 'LoginAccount', title: '游戏账号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          {
-            field: 'Credit',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '可用额度',
-          },
-          {
-            field: 'Gold',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '主钱包',
-          },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          getDkAccountLimitListApi(query as never),
-        filters: ['agent', 'login'],
-      } satisfies NetcashGridConfig,
-      key: 'account',
-      permission: 11_885,
-      tab: '账号列表',
-    },
-    {
-      config: {
-        columns: [
-          { field: 'AgentAccount', title: '代理账号' },
-          {
-            field: 'ApplyAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '申请额度',
-          },
-          {
-            field: 'Status',
-            formatter: (value) =>
-              CREDIT_APPROVE_STATUS_MAP[Number(value)] || String(value ?? '-'),
-            title: '状态',
-          },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '申请时间',
-          },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          getDkCreditLimitApplyRecordListApi(query as never),
-        filters: ['username', 'date', 'status'],
-        statusOptions: Object.entries(CREDIT_APPROVE_STATUS_MAP).map(
-          ([value, label]) => ({ label, value: Number(value) }),
-        ),
-      } satisfies NetcashGridConfig,
-      key: 'adjustRecord',
-      permission: 11_887,
-      tab: '额度调整记录',
-    },
-    {
-      config: {
-        columns: [
-          { field: 'AgentAccount', title: '代理账号' },
-          {
-            field: 'ApplyAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '变更金额',
-          },
-          {
-            field: 'AmountBefore',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '变更前额度',
-          },
-          {
-            field: 'AmountAfter',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '变更后额度',
-          },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          getDkNetCashLogListApi(query as never),
-        filters: ['username', 'date'],
-      } satisfies NetcashGridConfig,
-      key: 'log',
-      permission: 11_888,
-      tab: '额度帐变记录',
-    },
-  ].filter((item) => checkPermission(item.permission)),
-);
+const reviewOpen = ref(false);
+const reviewSubmitting = ref(false);
+const reviewApprove = ref(true);
+const reviewRow = ref<Record<string, unknown>>();
+const reviewNote = ref('');
+function openReview(row: Record<string, unknown>, approve: boolean) {
+  reviewRow.value = row;
+  reviewApprove.value = approve;
+  reviewNote.value = '';
+  reviewOpen.value = true;
+}
+function canReviewRow(row: Record<string, unknown>) {
+  return !isSameAcctActionRestricted(23, row.CreateAdminId as number | string);
+}
+async function submitReview() {
+  if (!reviewRow.value) return;
+  reviewSubmitting.value = true;
+  try {
+    await (reviewApprove.value ? approveCreditLimitApi : rejectCreditLimitApi)({
+      FinishNote: reviewNote.value,
+      Hash: createRequestHash(),
+      Ids: String(reviewRow.value.Id),
+    });
+    message.success('审核成功');
+    reviewOpen.value = false;
+    panelRefs.pending?.reload();
+    await loadPlatformCredit();
+  } finally {
+    reviewSubmitting.value = false;
+  }
+}
 
-const canViewPage = computed(() => tabs.value.length > 0);
-const activeTab = ref('adjust');
+const accountOpen = ref(false);
+const accountSubmitting = ref(false);
+const accountOptionsLoading = ref(false);
+const accountOptions = ref<
+  Array<{ label: string; nickname: string; value: string }>
+>([]);
+const accountForm = reactive({
+  AgentAccount: '',
+  AgentNickName: '',
+  Credit: 0,
+  CreditDeduct: undefined as number | undefined,
+  Id: '' as number | string,
+  TotalCreditLimit: undefined as number | undefined,
+  mode: 'add' as 'add' | 'deduct' | 'edit',
+});
+async function loadAccountOptions() {
+  accountOptionsLoading.value = true;
+  try {
+    const result = await getDkSharedConfigApi();
+    accountOptions.value = (result?.BOAdminName || []).map((item) => ({
+      label: item.Label,
+      nickname: String(item.Value2 || ''),
+      value: item.Label,
+    }));
+  } finally {
+    accountOptionsLoading.value = false;
+  }
+}
+function selectAccount(value: unknown) {
+  const selected = accountOptions.value.find(
+    (item) => item.value === String(value ?? ''),
+  );
+  accountForm.AgentNickName = selected?.nickname || '';
+}
+function openAccount(mode: typeof accountForm.mode, row?: Record<string, unknown>) {
+  Object.assign(accountForm, {
+    AgentAccount: String(row?.AgentAccount || ''),
+    AgentNickName: String(row?.AgentNickName || ''),
+    Credit: Number(row?.Credit || 0) / 100,
+    CreditDeduct: undefined,
+    Id: (row?.Id || '') as number | string,
+    TotalCreditLimit: row
+      ? Number(row.TotalCreditLimit || 0) / 100
+      : undefined,
+    mode,
+  });
+  accountOpen.value = true;
+  if (mode === 'add' && accountOptions.value.length === 0) {
+    void loadAccountOptions();
+  }
+}
+async function submitAccount() {
+  if (!accountForm.AgentAccount.trim()) {
+    message.warning('请输入系统账号');
+    return;
+  }
+  if (
+    accountForm.mode !== 'deduct' &&
+    (!accountForm.TotalCreditLimit || accountForm.TotalCreditLimit <= 0)
+  ) {
+    message.warning('请输入总额度');
+    return;
+  }
+  if (
+    accountForm.mode === 'deduct' &&
+    (!accountForm.CreditDeduct || accountForm.CreditDeduct <= 0)
+  ) {
+    message.warning('请输入扣除额度');
+    return;
+  }
+  accountSubmitting.value = true;
+  try {
+    const common = {
+      AgentAccount: accountForm.AgentAccount,
+      AgentNickName: accountForm.AgentNickName,
+      Hash: createRequestHash(),
+      Id: accountForm.Id,
+    };
+    if (accountForm.mode === 'add') {
+      await createDkAccountApi({
+        ...common,
+        TotalCreditLimit: Math.round(Number(accountForm.TotalCreditLimit) * 100),
+      });
+    } else if (accountForm.mode === 'edit') {
+      await editDkAccountApi({
+        ...common,
+        TotalCreditLimit: Math.round(Number(accountForm.TotalCreditLimit) * 100),
+      });
+    } else {
+      await deductDkAccountCreditApi({
+        ...common,
+        CreditDeduct: Math.round(Number(accountForm.CreditDeduct) * 100),
+      });
+    }
+    message.success('操作成功');
+    accountOpen.value = false;
+    panelRefs.account?.reload();
+  } finally {
+    accountSubmitting.value = false;
+  }
+}
 
 onMounted(() => {
-  activeTab.value = tabs.value[0]?.key || 'adjust';
-  void loadCreditInfo();
+  activeTab.value = tabs.value[0]?.key || 'player';
+  void Promise.allSettled([
+    loadAccountOptions(),
+    loadCreditInfo(),
+    loadPlatformCredit(),
+  ]);
 });
 </script>
 
@@ -456,162 +831,325 @@ onMounted(() => {
   <Page
     v-if="canViewPage"
     auto-content-height
-    description="代理网赚 · 代客充值"
+    description="完整迁移会员查询、额度申请审核、单笔/批量上下分、账号与账变记录"
     title="代客充值"
   >
     <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+      <Tabs v-model:active-key="activeTab" size="small" type="line">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <div
-            v-if="
-              item.key === 'adjust' && canApplyCredit && activeTab === 'adjust'
-            "
-            class="mb-4 flex flex-wrap items-center gap-3 rounded border border-dashed p-4 text-sm"
-          >
-            <span>可用额度：{{ creditInfo.Credit.toFixed(2) }}</span>
-            <span>可申请：{{ creditInfo.AppliableAmount.toFixed(2) }}</span>
-            <Button type="primary" @click="openApplyModal">申请额度</Button>
-          </div>
-          <NetcashGridPanel
-            v-if="item.config && activeTab === item.key"
-            ref="gridRefs"
+          <Result
+            v-if="!checkPermission(item.inner)"
+            status="403"
+            sub-title="无此模块查看权限"
+            title="403"
+          />
+          <CreditDataPanel
+            v-else-if="activeTab === item.key"
+            :ref="(el) => el && (panelRefs[item.key] = el as never)"
             :config="item.config"
           >
-            <template v-if="item.key === 'adjust'" #actions="{ row }">
-              <Space :size="0">
-                <Button
-                  v-if="canTopup"
-                  size="small"
-                  type="link"
-                  @click="openAdjustModal(row)"
-                >
+            <template #toolbar>
+              <template v-if="item.key === 'player'">
+                <Tag color="blue">
+                  代客可用额度：{{ formatAmountFromCent(creditInfo.Credit) }}
+                </Tag>
+                <Button @click="loadCreditInfo">刷新额度</Button>
+                <Button v-if="canApply" type="primary" @click="openApply">
+                  申请额度
+                </Button>
+                <Button v-if="canBatch" @click="openBatch">批量充值</Button>
+              </template>
+              <template v-else-if="item.key === 'pending'">
+                <Tag color="blue">
+                  平台代客可用额度：{{ formatAmountFromCent(platformCredit) }}
+                </Tag>
+                <Button @click="loadPlatformCredit">刷新额度</Button>
+              </template>
+              <Button
+                v-else-if="item.key === 'account' && checkPermission(11_890)"
+                type="primary"
+                @click="openAccount('add')"
+              >
+                新增账号
+              </Button>
+            </template>
+            <template #actions="{ row }">
+              <Space v-if="item.key === 'player'" :size="0">
+                <Button v-if="canTopup" size="small" type="link" @click="openTopup(row)">
                   上分
                 </Button>
-                <Button
-                  v-if="canDeduct"
-                  danger
-                  size="small"
-                  type="link"
-                  @click="openDeductModal(row)"
-                >
+                <Button v-if="canDeduct" danger size="small" type="link" @click="openDeduct(row)">
                   下分
                 </Button>
               </Space>
-            </template>
-            <template v-else-if="item.key === 'pending'" #actions="{ row }">
-              <Space :size="0">
+              <Space v-else-if="item.key === 'pending'" :size="0">
                 <Button
-                  v-if="canApproveCredit && Number(row.Status) === 1"
+                  v-if="canApprove"
+                  :disabled="!canReviewRow(row)"
                   size="small"
                   type="link"
-                  @click="openRemarkModal(row, true)"
+                  @click="openReview(row, true)"
                 >
                   通过
                 </Button>
                 <Button
-                  v-if="canRejectCredit && Number(row.Status) === 1"
+                  v-if="canReject"
+                  :disabled="!canReviewRow(row)"
                   danger
                   size="small"
                   type="link"
-                  @click="openRemarkModal(row, false)"
+                  @click="openReview(row, false)"
                 >
                   拒绝
                 </Button>
               </Space>
+              <Space v-else-if="item.key === 'account'" :size="0">
+                <Button
+                  v-if="checkPermission(11_891)"
+                  size="small"
+                  type="link"
+                  @click="openAccount('edit', row)"
+                >
+                  编辑总额度
+                </Button>
+                <Button
+                  v-if="checkPermission(11_898)"
+                  danger
+                  size="small"
+                  type="link"
+                  @click="openAccount('deduct', row)"
+                >
+                  扣除可用额度
+                </Button>
+              </Space>
             </template>
-          </NetcashGridPanel>
+          </CreditDataPanel>
         </Tabs.TabPane>
       </Tabs>
     </Card>
 
     <Modal
-      v-model:open="applyModalOpen"
+      v-model:open="applyOpen"
       :confirm-loading="applySubmitting"
-      title="申请额度"
-      @ok="submitApplyForm"
+      title="申请代客额度"
+      @ok="submitApply"
     >
       <Form layout="vertical">
-        <Form.Item label="当前可用额度">
-          <Input :value="creditInfo.Credit.toFixed(2)" disabled />
+        <Form.Item label="当前可用额度（元）">
+          <Input :value="formatAmountFromCent(creditInfo.Credit)" disabled />
         </Form.Item>
-        <Form.Item label="可申请额度">
-          <Input :value="creditInfo.AppliableAmount.toFixed(2)" disabled />
+        <Form.Item label="总额度（元）">
+          <Input :value="formatAmountFromCent(creditInfo.TotalCreditLimit)" disabled />
         </Form.Item>
-        <Form.Item label="申请额度（元）" required>
+        <Form.Item label="可申请额度（元）">
+          <Input :value="formatAmountFromCent(creditInfo.AppliableAmount)" disabled />
+        </Form.Item>
+        <Form.Item label="本次申请（元）" required>
           <InputNumber
             v-model:value="applyForm.AdjustAmount"
+            :max="creditInfo.AppliableAmount / 100"
             :min="0.01"
-            placeholder="请输入申请额度"
-            style="width: 100%"
+            :precision="2"
+            class="w-full"
           />
         </Form.Item>
-        <Form.Item label="备注">
-          <Input.TextArea v-model:value="applyForm.ApplyNote" :rows="3" />
+        <Form.Item label="申请备注" required>
+          <Input.TextArea v-model:value="applyForm.ApplyNote" :maxlength="100" :rows="4" />
         </Form.Item>
       </Form>
     </Modal>
 
     <Modal
-      v-model:open="adjustModalOpen"
+      v-model:open="adjustOpen"
       :confirm-loading="adjustSubmitting"
-      :title="adjustForm.dialogType === 'adjust' ? '上分' : '下分'"
-      @ok="submitAdjustForm"
+      :title="adjustForm.mode === 'topup' ? '会员上分' : '会员下分'"
+      @ok="submitAdjust"
     >
       <Form layout="vertical">
-        <Form.Item label="游戏账号">
+        <Form.Item label="会员账号">
           <Input v-model:value="adjustForm.ReferenceAccount" disabled />
         </Form.Item>
+        <Form.Item v-if="adjustForm.mode === 'deduct'" label="主钱包（元）">
+          <Input :value="adjustForm.Gold.toFixed(2)" disabled />
+        </Form.Item>
         <Form.Item
-          :label="
-            adjustForm.dialogType === 'adjust'
-              ? '上分金额（元）'
-              : '下分金额（元）'
-          "
+          :label="adjustForm.mode === 'topup' ? '充值金额（元）' : '下分金额（元）'"
           required
         >
           <InputNumber
             v-model:value="adjustForm.Amount"
+            :max="adjustForm.mode === 'deduct' ? adjustForm.AvailableDeductAmount : undefined"
             :min="0.01"
+            :precision="2"
+            class="w-full"
             :placeholder="
-              adjustForm.dialogType === 'deduct'
-                ? `可下分 ${adjustForm.AvailableDeductAmount}`
-                : '请输入金额'
+              adjustForm.mode === 'deduct'
+                ? `可下分 ${adjustForm.AvailableDeductAmount.toFixed(2)} 元`
+                : '请输入充值金额'
             "
-            style="width: 100%"
           />
         </Form.Item>
-        <Form.Item
-          v-if="adjustForm.dialogType === 'adjust'"
-          label="提现流水倍数"
-        >
+        <Form.Item v-if="adjustForm.mode === 'topup'" label="流水倍数" required>
           <InputNumber
             v-model:value="adjustForm.WithdrawWaterMultiply"
-            :min="0"
-            style="width: 100%"
+            :min="1"
+            :precision="0"
+            class="w-full"
           />
         </Form.Item>
-        <Form.Item label="支付密码">
-          <Input.Password
-            v-model:value="adjustForm.PayPassword"
-            placeholder="请输入支付密码"
-          />
+        <Form.Item :label="adjustForm.mode === 'topup' ? '申请备注' : '下分备注'" required>
+          <Input.TextArea v-model:value="adjustForm.Remarks" :maxlength="100" :rows="4" />
         </Form.Item>
-        <Form.Item label="备注">
-          <Input.TextArea v-model:value="adjustForm.Remarks" :rows="3" />
+        <Form.Item label="支付密码" required>
+          <Input.Password v-model:value="adjustForm.PayPassword" />
         </Form.Item>
       </Form>
     </Modal>
 
     <Modal
-      v-model:open="remarkModalOpen"
-      :confirm-loading="remarkSubmitting"
-      :title="remarkModalTitle"
-      @ok="submitRemarkModal"
+      v-model:open="batchOpen"
+      :confirm-loading="batchSubmitting"
+      title="批量充值"
+      width="900px"
+      @ok="submitBatch"
+    >
+      <Space class="mb-4">
+        <Upload :before-upload="beforeBatchUpload" :show-upload-list="false" accept=".xlsx,.xls">
+          <Button>选择 Excel 文件</Button>
+        </Upload>
+        <Button @click="downloadBatchTemplate">下载模板</Button>
+        <span class="text-gray-500">文件不超过 1MB，重复账号请先在表格中清理</span>
+      </Space>
+      <div v-if="batchRows.length > 0" class="mb-4 flex flex-wrap gap-2">
+        <Tag>导入：{{ batchStats.imported }}</Tag>
+        <Tag color="green">有效：{{ batchStats.valid }}</Tag>
+        <Tag :color="batchStats.invalid ? 'red' : 'default'">
+          无效：{{ batchStats.invalid }}
+        </Tag>
+        <Tag color="blue">已选：{{ batchStats.selected }}</Tag>
+        <Tag color="blue">
+          已选总金额：{{ batchStats.selectedAmount.toFixed(2) }} 元
+        </Tag>
+      </div>
+      <Table
+        :columns="[
+          { dataIndex: 'ReferenceAccount', title: '会员账号' },
+          { dataIndex: 'PackageName', title: '产品包' },
+          { dataIndex: 'Amount', title: '充值金额（元）' },
+          { dataIndex: 'WithdrawWaterMultiply', title: '流水倍数' },
+          { dataIndex: 'Remarks', title: '申请备注' },
+          { key: 'valid', title: '匹配结果' },
+        ]"
+        :data-source="batchRows"
+        :pagination="false"
+        :row-key="(_row, index) => index!"
+        :row-selection="{
+          selectedRowKeys: batchSelectedKeys,
+          getCheckboxProps: (row) => ({ disabled: !row.PlayerId }),
+          onChange: (keys) => (batchSelectedKeys = keys.map(Number)),
+        }"
+        size="small"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'valid'">
+            <Tag :color="record.PlayerId ? 'green' : 'red'">
+              {{ record.PlayerId ? '有效' : '未匹配' }}
+            </Tag>
+          </template>
+        </template>
+      </Table>
+      <Form class="mt-4" layout="vertical">
+        <Form.Item label="支付密码" required>
+          <Input.Password v-model:value="batchPassword" />
+        </Form.Item>
+      </Form>
+    </Modal>
+
+    <Modal
+      v-model:open="reviewOpen"
+      :confirm-loading="reviewSubmitting"
+      :title="reviewApprove ? '通过代客额度申请' : '拒绝代客额度申请'"
+      @ok="submitReview"
+    >
+      <Alert
+        class="mb-4"
+        :message="
+          reviewApprove
+            ? '确认通过后将从平台代客可用额度中扣除本次申请额度。'
+            : '确认拒绝后，本次额度申请将不会生效。'
+        "
+        show-icon
+        type="warning"
+      />
+      <Form layout="vertical">
+        <Form.Item label="系统账号">
+          <Input :value="String(reviewRow?.AgentAccount || '')" disabled />
+        </Form.Item>
+        <Form.Item label="申请额度（元）">
+          <Input :value="formatAmountFromCent(Number(reviewRow?.AdjustAmount))" disabled />
+        </Form.Item>
+        <Form.Item label="审核备注">
+          <Input.TextArea v-model:value="reviewNote" :maxlength="100" :rows="4" />
+        </Form.Item>
+      </Form>
+    </Modal>
+
+    <Modal
+      v-model:open="accountOpen"
+      :confirm-loading="accountSubmitting"
+      :title="
+        accountForm.mode === 'add'
+          ? '新增代客账号'
+          : accountForm.mode === 'edit'
+            ? '编辑总额度'
+            : '扣除可用额度'
+      "
+      @ok="submitAccount"
     >
       <Form layout="vertical">
-        <Form.Item label="备注">
-          <Input.TextArea v-model:value="remarkValue" :rows="3" />
+        <Form.Item label="系统账号" required>
+          <Select
+            v-if="accountForm.mode === 'add'"
+            v-model:value="accountForm.AgentAccount"
+            :loading="accountOptionsLoading"
+            :options="accountOptions"
+            class="w-full"
+            placeholder="请选择后台账号"
+            show-search
+            @change="selectAccount"
+          />
+          <Input v-else v-model:value="accountForm.AgentAccount" disabled />
         </Form.Item>
+        <Form.Item label="账号昵称">
+          <Input v-model:value="accountForm.AgentNickName" :disabled="accountForm.mode !== 'add'" />
+        </Form.Item>
+        <Form.Item label="总额度（元）" required>
+          <InputNumber
+            v-model:value="accountForm.TotalCreditLimit"
+            :disabled="accountForm.mode === 'deduct'"
+            :min="0.01"
+            :precision="2"
+            class="w-full"
+          />
+        </Form.Item>
+        <Form.Item v-if="accountForm.mode === 'deduct'" label="当前可用额度（元）">
+          <Input :value="accountForm.Credit.toFixed(2)" disabled />
+        </Form.Item>
+        <Form.Item v-if="accountForm.mode === 'deduct'" label="扣除可用额度（元）" required>
+          <InputNumber
+            v-model:value="accountForm.CreditDeduct"
+            :max="accountForm.Credit"
+            :min="0.01"
+            :precision="2"
+            class="w-full"
+          />
+        </Form.Item>
+        <Alert
+          v-if="accountForm.mode === 'deduct'"
+          message="若扣除当前全部可用额度，该账号将无法继续进行代客充值。"
+          show-icon
+          type="warning"
+        />
       </Form>
     </Modal>
   </Page>

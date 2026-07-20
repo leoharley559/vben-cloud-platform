@@ -1,4 +1,3 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   ChannelDataResult,
@@ -14,6 +13,8 @@ import type {
   LandingPageItem,
   PromoteDataBaseQuery,
 } from '#/types/promotion';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 function normalizeArrayQuery(query: Record<string, unknown>, fields: string[]) {
@@ -21,7 +22,7 @@ function normalizeArrayQuery(query: Record<string, unknown>, fields: string[]) {
   for (const field of fields) {
     const value = params[field];
     if (Array.isArray(value)) {
-      params[field] = value.length ? value.join(',') : '';
+      params[field] = value.length > 0 ? value.join(',') : '';
     }
   }
   return params;
@@ -32,6 +33,7 @@ export function fetchChannelDataListApi(query: PromoteDataBaseQuery) {
     '/backend/promotedata/channelreport',
     {
       params: normalizeArrayQuery(query as unknown as Record<string, unknown>, [
+        'AdminIds',
         'ChannelIds',
       ]),
     },
@@ -43,6 +45,7 @@ export function fetchDropChangeListApi(query: DropChangeListQuery) {
     '/backend/promotedata/getsumrecord',
     {
       params: normalizeArrayQuery(query as unknown as Record<string, unknown>, [
+        'AdminIds',
         'ChannelIds',
       ]),
     },
@@ -54,6 +57,7 @@ export function fetchInvalidUserApi(query: PromoteDataBaseQuery) {
     '/backend/promotedata/invaliduser',
     {
       params: normalizeArrayQuery(query as unknown as Record<string, unknown>, [
+        'AdminIds',
         'ChannelIds',
       ]),
     },
@@ -65,6 +69,7 @@ export function fetchHandRecordListApi(query: HandRecordListQuery) {
     '/backend/handrecord/list',
     {
       params: normalizeArrayQuery(query as unknown as Record<string, unknown>, [
+        'AdminIds',
         'ChannelIds',
       ]),
     },
@@ -87,10 +92,14 @@ export function deleteHandRecordApi(id: number | string) {
   return requestClient.delete(`/backend/handrecord/${id}`);
 }
 
-export function fetchLandingPageListApi() {
-  return requestClient.get<CloudListResult<LandingPageItem>>(
+export async function fetchLandingPageListApi() {
+  const data = await requestClient.get<
+    CloudListResult<LandingPageItem> | LandingPageItem[] | null
+  >(
     '/backend/landingpage/listall',
   );
+  if (!data) return [];
+  return Array.isArray(data) ? data : data.Items || [];
 }
 
 export function fetchChannelRecoupListApi(query: ChannelRecoupListQuery) {

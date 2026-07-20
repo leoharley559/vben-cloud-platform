@@ -1,30 +1,60 @@
+import type {
+  NetcashListQuery,
+  NetcashListResult,
+  PlatformCreditApplyPayload,
+  PlatformCreditApplyRecord,
+  PlatformCreditApplyRecordQuery,
+  PlatformCreditInfo,
+  PlatformCreditReviewPayload,
+  PlatformNetCashLog,
+  PlatformNetCashLogQuery,
+} from '#/types/netcash';
+
 import { requestClient } from '#/api/request';
-import type { NetcashListQuery, NetcashListResult } from '#/types/netcash';
 import { trimSpace } from '#/utils/string';
 
+function normalizeList<T>(
+  result?: NetcashListResult<T> | null,
+): NetcashListResult<T> {
+  return {
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    Pagination: result?.Pagination || { MaxCount: 0 },
+    Total: result?.Total || {},
+  };
+}
+
 export function getPlatformAgentCreditLimitApi(query: NetcashListQuery) {
-  return requestClient.get<Record<string, unknown>>(
+  return requestClient.get<PlatformCreditInfo>(
     '/backend/agentcreditlimit/getagentcreditlimit',
     { params: trimSpace(query) },
   );
 }
 
-export function getPlatformCreditLimitApplyRecordListApi(
-  query: NetcashListQuery,
+export async function getPlatformCreditLimitApplyRecordListApi(
+  query: PlatformCreditApplyRecordQuery,
 ) {
-  return requestClient.get<NetcashListResult>(
+  const result = await requestClient.get<
+    NetcashListResult<PlatformCreditApplyRecord>
+  >(
     '/backend/agentcreditlimitapplyrecord/list',
     { params: trimSpace(query) },
   );
+  return normalizeList(result);
 }
 
-export function getPlatformNetCashLogListApi(query: NetcashListQuery) {
-  return requestClient.get<NetcashListResult>('/backend/netcashlog/list', {
-    params: trimSpace(query),
-  });
+export async function getPlatformNetCashLogListApi(
+  query: PlatformNetCashLogQuery,
+) {
+  const result = await requestClient.get<NetcashListResult<PlatformNetCashLog>>(
+    '/backend/netcashlog/list',
+    {
+      params: trimSpace(query),
+    },
+  );
+  return normalizeList(result);
 }
 
-export function applyPlatformCreditApi(data: Record<string, unknown>) {
+export function applyPlatformCreditApi(data: PlatformCreditApplyPayload) {
   return requestClient.post(
     '/backend/agentcreditlimitapplyrecord/applyplatformcredit',
     data,
@@ -32,7 +62,7 @@ export function applyPlatformCreditApi(data: Record<string, unknown>) {
 }
 
 export function approvePlatformCreditAdjustmentApi(
-  data: Record<string, unknown>,
+  data: PlatformCreditReviewPayload,
 ) {
   return requestClient.post(
     '/backend/agentcreditlimitapplyrecord/approve',
@@ -41,7 +71,7 @@ export function approvePlatformCreditAdjustmentApi(
 }
 
 export function rejectPlatformCreditAdjustmentApi(
-  data: Record<string, unknown>,
+  data: PlatformCreditReviewPayload,
 ) {
   return requestClient.post(
     '/backend/agentcreditlimitapplyrecord/reject',

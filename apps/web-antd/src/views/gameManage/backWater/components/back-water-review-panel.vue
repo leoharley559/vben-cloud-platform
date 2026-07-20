@@ -1,122 +1,333 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
+  DatePicker,
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
+  Radio,
+  Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
+import dayjs from 'dayjs';
 
-import {
-  fetchBackWaterReviewListApi,
-  reviewBackWaterApi,
-} from '#/api/gameManage';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import {
+  exportBackWaterRecordApi,
+  fetchBackWaterRecordApi,
+  fetchBackWaterReviewApi,
+  fetchBackWaterSchemesApi,
+  reviewBackWaterApi,
+} from '#/api/gameManage/back-water';
+import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'BackWaterReviewPanel' });
 
+type ReviewMode = 'manual' | 'system';
 interface ReviewRow {
   ApplyBackWater?: number;
-  Approve?: number;
+  AwardDesc?: string;
+  AwardTime?: number | string;
   BackWater?: number;
+  ChannelId?: number | string;
+  ChannelName?: string;
+  ConfigName?: string;
+  CreateTime?: number | string;
   Id: number | string;
   LoginAccount?: string;
+  OrderId?: string;
+  PackageName?: string;
   PlayerId?: number | string;
-  Status?: number;
+  RebateMode?: number;
+  Reject?: number;
+  ReviewStatus?: number;
+  VipLevel?: number;
 }
 
 const { checkPermission } = useCloudPermission();
-const canReview = computed(
-  () => checkPermission(11076) || checkPermission(11077),
-);
-const canBatchApprove = computed(() => checkPermission(12670));
-const canBatchReject = computed(() => checkPermission(12671));
-
-const actionId = ref<number | string>();
-const batchLoading = ref(false);
-const selectedRows = ref<ReviewRow[]>([]);
-const approveVisible = ref(false);
-const saving = ref(false);
-const approveForm = reactive({
-  Id: '' as number | string,
+const { packageOptions } = useOperationOptions();
+const canSystem = computed(() => checkPermission(12_662));
+const canManual = computed(() => checkPermission(12_668));
+const mode = ref<ReviewMode>(canSystem.value ? 'system' : 'manual');
+const schemes = ref<Array<Record<string, unknown>>>([]);
+const levels = ref<Array<Record<string, unknown>>>([]);
+const dateRange = ref<[Dayjs, Dayjs]>([
+  dayjs().subtract(1, 'day').startOf('day'),
+  dayjs().subtract(1, 'day').endOf('day'),
+]);
+const filters = reactive({
+  AdminName: '',
+  ApplyMax: undefined as number | undefined,
+  ApplyMin: undefined as number | undefined,
+  ChannelIds: [] as Array<number | string>,
+  ConfigId: '' as number | string,
+  LevelId: -1 as number | string,
   LoginAccount: '',
-  Real: 0,
+  OrderId: '',
+  PackId: '' as number | string,
+  RebateMode: -1,
+  VipLevel: -1,
 });
+const selected = ref<ReviewRow[]>([]);
+const actionLoading = ref(false);
+const approveVisible = ref(false);
+const rejectVisible = ref(false);
+const actionRows = ref<ReviewRow[]>([]);
+const approveAmount = ref<number>();
+const rejectDesc = ref('');
+const exportVisible = ref(false);
+const exportCode = ref('');
 
-const selectedIds = computed(() =>
-  selectedRows.value
-    .map((row) => row.Id)
-    .filter(Boolean)
-    .join(','),
+const canSystemList = computed(() => checkPermission(12_663));
+const canSystemBatchApprove = computed(() => checkPermission(12_664));
+const canSystemBatchReject = computed(() => checkPermission(12_665));
+const canSystemApprove = computed(() => checkPermission(12_666));
+const canSystemReject = computed(() => checkPermission(12_667));
+const canSystemExport = computed(() => checkPermission(12_674));
+const canManualList = computed(() => checkPermission(12_669));
+const canManualBatchApprove = computed(() => checkPermission(12_670));
+const canManualBatchReject = computed(() => checkPermission(12_671));
+const canManualApprove = computed(() => checkPermission(12_672));
+const canManualReject = computed(() => checkPermission(12_673));
+const canBatchApprove = computed(() =>
+  mode.value === 'system'
+    ? canSystemBatchApprove.value
+    : canManualBatchApprove.value,
 );
-const hasSelection = computed(() => selectedRows.value.length > 0);
+const canBatchReject = computed(() =>
+  mode.value === 'system'
+    ? canSystemBatchReject.value
+    : canManualBatchReject.value,
+);
 
-function isPending(row: ReviewRow) {
-  const status = Number(row.Approve ?? row.Status ?? 0);
-  return status === 0 || status === 10;
+const packageOptionsList = computed(() =>
+  packageOptions.value.map((item) => ({
+    label: item.PackageName,
+    value: item.PackageId,
+  })),
+);
+const schemeOptions = computed(() => [
+  { label: '全部方案', value: '' },
+  ...schemes.value.map((item) => ({
+    label: String(item.Name || item.Id),
+    value: item.Id as number | string,
+  })),
+]);
+const levelOptions = computed(() => [
+  { label: '全部层级', value: -1 },
+  ...levels.value.map((item) => ({
+    label: String(item.LevelName || item.Id),
+    value: item.Id as number | string,
+  })),
+]);
+const vipOptions = computed(() => [
+  { label: '全部 VIP', value: -1 },
+  ...Array.from({ length: 11 }, (_, index) => ({
+    label: `VIP${index}`,
+    value: index,
+  })),
+]);
+
+function pending(row: ReviewRow) {
+  return mode.value === 'system'
+    ? Number(row.Reject) === 2
+    : Number(row.ReviewStatus) === 0;
 }
 
-function statusText(row: ReviewRow) {
-  const status = Number(row.Approve ?? row.Status ?? 0);
-  if (status === 1 || status === 11) {
-    return '已通过';
-  }
-  if (status === 2 || status === 12) {
-    return '已拒绝';
+function reviewState(row: ReviewRow) {
+  const value =
+    mode.value === 'system' ? Number(row.Reject) : Number(row.ReviewStatus);
+  if (mode.value === 'system') {
+    if (value === 1) return '已通过';
+    if (value === 3) return '已拒绝';
+  } else {
+    if (value === 1) return '已通过';
+    if (value === 2) return '已拒绝';
   }
   return '待审核';
 }
 
-const gridOptions: VxeTableGridOptions<ReviewRow> = {
-  checkboxConfig: {
-    checkMethod: ({ row }) => isPending(row as ReviewRow),
+function queryParams(page: { currentPage: number; pageSize: number }) {
+  const common = {
+    BeginTime: dateRange.value[0].startOf('day').unix(),
+    ChannelIds: filters.ChannelIds.join(','),
+    EndTime: dateRange.value[1].endOf('day').unix(),
+    LoginAccount: filters.LoginAccount.trim().toLowerCase(),
+    OrderId: filters.OrderId.trim(),
+    Page: page.currentPage,
+    PageSize: page.pageSize,
+    VipLevel: filters.VipLevel,
+  };
+  if (mode.value === 'system') {
+    return {
+      ...common,
+      AdminName: filters.AdminName.trim(),
+      AwardStatus: -1,
+      AwardType: -1,
+      ConfigId: filters.ConfigId,
+      LevelId: filters.LevelId,
+      PackId: filters.PackId,
+      RebateMode: filters.RebateMode,
+      Reject: 1,
+      Sum: 1,
+    };
+  }
+  return {
+    ...common,
+    ApplyMax:
+      filters.ApplyMax === undefined
+        ? ''
+        : Math.round(filters.ApplyMax * 100),
+    ApplyMin:
+      filters.ApplyMin === undefined
+        ? ''
+        : Math.round(filters.ApplyMin * 100),
+    PackageId: filters.PackId,
+  };
+}
+
+const systemColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
+  { type: 'checkbox', width: 50 },
+  { field: 'OrderId', minWidth: 190, title: '订单号' },
+  { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+  {
+    field: 'VipLevel',
+    formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
+    width: 90,
+    title: 'VIP 等级',
   },
-  columns: [
-    { type: 'checkbox', width: 50 },
-    { field: 'LoginAccount', minWidth: 120, title: '玩家账号' },
-    {
-      field: 'ApplyBackWater',
-      formatter: ({ cellValue, row }) =>
-        formatAmountFromCent(Number(cellValue ?? row.BackWater ?? 0)),
-      minWidth: 120,
-      title: '申请返水',
-    },
-    {
-      field: 'Approve',
-      slots: { default: 'status' },
-      title: '状态',
-      width: 100,
-    },
-    {
-      field: 'action',
-      fixed: 'right',
-      slots: { default: 'action' },
-      title: '操作',
-      width: 160,
-    },
-  ],
+  { field: 'LevelName', minWidth: 110, title: '玩家层级' },
+  { field: 'AdminName', minWidth: 110, title: '代理账号' },
+  { field: 'PackageName', minWidth: 120, title: '所属产品' },
+  {
+    field: 'ChannelName',
+    formatter: ({ row }) => `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
+    minWidth: 140,
+    title: '所属渠道',
+  },
+  { field: 'ConfigName', minWidth: 120, title: '返水方案' },
+  {
+    field: 'BackWater',
+    formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+    minWidth: 110,
+    title: '返水金额',
+  },
+  {
+    field: 'CreateTime',
+    formatter: ({ cellValue }) =>
+      formatOperationDateTime(cellValue as number | string),
+    minWidth: 170,
+    title: '生成时间',
+  },
+  {
+    field: 'AwardTime',
+    formatter: ({ cellValue }) =>
+      formatOperationDateTime(cellValue as number | string),
+    minWidth: 170,
+    title: '发放时间',
+  },
+  {
+    field: 'action',
+    fixed: 'right',
+    slots: { default: 'action' },
+    title: '操作',
+    width: 160,
+  },
+];
+
+const manualColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
+  { type: 'checkbox', width: 50 },
+  { field: 'OrderId', minWidth: 190, title: '订单号' },
+  { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+  { field: 'PackageName', minWidth: 120, title: '所属产品' },
+  {
+    field: 'ChannelName',
+    formatter: ({ row }) => `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
+    minWidth: 140,
+    title: '所属渠道',
+  },
+  {
+    field: 'VipLevel',
+    formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
+    width: 90,
+    title: 'VIP 等级',
+  },
+  {
+    field: 'ApplyBackWater',
+    formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+    minWidth: 110,
+    title: '申请金额',
+  },
+  { field: 'AwardDesc', minWidth: 150, title: '申请原因' },
+  {
+    field: 'BackWater',
+    formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+    minWidth: 110,
+    title: '实际发放',
+  },
+  {
+    field: 'AwardTime',
+    formatter: ({ cellValue }) =>
+      formatOperationDateTime(cellValue as number | string),
+    minWidth: 170,
+    title: '发放时间',
+  },
+  {
+    field: 'CreateTime',
+    formatter: ({ cellValue }) =>
+      formatOperationDateTime(cellValue as number | string),
+    minWidth: 170,
+    title: '生成时间',
+  },
+  {
+    field: 'action',
+    fixed: 'right',
+    slots: { default: 'action' },
+    title: '操作',
+    width: 180,
+  },
+];
+
+const gridOptions: VxeTableGridOptions<ReviewRow> = {
+  checkboxConfig: { checkMethod: ({ row }) => pending(row as ReviewRow) },
+  columns: systemColumns,
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchBackWaterReviewListApi({
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-        });
+        const allowed =
+          mode.value === 'system'
+            ? canSystemList.value
+            : canManualList.value;
+        if (!allowed) return { items: [], total: 0 };
+        const result =
+          mode.value === 'system'
+            ? await fetchBackWaterRecordApi(queryParams(page))
+            : await fetchBackWaterReviewApi(queryParams(page));
         const items = (result.Items || []) as unknown as ReviewRow[];
         return {
           items,
-          total: Number(result.Pagination?.MaxCount || items.length),
+          total: Number(
+            result.Pagination?.MaxCount ??
+              result.Count ??
+              result.Total ??
+              items.length,
+          ),
         };
       },
     },
@@ -126,190 +337,424 @@ const gridOptions: VxeTableGridOptions<ReviewRow> = {
 const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents: {
     checkboxAll: ({ records }: { records: ReviewRow[] }) => {
-      selectedRows.value = records;
+      selected.value = records;
     },
     checkboxChange: ({ records }: { records: ReviewRow[] }) => {
-      selectedRows.value = records;
+      selected.value = records;
     },
   },
   gridOptions,
 });
 
 function clearSelection() {
-  selectedRows.value = [];
+  selected.value = [];
   gridApi.grid?.clearCheckboxRow();
 }
 
-function openApprove(row: ReviewRow) {
-  approveForm.Id = row.Id;
-  approveForm.LoginAccount = String(row.LoginAccount || '');
-  approveForm.Real = Number(row.ApplyBackWater ?? row.BackWater ?? 0) / 100;
-  approveVisible.value = true;
+async function switchMode(next: ReviewMode) {
+  mode.value = next;
+  clearSelection();
+  gridApi.setGridOptions({
+    checkboxConfig: {
+      checkMethod: ({ row }: { row: ReviewRow }) => pending(row),
+    },
+    columns: next === 'system' ? systemColumns : manualColumns,
+  });
+  await gridApi.grid?.setCurrentPage?.(1);
+  await gridApi.query();
+}
+
+async function search() {
+  if (
+    filters.ApplyMin !== undefined &&
+    filters.ApplyMax !== undefined &&
+    filters.ApplyMin >= filters.ApplyMax
+  ) {
+    message.warning('最小申请金额必须小于最大申请金额');
+    return;
+  }
+  await gridApi.grid?.setCurrentPage?.(1);
+  await gridApi.query();
+}
+
+function reset() {
+  Object.assign(filters, {
+    AdminName: '',
+    ApplyMax: undefined,
+    ApplyMin: undefined,
+    ChannelIds: [],
+    ConfigId: '',
+    LevelId: -1,
+    LoginAccount: '',
+    OrderId: '',
+    PackId: '',
+    RebateMode: -1,
+    VipLevel: -1,
+  });
+  dateRange.value = [
+    dayjs().subtract(1, 'day').startOf('day'),
+    dayjs().subtract(1, 'day').endOf('day'),
+  ];
+  void search();
+}
+
+function approve(rows: ReviewRow[]) {
+  actionRows.value = rows;
+  if (mode.value === 'manual' && rows.length === 1) {
+    approveAmount.value =
+      Number(rows[0]?.ApplyBackWater ?? rows[0]?.BackWater ?? 0) / 100;
+    approveVisible.value = true;
+    return;
+  }
+  Modal.confirm({
+    content: `确认通过 ${rows.length} 条返水申请？`,
+    title: rows.length > 1 ? '批量通过' : '通过申请',
+    onOk: () => submitApprove(),
+  });
 }
 
 async function submitApprove() {
-  if (!approveForm.Real || approveForm.Real <= 0) {
-    message.warning('请输入实际返水金额');
+  if (
+    mode.value === 'manual' &&
+    actionRows.value.length === 1 &&
+    (!approveAmount.value || approveAmount.value <= 0)
+  ) {
+    message.warning('请输入实际发放金额');
     return;
   }
-  saving.value = true;
+  actionLoading.value = true;
   try {
     await reviewBackWaterApi({
-      Approve: 1,
-      Ids: approveForm.Id,
-      Real: Math.round(approveForm.Real * 100),
+      Approve: mode.value === 'system' ? 10 : 1,
+      Ids: actionRows.value.map((item) => item.Id).join(','),
+      Real:
+        mode.value === 'manual' && actionRows.value.length === 1
+          ? Math.round(Number(approveAmount.value) * 100)
+          : 0,
     });
     message.success('审核通过');
     approveVisible.value = false;
     clearSelection();
     await gridApi.reload();
   } finally {
-    saving.value = false;
+    actionLoading.value = false;
   }
 }
 
-function handleReject(row: ReviewRow) {
-  Modal.confirm({
-    content: `确认拒绝玩家「${row.LoginAccount}」的返水申请？`,
-    onOk: async () => {
-      actionId.value = row.Id;
-      try {
-        await reviewBackWaterApi({ Approve: 2, Ids: row.Id });
-        message.success('已拒绝');
-        clearSelection();
-        await gridApi.reload();
-      } finally {
-        actionId.value = undefined;
-      }
-    },
-    title: '拒绝审核',
-  });
-}
-
-function handleBatchApprove() {
-  if (!selectedIds.value) {
-    message.warning('请先勾选待审核记录');
+function reject(rows: ReviewRow[]) {
+  actionRows.value = rows;
+  if (mode.value === 'system') {
+    rejectDesc.value = '';
+    rejectVisible.value = true;
     return;
   }
   Modal.confirm({
-    content: `确认批量通过 ${selectedRows.value.length} 条返水申请？`,
-    onOk: async () => {
-      batchLoading.value = true;
-      try {
-        await reviewBackWaterApi({
-          Approve: 1,
-          Ids: selectedIds.value,
-          Real: 0,
-        });
-        message.success('批量审核通过');
-        clearSelection();
-        await gridApi.reload();
-      } finally {
-        batchLoading.value = false;
-      }
-    },
-    title: '批量通过',
+    content: `确认拒绝 ${rows.length} 条返水申请？`,
+    title: rows.length > 1 ? '批量拒绝' : '拒绝申请',
+    onOk: () => submitReject(),
   });
 }
 
-function handleBatchReject() {
-  if (!selectedIds.value) {
-    message.warning('请先勾选待审核记录');
+async function submitReject() {
+  if (mode.value === 'system' && !rejectDesc.value.trim()) {
+    message.warning('请输入审核备注');
     return;
   }
-  Modal.confirm({
-    content: `确认批量拒绝 ${selectedRows.value.length} 条返水申请？`,
-    onOk: async () => {
-      batchLoading.value = true;
-      try {
-        await reviewBackWaterApi({
-          Approve: 2,
-          Ids: selectedIds.value,
-        });
-        message.success('批量拒绝成功');
-        clearSelection();
-        await gridApi.reload();
-      } finally {
-        batchLoading.value = false;
-      }
-    },
-    title: '批量拒绝',
-  });
+  actionLoading.value = true;
+  try {
+    await reviewBackWaterApi({
+      Approve: mode.value === 'system' ? 11 : 2,
+      Ids: actionRows.value.map((item) => item.Id).join(','),
+      ReviewDesc: mode.value === 'system' ? rejectDesc.value.trim() : undefined,
+    });
+    message.success('已拒绝');
+    rejectVisible.value = false;
+    clearSelection();
+    await gridApi.reload();
+  } finally {
+    actionLoading.value = false;
+  }
 }
+
+async function submitExport() {
+  if (!/^\d{6}$/.test(exportCode.value)) {
+    message.warning('请输入 6 位 Google 验证码');
+    return;
+  }
+  actionLoading.value = true;
+  try {
+    const result = await exportBackWaterRecordApi('summary', {
+      ...queryParams({ currentPage: 1, pageSize: 20 }),
+      GoogleCode: exportCode.value,
+    });
+    exportVisible.value = false;
+    if (result.Id && Number(result.Status) === 0) {
+      message.success('导出任务已创建，请到导出管理查看');
+    } else {
+      message.warning(String(result.Remark || '导出任务创建失败'));
+    }
+  } finally {
+    actionLoading.value = false;
+  }
+}
+
+function openExport() {
+  exportCode.value = '';
+  exportVisible.value = true;
+}
+
+onMounted(async () => {
+  const [schemeResult, levelResult] = await Promise.all([
+    fetchBackWaterSchemesApi(),
+    fetchPlayerLevelListApi({ Page: 1, PageSize: 999 }),
+  ]);
+  schemes.value = schemeResult || [];
+  levels.value = levelResult.Items || [];
+});
 </script>
 
 <template>
   <div>
+    <Radio.Group
+      :value="mode"
+      button-style="solid"
+      class="mb-4"
+      @change="(event) => switchMode(event.target.value)"
+    >
+      <Radio.Button v-if="canSystem" value="system">系统申请</Radio.Button>
+      <Radio.Button v-if="canManual" value="manual">手动申请</Radio.Button>
+    </Radio.Group>
+
+    <div class="query-panel">
+      <div class="query-grid">
+        <Input v-model:value="filters.OrderId" allow-clear placeholder="订单号" />
+        <Input
+          v-model:value="filters.LoginAccount"
+          allow-clear
+          placeholder="游戏账号"
+        />
+        <Select v-model:value="filters.VipLevel" :options="vipOptions" />
+        <Select
+          v-if="mode === 'system'"
+          v-model:value="filters.LevelId"
+          :options="levelOptions"
+        />
+        <Input
+          v-if="mode === 'system'"
+          v-model:value="filters.AdminName"
+          allow-clear
+          placeholder="代理账号"
+        />
+        <Select
+          v-model:value="filters.PackId"
+          :options="packageOptionsList"
+          show-search
+        />
+        <ChannelSelect v-model="filters.ChannelIds" />
+        <Select
+          v-if="mode === 'system'"
+          v-model:value="filters.ConfigId"
+          :options="schemeOptions"
+        />
+        <Select
+          v-if="mode === 'system'"
+          v-model:value="filters.RebateMode"
+          :options="[
+            { label: '全部周期', value: -1 },
+            { label: '日结', value: 0 },
+            { label: '按天', value: 1 },
+            { label: '周结', value: 2 },
+          ]"
+        />
+        <InputNumber
+          v-if="mode === 'manual'"
+          v-model:value="filters.ApplyMin"
+          :min="0"
+          placeholder="最小申请金额"
+          class="!w-full"
+        />
+        <InputNumber
+          v-if="mode === 'manual'"
+          v-model:value="filters.ApplyMax"
+          :min="0"
+          placeholder="最大申请金额"
+          class="!w-full"
+        />
+        <DatePicker.RangePicker
+          v-model:value="dateRange"
+          show-time
+          :placeholder="['返水生成开始', '返水生成结束']"
+        />
+      </div>
+      <Space>
+        <Button type="primary" @click="search">查询</Button>
+        <Button @click="reset">重置</Button>
+        <Button
+          v-if="mode === 'system' && canSystemExport"
+          @click="openExport"
+        >
+          后台导出
+        </Button>
+      </Space>
+    </div>
+
     <div
       v-if="canBatchApprove || canBatchReject"
       class="mb-3 flex flex-wrap gap-2"
     >
       <Button
         v-if="canBatchApprove"
-        :disabled="!hasSelection"
-        :loading="batchLoading"
+        :disabled="selected.length === 0"
         type="primary"
-        @click="handleBatchApprove"
+        @click="approve(selected)"
       >
         批量通过
       </Button>
       <Button
         v-if="canBatchReject"
-        :disabled="!hasSelection"
-        :loading="batchLoading"
+        :disabled="selected.length === 0"
         danger
-        @click="handleBatchReject"
+        @click="reject(selected)"
       >
         批量拒绝
       </Button>
     </div>
-    <div class="mb-3 text-xs text-gray-400">
-      已支持单条/批量通过、拒绝；批量通过使用申请金额默认值。
-    </div>
-    <Grid>
-      <template #status="{ row }">
-        <Tag :color="isPending(row) ? 'processing' : 'default'">
-          {{ statusText(row) }}
-        </Tag>
-      </template>
-      <template #action="{ row }">
-        <Space v-if="canReview && isPending(row)" :size="0" wrap>
-          <Button size="small" type="link" @click="openApprove(row)">
-            通过
-          </Button>
-          <Button
-            danger
-            size="small"
-            type="link"
-            :loading="actionId === row.Id"
-            @click="handleReject(row)"
+
+    <div class="data-grid">
+      <Grid>
+        <template #action="{ row }">
+          <Space v-if="pending(row)" :size="0">
+            <Button
+              v-if="
+                mode === 'system' ? canSystemApprove : canManualApprove
+              "
+              type="link"
+              @click="approve([row])"
+            >
+              通过
+            </Button>
+            <Button
+              v-if="mode === 'system' ? canSystemReject : canManualReject"
+              danger
+              type="link"
+              @click="reject([row])"
+            >
+              拒绝
+            </Button>
+          </Space>
+          <Tag
+            v-else
+            :color="reviewState(row) === '已通过' ? 'green' : 'red'"
           >
-            拒绝
-          </Button>
-        </Space>
-        <span v-else>-</span>
-      </template>
-    </Grid>
+            {{ reviewState(row) }}
+          </Tag>
+        </template>
+      </Grid>
+    </div>
 
     <Modal
       v-model:open="approveVisible"
-      :confirm-loading="saving"
-      destroy-on-close
+      :confirm-loading="actionLoading"
       title="通过审核"
       @ok="submitApprove"
     >
-      <Form layout="vertical" class="pt-2">
-        <Form.Item label="玩家账号">
-          <Input :value="approveForm.LoginAccount" disabled />
+      <Form layout="vertical" class="pt-3">
+        <Form.Item label="申请人">
+          <Input :value="String(actionRows[0]?.PlayerId || '-')" disabled />
         </Form.Item>
-        <Form.Item label="实际返水金额" required>
+        <Form.Item label="申请金额">
+          <Input
+            :value="
+              formatAmountFromCent(
+                actionRows[0]?.ApplyBackWater || actionRows[0]?.BackWater,
+              )
+            "
+            disabled
+          />
+        </Form.Item>
+        <Form.Item label="修改金额" required>
           <InputNumber
-            v-model:value="approveForm.Real"
+            v-model:value="approveAmount"
             :min="0"
+            :precision="2"
             class="!w-full"
+          />
+        </Form.Item>
+      </Form>
+    </Modal>
+
+    <Modal
+      v-model:open="rejectVisible"
+      :confirm-loading="actionLoading"
+      title="拒绝审核"
+      @ok="submitReject"
+    >
+      <Form layout="vertical" class="pt-3">
+        <Form.Item label="玩家账号">
+          <Input
+            :value="actionRows.map((item) => item.LoginAccount).join(', ')"
+            disabled
+          />
+        </Form.Item>
+        <Form.Item label="审核备注" required>
+          <Input.TextArea v-model:value="rejectDesc" :rows="4" />
+        </Form.Item>
+      </Form>
+    </Modal>
+
+    <Modal
+      v-model:open="exportVisible"
+      :confirm-loading="actionLoading"
+      title="后台导出验证"
+      @ok="submitExport"
+    >
+      <Form layout="vertical" class="pt-3">
+        <Form.Item label="Google 验证码" required>
+          <Input
+            v-model:value="exportCode"
+            :maxlength="6"
+            placeholder="请输入 6 位验证码"
           />
         </Form.Item>
       </Form>
     </Modal>
   </div>
 </template>
+
+<style scoped>
+.query-panel {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+  background: hsl(var(--muted) / 45%);
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+}
+
+.query-grid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(4, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.data-grid {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+}
+
+@media (max-width: 1100px) {
+  .query-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .query-grid {
+    grid-template-columns: repeat(2, minmax(170px, 1fr));
+  }
+}
+</style>

@@ -1,8 +1,19 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
-function toListResult(data: CloudListResult<Record<string, unknown>>) {
+function toListResult(
+  data:
+    | Array<Record<string, unknown>>
+    | CloudListResult<Record<string, unknown>>,
+) {
+  if (Array.isArray(data)) {
+    return {
+      Items: data,
+      Pagination: { MaxCount: data.length },
+    };
+  }
   return {
     Items: data.Items ?? [],
     Pagination: {
@@ -30,14 +41,45 @@ export function fetchChannelListApi(query: Record<string, unknown>) {
 export function fetchDomainListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>('/backend/domain/list', {
-      params: query,
+      params: trimSpace(query),
     })
     .then(toListResult);
 }
 
+/** 单个域名启用/停用 */
+export function updateDomainInUseApi(data: {
+  Domain: string;
+  DomainType: number;
+  InUsed: number;
+  State?: number;
+}) {
+  return requestClient.put('/backend/domain/inused', data);
+}
+
+/** 批量域名启用/停用 */
+export function batchUpdateDomainInUseApi(data: {
+  DomainIds: Array<number | string>;
+  DomainType: number;
+  InUsed: number;
+}) {
+  return requestClient.put('/backend/domain/inusedbatch', data);
+}
+
+/** 单个或批量编辑域名所属产品与备注 */
+export function updateDomainApi(data: {
+  Id: Array<number | string> | number | string;
+  PackageId: string;
+  Remark: string;
+}) {
+  return requestClient.put('/backend/domain/edit', data);
+}
+
 export function fetchSiteFeeSwitchListApi(query: Record<string, unknown>) {
   return requestClient
-    .get<CloudListResult<Record<string, unknown>>>(
+    .get<
+      | Array<Record<string, unknown>>
+      | CloudListResult<Record<string, unknown>>
+    >(
       '/backend/apifeeswitch/list',
       { params: trimSpace(query) },
     )
@@ -406,6 +448,16 @@ export function updateSubGameSortApi(data: {
   SubGameId: number | string;
 }) {
   return requestClient.post('/backend/subgamemaintain/updatesortid', data);
+}
+
+/** 子游戏批量编辑标签或开关 */
+export function batchUpdateSubGameApi(data: {
+  IsOpen: number | string;
+  SubGameIds: string;
+  Tag: number | string;
+  Type: 1 | 2;
+}) {
+  return requestClient.post('/backend/subgamemaintain/batchedit', data);
 }
 
 /** 提现账户启用开关 */

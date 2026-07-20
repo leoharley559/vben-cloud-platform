@@ -7,12 +7,12 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Popconfirm,
   Radio,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -41,7 +41,7 @@ const accountList = ref<WithdrawAccountItem[]>([]);
 const formVisible = ref(false);
 const formMode = ref<'create' | 'edit'>('create');
 const formId = ref<number | string>();
-const formAccountType = ref(2);
+const formAccountType = ref(1);
 const formRealName = ref('');
 const formAccount = ref('');
 const formBankName = ref('');
@@ -107,7 +107,7 @@ async function loadAccounts() {
 function resetForm() {
   formMode.value = 'create';
   formId.value = undefined;
-  formAccountType.value = 2;
+  formAccountType.value = 1;
   formRealName.value = '';
   formAccount.value = '';
   formBankName.value = '';
@@ -151,8 +151,8 @@ async function sendVerifyCode() {
   try {
     await fetchWithdrawPhoneCodeApi();
     message.success('验证码已发送');
-    codeCountdown.value = 60;
     clearCountdown();
+    codeCountdown.value = 60;
     countdownTimer = setInterval(() => {
       if (codeCountdown.value <= 1) {
         clearCountdown();
@@ -166,6 +166,7 @@ async function sendVerifyCode() {
 }
 
 async function handleSubmit() {
+  if (saving.value) return;
   if (!formRealName.value.trim() || !formAccount.value.trim()) {
     message.warning('请填写完整账号信息');
     return;
@@ -207,6 +208,12 @@ async function handleSubmit() {
   } finally {
     saving.value = false;
   }
+}
+
+function closeForm() {
+  if (saving.value) return;
+  formVisible.value = false;
+  resetForm();
 }
 
 async function handleDelete(id?: number | string) {
@@ -288,15 +295,12 @@ onUnmounted(() => {
     </Table>
 
     <Modal
+      :closable="!saving"
       :confirm-loading="saving"
+      :mask-closable="!saving"
       :open="formVisible"
       :title="formTitle"
-      @cancel="
-        () => {
-          formVisible = false;
-          resetForm();
-        }
-      "
+      @cancel="closeForm"
       @ok="handleSubmit"
     >
       <Form layout="vertical">

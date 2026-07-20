@@ -42,37 +42,37 @@ export const CHANNEL_UPLOAD_URL = '/api/uploadfile';
 
 export const CHANNEL_UPLOAD_ACCEPT = 'image/*';
 
-function withItems<T extends { Items?: null | unknown[] }>(result: T) {
-  return { ...result, Items: result.Items ?? [] };
+function withItems<T extends { Items?: null | unknown[] }>(result: null | T) {
+  return { ...(result ?? {}), Items: result?.Items ?? [] };
 }
 
 /** Primary list; keeps Pagination and both MoreItems collections intact. */
 export async function fetchChannelListApi(query: ChannelListQuery) {
-  const result = await requestClient.get<ChannelListResult>(
+  const result = await requestClient.get<ChannelListResult | null>(
     '/backend/channel/list',
     { params: trimSpace(query) },
   );
   return {
-    ...result,
-    Items: result.Items ?? [],
+    ...(result ?? {}),
+    Items: result?.Items ?? [],
     MoreItems: {
-      ...result.MoreItems,
-      Parents: result.MoreItems?.Parents ?? [],
-      Resources: result.MoreItems?.Resources ?? [],
+      ...(result?.MoreItems ?? {}),
+      Parents: result?.MoreItems?.Parents ?? [],
+      Resources: result?.MoreItems?.Resources ?? [],
     },
   };
 }
 
 /** Hierarchy response deliberately retains ItemsSon rather than renaming it. */
 export async function fetchChannelHierarchyApi(query: ChannelHierarchyQuery) {
-  const result = await requestClient.get<ChannelHierarchyResult>(
+  const result = await requestClient.get<ChannelHierarchyResult | null>(
     '/backend/channel/listallsonpromoter',
     { params: query },
   );
   return {
-    ...result,
-    ItemsSon: result.ItemsSon ?? [],
-    Parents: result.Parents ?? [],
+    ...(result ?? {}),
+    ItemsSon: result?.ItemsSon ?? [],
+    Parents: result?.Parents ?? [],
   };
 }
 
@@ -223,14 +223,14 @@ export function updateChannelShortUrlApi(query: ChannelUrlQuery) {
 }
 
 export async function fetchAvailableChannelsApi(query: AvailableChannelQuery) {
-  const result = await requestClient.get<AvailableChannelsResult>(
+  const result = await requestClient.get<AvailableChannelsResult | null>(
     '/backend/channel/availablechannels',
     { params: query },
   );
   return {
-    ...result,
-    Item: result.Item ?? result.Items ?? [],
-    ...(result.Items === null ? { Items: [] } : {}),
+    ...(result ?? {}),
+    Item: result?.Item ?? result?.Items ?? [],
+    ...(result?.Items === null ? { Items: [] } : {}),
   };
 }
 

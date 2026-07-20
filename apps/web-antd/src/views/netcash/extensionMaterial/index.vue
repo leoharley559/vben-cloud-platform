@@ -5,15 +5,10 @@ import { Page } from '@vben/common-ui';
 
 import { Card, Result, Tabs } from 'ant-design-vue';
 
-import {
-  fetchExtensionMaterialListApi,
-  fetchPromotionConfListApi,
-} from '#/api/netcash/extension-material';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { formatNetcashDateTime } from '#/utils/netcash';
 
-import NetcashGridPanel from '../components/netcash-grid-panel.vue';
-import type { NetcashGridConfig } from '../components/netcash-grid-panel.vue';
+import MaterialList from './components/material-list.vue';
+import ThemeSizePanel from './components/theme-size-panel.vue';
 
 defineOptions({ name: 'ExtensionMaterial' });
 
@@ -22,52 +17,15 @@ const { checkPermission } = useCloudPermission();
 const tabs = computed(() =>
   [
     {
-      config: {
-        columns: [
-          { field: 'PackageName', title: '产品包' },
-          { field: 'ThemeName', title: '主题' },
-          { field: 'SizeName', title: '尺寸' },
-          { field: 'LanguageName', title: '语言' },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '创建时间',
-          },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          fetchExtensionMaterialListApi(query as never),
-        filters: ['package'],
-      } satisfies NetcashGridConfig,
+      component: MaterialList,
       key: 'material',
-      permission: 10564,
+      permission: 10_564,
       tab: '素材列表',
     },
     {
-      config: {
-        columns: [
-          { field: 'Value', title: '名称' },
-          {
-            field: 'Type',
-            formatter: (value) =>
-              Number(value) === 1
-                ? '主题'
-                : Number(value) === 2
-                  ? '尺寸'
-                  : String(value ?? '-'),
-            title: '类型',
-          },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '创建时间',
-          },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          fetchPromotionConfListApi(query as never),
-        filters: [],
-      } satisfies NetcashGridConfig,
+      component: ThemeSizePanel,
       key: 'theme',
-      permission: 10565,
+      permission: 10_565,
       tab: '主题和尺寸',
     },
   ].filter((item) => checkPermission(item.permission)),
@@ -88,16 +46,20 @@ onMounted(() => {
     description="代理网赚 · 推广素材"
     title="推广素材"
   >
-    <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+    <Card class="page-card">
+      <Tabs v-model:active-key="activeTab" type="card">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <NetcashGridPanel
-            v-if="activeTab === item.key"
-            :config="item.config"
-          />
+          <component :is="item.component" v-if="activeTab === item.key" />
         </Tabs.TabPane>
       </Tabs>
     </Card>
   </Page>
   <Result v-else status="403" sub-title="无推广素材查看权限" title="403" />
 </template>
+
+<style scoped>
+.page-card {
+  min-height: 620px;
+  border-radius: 10px;
+}
+</style>

@@ -1,15 +1,13 @@
 <script lang="ts" setup>
-import type { VbenFormProps } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { RoleFormModel, RoleListItem } from '#/types/system-manage';
 
-import { computed, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
 
 import {
-  Button,
   Dropdown,
   Menu,
   message,
@@ -25,8 +23,10 @@ import {
   fetchRoleListApi,
   updateRoleApi,
 } from '#/api/systemManage/new-role';
-import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import ListSearchBar from '#/components/global/list-search-bar.vue';
+import type { ListSearchParams } from '#/components/global/list-search-bar.vue';
+import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { isSystemBuiltinRole } from '#/utils/role-permission-tree';
 
 import RoleFormModal from './components/role-form-modal.vue';
@@ -36,38 +36,26 @@ defineOptions({ name: 'SystemNewRole' });
 const { checkPermission } = useCloudPermission();
 const userStore = useUserStore();
 const roleFormModalRef = ref<InstanceType<typeof RoleFormModal>>();
+const searchLoading = ref(false);
 
 const canViewList = computed(
-  () => checkPermission(10005) || checkPermission(10006),
+  () => checkPermission(10_005) || checkPermission(10_006),
 );
-const canViewTable = computed(() => checkPermission(10005));
-const canAdd = computed(() => checkPermission(10006));
-const canEdit = computed(() => checkPermission(10007));
-const canViewBuiltin = computed(() => checkPermission(10008));
-const canDelete = computed(() => checkPermission(10009));
+const canViewTable = computed(() => checkPermission(10_005));
+const canAdd = computed(() => checkPermission(10_006));
+const canEdit = computed(() => checkPermission(10_007));
+const canViewBuiltin = computed(() => checkPermission(10_008));
+const canDelete = computed(() => checkPermission(10_009));
 
-const formOptions: VbenFormProps = {
-  collapsed: false,
-  commonConfig: {
-    componentProps: {
-      class: 'w-full',
-    },
-  },
-  schema: [
-    {
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: '角色名称 / 关键词',
-      },
-      fieldName: 'Keyword',
-      label: '关键词',
-    },
-  ],
-  showCollapseButton: false,
-  submitOnChange: true,
-  wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-};
+/** 对齐旧站 SearchTypeTwo：全部 / 角色名称 → Keyword；无日期 */
+const searchOptions = [
+  { label: '全部', value: 'All' },
+  { label: '角色名称', value: 'Name' },
+];
+
+const listQuery = reactive({
+  Keyword: '',
+});
 
 const gridOptions: VxeTableGridOptions<RoleListItem> = {
   columns: [
@@ -98,17 +86,23 @@ const gridOptions: VxeTableGridOptions<RoleListItem> = {
     pageSize: 20,
   },
   proxyConfig: {
+    autoLoad: false,
     ajax: {
-      query: async ({ page }, formValues) => {
-        const result = await fetchRoleListApi({
-          Keyword: formValues?.Keyword || '',
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-        });
-        return {
-          items: result?.Items || [],
-          total: result?.Pagination?.MaxCount || 0,
-        };
+      query: async ({ page }) => {
+        searchLoading.value = true;
+        try {
+          const result = await fetchRoleListApi({
+            Keyword: listQuery.Keyword || '',
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+          });
+          return {
+            items: result?.Items || [],
+            total: result?.Pagination?.MaxCount || 0,
+          };
+        } finally {
+          searchLoading.value = false;
+        }
       },
     },
   },
@@ -117,17 +111,26 @@ const gridOptions: VxeTableGridOptions<RoleListItem> = {
   },
   toolbarConfig: {
     refresh: true,
-    search: true,
+    search: false,
   },
 };
 
 const [Grid, gridApi] = useVbenVxeGrid({
-  formOptions,
   gridOptions,
 });
 
 function reloadList() {
-  gridApi.reload();
+  void gridApi.reload();
+}
+
+function handleSearch(params: ListSearchParams) {
+  // 旧站 All / Name 均写入 Keyword
+  listQuery.Keyword = params.Keyword || '';
+  void gridApi.reload();
+}
+
+function handleResetSearch() {
+  listQuery.Keyword = '';
 }
 
 async function refreshSessionAfterRoleChange() {
@@ -200,6 +203,12 @@ async function handleFormSubmit(payload: {
   await refreshSessionAfterRoleChange();
   reloadList();
 }
+
+onMounted(() => {
+  if (canViewTable.value) {
+    void gridApi.reload();
+  }
+});
 </script>
 
 <template>
@@ -209,39 +218,47 @@ async function handleFormSubmit(payload: {
     description="系统管理 · 角色管理"
     title="角色管理"
   >
-    <Grid v-if="canViewTable">
-      <template #toolbar-actions>
-        <Button v-if="canAdd" type="primary" @click="handleCreate">
-          新建角色
-        </Button>
-      </template>
+    <div v-if="canViewTable" class="bg-card rounded-md p-4">
+      <ListSearchBar
+        :loading="searchLoading"
+        :options="searchOptions"
+        :show-add="canAdd"
+        :show-date-time="false"
+        add-text="新建角色"
+        keyword-placeholder="请输入"
+        @add="handleCreate"
+        @reset="handleResetSearch"
+        @search="handleSearch"
+      />
 
-      <template #type="{ row }">
-        <Tag :color="isSystemBuiltinRole(row) ? 'blue' : 'default'">
-          {{ isSystemBuiltinRole(row) ? '系统内置' : '自定义' }}
-        </Tag>
-      </template>
+      <Grid>
+        <template #type="{ row }">
+          <Tag :color="isSystemBuiltinRole(row) ? 'blue' : 'default'">
+            {{ isSystemBuiltinRole(row) ? '系统内置' : '自定义' }}
+          </Tag>
+        </template>
 
-      <template #action="{ row }">
-        <Dropdown :trigger="['click']">
-          <a class="text-primary">操作</a>
-          <template #overlay>
-            <Menu>
-              <Menu.Item v-if="canOpenEditor(row)" @click="handleEdit(row)">
-                {{ getEditorLabel(row) }}
-              </Menu.Item>
-              <Menu.Item
-                v-if="canDelete && !isSystemBuiltinRole(row)"
-                danger
-                @click="handleDelete(row)"
-              >
-                删除
-              </Menu.Item>
-            </Menu>
-          </template>
-        </Dropdown>
-      </template>
-    </Grid>
+        <template #action="{ row }">
+          <Dropdown :trigger="['click']">
+            <a class="text-primary">操作</a>
+            <template #overlay>
+              <Menu>
+                <Menu.Item v-if="canOpenEditor(row)" @click="handleEdit(row)">
+                  {{ getEditorLabel(row) }}
+                </Menu.Item>
+                <Menu.Item
+                  v-if="canDelete && !isSystemBuiltinRole(row)"
+                  danger
+                  @click="handleDelete(row)"
+                >
+                  删除
+                </Menu.Item>
+              </Menu>
+            </template>
+          </Dropdown>
+        </template>
+      </Grid>
+    </div>
 
     <Result
       v-else

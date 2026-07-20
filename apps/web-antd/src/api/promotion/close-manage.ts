@@ -1,17 +1,23 @@
-import { requestClient } from '#/api/request';
 import type {
   CloseManageListQuery,
   CloseManageListResult,
   WithdrawAccountItem,
   WithdrawPayload,
 } from '#/types/promotion';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
-export function fetchCloseManageListApi(query: CloseManageListQuery) {
-  return requestClient.get<CloseManageListResult>(
+export async function fetchCloseManageListApi(query: CloseManageListQuery) {
+  const data = await requestClient.get<CloseManageListResult | null>(
     '/backend/accountteamwithdraw/list',
     { params: trimSpace(query) },
   );
+  return {
+    Items: data?.Items || [],
+    MoreItems: data?.MoreItems || {},
+    Pagination: data?.Pagination,
+  };
 }
 
 export function fetchWithdrawUserInfoApi() {
@@ -20,10 +26,15 @@ export function fetchWithdrawUserInfoApi() {
   );
 }
 
-export function fetchWithdrawAccountListApi() {
-  return requestClient.get<{ Items?: WithdrawAccountItem[] }>(
+export async function fetchWithdrawAccountListApi() {
+  const data = await requestClient.get<
+    null | WithdrawAccountItem[] | { Items?: WithdrawAccountItem[] }
+  >(
     '/backend/accountteambank/list',
   );
+  return {
+    Items: Array.isArray(data) ? data : data?.Items || [],
+  };
 }
 
 export function createWithdrawApi(data: WithdrawPayload) {
@@ -50,4 +61,28 @@ export function deleteWithdrawAccountApi(id: number | string) {
 
 export function fetchWithdrawPhoneCodeApi() {
   return requestClient.get('/api/phonevalidcode/');
+}
+
+export function fetchSecurityPhoneCodeApi(params?: { Number?: string }) {
+  return requestClient.get('/api/phonevalidcode/', { params });
+}
+
+export function updatePrivatePasswordApi(data: {
+  ConfirmPassword: string;
+  NewPassword: string;
+  VerifyCode: string;
+}) {
+  return requestClient.post('/backend/accountlogin/privatepassword', data);
+}
+
+export function bindAccountPhoneApi(data: {
+  AreaCode: string;
+  Phone: string;
+  VerifyCode: string;
+}) {
+  return requestClient.post('/backend/accountlogin/phone', data);
+}
+
+export function unbindAccountPhoneApi(data: { VerifyCode: string }) {
+  return requestClient.post('/backend/accountlogin/deletephone', data);
 }

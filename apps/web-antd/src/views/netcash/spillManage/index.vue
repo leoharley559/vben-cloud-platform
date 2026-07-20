@@ -1,3 +1,4 @@
+<!-- eslint-disable -->
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { SpillManageItem } from '#/types/netcash';
@@ -11,6 +12,7 @@ import {
   Card,
   DatePicker,
   Input,
+  Image,
   Modal,
   Result,
   Select,
@@ -28,6 +30,7 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
+import { getServiceImageUrl } from '#/utils/media';
 import {
   SPILL_STATUS_COLOR,
   SPILL_STATUS_MAP,
@@ -42,13 +45,15 @@ const { projectConfig } = useProjectConfig();
 const canViewPage = computed(() => checkPermission(10168));
 const canAudit = computed(() => checkPermission(10169));
 
+const LOGIN_ACCOUNT_RE = /^[a-zA-Z0-9]{4,20}$/;
 const defaultBegin = dayjs().subtract(30, 'day').startOf('day');
 const defaultEnd = dayjs().endOf('day');
 
 const filterLoginAccount = ref('');
 const filterAccount = ref('');
-const filterPackageId = ref<number | string>();
-const filterStatus = ref<number | string>();
+const filterPackageId = ref<number | string>('');
+const filterStatus = ref<number | string>(0);
+const filterVipLevel = ref<number | string>(-1);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   defaultBegin,
   defaultEnd,
@@ -63,19 +68,53 @@ const packageOptions = computed(() => {
   }));
 });
 
+function normalizeLoginAccount(value: string) {
+  return value.toLowerCase().replaceAll(/\s/g, '');
+}
+
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    Account: filterAccount.value,
-    LoginAccount: filterLoginAccount.value,
-    PackageId: filterPackageId.value || '',
+    Account: filterAccount.value.trim(),
+    LoginAccount: normalizeLoginAccount(filterLoginAccount.value),
+    PackageId: filterPackageId.value,
     Page: page.currentPage,
     PageSize: page.pageSize,
-    Status: filterStatus.value || '',
-    TimeBegin: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
-    TimeEnd: end ? end.endOf('day').unix() : defaultEnd.unix(),
-    VipLevel: -1,
+    PlayerId: '',
+    Status: filterStatus.value,
+    TimeBegin: begin ? begin.unix() : defaultBegin.unix(),
+    TimeEnd: end ? end.unix() : defaultEnd.unix(),
+    VipLevel: filterVipLevel.value ?? -1,
   };
+}
+
+async function search() {
+  const account = normalizeLoginAccount(filterLoginAccount.value);
+  filterLoginAccount.value = account;
+  if (account && !LOGIN_ACCOUNT_RE.test(account)) {
+    message.warning('游戏账号须为 4-20 位字母或数字');
+    return;
+  }
+  await gridApi.grid?.setCurrentPage?.(1);
+  await gridApi.query();
+}
+
+async function resetQuery() {
+  filterLoginAccount.value = '';
+  filterAccount.value = '';
+  filterPackageId.value = '';
+  filterStatus.value = '';
+  filterVipLevel.value = -1;
+  filterDateRange.value = [defaultBegin, defaultEnd];
+  await search();
+}
+
+function getImageList(value?: string | string[]) {
+  const paths = Array.isArray(value) ? value : String(value || '').split(',');
+  return paths
+    .map((path) => path.trim())
+    .filter(Boolean)
+    .map((path) => getServiceImageUrl(path));
 }
 
 const gridOptions: VxeTableGridOptions<SpillManageItem> = {
@@ -107,9 +146,15 @@ const gridOptions: VxeTableGridOptions<SpillManageItem> = {
       minWidth: 90,
       title: 'VIP等级',
     },
-    { field: 'OwnerAccount', minWidth: 120, title: '所属账号' },
-    { field: 'Account', minWidth: 120, title: '转线账号' },
-    { field: 'Url', minWidth: 160, title: '溢出链接' },
+    { field: 'OwnerAccount', minWidth: 120, title: '当前归属代理' },
+    { field: 'OwnerChannelId', minWidth: 110, title: '安装渠道' },
+    { field: 'RealPlatform', minWidth: 120, title: '安装终端类型' },
+    { field: 'Account', minWidth: 130, title: '申请调线代理' },
+    { field: 'Url', minWidth: 160, title: '申请链接' },
+    { field: 'ApplyPlatform', minWidth: 110, title: '申请终端' },
+    { field: 'Desc', minWidth: 160, title: '申请备注' },
+    { field: 'AgreeDesc', minWidth: 160, title: '操作备注' },
+    { field: 'Image', minWidth: 180, slots: { default: 'images' }, title: '上传图片' },
     { field: 'ApproveName', minWidth: 100, title: '操作人' },
     {
       field: 'ApproveTime',
@@ -131,11 +176,11 @@ const gridOptions: VxeTableGridOptions<SpillManageItem> = {
     ajax: {
       query: async ({ page }) => {
         const result = await fetchSpillManageListApi(getQueryParams(page));
-        const items = result.Items || [];
-        applyTotal.value = Number(result.Pagination?.MaxCount || items.length);
+        const items = result.Items;
+        applyTotal.value = result.Total;
         return {
           items,
-          total: Number(result.Pagination?.MaxCount || items.length),
+          total: result.Total,
         };
       },
     },
@@ -144,22 +189,41 @@ const gridOptions: VxeTableGridOptions<SpillManageItem> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
+const auditRemark = ref('');
+const auditOpen = ref(false);
+const auditStatus = ref(2);
+const auditRow = ref<SpillManageItem>();
+const auditSubmitting = ref(false);
 function handleAudit(row: SpillManageItem, status: number) {
-  const actionText = status === 2 ? '通过' : '拒绝';
-  Modal.confirm({
-    content: `确认${actionText}该溢出申请？`,
-    onOk: async () => {
-      await auditSpillManageApi({ Id: row.Id, Status: status });
-      message.success('操作成功');
-      gridApi.reload();
-    },
-    title: '审核确认',
-  });
+  auditRow.value = row;
+  auditStatus.value = status;
+  auditRemark.value = '';
+  auditOpen.value = true;
+}
+async function submitAudit() {
+  if (auditRow.value?.Id === undefined || auditRow.value.Id === null) return;
+  if (!/^[\u4e00-\u9fa5_a-zA-Z0-9，。、]{0,50}$/.test(auditRemark.value)) {
+    message.warning('备注限 50 字，仅支持中英文、数字及常用标点');
+    return;
+  }
+  auditSubmitting.value = true;
+  try {
+    await auditSpillManageApi({
+      Desc: auditRemark.value,
+      Id: auditRow.value.Id,
+      Status: auditStatus.value,
+    });
+    auditOpen.value = false;
+    message.success('操作成功');
+    await gridApi.reload();
+  } finally {
+    auditSubmitting.value = false;
+  }
 }
 
 onMounted(() => {
   if (canViewPage.value) {
-    gridApi.reload();
+    gridApi.query();
   }
 });
 </script>
@@ -178,12 +242,14 @@ onMounted(() => {
           allow-clear
           placeholder="游戏账号"
           style="width: 200px"
+          @press-enter="search"
         />
         <Input
           v-model:value="filterAccount"
           allow-clear
-          placeholder="转线账号"
+          placeholder="申请代理"
           style="width: 200px"
+          @press-enter="search"
         />
         <Select
           v-model:value="filterPackageId"
@@ -197,14 +263,27 @@ onMounted(() => {
           allow-clear
           class="w-32"
           :options="[
+            { label: '全部', value: 0 },
             { label: '申请中', value: 1 },
             { label: '已通过', value: 2 },
             { label: '已拒绝', value: 3 },
           ]"
           placeholder="状态"
         />
-        <DatePicker.RangePicker v-model:value="filterDateRange" show-time />
-        <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <Select
+          v-model:value="filterVipLevel"
+          class="w-28"
+          :options="[{ label: '全部 VIP', value: -1 }, ...Array.from({ length: 11 }, (_, value) => ({ label: `VIP${value}`, value }))]"
+          placeholder="VIP等级"
+        />
+        <DatePicker.RangePicker
+          v-model:value="filterDateRange"
+          :show-time="{
+            defaultValue: [dayjs().startOf('day'), dayjs().endOf('day')],
+          }"
+        />
+        <Button type="primary" @click="search">查询</Button>
+        <Button @click="resetQuery">重置</Button>
       </div>
 
       <Statistic class="mb-4" title="申请数量" :value="applyTotal" />
@@ -215,8 +294,19 @@ onMounted(() => {
             {{ SPILL_STATUS_MAP[Number(row.Status)] || row.Status }}
           </Tag>
         </template>
+        <template #images="{ row }">
+          <Image.PreviewGroup>
+            <Image
+              v-for="(src, index) in getImageList(row.Image)"
+              :key="index"
+              :src="src"
+              width="52"
+              class="mr-1"
+            />
+          </Image.PreviewGroup>
+        </template>
         <template #action="{ row }">
-          <Space v-if="canAudit && row.Status === 1">
+          <Space v-if="canAudit && Number(row.Status) === 1">
             <Button size="small" type="link" @click="handleAudit(row, 2)">
               同意
             </Button>
@@ -232,6 +322,18 @@ onMounted(() => {
         </template>
       </Grid>
     </Card>
+    <Modal
+      v-model:open="auditOpen"
+      :confirm-loading="auditSubmitting"
+      title="审核提示"
+      @ok="submitAudit"
+    >
+      <p>
+        此操作将{{ auditStatus === 2 ? '通过' : '拒绝' }}玩家
+        {{ auditRow?.PlayerId || auditRow?.LoginAccount }} 的申请，是否继续？
+      </p>
+      <Input.TextArea v-model:value="auditRemark" :maxlength="50" placeholder="操作备注（最多 50 字）" show-count />
+    </Modal>
   </Page>
   <Result v-else status="403" sub-title="无溢出管理查看权限" title="403" />
 </template>

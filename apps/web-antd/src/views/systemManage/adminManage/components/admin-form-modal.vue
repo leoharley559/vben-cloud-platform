@@ -139,6 +139,13 @@ function validateForm() {
     throw new Error('请选择账号角色');
   }
 
+  if (
+    !isStatusMode.value &&
+    !formModel.SonUserRoleDataField?.SeePackageId?.length
+  ) {
+    throw new Error('请选择产品权限');
+  }
+
   if (!isValidRemark(formModel.Note)) {
     throw new Error('备注长度不能超过400字符');
   }
@@ -255,7 +262,7 @@ defineExpose({
               placeholder="请选择可创建角色"
             />
           </Form.Item>
-          <Form.Item label="产品权限">
+          <Form.Item label="产品权限" required>
             <Select
               v-model:value="formModel.SonUserRoleDataField.SeePackageId"
               :options="

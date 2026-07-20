@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { InvalidUserData } from '#/types/promotion';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Result, Table } from 'ant-design-vue';
@@ -6,7 +8,6 @@ import dayjs from 'dayjs';
 
 import { fetchInvalidUserApi } from '#/api/promotion/promote-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import type { InvalidUserData } from '#/types/promotion';
 import { calcPercent } from '#/utils/promotion-data';
 
 import PromoteDataSearch from './promote-data-search.vue';
@@ -14,7 +15,7 @@ import PromoteDataSearch from './promote-data-search.vue';
 defineOptions({ name: 'InvalidUserPanel' });
 
 const { checkPermission } = useCloudPermission();
-const canViewPage = computed(() => checkPermission(10888));
+const canViewPage = computed(() => checkPermission(10_888));
 
 const loading = ref(false);
 const data = ref<InvalidUserData>({
@@ -56,7 +57,7 @@ const tableData = computed(() => [
 ]);
 
 async function handleSearch(payload: {
-  AdminIds: string;
+  AdminIds: Array<number | string>;
   BeginTime: string;
   ChannelIds: Array<number | string>;
   EndTime: string;
@@ -64,9 +65,13 @@ async function handleSearch(payload: {
   loading.value = true;
   try {
     const result = await fetchInvalidUserApi(payload);
-    if (result.Items && Object.keys(result.Items).length) {
-      data.value = result.Items;
-    }
+    data.value = result.Items && Object.keys(result.Items).length > 0 ? result.Items : {
+        CountDeviceNum: 0,
+        CountNum0: 0,
+        CountNum1: 0,
+        CountNum3: 0,
+        CountRegNum: 0,
+      };
   } finally {
     loading.value = false;
   }
@@ -77,7 +82,7 @@ onMounted(() => {
     return;
   }
   handleSearch({
-    AdminIds: '',
+    AdminIds: [],
     BeginTime: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
     ChannelIds: [],
     EndTime: dayjs().format('YYYY-MM-DD'),

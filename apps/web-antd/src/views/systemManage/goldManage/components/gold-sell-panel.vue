@@ -77,36 +77,64 @@ const dialogTitle = computed(() =>
 
 const gridOptions: VxeTableGridOptions<SellRow> = {
   columns: [
-    { field: 'UserName', minWidth: 140, title: '代理账号' },
     {
+      align: 'center',
+      field: 'seq',
+      title: '序号',
+      type: 'seq',
+      width: 60,
+    },
+    {
+      align: 'center',
+      field: 'UserName',
+      minWidth: 140,
+      title: '包网账号',
+    },
+    {
+      align: 'center',
       field: 'Scores',
       minWidth: 140,
       title: '账户剩余金币',
     },
     {
+      align: 'center',
       field: 'MonthSellScores',
       minWidth: 140,
       title: '本月已发放金币',
     },
     {
+      align: 'center',
       field: 'action',
       fixed: 'right',
       slots: { default: 'action' },
       title: '操作',
-      width: 220,
+      width: 200,
+    },
+    {
+      align: 'center',
+      field: 'lookRecord',
+      fixed: 'right',
+      slots: { default: 'lookRecord' },
+      title: '查看记录',
+      width: 110,
     },
   ],
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
-      query: async ({ page }) => {
+      query: async ({ page, sort }) => {
         if (!canViewTable.value) {
           return { items: [], total: 0 };
         }
         const result = await fetchGoldSellListApi({
+          Keyword: '',
           Page: page.currentPage,
           PageSize: page.pageSize,
+          Sort:
+            sort?.field && sort?.order
+              ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
+              : '',
           Username: filterUsername.value,
         });
         const items = (result.Items || []) as unknown as SellRow[];
@@ -177,8 +205,8 @@ async function submitDialog() {
   Modal.confirm({
     content:
       dialogMode.value === 'sell'
-        ? `确认为代理 ${formModel.AgentNum} 授信 ${amount} 金币？`
-        : `确认从代理 ${formModel.AgentNum} 追回 ${amount} 金币？`,
+        ? `确认为包网 ${formModel.AgentNum} 授信 ${amount} 金币？`
+        : `确认从包网 ${formModel.AgentNum} 追回 ${amount} 金币？`,
     onOk: async () => {
       saving.value = true;
       try {
@@ -200,12 +228,16 @@ async function submitDialog() {
 }
 
 function handleSearch() {
-  gridApi.reload();
+  void gridApi.reload();
 }
 
 function handleReset() {
   filterUsername.value = '';
-  gridApi.reload();
+  void gridApi.reload();
+}
+
+function handleLookRecord(row: SellRow) {
+  emit('lookRecord', String(row.UserName || ''));
 }
 </script>
 
@@ -215,24 +247,26 @@ function handleReset() {
       <Input
         v-model:value="filterUsername"
         allow-clear
-        class="!w-[240px]"
-        placeholder="代理账号"
+        class="!w-[260px]"
+        placeholder="请输入"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>包网账号</template>
+      </Input>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
     </div>
 
     <Grid v-if="canViewTable">
       <template #action="{ row }">
-        <div class="flex flex-wrap gap-1">
+        <div class="flex flex-wrap justify-center gap-1">
           <Button
             v-if="canSell"
             size="small"
             type="primary"
             @click="openDialog('sell', row)"
           >
-            授信
+            金币授信
           </Button>
           <Button
             v-if="canRefund"
@@ -240,16 +274,19 @@ function handleReset() {
             size="small"
             @click="openDialog('takeBack', row)"
           >
-            追回
-          </Button>
-          <Button
-            v-if="canLookRecord"
-            size="small"
-            @click="emit('lookRecord', String(row.UserName || ''))"
-          >
-            记录
+            追回金币
           </Button>
         </div>
+      </template>
+      <template #lookRecord="{ row }">
+        <Button
+          v-if="canLookRecord"
+          size="small"
+          type="primary"
+          @click="handleLookRecord(row)"
+        >
+          授信记录
+        </Button>
       </template>
     </Grid>
     <div v-else class="py-8 text-center text-gray-400">无授信列表查看权限</div>
@@ -262,7 +299,7 @@ function handleReset() {
       @ok="submitDialog"
     >
       <Form layout="vertical" class="pt-2">
-        <Form.Item label="代理账号">
+        <Form.Item label="包网账号">
           <Input :value="formModel.AgentNum" disabled />
         </Form.Item>
 

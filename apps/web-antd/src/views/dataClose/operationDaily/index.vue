@@ -1,65 +1,76 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
 import { Card, Result, Tabs } from 'ant-design-vue';
 
-import { fetchOperationDailyWinRankApi } from '#/api/dataClose/operation-daily';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
-import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
-
-import { operationDailyWinColumns } from '../shared/columns';
+import DataComparePanel from './components/data-compare-panel.vue';
+import DataReportPanel from './components/data-report-panel.vue';
+import GameAnalyzePanel from './components/game-analyze-panel.vue';
+import IncomeAnalyzePanel from './components/income-panel.vue';
+import OperationDailyPanel from './components/operation-daily-panel.vue';
+import PromotionAnalyzePanel from './components/promotion-panel.vue';
 
 defineOptions({ name: 'OperationDaily' });
 
 const { checkPermission } = useCloudPermission();
 
+/**
+ * 对齐旧站 operationDaily.vue Tab + 权限
+ * 游戏分析 189、数据报表 12358 旧版已注释，新站按权限恢复可见
+ */
 const tabs = computed(() =>
   [
     {
-      config: null,
+      component: DataComparePanel,
       key: 'compare',
-      permission: 10515,
+      show: checkPermission(10_515),
       tab: '数据比较',
-      tip: '日/月数据比较看板（核心数据、收入、拓展活力等）待下一迭代迁移。',
     },
     {
-      config: {
-        columns: operationDailyWinColumns,
-        extraQuery: { ReportType: 1 },
-        fetchApi: fetchOperationDailyWinRankApi,
-        filters: ['date'],
-      } satisfies OperationListConfig,
+      component: OperationDailyPanel,
       key: 'daily',
-      permission: 11225,
+      show: checkPermission(11_225),
       tab: '运营日报',
-      tip: '小时对比、公司收入、游戏盈亏图表待下一迭代迁移。',
     },
     {
-      config: null,
+      component: IncomeAnalyzePanel,
       key: 'income',
-      permission: 10516,
+      show: checkPermission(10_516),
       tab: '收入分析',
-      tip: '收入分析图表待下一迭代迁移。',
     },
     {
-      config: null,
-      key: 'promotion',
-      permission: 10517,
-      tab: '推广分析',
-      tip: '推广分析图表待下一迭代迁移。',
+      component: GameAnalyzePanel,
+      key: 'game',
+      show: checkPermission(189),
+      tab: '游戏分析',
     },
-  ].filter((item) => checkPermission(item.permission)),
+    {
+      component: PromotionAnalyzePanel,
+      key: 'promotion',
+      show: checkPermission(10_517),
+      tab: '推广分析',
+    },
+    {
+      component: DataReportPanel,
+      key: 'report',
+      show: checkPermission(12_358),
+      tab: '数据报表',
+    },
+  ].filter((item) => item.show),
 );
 
 const canViewPage = computed(() => tabs.value.length > 0);
-const activeTab = ref('compare');
+const activeTab = ref('');
 
-onMounted(() => {
-  activeTab.value = tabs.value[0]?.key || 'compare';
+watchEffect(() => {
+  const keys = tabs.value.map((item) => item.key);
+  if (!keys.includes(activeTab.value)) {
+    activeTab.value = keys[0] || '';
+  }
 });
 </script>
 
@@ -67,25 +78,22 @@ onMounted(() => {
   <Page
     v-if="canViewPage"
     auto-content-height
-    description="数据闭环 · 运营日报"
-    title="运营日报"
+    description="数据闭环 · 数据比较 / 运营日报 / 收入与推广分析"
+    title="数据分析"
   >
-    <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+    <Card class="operation-daily-card" size="small">
+      <Tabs v-model:active-key="activeTab" size="small" type="card">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <div
-            v-if="item.tip && activeTab === item.key"
-            class="mb-4 text-xs text-gray-400"
-          >
-            {{ item.tip }}
-          </div>
-          <OperationListPanel
-            v-if="item.config && activeTab === item.key"
-            :config="item.config"
-          />
+          <component :is="item.component" v-if="activeTab === item.key" />
         </Tabs.TabPane>
       </Tabs>
     </Card>
   </Page>
-  <Result v-else status="403" sub-title="无运营日报查看权限" title="403" />
+  <Result v-else status="403" sub-title="无数据分析查看权限" title="403" />
 </template>
+
+<style scoped>
+.operation-daily-card :deep(.ant-tabs-nav) {
+  margin-bottom: 12px;
+}
+</style>

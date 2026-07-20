@@ -123,9 +123,14 @@ export interface TeamQueryListQuery {
 }
 
 export interface BrokerageSetItem {
+  AdminId?: number | string;
+  AgentId?: number | string;
+  children?: BrokerageSetItem[];
   Desc?: string;
   GameId?: number | string;
   Id?: number | string;
+  Name?: string;
+  ParentId?: number | string;
   Rate?: number;
   Type?: string;
   resType?: number;
@@ -155,7 +160,7 @@ export interface BrokerageBatchPayload {
 }
 
 export interface PromoteDataBaseQuery {
-  AdminIds?: number | string;
+  AdminIds?: Array<number | string> | number | string;
   BeginTime?: string;
   ChannelIds?: Array<number | string> | number | string;
   EndTime?: string;
@@ -240,6 +245,7 @@ export interface HandRecordPayload {
   DownNum?: number;
   ExposureNum?: number;
   Id?: number | string;
+  Hash?: string;
   Ip?: number;
   ReportDate?: string;
   TemplateId?: number | string;
@@ -305,9 +311,13 @@ export interface CloseManageListResult {
     FreezeMoney?: number;
     Money?: number;
     PayRate?: Array<{
+      MaxAmount?: number;
       MaxMoney?: number;
+      MinAmount?: number;
       MinMoney?: number;
+      PayType?: number;
       Rate?: number;
+      ServiceRate?: number;
       Type?: number;
     }>;
   };
@@ -325,16 +335,19 @@ export interface WithdrawAccountItem {
 }
 
 export interface WithdrawPayload {
-  Account?: string;
-  AccountNo?: number | string;
-  GetMoney?: number | string;
-  PrivatePassword?: string;
+  Account: string;
+  AccountNo: number | string;
+  GetMoney: number | string;
+  Hash: string;
+  PrivatePassword: string;
 }
 
 export interface CloseOrderItem {
   AdminName?: string;
   AdminUserName?: string;
   BankAccount?: string;
+  BankRealName?: string;
+  BankType?: number;
   CreateTime?: number | string;
   Desc?: string;
   Id?: number | string;
@@ -344,6 +357,7 @@ export interface CloseOrderItem {
   Status?: number;
   UpdateAdminId?: number | string;
   UpdateAdminName?: string;
+  UpdateFinishAdminName?: string;
   UpdateFinishTime?: number | string;
   UpdateTime?: number | string;
 }
@@ -373,10 +387,10 @@ export interface CloseOrderListResult {
 }
 
 export interface CloseOrderFinishPayload {
-  Desc?: string;
-  Id?: number | string;
-  IsAccept?: number;
-  IsYourSure?: boolean;
+  Desc: string;
+  Id: number | string;
+  IsAccept: number;
+  IsYourSure: boolean;
 }
 
 export interface TimeshareHourItem {
@@ -432,24 +446,28 @@ export interface TeamDailySummary {
   NextPayMergerMoney?: number;
   NextProfitIncomeMoney?: number;
   NextReg?: number;
+  NextWithdrawMoney?: number;
   SelfBetGameMoney?: number;
   SelfGameTax?: number;
   SelfIncomeMoney?: number;
   SelfPayMergerMoney?: number;
   SelfProfitIncomeMoney?: number;
   SelfReg?: number;
+  SelfWithdrawMoney?: number;
   SumNextBetGameMoney?: number;
   SumNextGameTax?: number;
   SumNextIncomeMoney?: number;
   SumNextPayMergerMoney?: number;
   SumNextProfitIncomeMoney?: number;
   SumNextReg?: number;
+  SumNextWithdrawMoney?: number;
   SumSelfBetGameMoney?: number;
   SumSelfGameTax?: number;
   SumSelfIncomeMoney?: number;
   SumSelfPayMergerMoney?: number;
   SumSelfProfitIncomeMoney?: number;
   SumSelfReg?: number;
+  SumSelfWithdrawMoney?: number;
 }
 
 export interface TeamDailyHistoryItem {
@@ -460,12 +478,14 @@ export interface TeamDailyHistoryItem {
   SumNextPayMergerMoney?: number;
   SumNextProfitIncomeMoney?: number;
   SumNextReg?: number;
+  SumNextWithdrawMoney?: number;
   SumSelfBetGameMoney?: number;
   SumSelfGameTax?: number;
   SumSelfIncomeMoney?: number;
   SumSelfPayMergerMoney?: number;
   SumSelfProfitIncomeMoney?: number;
   SumSelfReg?: number;
+  SumSelfWithdrawMoney?: number;
 }
 
 export interface TeamDailyResult {

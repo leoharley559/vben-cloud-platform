@@ -15,22 +15,22 @@ import {
   Statistic,
   Tooltip,
 } from 'ant-design-vue';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchCloseManageListApi,
   fetchWithdrawAccountListApi,
   fetchWithdrawUserInfoApi,
 } from '#/api/promotion/close-manage';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import {
-  WITHDRAW_MONEY_TYPE_MAP,
-  formatDateTime,
   formatTeamQueryMoney,
+  WITHDRAW_MONEY_TYPE_MAP,
 } from '#/utils/promotion';
 
+import SecuritySettingModal from './components/security-setting-modal.vue';
 import WithdrawAccountModal from './components/withdraw-account-modal.vue';
 import WithdrawModal from './components/withdraw-modal.vue';
 
@@ -39,29 +39,27 @@ defineOptions({ name: 'CloseManage' });
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
-const canViewList = computed(() => checkPermission(10924));
-const canWithdraw = computed(() => checkPermission(10927));
-const canManageAccount = computed(() => checkPermission(10929));
+const canViewList = computed(() => checkPermission(10_924));
+const canWithdraw = computed(() => checkPermission(10_927));
+const canManageAccount = computed(() => checkPermission(10_929));
 const canViewPage = computed(
   () => canViewList.value || canWithdraw.value || canManageAccount.value,
 );
 
-const defaultBegin = dayjs().subtract(31, 'day').startOf('day');
-const defaultEnd = dayjs().endOf('day');
-
-const filterMoneyType = ref<number | string>();
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  defaultBegin,
-  defaultEnd,
-]);
+const filterMoneyType = ref<number[]>([]);
+const filterDateRange = ref<[Dayjs, Dayjs]>();
 const useMoney = ref(0);
 const noCloseMoney = ref(0);
 const accountList = ref<WithdrawAccountItem[]>([]);
 const accountRate = ref<
   Array<{
+    MaxAmount?: number;
     MaxMoney?: number;
+    MinAmount?: number;
     MinMoney?: number;
+    PayType?: number;
     Rate?: number;
+    ServiceRate?: number;
     Type?: number;
   }>
 >([]);
@@ -70,30 +68,49 @@ const maxMoney = ref(0);
 const userInfo = ref<Record<string, unknown>>({});
 const withdrawOpen = ref(false);
 const accountOpen = ref(false);
+const securityOpen = ref(false);
+const securitySection = ref<'phone' | 'private-password'>('phone');
 
 const payPeriod = computed(() => {
   const info = projectConfig.value?.AccountTeamInfo as
-    | { PayPeriod?: number | string }
-    | undefined;
+    | undefined
+    | { PayPeriod?: number | string };
   return info?.PayPeriod ?? '-';
 });
 
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
-    EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
-    MoneyType: filterMoneyType.value || '',
+    BeginTime: begin?.unix() || '',
+    EndTime: end?.unix() || '',
+    MoneyType: filterMoneyType.value.join(','),
     Page: page.currentPage,
     PageSize: page.pageSize,
+    Sort: '',
   };
 }
 
+function formatCloseManageDate(value?: number | string) {
+  if (value === undefined || value === null || value === '') return '';
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) return String(value);
+  return dayjs(String(value).length > 10 ? numeric : numeric * 1000).format(
+    'YYYY-MM-DD HH:mm:ss',
+  );
+}
+
+let latestListRequestId = 0;
+let latestGridResult: { items: CloseManageItem[]; total: number } = {
+  items: [],
+  total: 0,
+};
+
 const gridOptions: VxeTableGridOptions<CloseManageItem> = {
   columns: [
+    { type: 'seq', title: '序号', width: 70 },
     {
       field: 'CreateTime',
-      formatter: ({ cellValue }) => formatDateTime(cellValue),
+      formatter: ({ cellValue }) => formatCloseManageDate(cellValue),
       minWidth: 160,
       title: '时间',
     },
@@ -111,21 +128,37 @@ const gridOptions: VxeTableGridOptions<CloseManageItem> = {
       title: '类型',
     },
     { field: 'Desc', minWidth: 180, title: '说明' },
+    { field: 'NewMoney', minWidth: 120, title: '可用余额' },
   ],
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
+    autoLoad: false,
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchCloseManageListApi(getQueryParams(page));
-        useMoney.value = result.MoreItems?.Money || 0;
-        noCloseMoney.value = result.MoreItems?.FreezeMoney || 0;
-        accountRate.value = result.MoreItems?.PayRate || [];
-        const items = result.Items || [];
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        const requestId = ++latestListRequestId;
+        try {
+          const result = await fetchCloseManageListApi(getQueryParams(page));
+          if (requestId !== latestListRequestId) return latestGridResult;
+          useMoney.value = Number(result.MoreItems.Money || 0);
+          noCloseMoney.value = Number(result.MoreItems.FreezeMoney || 0);
+          accountRate.value = result.MoreItems.PayRate || [];
+          latestGridResult = {
+            items: result.Items,
+            total: Number(
+              result.Pagination?.MaxCount || result.Items.length,
+            ),
+          };
+          return latestGridResult;
+        } catch (error) {
+          if (requestId === latestListRequestId) {
+            useMoney.value = 0;
+            noCloseMoney.value = 0;
+            accountRate.value = [];
+            latestGridResult = { items: [], total: 0 };
+          }
+          throw error;
+        }
       },
     },
   },
@@ -146,6 +179,17 @@ function handleWithdrawSuccess() {
   gridApi.reload();
 }
 
+function handleReset() {
+  filterMoneyType.value = [];
+  filterDateRange.value = undefined;
+  gridApi.reload();
+}
+
+function openSecurity(section: 'phone' | 'private-password') {
+  securitySection.value = section;
+  securityOpen.value = true;
+}
+
 onMounted(async () => {
   await loadMeta();
   if (canViewList.value) {
@@ -161,9 +205,9 @@ onMounted(async () => {
     description="推广管理 · 收益结算"
     title="收益结算"
   >
-    <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <Card>
-        <Statistic title="可用余额" :value="formatTeamQueryMoney(useMoney)" />
+    <div class="settlement-card-grid">
+      <Card class="summary-card" :bordered="false">
+        <Statistic title="可用余额" :value="useMoney" />
         <div class="mt-2 text-sm text-gray-500">
           未结算资金：{{ formatTeamQueryMoney(noCloseMoney) }}
           <Tooltip
@@ -181,10 +225,10 @@ onMounted(async () => {
           提现
         </Button>
       </Card>
-      <Card>
+      <Card class="summary-card" :bordered="false">
         <div class="mb-2 text-sm text-gray-500">提现银行卡/支付宝</div>
-        <div :class="accountList.length ? 'text-green-600' : 'text-red-500'">
-          {{ accountList.length ? '已设置' : '未设置' }}
+        <div :class="accountList.length > 0 ? 'text-green-600' : 'text-red-500'">
+          {{ accountList.length > 0 ? '已设置' : '未设置' }}
         </div>
         <Button
           v-if="canManageAccount"
@@ -195,7 +239,7 @@ onMounted(async () => {
           设置
         </Button>
       </Card>
-      <Card>
+      <Card class="summary-card" :bordered="false">
         <div class="mb-2 text-sm text-gray-500">取款密码</div>
         <div
           :class="
@@ -208,23 +252,28 @@ onMounted(async () => {
             Number(userInfo.IsSetPrivatePassword) === 1 ? '已设置' : '未设置'
           }}
         </div>
-        <div class="mt-3 text-xs text-gray-400">请在个人中心设置</div>
+        <Button class="mt-3" type="primary" @click="openSecurity('private-password')">
+          设置
+        </Button>
       </Card>
-      <Card>
+      <Card class="summary-card" :bordered="false">
         <div class="mb-2 text-sm text-gray-500">绑定手机</div>
         <div :class="userInfo.Phone ? 'text-green-600' : 'text-red-500'">
           {{ userInfo.Phone ? '已设置' : '未设置' }}
         </div>
-        <div class="mt-3 text-xs text-gray-400">请在个人中心设置</div>
+        <Button class="mt-3" type="primary" @click="openSecurity('phone')">
+          设置
+        </Button>
       </Card>
     </div>
 
-    <Card v-if="canViewList">
-      <div class="mb-4 flex flex-wrap items-end gap-2">
+    <Card v-if="canViewList" class="funding-card" :bordered="false">
+      <div class="query-panel">
         <Select
           v-model:value="filterMoneyType"
           allow-clear
-          class="w-40"
+          class="w-48"
+          mode="multiple"
           :options="[
             { label: '日结账单', value: 1 },
             { label: '提现', value: 2 },
@@ -232,8 +281,13 @@ onMounted(async () => {
           ]"
           placeholder="资金类型"
         />
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <DatePicker.RangePicker
+          v-model:value="filterDateRange"
+          format="YYYY-MM-DD HH:mm:ss"
+          show-time
+        />
         <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <Button @click="handleReset">重置</Button>
       </div>
       <Grid>
         <template #addMoney="{ row }">
@@ -257,6 +311,50 @@ onMounted(async () => {
       @success="handleWithdrawSuccess"
     />
     <WithdrawAccountModal v-model:open="accountOpen" @change="loadMeta" />
+    <SecuritySettingModal
+      v-model:open="securityOpen"
+      :info="userInfo"
+      :section="securitySection"
+      @success="loadMeta"
+    />
   </Page>
   <Result v-else status="403" sub-title="无收益结算查看权限" title="403" />
 </template>
+
+<style scoped>
+.settlement-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.summary-card,
+.funding-card {
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
+}
+
+.query-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  margin-bottom: 16px;
+  background: hsl(var(--muted) / 35%);
+  border-radius: 10px;
+}
+
+@media (max-width: 1200px) {
+  .settlement-card-grid {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .settlement-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

@@ -5,58 +5,21 @@ import { Page } from '@vben/common-ui';
 
 import { Card, Result, Tabs } from 'ant-design-vue';
 
-import {
-  fetchClassifiedReportListApi,
-  fetchGameStatementListApi,
-  fetchSubGameReportListApi,
-} from '#/api/dataClose/game-statement';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
-import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
-
-import { gameStatementColumns } from '../shared/columns';
+import ClassifiedReportPanel from './components/classified-report-panel.vue';
+import GameReportPanel from './components/game-report-panel.vue';
+import SubGameReportPanel from './components/sub-game-report-panel.vue';
 
 defineOptions({ name: 'GameStatement' });
 
 const { checkPermission } = useCloudPermission();
-const listFilters = ['date', 'package'] as OperationListConfig['filters'];
 
 const tabs = computed(() =>
   [
-    {
-      config: {
-        columns: gameStatementColumns,
-        fetchApi: fetchGameStatementListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
-      key: 'game',
-      permission: 13420,
-      tab: '游戏报表',
-    },
-    {
-      config: {
-        columns: gameStatementColumns,
-        fetchApi: fetchClassifiedReportListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
-      key: 'classified',
-      permission: 13421,
-      tab: '分类报表',
-    },
-    {
-      config: {
-        columns: [
-          { field: 'SubGameName', minWidth: 140, title: '子游戏' },
-          ...gameStatementColumns.slice(1),
-        ],
-        fetchApi: fetchSubGameReportListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
-      key: 'subGame',
-      permission: 13422,
-      tab: '子游戏报表',
-    },
+    { key: 'game', permission: 13_420, tab: '游戏报表' },
+    { key: 'classified', permission: 13_421, tab: '分类报表' },
+    { key: 'subGame', permission: 13_422, tab: '子游戏报表' },
   ].filter((item) => checkPermission(item.permission)),
 );
 
@@ -76,14 +39,16 @@ onMounted(() => {
     title="游戏报表"
   >
     <Card>
-      <div class="mb-4 text-xs text-gray-400">
-        折线图、详情弹窗、修复日报等待下一迭代迁移。
-      </div>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+      <Tabs v-model:active-key="activeTab" size="small" type="line">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <OperationListPanel
-            v-if="activeTab === item.key"
-            :config="item.config"
+          <GameReportPanel
+            v-if="activeTab === 'game' && item.key === 'game'"
+          />
+          <ClassifiedReportPanel
+            v-else-if="activeTab === 'classified' && item.key === 'classified'"
+          />
+          <SubGameReportPanel
+            v-else-if="activeTab === 'subGame' && item.key === 'subGame'"
           />
         </Tabs.TabPane>
       </Tabs>

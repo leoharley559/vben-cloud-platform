@@ -46,17 +46,17 @@ export const gameStatementColumns: OperationListConfig['columns'] = [
 
 export const playerStatisticsColumns: OperationListConfig['columns'] = [
   { field: 'LoginAccount', minWidth: 120, title: '玩家账号' },
-  { field: 'PackageName', minWidth: 120, title: '产品包' },
-  { field: 'ChannelName', minWidth: 120, title: '渠道' },
-  { field: 'VipLevel', minWidth: 90, title: 'VIP等级' },
+  { field: 'PlayerId', minWidth: 110, title: '玩家Id' },
+  { field: 'PackageName', minWidth: 120, title: '所属产品' },
+  { field: 'ChannelId', minWidth: 110, title: '所属渠道' },
   {
-    field: 'SumPayMoney',
+    field: 'PayMoney',
     formatter: (value) => formatAmountFromCent(Number(value)),
     minWidth: 120,
     title: '充值金额',
   },
   {
-    field: 'SumWithdrawMoney',
+    field: 'WithDrawMoney',
     formatter: (value) => formatAmountFromCent(Number(value)),
     minWidth: 120,
     title: '兑换金额',
@@ -65,38 +65,38 @@ export const playerStatisticsColumns: OperationListConfig['columns'] = [
 
 export const userWinLossColumns: OperationListConfig['columns'] = [
   { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
-  { field: 'PackageName', minWidth: 120, title: '产品包' },
+  { field: 'PackageName', minWidth: 120, title: '所属产品' },
+  { field: 'ChannelName', minWidth: 120, title: '所属渠道' },
   {
     field: 'SumBetGold',
     formatter: (value) => formatAmountFromCent(Number(value)),
     minWidth: 120,
-    title: '投注总额',
+    title: '投注额',
   },
   {
-    field: 'SumWinGold',
+    field: 'SumValidWater',
     formatter: (value) => formatAmountFromCent(Number(value)),
     minWidth: 120,
-    title: '赢分总额',
-  },
-  {
-    field: 'SumProfitGold',
-    formatter: (value) => formatAmountFromCent(Number(value)),
-    minWidth: 120,
-    title: '玩家盈亏',
+    title: '有效投注',
   },
 ];
 
 export const playerAnalyzeColumns: OperationListConfig['columns'] = [
-  { field: 'LoginAccount', minWidth: 120, title: '玩家账号' },
-  { field: 'PackageName', minWidth: 120, title: '产品包' },
-  { field: 'ChannelName', minWidth: 120, title: '渠道' },
+  { field: 'LoginAccount', minWidth: 120, title: '账号' },
+  { field: 'PackageName', minWidth: 120, title: '包体' },
+  { field: 'ChannelId', minWidth: 110, title: '渠道' },
+  {
+    field: 'Profit',
+    formatter: (value) => formatAmountFromCent(Number(value)),
+    minWidth: 110,
+    title: '盈利',
+  },
   {
     field: 'CreateTime',
     formatter: (value) => formatOperationDateTime(value as string),
     minWidth: 160,
     title: '注册时间',
   },
-  { field: 'StatusName', minWidth: 100, title: '状态' },
 ];
 
 export const depositWithdrawalColumns: OperationListConfig['columns'] = [

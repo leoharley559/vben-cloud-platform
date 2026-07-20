@@ -3,101 +3,172 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, reactive, ref } from 'vue';
 
+import { preferences } from '@vben/preferences';
+
 import {
   Button,
   Checkbox,
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
+  Select,
+  Space,
   Switch,
   Tag,
-  message,
 } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
+  batchUpdateSubGameApi,
   fetchSubGameMaintainListApi,
   updateSubGameMaintainApi,
   updateSubGameSortApi,
 } from '#/api/gameManage';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useGameConfig } from '#/composables/use-game-config';
+import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'SubGameManagePanel' });
 
 interface SubGameRow {
   GameId?: number | string;
   GameName?: string;
-  HotTag?: number;
+  HotTag?: boolean | number | string;
   Id?: number | string;
-  IsBigPrizeGame?: boolean;
+  IsBigPrizeGame?: boolean | number | string;
   IsOpen?: number;
-  IsSpecialGame?: boolean;
+  IsSpecialGame?: boolean | number | string;
   Name?: string;
   SortId?: number;
   SubGameId?: number | string;
+  UpdateAdminId?: number | string;
+  UpdateTime?: number | string;
   [key: string]: unknown;
 }
 
-const { checkPermission } = useCloudPermission();
-const canEdit = computed(() => checkPermission(12407));
+type BatchType = 1 | 2;
 
-const filterName = ref('');
+const { checkPermission } = useCloudPermission();
+const { ensureGameConfig, gameConfig } = useGameConfig();
+const canEdit = computed(() => checkPermission(12_407));
+
+const filters = reactive({
+  GameId: '' as number | string,
+  SearchTag: 0,
+  SubGameId: '',
+  SubGameName: '',
+});
 const actionKey = ref('');
 const editVisible = ref(false);
+const batchVisible = ref(false);
 const saving = ref(false);
-
 const editForm = reactive({
   GameId: '' as number | string,
-  HotTag: false,
   IsBigPrizeGame: false,
+  IsOpen: 1,
   IsSpecialGame: false,
   Name: '',
-  SortId: 0,
+  SortId: 1,
   SubGameId: '' as number | string,
   raw: null as null | SubGameRow,
+  HotTag: false,
+});
+const batchForm = reactive({
+  IsOpen: '' as number | string,
+  SubGameIds: '',
+  Tag: '' as number | string,
+  Type: 1 as BatchType,
 });
 
+const tagOptions = [
+  { label: '热门', value: 2 },
+  { label: '特色', value: 3 },
+  { label: '大奖', value: 4 },
+];
+const searchTagOptions = [
+  { label: '全部标签', value: 0 },
+  ...tagOptions,
+];
+const openOptions = [
+  { label: '开启', value: 1 },
+  { label: '关闭', value: 0 },
+];
+const venueOptions = computed(() => [
+  { label: '全部场馆', value: '' },
+  ...Object.entries(gameConfig.value.games)
+    .filter(([, game]) => Number(game.ParentId) === 0)
+    .map(([id, game]) => ({
+      label: game.gameName || id,
+      value: id,
+    })),
+]);
+const batchTitle = computed(() =>
+  batchForm.Type === 1 ? '批量编辑游戏标签' : '批量编辑显示状态',
+);
+
+function rowKey(row: SubGameRow) {
+  return `${row.GameId}-${row.SubGameId}`;
+}
+
+const columns: VxeTableGridOptions<SubGameRow>['columns'] = [
+  { type: 'checkbox', width: 48 },
+  { type: 'seq', title: '序号', width: 60 },
+  {
+    field: 'IsOpen',
+    slots: { default: 'isOpen' },
+    title: '是否开启',
+    width: 100,
+  },
+  { field: 'SubGameId', minWidth: 110, title: '游戏 ID' },
+  { field: 'Name', minWidth: 160, title: '游戏名称' },
+  { field: 'SortId', minWidth: 90, title: '排序' },
+  {
+    field: 'HotTag',
+    minWidth: 170,
+    slots: { default: 'tags' },
+    title: '游戏标签',
+  },
+  { field: 'GameName', minWidth: 140, title: '场馆名称' },
+  {
+    field: 'UpdateTime',
+    formatter: ({ cellValue }) =>
+      formatOperationDateTime(cellValue as number | string),
+    minWidth: 170,
+    title: '操作时间',
+  },
+  { field: 'UpdateAdminId', minWidth: 110, title: '操作人' },
+  {
+    field: 'action',
+    fixed: 'right',
+    slots: { default: 'action' },
+    title: '操作',
+    width: 150,
+  },
+];
+
 const gridOptions: VxeTableGridOptions<SubGameRow> = {
-  columns: [
-    { field: 'Name', minWidth: 140, title: '游戏名称' },
-    { field: 'GameName', minWidth: 120, title: '场馆' },
-    { field: 'SubGameId', minWidth: 100, title: '游戏ID' },
-    { field: 'SortId', minWidth: 80, title: '排序' },
-    {
-      field: 'HotTag',
-      slots: { default: 'tags' },
-      title: '标签',
-      width: 160,
-    },
-    {
-      field: 'IsOpen',
-      slots: { default: 'isOpen' },
-      title: '显示',
-      width: 100,
-    },
-    {
-      field: 'action',
-      fixed: 'right',
-      slots: { default: 'action' },
-      title: '操作',
-      width: 160,
-    },
-  ],
+  columns,
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
+        await ensureGameConfig();
         const result = await fetchSubGameMaintainListApi({
+          GameId: filters.GameId,
+          Lang: String(preferences.app.locale || ''),
           Page: page.currentPage,
           PageSize: page.pageSize,
-          Username: filterName.value,
+          SearchTag: filters.SearchTag,
+          SubGameId: filters.SubGameId,
+          SubGameName: filters.SubGameName,
         });
         const items = (result.Items || []) as unknown as SubGameRow[];
         return {
           items,
-          total: Number(result.Pagination?.MaxCount || items.length),
+          total: Number(result.Pagination?.MaxCount ?? items.length),
         };
       },
     },
@@ -106,36 +177,56 @@ const gridOptions: VxeTableGridOptions<SubGameRow> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
-function rowKey(row: SubGameRow) {
-  return `${row.GameId}-${row.SubGameId}`;
+function selectedRows() {
+  return (gridApi.grid?.getCheckboxRecords?.() || []) as SubGameRow[];
+}
+
+function isEnabledFlag(value: unknown) {
+  return (
+    value === true ||
+    Number(value) === 1 ||
+    String(value).toLowerCase() === 'true'
+  );
+}
+
+function normalizeTags(row: SubGameRow) {
+  return {
+    HotTag: isEnabledFlag(row.HotTag),
+    IsBigPrizeGame: isEnabledFlag(row.IsBigPrizeGame),
+    IsSpecialGame: isEnabledFlag(row.IsSpecialGame),
+  };
 }
 
 function openEdit(row: SubGameRow) {
   editForm.raw = { ...row };
   editForm.GameId = row.GameId || '';
   editForm.SubGameId = row.SubGameId || '';
-  editForm.Name = String(row.Name || row.GameName || '');
-  editForm.SortId = Number(row.SortId || 0);
-  editForm.HotTag = Boolean(row.HotTag);
-  editForm.IsSpecialGame = Boolean(row.IsSpecialGame);
-  editForm.IsBigPrizeGame = Boolean(row.IsBigPrizeGame);
+  editForm.Name = String(row.Name || '');
+  editForm.SortId = Number(row.SortId || 1);
+  editForm.IsOpen = Number(row.IsOpen) === 1 ? 1 : 0;
+  Object.assign(editForm, normalizeTags(row));
   editVisible.value = true;
 }
 
 async function submitEdit() {
-  if (!editForm.raw) {
+  if (!editForm.raw) return;
+  if (!Number.isInteger(editForm.SortId) || editForm.SortId <= 0) {
+    message.warning('排序值必须为大于 0 的整数');
     return;
   }
+  const payload = {
+    ...editForm.raw,
+    HotTag: editForm.HotTag ? 1 : 0,
+    IsBigPrizeGame: editForm.IsBigPrizeGame,
+    IsOpen: editForm.IsOpen,
+    IsSpecialGame: editForm.IsSpecialGame,
+    SortId: editForm.SortId,
+  };
+  delete payload.Id;
   saving.value = true;
   try {
-    const payload = { ...editForm.raw };
-    delete payload.Id;
-    payload.SortId = editForm.SortId;
-    payload.HotTag = editForm.HotTag ? 1 : 0;
-    payload.IsSpecialGame = editForm.IsSpecialGame;
-    payload.IsBigPrizeGame = editForm.IsBigPrizeGame;
     await updateSubGameMaintainApi(payload);
-    message.success('保存成功');
+    message.success('编辑成功');
     editVisible.value = false;
     await gridApi.reload();
   } finally {
@@ -143,15 +234,15 @@ async function submitEdit() {
   }
 }
 
-async function handleOpenSwitch(row: SubGameRow, checked: boolean) {
-  const prev = Number(row.IsOpen) === 1 ? 1 : 0;
+function handleOpenSwitch(row: SubGameRow, checked: boolean) {
+  const previous = Number(row.IsOpen) === 1 ? 1 : 0;
   const next = checked ? 1 : 0;
   Modal.confirm({
-    content: `确认${next === 1 ? '开启' : '关闭'}「${row.Name}」？`,
-    onCancel: () => {
-      row.IsOpen = prev;
+    content: `确认${next === 1 ? '开启' : '关闭'}“${row.Name || row.SubGameId}”吗？`,
+    onCancel() {
+      row.IsOpen = previous;
     },
-    onOk: async () => {
+    async onOk() {
       actionKey.value = rowKey(row);
       try {
         const payload = { ...row, IsOpen: next };
@@ -159,20 +250,19 @@ async function handleOpenSwitch(row: SubGameRow, checked: boolean) {
         await updateSubGameMaintainApi(payload);
         message.success('操作成功');
         await gridApi.reload();
-      } catch {
-        row.IsOpen = prev;
+      } catch (error) {
+        row.IsOpen = previous;
+        throw error;
       } finally {
         actionKey.value = '';
       }
     },
-    title: '提示',
+    title: '开关确认',
   });
 }
 
-async function bumpSort(row: SubGameRow) {
-  if (!row.GameId || !row.SubGameId) {
-    return;
-  }
+async function moveUp(row: SubGameRow) {
+  if (!row.GameId || !row.SubGameId || row.GameId === row.SubGameId) return;
   actionKey.value = rowKey(row);
   try {
     await updateSubGameSortApi({
@@ -186,86 +276,286 @@ async function bumpSort(row: SubGameRow) {
   }
 }
 
+function openBatch(type: BatchType) {
+  const rows = selectedRows();
+  if (rows.length === 0) {
+    message.warning('请先勾选需要批量编辑的游戏');
+    return;
+  }
+  batchForm.Type = type;
+  batchForm.SubGameIds = rows.map((row) => row.SubGameId).join(',');
+  batchForm.IsOpen = '';
+  batchForm.Tag = '';
+  batchVisible.value = true;
+}
+
+async function submitBatch() {
+  if (batchForm.Type === 1 && batchForm.Tag === '') {
+    message.warning('请选择游戏标签');
+    return;
+  }
+  if (batchForm.Type === 2 && batchForm.IsOpen === '') {
+    message.warning('请选择显示状态');
+    return;
+  }
+  saving.value = true;
+  try {
+    await batchUpdateSubGameApi({ ...batchForm });
+    message.success('批量编辑成功');
+    batchVisible.value = false;
+    await gridApi.grid?.clearCheckboxRow?.();
+    await gridApi.reload();
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function reloadFirstPage() {
+  await gridApi.grid?.setCurrentPage?.(1);
+  await gridApi.query();
+}
+
 function handleSearch() {
-  gridApi.reload();
+  void reloadFirstPage();
+}
+
+function handleReset() {
+  filters.GameId = '';
+  filters.SearchTag = 0;
+  filters.SubGameId = '';
+  filters.SubGameName = '';
+  void reloadFirstPage();
 }
 </script>
 
 <template>
   <div>
-    <div class="mb-3 flex flex-wrap items-center gap-2">
-      <Input
-        v-model:value="filterName"
-        allow-clear
-        class="!w-[240px]"
-        placeholder="关键词"
-        @press-enter="handleSearch"
-      />
-      <Button type="primary" @click="handleSearch">查询</Button>
-    </div>
-    <div class="mb-3 text-xs text-gray-400">
-      已支持显示开关、热门/特色/大奖标签编辑、排序上移。
-    </div>
-    <Grid>
-      <template #tags="{ row }">
-        <div class="flex flex-wrap gap-1">
-          <Tag v-if="row.HotTag" color="orange">热门</Tag>
-          <Tag v-if="row.IsSpecialGame" color="blue">特色</Tag>
-          <Tag v-if="row.IsBigPrizeGame" color="purple">大奖</Tag>
-          <span v-if="!row.HotTag && !row.IsSpecialGame && !row.IsBigPrizeGame">
-            -
-          </span>
-        </div>
-      </template>
-      <template #isOpen="{ row }">
-        <Switch
-          v-if="canEdit"
-          :checked="Number(row.IsOpen) === 1"
-          :disabled="row.GameId === row.SubGameId"
-          :loading="actionKey === rowKey(row)"
-          @change="(checked) => handleOpenSwitch(row, !!checked)"
+    <div class="query-panel">
+      <div class="query-fields">
+        <Input
+          v-model:value="filters.SubGameId"
+          allow-clear
+          placeholder="请输入游戏 ID"
+          @press-enter="handleSearch"
+        >
+          <template #addonBefore>游戏 ID</template>
+        </Input>
+        <Input
+          v-model:value="filters.SubGameName"
+          allow-clear
+          placeholder="请输入游戏名称"
+          @press-enter="handleSearch"
+        >
+          <template #addonBefore>游戏名称</template>
+        </Input>
+        <Select
+          v-model:value="filters.SearchTag"
+          :options="searchTagOptions"
+          placeholder="游戏标签"
         />
-        <Tag v-else>{{ Number(row.IsOpen) === 1 ? '开' : '关' }}</Tag>
-      </template>
-      <template #action="{ row }">
-        <div class="flex flex-wrap gap-1">
-          <Button v-if="canEdit" size="small" @click="openEdit(row)">
-            编辑
-          </Button>
-          <Button
+        <Select
+          v-model:value="filters.GameId"
+          :options="venueOptions"
+          placeholder="场馆名称"
+          show-search
+        />
+      </div>
+      <Space wrap>
+        <Button type="primary" @click="handleSearch">查询</Button>
+        <Button @click="handleReset">重置</Button>
+      </Space>
+    </div>
+
+    <div class="action-bar">
+      <Space wrap>
+        <Button v-if="canEdit" type="primary" @click="openBatch(1)">
+          批量编辑标签
+        </Button>
+        <Button v-if="canEdit" @click="openBatch(2)">批量编辑开关</Button>
+      </Space>
+      <span class="text-xs text-gray-400">
+        主场馆行不可关闭或上移；批量操作前请先勾选游戏
+      </span>
+    </div>
+
+    <div class="game-grid">
+      <Grid>
+        <template #tags="{ row }">
+          <Space :size="4" wrap>
+            <Tag v-if="isEnabledFlag(row.HotTag)" color="orange">热门</Tag>
+            <Tag v-if="isEnabledFlag(row.IsSpecialGame)" color="blue">特色</Tag>
+            <Tag v-if="isEnabledFlag(row.IsBigPrizeGame)" color="purple">
+              大奖
+            </Tag>
+            <span
+              v-if="
+                !isEnabledFlag(row.HotTag) &&
+                !isEnabledFlag(row.IsSpecialGame) &&
+                !isEnabledFlag(row.IsBigPrizeGame)
+              "
+            >
+              -
+            </span>
+          </Space>
+        </template>
+        <template #isOpen="{ row }">
+          <Switch
             v-if="canEdit"
-            size="small"
+            :checked="Number(row.IsOpen) === 1"
+            :disabled="String(row.GameId) === String(row.SubGameId)"
             :loading="actionKey === rowKey(row)"
-            @click="bumpSort(row)"
-          >
-            上移
-          </Button>
-        </div>
-      </template>
-    </Grid>
+            @change="(checked) => handleOpenSwitch(row, !!checked)"
+          />
+          <Tag v-else :color="Number(row.IsOpen) === 1 ? 'green' : 'red'">
+            {{ Number(row.IsOpen) === 1 ? '开启' : '关闭' }}
+          </Tag>
+        </template>
+        <template #action="{ row }">
+          <Space :size="4">
+            <Button
+              v-if="canEdit"
+              :disabled="String(row.GameId) === String(row.SubGameId)"
+              :loading="actionKey === rowKey(row)"
+              size="small"
+              type="link"
+              @click="moveUp(row)"
+            >
+              上移
+            </Button>
+            <Button
+              v-if="canEdit"
+              size="small"
+              type="link"
+              @click="openEdit(row)"
+            >
+              编辑
+            </Button>
+          </Space>
+        </template>
+      </Grid>
+    </div>
 
     <Modal
       v-model:open="editVisible"
       :confirm-loading="saving"
       destroy-on-close
-      title="编辑子游戏"
+      title="编辑游戏"
       @ok="submitEdit"
     >
-      <Form layout="vertical" class="pt-2">
-        <Form.Item label="游戏">
-          <Input :value="editForm.Name" disabled />
-        </Form.Item>
-        <Form.Item label="排序值">
-          <InputNumber v-model:value="editForm.SortId" class="!w-full" />
-        </Form.Item>
-        <Form.Item label="标签">
-          <div class="flex flex-col gap-2">
+      <Form class="pt-3" layout="vertical">
+        <div class="form-grid">
+          <Form.Item label="游戏 ID">
+            <Input :value="String(editForm.SubGameId)" disabled />
+          </Form.Item>
+          <Form.Item label="游戏名称">
+            <Input :value="editForm.Name" disabled />
+          </Form.Item>
+          <Form.Item label="场馆名称">
+            <Input :value="editForm.raw?.GameName" disabled />
+          </Form.Item>
+          <Form.Item label="是否开启">
+            <Select v-model:value="editForm.IsOpen" :options="openOptions" />
+          </Form.Item>
+          <Form.Item label="排序值" required>
+            <InputNumber
+              v-model:value="editForm.SortId"
+              class="!w-full"
+              :max="999999"
+              :min="1"
+              :precision="0"
+            />
+          </Form.Item>
+        </div>
+        <Form.Item label="游戏标签">
+          <Space>
             <Checkbox v-model:checked="editForm.HotTag">热门</Checkbox>
             <Checkbox v-model:checked="editForm.IsSpecialGame">特色</Checkbox>
             <Checkbox v-model:checked="editForm.IsBigPrizeGame">大奖</Checkbox>
-          </div>
+          </Space>
+        </Form.Item>
+      </Form>
+    </Modal>
+
+    <Modal
+      v-model:open="batchVisible"
+      :confirm-loading="saving"
+      destroy-on-close
+      :title="batchTitle"
+      @ok="submitBatch"
+    >
+      <Form class="pt-3" layout="vertical">
+        <Form.Item label="已选游戏 ID">
+          <Input :value="batchForm.SubGameIds" disabled />
+        </Form.Item>
+        <Form.Item v-if="batchForm.Type === 1" label="游戏标签" required>
+          <Select
+            v-model:value="batchForm.Tag"
+            :options="[{ label: '无标签', value: 1 }, ...tagOptions]"
+            placeholder="请选择标签"
+          />
+        </Form.Item>
+        <Form.Item v-else label="是否开启" required>
+          <Select
+            v-model:value="batchForm.IsOpen"
+            :options="openOptions"
+            placeholder="请选择状态"
+          />
         </Form.Item>
       </Form>
     </Modal>
   </div>
 </template>
+
+<style scoped>
+.query-panel {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+  background: hsl(var(--muted) / 45%);
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+}
+
+.query-fields {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(4, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.game-grid {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
+}
+
+@media (max-width: 1000px) {
+  .query-panel,
+  .action-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .query-fields,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

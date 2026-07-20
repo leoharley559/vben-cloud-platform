@@ -20,17 +20,17 @@ export const TIMESHARE_METRIC_MAP: Record<
   TimeshareMetricKey,
   { label: string; permission: number }
 > = {
-  addDevice: { label: '新增设备', permission: 10880 },
-  addExchangeMoney: { label: '兑换金额', permission: 10884 },
-  addExchangeNum: { label: '兑换人数', permission: 10885 },
-  addNumber: { label: '新增用户', permission: 10878 },
-  addPayMoney: { label: '付费金额', permission: 10882 },
-  addPayNum: { label: '付费人数', permission: 10883 },
-  allLogin: { label: '总登录', permission: 10881 },
+  addDevice: { label: '新增设备', permission: 10_880 },
+  addExchangeMoney: { label: '兑换金额', permission: 10_884 },
+  addExchangeNum: { label: '兑换人数', permission: 10_885 },
+  addNumber: { label: '新增用户', permission: 10_878 },
+  addPayMoney: { label: '付费金额', permission: 10_882 },
+  addPayNum: { label: '付费人数', permission: 10_883 },
+  allLogin: { label: '总登录', permission: 10_881 },
 };
 
 function sortDayGroups(data: TimeshareHourItem[][]) {
-  return [...data].toSorted((a, b) => {
+  return data.filter((group) => Array.isArray(group) && group.length > 0).toSorted((a, b) => {
     const aDay = a?.[0]?.ReportDay || '';
     const bDay = b?.[0]?.ReportDay || '';
     return new Date(bDay).getTime() - new Date(aDay).getTime();
@@ -40,25 +40,31 @@ function sortDayGroups(data: TimeshareHourItem[][]) {
 function getMetricValue(item: TimeshareHourItem, metric: TimeshareMetricKey) {
   switch (metric) {
     case 'addDevice': {
-      return item.SumDevice ?? 0;
+      return Number(item.SumDevice ?? 0);
     }
     case 'addExchangeMoney': {
-      return (item.SumWithdrawMoney ?? 0) / 100;
+      return Number(item.SumWithdrawMoney ?? 0) / 100;
     }
     case 'addExchangeNum': {
-      return item.SumWithdrawNum ?? 0;
+      return Number(item.SumWithdrawNum ?? 0);
     }
     case 'addNumber': {
-      return item.SumReg ?? 0;
+      return Number(item.SumReg ?? 0);
     }
     case 'addPayMoney': {
-      return ((item.SumAgentPayMoney ?? 0) + (item.SumPayMoney ?? 0)) / 100;
+      return (
+        (Number(item.SumAgentPayMoney ?? 0) +
+          Number(item.SumPayMoney ?? 0)) /
+        100
+      );
     }
     case 'addPayNum': {
-      return (item.SumAgentPayNum ?? 0) + (item.SumPayNum ?? 0);
+      return (
+        Number(item.SumAgentPayNum ?? 0) + Number(item.SumPayNum ?? 0)
+      );
     }
     case 'allLogin': {
-      return item.SumLogin ?? 0;
+      return Number(item.SumLogin ?? 0);
     }
     default: {
       return 0;

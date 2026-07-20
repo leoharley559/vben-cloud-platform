@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import type { CloseOrderItem } from '#/types/promotion';
 
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-import { Button, Form, Input, Modal, message } from 'ant-design-vue';
+import { Button, Form, Input, message, Modal } from 'ant-design-vue';
+import BigNumber from 'bignumber.js';
 
 import { finishCloseOrderApi } from '#/api/promotion/close-order';
 
@@ -21,6 +22,13 @@ const emit = defineEmits<{
 const saving = ref(false);
 const formDesc = ref('');
 
+watch(
+  () => props.open,
+  (open) => {
+    if (open) formDesc.value = props.row?.Desc || '';
+  },
+);
+
 function handleClose() {
   emit('update:open', false);
   formDesc.value = '';
@@ -32,6 +40,10 @@ async function handleSubmit(isAccept: number) {
   }
   if (!formDesc.value.trim()) {
     message.warning('请填写备注');
+    return;
+  }
+  if (formDesc.value.length > 400 || /[\r\n]/.test(formDesc.value)) {
+    message.warning('备注须为 1 至 400 个字符，且不能换行');
     return;
   }
   saving.value = true;
@@ -50,26 +62,80 @@ async function handleSubmit(isAccept: number) {
     saving.value = false;
   }
 }
+
+async function copyValue(value: unknown) {
+  try {
+    await navigator.clipboard.writeText(String(value ?? ''));
+    message.success('复制成功');
+  } catch {
+    message.error('复制失败，请手动复制');
+  }
+}
+
+function netMoney() {
+  const value = new BigNumber(props.row?.Money || 0).minus(
+    props.row?.ServiceCharge || 0,
+  );
+  return value.isNaN() ? '' : value.toFixed(0);
+}
+
+function accountTypeName() {
+  if (props.row?.BankType === 1) return '银行卡';
+  if (props.row?.BankType === 2) return '支付宝';
+  return '-';
+}
 </script>
 
 <template>
-  <Modal :footer="null" :open="open" title="结束订单" @cancel="handleClose">
+  <Modal :footer="null" :open="open" title="打款操作" @cancel="handleClose">
     <Form layout="vertical">
-      <Form.Item label="订单编号">
-        <Input :value="row?.OrderId" disabled />
+      <Form.Item label="账号类型">
+        <Input :value="accountTypeName()" disabled />
       </Form.Item>
-      <Form.Item label="申请金额">
-        <Input :value="String(row?.Money ?? '')" disabled />
+      <Form.Item label="姓名">
+        <Input :value="row?.BankRealName" disabled>
+          <template #addonAfter>
+            <Button size="small" type="link" @click="copyValue(row?.BankRealName)">
+              复制
+            </Button>
+          </template>
+        </Input>
+      </Form.Item>
+      <Form.Item label="账号">
+        <Input :value="row?.BankAccount" disabled>
+          <template #addonAfter>
+            <Button size="small" type="link" @click="copyValue(row?.BankAccount)">
+              复制
+            </Button>
+          </template>
+        </Input>
+      </Form.Item>
+      <Form.Item label="打款金额">
+        <Input :value="netMoney()" disabled>
+          <template #addonAfter>
+            <Button
+              size="small"
+              type="link"
+              @click="copyValue(netMoney())"
+            >
+              复制
+            </Button>
+          </template>
+        </Input>
       </Form.Item>
       <Form.Item label="打款备注" required>
-        <Input.TextArea v-model:value="formDesc" :rows="4" />
+        <Input
+          v-model:value="formDesc"
+          :maxlength="400"
+          placeholder="请输入打款备注"
+        />
       </Form.Item>
     </Form>
     <div class="mt-4 flex justify-end gap-2">
       <Button @click="handleClose">取消</Button>
       <Button :loading="saving" danger @click="handleSubmit(0)">拒绝</Button>
       <Button :loading="saving" type="primary" @click="handleSubmit(1)">
-        同意打款
+        完成打款
       </Button>
     </div>
   </Modal>

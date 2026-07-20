@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { RecordQueryPanelConfig } from './components/record-query-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -8,209 +10,438 @@ import { Card, Result, Tabs } from 'ant-design-vue';
 import {
   fetchRecordAdjustListApi,
   fetchRecordBackwaterListApi,
-  fetchRecordBonusListApi,
+  fetchRecordBonusDetailListApi,
   fetchRecordDepositListApi,
   fetchRecordGameListApi,
   fetchRecordLoginListApi,
+  fetchRecordTransactionListApi,
   fetchRecordWithdrawListApi,
 } from '#/api/netcash/record-inquire';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { formatAmountFromCent } from '#/utils/format-amount';
+import { useGameConfig } from '#/composables/use-game-config';
 import { formatNetcashDateTime } from '#/utils/netcash';
+import { formatPlayerStatus } from '#/utils/player-status';
 
 import RecordQueryPanel from './components/record-query-panel.vue';
-import type { RecordQueryPanelConfig } from './components/record-query-panel.vue';
 
 defineOptions({ name: 'RecordInquire' });
 
 const { checkPermission } = useCloudPermission();
+const { ensureGameConfig, gameConfig } = useGameConfig();
+const dt = (v: unknown) => formatNetcashDateTime(v as string);
+const cash = (v: unknown) => (Number(v || 0) / 100).toFixed(2);
+const payment: Record<number, string> = {
+  1: '银行卡',
+  2: '支付宝',
+  3: 'USDT',
+  4: '极速支付',
+};
+const payType: Record<number, string> = {
+  [-1]: '代理',
+  1: '支付宝',
+  2: '微信',
+  3: '网银',
+  4: 'QQ',
+  5: '苹果',
+  6: '支付宝定额',
+  7: '微信定额',
+  8: '京东',
+  9: '云闪付',
+};
+const wallet: Record<number, string> = {
+  1: '佣金钱包',
+  2: '信用钱包',
+  3: '代客钱包',
+};
+const transferType: Record<number, string> = {
+  1: '代理转账',
+  2: '代理代存-代充',
+  3: '额度调整',
+  4: '推广红利',
+  5: '代客充值',
+  6: '佣金提款',
+  7: '佣金发放',
+  8: '手动还款',
+  9: '佣金发放抵扣',
+  10: '代理代存-红利',
+  11: '佣金调整',
+};
+const transferTypeOptions = [
+  { label: '全部', value: '' },
+  ...Object.entries(transferType).map(([value, label]) => ({
+    label,
+    value: Number(value),
+  })),
+];
+const bonusType: Record<number, string> = {
+  3: '平台红利',
+  4: '升级红利',
+  5: '每月红包',
+  6: '生日礼金',
+  7: '代理红利',
+  8: '推广红利',
+  9: '存款优惠',
+  10: '活动红利',
+  11: '负数归零',
+  12: '推荐红利',
+  13: '预约提款',
+  57: '活动红利',
+  58: '推荐红利',
+  119: '确认到账',
+  123: '代理存款红利',
+  125: '首存优惠',
+  130: '优惠券',
+};
+const bonusStatus: Record<number, string> = {
+  0: '未申请',
+  1: '审核中',
+  2: '成功',
+  3: '已失效',
+  4: '拒绝',
+};
+const playerAccount = (value: unknown, row: Record<string, unknown>) => {
+  const status = Number(row.PlayerStatus || 0);
+  return status
+    ? `${String(value ?? '-')}（${formatPlayerStatus(status)}）`
+    : String(value ?? '-');
+};
+const applyNote = (value: unknown, row: Record<string, unknown>) => {
+  if (Number(row.SendType) !== 2 || typeof value !== 'string') return value;
+  try {
+    const parsed = JSON.parse(value) as { Remark?: string };
+    return parsed.Remark || '-';
+  } catch {
+    return value;
+  }
+};
+const base = [
+  { field: 'CreateTime', formatter: dt, title: '日期' },
+  { field: 'LoginAccount', title: '游戏账号' },
+  { field: 'PackageName', title: '所属产品' },
+  { field: 'AgentAccount', title: '代理账号' },
+  { field: 'AgentName', title: '代理名称' },
+];
 
 const tabs = computed(() =>
   [
     {
-      key: 'account',
-      permission: 10174,
-      tab: '账号调整',
       config: {
         columns: [
+          ...base,
+          { field: 'Amount', formatter: cash, title: '调整金额' },
           {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-          { field: 'LoginAccount', title: '游戏账号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          { field: 'PackageName', title: '产品包' },
-          {
-            field: 'Amount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '调整金额',
+            field: 'HandleType',
+            formatter: (value: unknown) =>
+              ({
+                recordInquireDeposit: '存入',
+                withdrawOut: '提出',
+              })[String(value)] || String(value ?? '-'),
+            title: '调整类型',
           },
         ],
+        exportPermission: true,
         fetchApi: fetchRecordAdjustListApi,
-      } satisfies RecordQueryPanelConfig,
-    },
-    {
-      key: 'deposit',
-      permission: 10175,
-      tab: '会员存款',
-      config: {
-        amountField: 'RealAmountTotal',
-        columns: [
+        showDataType: true,
+        summaryItems: [
           {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-          { field: 'LoginAccount', title: '游戏账号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          { field: 'PackageName', title: '产品包' },
-          {
-            field: 'RealAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '存款金额',
+            columnField: 'Amount',
+            field: 'TotalReal',
+            title: '调整金额总计',
           },
         ],
+        title: '账号调整记录',
+      },
+      inner: 10_187,
+      key: 'account',
+      outer: 10_174,
+      tab: '账号调整',
+    },
+    {
+      config: {
+        columns: [
+          ...base,
+          { field: 'RealAmount', formatter: cash, title: '存款金额' },
+          {
+            field: 'PayType',
+            formatter: (value: unknown) =>
+              payType[Number(value)] || String(value ?? '-'),
+            title: '存款类型',
+          },
+        ],
+        exportPermission: checkPermission(10_448),
         fetchApi: fetchRecordDepositListApi,
-        summaryField: 'RealAmountTotal',
-        summaryTitle: '存款总计',
-      } satisfies RecordQueryPanelConfig,
+        showDataType: true,
+        summaryItems: [
+          {
+            columnField: 'RealAmount',
+            field: 'RealAmountTotal',
+            title: '存款总计',
+          },
+        ],
+        title: '会员存款记录',
+      },
+      inner: 10_191,
+      key: 'deposit',
+      outer: 10_175,
+      tab: '会员存款',
     },
     {
-      key: 'login',
-      permission: 10176,
-      tab: '登录',
       config: {
         columns: [
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-          { field: 'LoginAccount', title: '游戏账号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          { field: 'PackageName', title: '产品包' },
-          { field: 'LoginIP', title: '登录IP' },
+          ...base,
+          { field: 'Ip', title: '登录IP' },
+          { field: 'IpName', title: '登录地址' },
         ],
+        exportPermission: checkPermission(10_451),
         fetchApi: fetchRecordLoginListApi,
-      } satisfies RecordQueryPanelConfig,
+        title: '登录记录',
+      },
+      inner: 10_193,
+      key: 'login',
+      outer: 10_176,
+      tab: '登录',
     },
     {
-      key: 'withdraw',
-      permission: 10177,
-      tab: '提款',
       config: {
-        amountField: 'RealAmountTotal',
         columns: [
+          ...base,
+          { field: 'RealAmount', formatter: cash, title: '提款金额' },
+          { field: 'AccountNum', title: '提款账号' },
           {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-          { field: 'LoginAccount', title: '游戏账号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          {
-            field: 'RealAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '提款金额',
+            field: 'AccountType',
+            formatter: (value: unknown) =>
+              payment[Number(value)] || String(value ?? '-'),
+            title: '提款类型',
           },
         ],
+        exportPermission: checkPermission(10_449),
         fetchApi: fetchRecordWithdrawListApi,
-        summaryField: 'RealAmountTotal',
-        summaryTitle: '提款总计',
-      } satisfies RecordQueryPanelConfig,
+        showDataType: true,
+        summaryItems: [
+          {
+            columnField: 'RealAmount',
+            field: 'RealAmountTotal',
+            title: '提款金额总计',
+          },
+        ],
+        title: '提款记录',
+      },
+      inner: 10_197,
+      key: 'withdraw',
+      outer: 10_177,
+      tab: '提款',
     },
     {
+      config: {
+        columns: [
+          { field: 'OrderId', title: '订单号' },
+          {
+            field: 'LoginAccount',
+            formatter: playerAccount,
+            title: '游戏账号',
+          },
+          { field: 'PackageName', title: '所属产品' },
+          { field: 'Username', title: '代理账号' },
+          {
+            field: 'VipLevel',
+            formatter: (value: unknown) => `VIP ${value ?? '-'}`,
+            title: '会员等级',
+          },
+          { field: 'BonusTitle', title: '红利标题' },
+          {
+            field: 'BonusType',
+            formatter: (value: unknown) =>
+              bonusType[Number(value)] || String(value ?? '-'),
+            title: '红利类型',
+          },
+          {
+            field: 'SendType',
+            formatter: (value: unknown) =>
+              ({ 0: '自动派发', 1: '手动领取', 2: '手动派发' })[
+                Number(value)
+              ] || '-',
+            title: '发放方式',
+          },
+          {
+            field: 'IsWater',
+            formatter: (value: unknown) => (Number(value) === 1 ? '是' : '否'),
+            title: '是否需要流水',
+          },
+          { field: 'Draw', title: '流水倍数（倍）' },
+          { field: 'Bonus', formatter: cash, title: '红利金额' },
+          { field: 'ApplyTime', formatter: dt, title: '申请时间' },
+          { field: 'FinishTime', formatter: dt, title: '审核时间' },
+          { field: 'FailTime', formatter: dt, title: '失效时间' },
+          { field: 'ApplyAccount', title: '申请人' },
+          { field: 'Operator', title: '审核人' },
+          { field: 'ApplyNote', formatter: applyNote, title: '申请备注' },
+          { field: 'ReviewNote', title: '审核备注' },
+          {
+            field: 'Status',
+            formatter: (value: unknown) =>
+              bonusStatus[Number(value)] || '-',
+            title: '状态',
+          },
+        ],
+        exportPermission: checkPermission(10_447),
+        fetchApi: fetchRecordBonusDetailListApi,
+        kind: 'bonus',
+        summaryItems: [
+          {
+            columnField: 'Bonus',
+            field: 'SumBonus',
+            title: '红利总计',
+          },
+        ],
+        title: '红利记录',
+      },
+      inner: 10_198,
       key: 'bonus',
-      permission: 10178,
+      outer: 10_178,
       tab: '红利',
-      config: {
-        columns: [
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-          { field: 'LoginAccount', title: '游戏账号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          {
-            field: 'RealAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '红利金额',
-          },
-        ],
-        fetchApi: fetchRecordBonusListApi,
-      } satisfies RecordQueryPanelConfig,
     },
     {
-      key: 'backwater',
-      permission: 10179,
-      tab: '返水',
       config: {
         columns: [
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-          { field: 'LoginAccount', title: '游戏账号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          {
-            field: 'RealAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '返水金额',
-          },
+          ...base,
+          { field: 'BackWater', formatter: cash, title: '返水金额' },
         ],
+        exportPermission: checkPermission(10_446),
         fetchApi: fetchRecordBackwaterListApi,
-      } satisfies RecordQueryPanelConfig,
-    },
-    {
-      key: 'game',
-      permission: 10180,
-      tab: '游戏',
-      config: {
-        columns: [
+        showDataType: true,
+        summaryItems: [
           {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '时间',
-          },
-          { field: 'LoginAccount', title: '游戏账号' },
-          { field: 'AgentAccount', title: '代理账号' },
-          { field: 'GameName', title: '游戏' },
-          {
-            field: 'BetAmount',
-            formatter: (value) => formatAmountFromCent(Number(value)),
-            title: '投注金额',
+            columnField: 'BackWater',
+            field: 'BackWaterTotal',
+            title: '返水金额总计',
           },
         ],
-        fetchApi: fetchRecordGameListApi,
-      } satisfies RecordQueryPanelConfig,
+        title: '返水记录',
+      },
+      inner: 10_199,
+      key: 'backwater',
+      outer: 10_179,
+      tab: '返水',
     },
-  ].filter((item) => checkPermission(item.permission)),
+    {
+      config: {
+        columns: [
+          ...base,
+          { field: 'LogId', title: '单号' },
+          {
+            field: 'GameType',
+            formatter: (value: unknown) =>
+              gameConfig.value.platformGameType[String(value)] ||
+              String(value ?? '-'),
+            title: '场馆',
+          },
+          { field: 'AddGold', formatter: cash, title: '变更金额' },
+        ],
+        exportPermission: checkPermission(10_450),
+        fetchApi: fetchRecordGameListApi,
+        summaryItems: [
+          {
+            columnField: 'AddGold',
+            field: 'AddGoldTotal',
+            title: '变更金额汇总',
+          },
+        ],
+        title: '游戏记录',
+      },
+      inner: 10_200,
+      key: 'game',
+      outer: 10_180,
+      tab: '游戏',
+    },
+    {
+      config: {
+        columns: [
+          { field: 'AdminAccount', title: '代理账号' },
+          { field: 'OrderId', title: '订单号' },
+          {
+            field: 'WalletType',
+            formatter: (value: unknown) => wallet[Number(value)] || '-',
+            title: '钱包类型',
+          },
+          {
+            field: 'TransferType',
+            formatter: (value: unknown) =>
+              transferType[Number(value)] || String(value ?? '-'),
+            title: '账变类型',
+          },
+          {
+            field: 'AdjustAmountBef',
+            formatter: cash,
+            title: '账变前金额',
+          },
+          { field: 'AdjustAmount', formatter: cash, title: '账变金额' },
+          {
+            field: 'AdjustAmountAft',
+            formatter: cash,
+            title: '账变后金额',
+          },
+          { field: 'UpdateTime', formatter: dt, title: '账变时间' },
+          { field: 'ReviewNote', title: '备注' },
+        ],
+        exportPermission: checkPermission(11_743),
+        fetchApi: fetchRecordTransactionListApi,
+        kind: 'transaction',
+        summaryItems: [
+          {
+            columnField: 'AdjustAmountBef',
+            field: 'TotalBeforeAdjustAmount',
+            title: '账变前金额总计',
+          },
+          {
+            columnField: 'AdjustAmount',
+            field: 'TotalAdjustAmount',
+            title: '账变金额总计',
+          },
+          {
+            columnField: 'AdjustAmountAft',
+            field: 'TotalAfterAdjustAmount',
+            title: '账变后金额总计',
+          },
+        ],
+        title: '佣金钱包账变记录',
+        transferTypeOptions,
+      },
+      inner: 11_742,
+      key: 'transaction',
+      outer: 11_735,
+      tab: '账变记录',
+    },
+  ].filter(
+    (item) => checkPermission(item.outer) && checkPermission(item.inner),
+  ),
 );
-
-const canViewPage = computed(() => tabs.value.length > 0);
-const activeTab = ref('account');
+const active = ref('');
 
 onMounted(() => {
-  activeTab.value = tabs.value[0]?.key || 'account';
+  active.value = tabs.value[0]?.key || '';
+  if (tabs.value.some(({ key }) => key === 'game')) {
+    void ensureGameConfig();
+  }
 });
 </script>
 
 <template>
   <Page
-    v-if="canViewPage"
+    v-if="tabs.length > 0"
     auto-content-height
     description="代理网赚 · 记录查询"
     title="记录查询"
   >
     <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
-        <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
+      <Tabs v-model:active-key="active" type="card">
+        <Tabs.TabPane
+          v-for="item in tabs"
+          :key="item.key"
+          :tab="item.tab"
+        >
           <RecordQueryPanel
-            v-if="activeTab === item.key"
-            :config="item.config"
+            v-if="active === item.key"
+            :config="item.config as RecordQueryPanelConfig"
           />
         </Tabs.TabPane>
       </Tabs>

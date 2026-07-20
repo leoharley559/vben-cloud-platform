@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
@@ -11,18 +11,20 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Spin,
+  Table,
   Tabs,
-  message,
 } from 'ant-design-vue';
 
 import {
   editAgentCommissionMoneyApi,
   editAgentMobileApi,
+  fetchAgentMoneyModifyRecordApi,
   fetchAgentNetcashDetailApi,
 } from '#/api/netcash/agency-account-details';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -34,8 +36,11 @@ import {
   formatNetcashDateTime,
 } from '#/utils/netcash';
 
+import AgencyDataPanel from './components/agency-data-panel.vue';
 import AgencyFinancePanel from './components/agency-finance-panel.vue';
 import AgencyLoginPanel from './components/agency-login-panel.vue';
+import AgencyRelationPanel from './components/agency-relation-panel.vue';
+import AgencyWalletPanel from './components/agency-wallet-panel.vue';
 import AgencyWithdrawPanel from './components/agency-withdraw-panel.vue';
 
 defineOptions({ name: 'AgencyAccountDetails' });
@@ -43,30 +48,74 @@ defineOptions({ name: 'AgencyAccountDetails' });
 const route = useRoute();
 const { checkPermission } = useCloudPermission();
 
-const adminId = computed(() => String(route.query.id || route.params.id || ''));
+const adminId = computed(() => String(route.params.id || route.query.id || ''));
 
+const canAgentData = computed(() => checkPermission(13_449));
 const canOverview = computed(() => checkPermission(11_252));
+const canBasics = computed(() => checkPermission(11_253));
 const canLogin = computed(() => checkPermission(11_255));
 const canWithdraw = computed(() => checkPermission(11_256));
+const canRelation = computed(() => checkPermission(11_257));
+const canCommissionWallet = computed(() => checkPermission(11_733));
+const canCreditWallet = computed(() => checkPermission(11_740));
 const canFinance = computed(() => checkPermission(11_254));
 const canEditMobile = computed(() => checkPermission(11_258));
 const canEditMoney = computed(() => checkPermission(11_501));
 const canViewPage = computed(
   () =>
     Boolean(adminId.value) &&
-    (canOverview.value ||
+    (canAgentData.value ||
+      canOverview.value ||
       canLogin.value ||
       canWithdraw.value ||
-      canFinance.value),
+      canFinance.value ||
+      canRelation.value ||
+      canCommissionWallet.value ||
+      canCreditWallet.value),
 );
 
 const loading = ref(false);
 const detail = ref<Record<string, unknown>>({});
+const moneyRecords = ref<Record<string, unknown>[]>([]);
 const activeTab = ref('overview');
 
 const displayMobile = computed(() =>
   String(detail.value.Mobile || detail.value.MobileNumber || ''),
 );
+const agencyName = computed(() =>
+  String(
+    route.query.Name ||
+      detail.value.Name ||
+      detail.value.Username ||
+      adminId.value,
+  ),
+);
+const commissionDisplay = computed(() => {
+  const level = Number(detail.value.AccountLevel);
+  const accountType = Number(detail.value.AccountType);
+  if (level === 1) {
+    if (accountType === 1) {
+      return (
+        detail.value.CommissionTemplateName ||
+        detail.value.CommissionTemplateId ||
+        '-'
+      );
+    }
+    if (accountType === 2) {
+      return `${Number(detail.value.CommissionRate || 0) / 100}%`;
+    }
+    if (accountType === 3) {
+      return (
+        detail.value.CommissionMultiTemplateName ||
+        detail.value.CommissionMultiTemplateId ||
+        '-'
+      );
+    }
+  }
+  return accountType === 3
+    ? '多场馆费率'
+    : `${Number(detail.value.CommissionRate || 0) / 100}%`;
+});
 
 const canShowMoneyEdit = computed(
   () => canEditMoney.value && Number(detail.value.Type) !== 3,
@@ -79,6 +128,10 @@ async function loadDetail() {
   loading.value = true;
   try {
     detail.value = await fetchAgentNetcashDetailApi(adminId.value);
+    if (canBasics.value) {
+      const records = await fetchAgentMoneyModifyRecordApi(adminId.value);
+      moneyRecords.value = records.Items || [];
+    }
   } finally {
     loading.value = false;
   }
@@ -86,10 +139,14 @@ async function loadDetail() {
 
 function resolveDefaultTab() {
   const tabs = [
+    { key: 'data', visible: canAgentData.value },
     { key: 'overview', visible: canOverview.value },
     { key: 'finance', visible: canFinance.value },
     { key: 'login', visible: canLogin.value },
     { key: 'withdraw', visible: canWithdraw.value },
+    { key: 'relation', visible: canRelation.value },
+    { key: 'commission', visible: canCommissionWallet.value },
+    { key: 'credit', visible: canCreditWallet.value },
   ];
   activeTab.value = tabs.find((item) => item.visible)?.key || 'overview';
 }
@@ -105,10 +162,17 @@ const phoneCodeOptions = [
   { label: '+86', value: '86' },
   { label: '+1', value: '1' },
   { label: '+60', value: '60' },
+  { label: '+62', value: '62' },
   { label: '+63', value: '63' },
+  { label: '+65', value: '65' },
   { label: '+66', value: '66' },
+  { label: '+81', value: '81' },
+  { label: '+82', value: '82' },
   { label: '+84', value: '84' },
+  { label: '+853', value: '853' },
   { label: '+855', value: '855' },
+  { label: '+886', value: '886' },
+  { label: '+852', value: '852' },
 ];
 
 function openPhoneModal() {
@@ -146,6 +210,25 @@ async function submitPhoneModal() {
 const moneyModalOpen = ref(false);
 const moneySubmitting = ref(false);
 const moneyValue = ref<number | undefined>();
+const moneyHistoryOpen = ref(false);
+const rateOpen = ref(false);
+const rateRows = computed(() => {
+  const raw = detail.value.CommissionRate;
+  if (
+    Number(detail.value.AccountLevel) === 1 ||
+    Number(detail.value.AccountType) !== 3
+  ) {
+    return [];
+  }
+  if (Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== 'string') return [];
+  try {
+    const value = JSON.parse(raw);
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+});
 
 function openMoneyModal() {
   moneyValue.value = Number(detail.value.Money || 0) / 100;
@@ -179,20 +262,28 @@ onMounted(() => {
   resolveDefaultTab();
   loadDetail();
 });
+watch(adminId, () => {
+  detail.value = {};
+  moneyRecords.value = [];
+  void loadDetail();
+});
 </script>
 
 <template>
   <Page
     v-if="canViewPage"
     auto-content-height
-    :description="`代理网赚 · 代理详情 ${detail.Username || adminId}`"
-    title="代理账号详情"
+    :description="`代理网赚 · 代理详情 ${detail.Username || agencyName}`"
+    :title="`代理账号详情-${agencyName}`"
   >
     <Card>
       <Tabs v-model:active-key="activeTab" type="line" size="small">
+        <Tabs.TabPane v-if="canAgentData" key="data" tab="代理数据">
+          <AgencyDataPanel v-if="activeTab === 'data'" :admin-id="adminId" />
+        </Tabs.TabPane>
         <Tabs.TabPane v-if="canOverview" key="overview" tab="代理概况">
           <Spin :spinning="loading">
-            <Descriptions bordered :column="2" size="small">
+            <Descriptions v-if="canBasics" bordered :column="2" size="small">
               <Descriptions.Item label="代理账号">
                 {{ detail.Username || '-' }}
               </Descriptions.Item>
@@ -243,15 +334,93 @@ onMounted(() => {
                   >
                     调整
                   </Button>
+                  <Button
+                    v-if="canBasics"
+                    size="small"
+                    type="link"
+                    @click="moneyHistoryOpen = true"
+                  >
+                    调整记录
+                  </Button>
                 </Space>
               </Descriptions.Item>
-              <Descriptions.Item label="创建时间">
-                {{ formatNetcashDateTime(detail.CreateTime as string) }}
+              <Descriptions.Item label="注册时间">
+                {{
+                  formatNetcashDateTime(
+                    (detail.RegisterCreateTime || detail.CreateTime) as string,
+                  )
+                }}
               </Descriptions.Item>
               <Descriptions.Item label="团队">
                 {{ detail.TeamName || '-' }}
               </Descriptions.Item>
+              <Descriptions.Item label="注册 IP / 地区">
+                {{ detail.RegisterIp || '-' }}
+                {{ detail.RegisterAddress || '' }}
+              </Descriptions.Item>
+              <Descriptions.Item label="注册设备编号">
+                {{ detail.RegisterDeviceId || '-' }}
+              </Descriptions.Item>
+              <Descriptions.Item label="注册设备类型">
+                {{ detail.RegisterLoginPlatform || '-' }}
+              </Descriptions.Item>
+              <Descriptions.Item label="最后登录设备编号">
+                {{ detail.LastDeviceId || '-' }}
+              </Descriptions.Item>
+              <Descriptions.Item label="最后登录设备类型">
+                {{ detail.LastLoginPlatform || '-' }}
+              </Descriptions.Item>
+              <Descriptions.Item label="所属分组">
+                {{ detail.GroupName || '-' }}
+              </Descriptions.Item>
+              <Descriptions.Item label="佣金算法">
+                {{
+                  detail.AlgorithmTemplateName ||
+                  detail.AlgorithmTemplateId ||
+                  '-'
+                }}
+              </Descriptions.Item>
+              <Descriptions.Item label="佣金模板 / 比例">
+                <Space>
+                  <span>{{ commissionDisplay }}</span>
+                  <Button
+                    v-if="rateRows.length > 0"
+                    size="small"
+                    type="link"
+                    @click="rateOpen = true"
+                  >
+                    查看场馆比例
+                  </Button>
+                </Space>
+              </Descriptions.Item>
+              <Descriptions.Item label="佣金发放方式">
+                {{
+                  Number(detail.SendCommissionType) === 1
+                    ? '系统发放一级代理'
+                    : Number(detail.SendCommissionType) === 2
+                      ? '系统发放全部代理'
+                      : '-'
+                }}
+              </Descriptions.Item>
+              <Descriptions.Item label="佣金结算周期">
+                {{
+                  ({ 1: '日结', 2: '周结', 3: '月结' } as Record<
+                    number,
+                    string
+                  >)[Number(detail.SettlementType)] || '-'
+                }}
+              </Descriptions.Item>
             </Descriptions>
+            <Space v-else>
+              <span>
+                状态：{{
+                  AGENCY_STATUS_MAP[Number(detail.Status)] ||
+                  detail.Status ||
+                  '-'
+                }}
+              </span>
+              <span class="text-sm text-gray-500">无基础资料查看权限</span>
+            </Space>
           </Spin>
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canFinance" key="finance" tab="财务账户">
@@ -267,6 +436,30 @@ onMounted(() => {
           <AgencyWithdrawPanel
             v-if="activeTab === 'withdraw'"
             :admin-id="adminId"
+          />
+        </Tabs.TabPane>
+        <Tabs.TabPane v-if="canRelation" key="relation" tab="关联账号">
+          <AgencyRelationPanel
+            v-if="activeTab === 'relation'"
+            :admin-id="adminId"
+          />
+        </Tabs.TabPane>
+        <Tabs.TabPane
+          v-if="canCommissionWallet"
+          key="commission"
+          tab="佣金钱包"
+        >
+          <AgencyWalletPanel
+            v-if="activeTab === 'commission'"
+            :admin-id="adminId"
+            wallet="commission"
+          />
+        </Tabs.TabPane>
+        <Tabs.TabPane v-if="canCreditWallet" key="credit" tab="信用钱包">
+          <AgencyWalletPanel
+            v-if="activeTab === 'credit'"
+            :admin-id="adminId"
+            wallet="credit"
           />
         </Tabs.TabPane>
       </Tabs>
@@ -311,6 +504,68 @@ onMounted(() => {
           />
         </Form.Item>
       </Form>
+    </Modal>
+
+    <Modal
+      v-model:open="moneyHistoryOpen"
+      :footer="null"
+      title="佣金余额调整记录"
+      width="760px"
+    >
+      <Table
+        bordered
+        :columns="[
+          { dataIndex: 'CreateTime', key: 'CreateTime', title: '日期' },
+          { dataIndex: 'MoneyBefore', key: 'MoneyBefore', title: '调整前余额' },
+          { dataIndex: 'MoneyAfter', key: 'MoneyAfter', title: '调整后余额' },
+          { dataIndex: 'Handler', key: 'Handler', title: '操作人' },
+        ]"
+        :data-source="moneyRecords"
+        :pagination="false"
+        :row-key="(row, index) => String(row.Id || index)"
+        size="small"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'CreateTime'">
+            {{ formatNetcashDateTime(record.CreateTime) }}
+          </template>
+          <template
+            v-else-if="['MoneyBefore', 'MoneyAfter'].includes(String(column.key))"
+          >
+            {{
+              formatAmountFromCent(Number(record[String(column.key)] || 0))
+            }}
+          </template>
+        </template>
+      </Table>
+    </Modal>
+
+    <Modal
+      v-model:open="rateOpen"
+      :footer="null"
+      title="场馆佣金比例"
+      width="640px"
+    >
+      <Table
+        bordered
+        :columns="[
+          { dataIndex: 'Name', key: 'Name', title: '场馆类型' },
+          { dataIndex: 'WinLoseRate', key: 'WinLoseRate', title: '输赢占成' },
+          { dataIndex: 'WaterRate', key: 'WaterRate', title: '返水占成' },
+        ]"
+        :data-source="rateRows"
+        :pagination="false"
+        :row-key="(row, index) => String(row.Id || row.Name || index)"
+        size="small"
+      >
+        <template #bodyCell="{ column, record }">
+          <template
+            v-if="['WinLoseRate', 'WaterRate'].includes(String(column.key))"
+          >
+            {{ Number(record[String(column.key)] || 0) / 100 }}%
+          </template>
+        </template>
+      </Table>
     </Modal>
   </Page>
   <Result

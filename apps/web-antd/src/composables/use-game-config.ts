@@ -6,6 +6,7 @@ import { getGameConfigApi } from '#/api/core/project';
 import { parseGameConfig } from '#/utils/game-config';
 
 interface GameConfigResponse {
+  Data?: GameConfigResponse;
   GameSetting?: GameConfigItem[];
   [key: string]: unknown;
 }
@@ -27,24 +28,25 @@ function resolveGameSetting(data: unknown) {
     return data as GameConfigItem[];
   }
   const response = data as GameConfigResponse;
-  return response?.GameSetting || [];
+  return response?.GameSetting || response?.Data?.GameSetting || [];
 }
 
 export function useGameConfig() {
-  async function ensureGameConfig() {
-    if (loaded) {
+  async function ensureGameConfig(force = false) {
+    if (loaded && !force) {
       return gameConfig.value;
     }
     if (loadingPromise) {
       return loadingPromise;
     }
 
+    if (force) loaded = false;
     loading.value = true;
     loadingPromise = getGameConfigApi()
       .then((data) => {
         const parsed = parseGameConfig(resolveGameSetting(data));
         gameConfig.value = parsed;
-        loaded = true;
+        loaded = Object.keys(parsed.games).length > 0;
         return parsed;
       })
       .finally(() => {

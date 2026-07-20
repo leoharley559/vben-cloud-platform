@@ -1,64 +1,65 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
-import { Page } from '@vben/common-ui';
-
-import { Card, Empty, Result, Tabs } from 'ant-design-vue';
+import { Card, Empty, Tabs } from 'ant-design-vue';
 
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
-import PhoneBlockPanel from './components/phone-block-panel.vue';
+import CommonSettingPanel from './components/common-setting-panel.vue';
+import ExchangeRatePanel from './components/exchange-rate-panel.vue';
+import GameHelpPanel from './components/game-help-panel.vue';
+import SportsTutorialPanel from './components/sports-tutorial-panel.vue';
+import SystemTemplatesPanel from './components/system-templates-panel.vue';
 
 defineOptions({ name: 'SystemSetting' });
 
+const route = useRoute();
 const { checkPermission } = useCloudPermission();
-const activeTab = ref('block');
-
 const tabs = computed(() =>
   [
-    {
-      key: 'block',
-      permission: 12240,
-      tab: '区号屏蔽',
-    },
-    {
-      key: 'other',
-      permission: 12241,
-      placeholder: true,
-      tab: '其它设置',
-    },
+    { component: GameHelpPanel, key: '1', label: '游戏帮助中心', permission: 12_240 },
+    { component: CommonSettingPanel, key: '2', label: '通用规则', permission: 12_241 },
+    { component: SportsTutorialPanel, key: '3', label: '体育玩法教程配置', permission: 13_104 },
+    { component: ExchangeRatePanel, key: '4', label: '汇率设置', permission: 13_362 },
+    { component: SystemTemplatesPanel, key: '5', label: '系统模板', permission: 13_453 },
   ].filter((item) => checkPermission(item.permission)),
 );
-
-const canViewPage = computed(() => tabs.value.length > 0);
-
-onMounted(() => {
-  activeTab.value = tabs.value[0]?.key || 'block';
-});
+const requestedTab = String(route.query.type || '');
+const activeKey = ref(
+  tabs.value.some((item) => item.key === requestedTab)
+    ? requestedTab
+    : tabs.value[0]?.key || '',
+);
 </script>
 
 <template>
-  <Page
-    v-if="canViewPage"
-    auto-content-height
-    description="游戏管理 · 系统设置"
-    title="系统设置"
-  >
-    <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
-        <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <template v-if="item.placeholder">
-            <div class="mb-4 text-xs text-gray-400">
-              其它系统配置等待下一迭代迁移。
-            </div>
-            <Empty description="其它设置待迁移" />
-          </template>
-          <PhoneBlockPanel
-            v-else-if="item.key === 'block' && activeTab === 'block'"
-          />
+  <div class="system-setting-page">
+    <Card v-if="tabs.length > 0" :bordered="false" class="tabs-card">
+      <Tabs v-model:active-key="activeKey" destroy-inactive-tab-pane>
+        <Tabs.TabPane v-for="tab in tabs" :key="tab.key" :tab="tab.label">
+          <component :is="tab.component" v-if="activeKey === tab.key" />
         </Tabs.TabPane>
       </Tabs>
     </Card>
-  </Page>
-  <Result v-else status="403" sub-title="无系统设置查看权限" title="403" />
+    <Card v-else :bordered="false">
+      <Empty description="暂无系统设置页面权限" />
+    </Card>
+  </div>
 </template>
+
+<style scoped>
+.system-setting-page {
+  min-height: 100%;
+  padding: 16px;
+}
+
+.tabs-card {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+}
+
+:deep(.ant-card-body) {
+  padding-top: 8px;
+}
+</style>

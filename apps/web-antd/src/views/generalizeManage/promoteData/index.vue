@@ -17,11 +17,11 @@ defineOptions({ name: 'PromoteData' });
 
 const { checkPermission } = useCloudPermission();
 
-const canAccountData = computed(() => checkPermission(10886));
-const canDropChange = computed(() => checkPermission(10887));
-const canInvalidUser = computed(() => checkPermission(10888));
-const canDataWrite = computed(() => checkPermission(10889));
-const canChannelRecoup = computed(() => checkPermission(13187));
+const canAccountData = computed(() => checkPermission(10_886));
+const canDropChange = computed(() => checkPermission(10_887));
+const canInvalidUser = computed(() => checkPermission(10_888));
+const canDataWrite = computed(() => checkPermission(10_889));
+const canChannelRecoup = computed(() => checkPermission(13_187));
 
 const canViewPage = computed(
   () =>
@@ -57,25 +57,48 @@ onMounted(() => {
     description="推广管理 · 推广报表"
     title="推广报表"
   >
-    <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+    <Card class="report-card" :bordered="false">
+      <Tabs v-model:active-key="activeTab" class="report-tabs" type="line">
         <Tabs.TabPane v-if="canAccountData" key="account" tab="账户数据">
-          <ChannelDataList v-if="activeTab === 'account'" />
+          <KeepAlive>
+            <ChannelDataList v-if="activeTab === 'account'" />
+          </KeepAlive>
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canDropChange" key="drop" tab="落地页转化">
-          <DropChangeList v-if="activeTab === 'drop'" />
+          <KeepAlive>
+            <DropChangeList v-if="activeTab === 'drop'" />
+          </KeepAlive>
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canInvalidUser" key="invalid" tab="无效用户">
-          <InvalidUserPanel v-if="activeTab === 'invalid'" />
+          <KeepAlive>
+            <InvalidUserPanel v-if="activeTab === 'invalid'" />
+          </KeepAlive>
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canDataWrite" key="write" tab="数据填写">
-          <DataWriteList v-if="activeTab === 'write'" />
+          <KeepAlive>
+            <DataWriteList v-if="activeTab === 'write'" />
+          </KeepAlive>
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canChannelRecoup" key="recoup" tab="渠道回本数据">
-          <ChannelRecoupList v-if="activeTab === 'recoup'" />
+          <KeepAlive>
+            <ChannelRecoupList v-if="activeTab === 'recoup'" />
+          </KeepAlive>
         </Tabs.TabPane>
       </Tabs>
     </Card>
   </Page>
   <Result v-else status="403" sub-title="无推广报表查看权限" title="403" />
 </template>
+
+<style scoped>
+.report-card {
+  min-height: calc(100vh - 180px);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
+}
+
+.report-tabs :deep(.ant-tabs-nav) {
+  padding: 0 8px;
+  margin-bottom: 16px;
+}
+</style>

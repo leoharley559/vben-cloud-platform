@@ -9,7 +9,6 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   DatePicker,
-  message,
   Result,
   Select,
   Space,
@@ -25,13 +24,21 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { formatLogContent } from '#/utils/log-template';
+import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 
 defineOptions({ name: 'SystemLogsManage' });
 
-const { checkPermission } = useCloudPermission();
+const { adminInfo, checkPermission } = useCloudPermission();
 
 const canViewList = computed(() => checkPermission(10010));
 const canExport = computed(() => checkPermission(10011));
+
+const exporting = ref(false);
+
+const roleOptions = computed(() => {
+  const list = adminInfo.value?.Role || adminInfo.value?.CRole;
+  return Array.isArray(list) ? list : [];
+});
 
 const userOptions = ref<Array<{ label: string; value: number | string }>>([
   { label: '全部账号', value: '' },
@@ -59,6 +66,13 @@ function formatDateTime(value?: number | string) {
     : String(value);
 }
 
+function toCloudSort(sort?: { field?: string; order?: string | null }) {
+  if (!sort?.field || !sort?.order) {
+    return '';
+  }
+  return sort.order === 'asc' ? sort.field : `-${sort.field}`;
+}
+
 function getQueryParams() {
   const fallback = getYesterdayRangeSeconds();
   const [begin, end] = filterDateRange.value || [];
@@ -68,6 +82,10 @@ function getQueryParams() {
     EndTime: end ? end.endOf('day').unix() : fallback.EndTime,
     LogTypeId: filterLogTypeId.value || '',
   };
+}
+
+function renderLogContent(row: LogListItem) {
+  return formatLogContent(row, { roles: roleOptions.value });
 }
 
 const gridOptions: VxeTableGridOptions<LogListItem> = {
@@ -84,7 +102,7 @@ const gridOptions: VxeTableGridOptions<LogListItem> = {
     { field: 'Username', minWidth: 120, title: '操作人员' },
     {
       field: 'LogTemplate',
-      formatter: ({ row }) => formatLogContent(row),
+      formatter: ({ row }) => renderLogContent(row),
       minWidth: 320,
       showOverflow: 'tooltip',
       title: '操作内容',
@@ -99,18 +117,11 @@ const gridOptions: VxeTableGridOptions<LogListItem> = {
     ajax: {
       query: async ({ page, sort }) => {
         const query = getQueryParams();
-        const sortField = sort?.field;
-        const sortOrder = sort?.order;
-        let sortParam = '';
-        if (sortField && sortOrder) {
-          sortParam = `${sortField} ${sortOrder === 'asc' ? 'asc' : 'desc'}`;
-        }
-
         const result = await fetchLogListApi({
           ...query,
           Page: page.currentPage,
           PageSize: page.pageSize,
-          Sort: sortParam,
+          Sort: toCloudSort(sort),
         });
 
         return {
@@ -170,8 +181,40 @@ function handleReset() {
   gridApi.reload();
 }
 
-function handleExport() {
-  message.info('Excel 导出将在下一迭代补齐（权限 10011 已预留）');
+async function handleExport() {
+  if (exporting.value) {
+    return;
+  }
+  exporting.value = true;
+  try {
+    const query = getQueryParams();
+    const result = await fetchLogListApi({
+      ...query,
+      IsExp: true,
+      Page: 1,
+      PageSize: 10_000,
+    });
+    const rows = (result?.Items || []) as Record<string, unknown>[];
+    await exportReportXlsx(
+      rows,
+      ['操作时间', '登录IP', '类型', '操作人员', '操作内容'],
+      '日志管理',
+      (row) => {
+        const item = row as unknown as LogListItem;
+        return [
+          formatDateTime(item.CreateTime),
+          item.Ip || '',
+          item.LogType || '',
+          item.Username || '',
+          renderLogContent(item),
+        ];
+      },
+    );
+  } catch {
+    // 错误提示由 request 拦截器处理
+  } finally {
+    exporting.value = false;
+  }
 }
 
 onMounted(async () => {
@@ -214,7 +257,13 @@ onMounted(async () => {
       <Space>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-        <Button v-if="canExport" @click="handleExport">导出 Excel</Button>
+        <Button
+          v-if="canExport"
+          :loading="exporting"
+          @click="handleExport"
+        >
+          导出 Excel
+        </Button>
       </Space>
     </div>
 

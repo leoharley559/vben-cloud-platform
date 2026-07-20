@@ -1,95 +1,34 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
 import { Card, Result, Tabs } from 'ant-design-vue';
 
-import {
-  fetchCloneChannelPlanListApi,
-  fetchMoneyChannelListApi,
-} from '#/api/netcash/create-money-channel';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { formatNetcashDateTime } from '#/utils/netcash';
 
-import NetcashGridPanel from '../components/netcash-grid-panel.vue';
-import type { NetcashGridConfig } from '../components/netcash-grid-panel.vue';
+import CloneChannelPanel from './components/clone-channel-panel.vue';
+import MoneyChannelPanel from './components/money-channel-panel.vue';
 
 defineOptions({ name: 'CreateMoneyChannel' });
 
 const { checkPermission } = useCloudPermission();
 
-const channelExtraQuery = ref<Record<string, unknown>>({ DataSearchType: 0 });
-const testChannelExtraQuery = ref<Record<string, unknown>>({
-  DataSearchType: 1,
-});
-
 const tabs = computed(() =>
   [
     {
-      config: {
-        columns: [
-          { field: 'ChannelId', title: '渠道号' },
-          { field: 'ChannelName', title: '渠道名称' },
-          { field: 'AdminId', title: '代理账号' },
-          { field: 'AdminName', title: '代理名称' },
-          { field: 'InvitationCode', title: '邀请码' },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '创建时间',
-          },
-        ],
-        extraQuery: channelExtraQuery.value,
-        fetchApi: (query: Record<string, unknown>) =>
-          fetchMoneyChannelListApi(query as never),
-        filters: ['username'],
-      } satisfies NetcashGridConfig,
       key: 'channel',
-      permission: 12330,
+      permission: 12_330,
       tab: '渠道管理',
     },
     {
-      config: {
-        columns: [
-          { field: 'ChannelId', title: '渠道号' },
-          { field: 'ChannelName', title: '渠道名称' },
-          { field: 'AdminId', title: '代理账号' },
-          { field: 'AdminName', title: '代理名称' },
-          { field: 'InvitationCode', title: '邀请码' },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '创建时间',
-          },
-        ],
-        extraQuery: testChannelExtraQuery.value,
-        fetchApi: (query: Record<string, unknown>) =>
-          fetchMoneyChannelListApi(query as never),
-        filters: ['username'],
-      } satisfies NetcashGridConfig,
       key: 'testChannel',
-      permission: 12491,
+      permission: 12_491,
       tab: '测试渠道管理',
     },
     {
-      config: {
-        columns: [
-          { field: 'PackageName', title: '产品包' },
-          { field: 'SourceChannelId', title: '源渠道号' },
-          { field: 'TargetChannelId', title: '目标渠道号' },
-          {
-            field: 'CreateTime',
-            formatter: (value) => formatNetcashDateTime(value as string),
-            title: '创建时间',
-          },
-        ],
-        fetchApi: (query: Record<string, unknown>) =>
-          fetchCloneChannelPlanListApi(query as never),
-        filters: ['package'],
-      } satisfies NetcashGridConfig,
       key: 'clone',
-      permission: 12912,
+      permission: 12_912,
       tab: '克隆渠道设置',
     },
   ].filter((item) => checkPermission(item.permission)),
@@ -98,9 +37,15 @@ const tabs = computed(() =>
 const canViewPage = computed(() => tabs.value.length > 0);
 const activeTab = ref('channel');
 
-onMounted(() => {
-  activeTab.value = tabs.value[0]?.key || 'channel';
-});
+watch(
+  tabs,
+  (items) => {
+    if (!items.some((item) => item.key === activeTab.value)) {
+      activeTab.value = items[0]?.key || 'channel';
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -111,14 +56,19 @@ onMounted(() => {
     title="代理渠道"
   >
     <Card>
-      <div class="mb-4 text-xs text-gray-400">
-        渠道创建/编辑等复杂弹窗待下一迭代迁移，当前支持列表查询。
-      </div>
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <NetcashGridPanel
-            v-if="activeTab === item.key"
-            :config="item.config"
+          <MoneyChannelPanel
+            v-if="activeTab === 'channel' && item.key === 'channel'"
+          />
+          <MoneyChannelPanel
+            v-else-if="
+              activeTab === 'testChannel' && item.key === 'testChannel'
+            "
+            is-test
+          />
+          <CloneChannelPanel
+            v-else-if="activeTab === 'clone' && item.key === 'clone'"
           />
         </Tabs.TabPane>
       </Tabs>

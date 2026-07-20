@@ -5,57 +5,29 @@ import { Page } from '@vben/common-ui';
 
 import { Card, Result, Tabs } from 'ant-design-vue';
 
-import {
-  fetchCloudCoinDailyListApi,
-  fetchCloudCoinDetailListApi,
-  fetchCloudCoinStockApi,
-} from '#/api/systemManage/extra';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
-import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
-
-import {
-  cloudCoinDailyColumns,
-  cloudCoinDetailColumns,
-  cloudCoinStockColumns,
-} from '../shared/columns';
-import CloudCoinBuyModal from './components/cloud-coin-buy-modal.vue';
+import DailyPanel from './components/daily-panel.vue';
+import DetailPanel from './components/detail-panel.vue';
+import StockPanel from './components/stock-panel.vue';
 
 defineOptions({ name: 'CloudCoinManage' });
 
 const { checkPermission } = useCloudPermission();
-const listFilters = ['date'] as OperationListConfig['filters'];
-const stockPanelKey = ref(0);
 
 const tabs = computed(() =>
   [
     {
-      config: {
-        columns: cloudCoinStockColumns,
-        fetchApi: fetchCloudCoinStockApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
       key: 'stock',
       permission: 11426,
       tab: '库存',
     },
     {
-      config: {
-        columns: cloudCoinDailyColumns,
-        fetchApi: fetchCloudCoinDailyListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
       key: 'daily',
       permission: 11427,
       tab: '云币日报',
     },
     {
-      config: {
-        columns: cloudCoinDetailColumns,
-        fetchApi: fetchCloudCoinDetailListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
       key: 'detail',
       permission: 11428,
       tab: '消耗明细',
@@ -65,10 +37,6 @@ const tabs = computed(() =>
 
 const canViewPage = computed(() => tabs.value.length > 0);
 const activeTab = ref('stock');
-
-function refreshStock() {
-  stockPanelKey.value += 1;
-}
 
 onMounted(() => {
   activeTab.value = tabs.value[0]?.key || 'stock';
@@ -85,17 +53,12 @@ onMounted(() => {
     <Card>
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <div
-            v-if="item.key === 'stock'"
-            class="mb-4 flex items-center justify-between gap-3"
-          >
-            <div class="text-xs text-gray-400">库存明细与购买</div>
-            <CloudCoinBuyModal @success="refreshStock" />
-          </div>
-          <OperationListPanel
-            v-if="activeTab === item.key"
-            :key="item.key === 'stock' ? stockPanelKey : item.key"
-            :config="item.config"
+          <StockPanel v-if="item.key === 'stock' && activeTab === 'stock'" />
+          <DailyPanel
+            v-else-if="item.key === 'daily' && activeTab === 'daily'"
+          />
+          <DetailPanel
+            v-else-if="item.key === 'detail' && activeTab === 'detail'"
           />
         </Tabs.TabPane>
       </Tabs>

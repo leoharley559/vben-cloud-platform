@@ -5,44 +5,21 @@ import { Page } from '@vben/common-ui';
 
 import { Card, Result, Tabs } from 'ant-design-vue';
 
-import {
-  fetchDayStatementListApi,
-  fetchDayStatementTotalListApi,
-} from '#/api/dataClose/day-statement';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
-import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
-
-import { statementColumns } from '../shared/columns';
+import SelfPanel from './components/self-panel.vue';
+import SonPanel from './components/son-panel.vue';
+import TotalPanel from './components/total-panel.vue';
 
 defineOptions({ name: 'DayStatement' });
 
 const { checkPermission } = useCloudPermission();
-const listFilters = ['date', 'package'] as OperationListConfig['filters'];
 
 const tabs = computed(() =>
   [
-    {
-      config: {
-        columns: statementColumns,
-        fetchApi: fetchDayStatementTotalListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
-      key: 'total',
-      permission: 10494,
-      tab: '汇总报表',
-    },
-    {
-      config: {
-        columns: statementColumns,
-        fetchApi: fetchDayStatementListApi,
-        filters: listFilters,
-      } satisfies OperationListConfig,
-      key: 'self',
-      permission: 10495,
-      tab: '自营报表',
-    },
+    { key: 'total', permission: 10_494, tab: '汇总报表' },
+    { key: 'self', permission: 10_495, tab: '自营报表' },
+    { key: 'son', permission: 10_496, tab: '子包网报表' },
   ].filter((item) => checkPermission(item.permission)),
 );
 
@@ -62,15 +39,11 @@ onMounted(() => {
     title="日报表"
   >
     <Card>
-      <div class="mb-4 text-xs text-gray-400">
-        子包网报表、展开行详情、导出等待下一迭代迁移。
-      </div>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+      <Tabs v-model:active-key="activeTab" size="small" type="line">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <OperationListPanel
-            v-if="activeTab === item.key"
-            :config="item.config"
-          />
+          <TotalPanel v-if="activeTab === 'total' && item.key === 'total'" />
+          <SelfPanel v-else-if="activeTab === 'self' && item.key === 'self'" />
+          <SonPanel v-else-if="activeTab === 'son' && item.key === 'son'" />
         </Tabs.TabPane>
       </Tabs>
     </Card>

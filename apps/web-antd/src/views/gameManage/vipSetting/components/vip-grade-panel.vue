@@ -1,363 +1,346 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { TableColumnsType } from 'ant-design-vue';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
+  Card,
+  Checkbox,
   Form,
   InputNumber,
-  Modal,
-  Radio,
-  Space,
   message,
+  Modal,
+  Select,
+  Space,
+  Table,
 } from 'ant-design-vue';
 
+import { getProjectConfigApi } from '#/api/core/project';
 import {
+  createVipGradeApi,
+  fetchVipGradeListApi,
   fetchVipLevelModeApi,
   fetchVipRelegationDayApi,
-  fetchVipVirtualPrizeListApi,
+  updateVipGradeApi,
   updateVipLevelModeApi,
   updateVipRelegationDayApi,
-  updateVipVirtualPrizeApi,
-} from '#/api/gameManage';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+} from '#/api/gameManage/vip-setting';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 defineOptions({ name: 'VipGradePanel' });
 
-interface VipGradeRow {
-  BirthdayDividend?: number;
-  DayWithdrawal?: number;
-  DayWithdrawalTimes?: number;
-  FirstHalfMonthDividend?: number;
-  HoldLevelTurnover?: number;
-  Id: number | string;
-  LastHalfMonthDividend?: number;
-  UpgradeDividend?: number;
-  UpgradeDividendMultiple?: number;
-  UpgradeMoney?: number;
-  UpgradeTurnover?: number;
-  VipLevel?: number | string;
+type Row = Record<string, number | string | undefined>;
+interface Field {
+  integer?: boolean;
+  key: string;
+  label: string;
+  money?: boolean;
+  suffix?: string;
 }
+
+const fields: Field[] = [
+  { key: 'UpgradeMoney', label: '升级存款', money: true },
+  { key: 'UpgradeTurnover', label: '升级流水要求', money: true },
+  { key: 'HoldLevelTurnover', label: '保级流水要求', money: true },
+  { integer: true, key: 'DayWithdrawalTimes', label: '单日提现次数', suffix: '次' },
+  { key: 'DayWithdrawal', label: '单日提现限额', money: true },
+  { key: 'UpgradeDividend', label: 'VIP 等级升级红利', money: true },
+  { key: 'UpgradeDividendMultiple', label: '升级红利流水倍数', suffix: '倍' },
+  { key: 'BirthdayDividend', label: '生日礼金', money: true },
+  { key: 'BirthdayDividendMultiple', label: '生日礼金流水倍数', suffix: '倍' },
+  { key: 'FirstHalfMonthDividend', label: '上半月红包', money: true },
+  { key: 'LastHalfMonthDividend', label: '下半月红包', money: true },
+  { key: 'MonthDividendMultiple', label: '月红包流水倍数', suffix: '倍' },
+];
+const requirementFields = [
+  { group: '上半月红包领取设置', key: 'FirstHalfBetReq', label: '有效投注要求' },
+  { group: '上半月红包领取设置', key: 'FirstHalfPayMoneyReq', label: '存款金额要求' },
+  { group: '下半月红包领取设置', key: 'SecondHalfBetReq', label: '有效投注要求' },
+  { group: '下半月红包领取设置', key: 'SecondHalfPayMoneyReq', label: '存款金额要求' },
+];
+const moneyKeys = new Set([
+  ...fields.filter((item) => item.money).map((item) => item.key),
+  ...requirementFields.map((item) => item.key),
+]);
+const columns: TableColumnsType<Row> = [
+  { key: 'index', title: '序号', width: 60 },
+  { key: 'VipLevel', title: 'VIP 等级', width: 100 },
+  { key: 'UpgradeMoney', title: '升级存款', width: 130 },
+  { key: 'UpgradeTurnover', title: '升级流水', width: 130 },
+  { key: 'HoldLevelTurnover', title: '保级流水', width: 130 },
+  { dataIndex: 'DayWithdrawalTimes', key: 'DayWithdrawalTimes', title: '每日提现次数', width: 130 },
+  { key: 'DayWithdrawal', title: '每日提现限额', width: 140 },
+  { key: 'upgradeBonus', title: '升级红利/流水倍数', width: 180 },
+  { key: 'birthdayGift', title: '生日礼金/流水倍数', width: 180 },
+  { key: 'FirstHalfMonthDividend', title: '上半月红包', width: 130 },
+  { key: 'LastHalfMonthDividend', title: '下半月红包', width: 130 },
+  { fixed: 'right', key: 'action', title: '操作', width: 90 },
+];
 
 const { checkPermission } = useCloudPermission();
-const canEdit = computed(
-  () => checkPermission(11000) || checkPermission(10963),
-);
-
-const editVisible = ref(false);
-const relegationVisible = ref(false);
+const loading = ref(false);
 const saving = ref(false);
+const rows = ref<Row[]>([]);
+const formVisible = ref(false);
+const daysVisible = ref(false);
+const editing = ref(false);
 const vipLevelMode = ref(1);
 const relegationDay = ref(90);
+const form = reactive<Row>({});
+const enabledRequirements = reactive<Record<string, boolean>>({});
 
-const form = reactive({
-  BirthdayDividend: 0,
-  DayWithdrawal: 0,
-  DayWithdrawalTimes: 0,
-  FirstHalfMonthDividend: 0,
-  HoldLevelTurnover: 0,
-  Id: '' as number | string,
-  LastHalfMonthDividend: 0,
-  UpgradeDividend: 0,
-  UpgradeDividendMultiple: 0,
-  UpgradeMoney: 0,
-  UpgradeTurnover: 0,
-  VipLevel: '' as number | string,
-});
+const fromCent = (value: unknown) => Number(value || 0) / 100;
+const toCent = (value: unknown) => Math.ceil(Number(value || 0) * 100);
 
-const gridOptions: VxeTableGridOptions<VipGradeRow> = {
-  columns: [
-    { field: 'VipLevel', minWidth: 80, title: '等级' },
-    {
-      field: 'UpgradeMoney',
-      formatter: ({ cellValue }) => String(Number(cellValue || 0) / 100),
-      minWidth: 100,
-      title: '升级存款',
-    },
-    {
-      field: 'UpgradeTurnover',
-      formatter: ({ cellValue }) => String(Number(cellValue || 0) / 100),
-      minWidth: 100,
-      title: '升级流水',
-    },
-    {
-      field: 'HoldLevelTurnover',
-      formatter: ({ cellValue }) => String(Number(cellValue || 0) / 100),
-      minWidth: 100,
-      title: '保级流水',
-    },
-    {
-      field: 'DayWithdrawal',
-      formatter: ({ cellValue }) => String(Number(cellValue || 0) / 100),
-      minWidth: 100,
-      title: '日提现额',
-    },
-    {
-      field: 'action',
-      fixed: 'right',
-      slots: { default: 'action' },
-      title: '操作',
-      width: 100,
-    },
-  ],
-  height: 'auto',
-  pagerConfig: { enabled: false },
-  proxyConfig: {
-    ajax: {
-      query: async () => {
-        const result = await fetchVipVirtualPrizeListApi({
-          Page: 1,
-          PageSize: 200,
-        });
-        const items = (result.Items || []) as unknown as VipGradeRow[];
-        return { items, total: items.length };
-      },
-    },
-  },
-};
-
-const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
-
-function toYuan(value?: number) {
-  return Number(value || 0) / 100;
-}
-
-function toCent(value: number) {
-  return Math.ceil(Number((value * 100).toFixed(0)));
-}
-
-function openEdit(row: VipGradeRow) {
-  form.Id = row.Id;
-  form.VipLevel = row.VipLevel || '';
-  form.UpgradeMoney = toYuan(row.UpgradeMoney);
-  form.UpgradeTurnover = toYuan(row.UpgradeTurnover);
-  form.HoldLevelTurnover = toYuan(row.HoldLevelTurnover);
-  form.DayWithdrawalTimes = Number(row.DayWithdrawalTimes || 0);
-  form.DayWithdrawal = toYuan(row.DayWithdrawal);
-  form.UpgradeDividend = toYuan(row.UpgradeDividend);
-  form.UpgradeDividendMultiple = Number(row.UpgradeDividendMultiple || 0);
-  form.BirthdayDividend = toYuan(row.BirthdayDividend);
-  form.FirstHalfMonthDividend = toYuan(row.FirstHalfMonthDividend);
-  form.LastHalfMonthDividend = toYuan(row.LastHalfMonthDividend);
-  editVisible.value = true;
-}
-
-async function submitEdit() {
-  saving.value = true;
+async function loadData() {
+  loading.value = true;
   try {
-    await updateVipVirtualPrizeApi({
-      BirthdayDividend: toCent(form.BirthdayDividend),
-      DayWithdrawal: toCent(form.DayWithdrawal),
-      DayWithdrawalTimes: form.DayWithdrawalTimes,
-      FirstHalfMonthDividend: toCent(form.FirstHalfMonthDividend),
-      HoldLevelTurnover: toCent(form.HoldLevelTurnover),
-      Id: form.Id,
-      LastHalfMonthDividend: toCent(form.LastHalfMonthDividend),
-      UpgradeDividend: toCent(form.UpgradeDividend),
-      UpgradeDividendMultiple: form.UpgradeDividendMultiple,
-      UpgradeMoney: toCent(form.UpgradeMoney),
-      UpgradeTurnover: toCent(form.UpgradeTurnover),
-      VipLevel: form.VipLevel,
-    });
-    message.success('保存成功');
-    editVisible.value = false;
-    await gridApi.reload();
-  } finally {
-    saving.value = false;
-  }
-}
-
-async function loadSettings() {
-  try {
-    const [mode, day] = await Promise.all([
+    const [list, mode, day] = await Promise.all([
+      checkPermission(10_999) ? fetchVipGradeListApi() : Promise.resolve([]),
       fetchVipLevelModeApi(),
       fetchVipRelegationDayApi(),
     ]);
-    if (Number(mode?.VipLevelMode) > 0) {
-      vipLevelMode.value = Number(mode.VipLevelMode);
-    }
-    if (Number(day?.RelegationDay) > 0) {
-      relegationDay.value = Number(day.RelegationDay);
-    }
-  } catch {
-    // keep defaults
+    rows.value = Array.isArray(list) ? (list as Row[]) : [];
+    vipLevelMode.value = Number(mode?.VipLevelMode || 1);
+    relegationDay.value = Number(day?.RelegationDay || 90);
+  } finally {
+    loading.value = false;
   }
 }
 
-async function saveVipMode() {
+function openForm(row?: Row) {
+  Object.keys(form).forEach((key) => delete form[key]);
+  editing.value = !!row;
+  Object.assign(
+    form,
+    row
+      ? structuredClone(row)
+      : Object.fromEntries([
+          ['Id', ''],
+          [
+            'VipLevel',
+            Math.max(-1, ...rows.value.map((item) => Number(item.VipLevel))) +
+              1,
+          ],
+          ...fields.map((field) => [field.key, field.integer ? 1 : 0]),
+          ...requirementFields.map((field) => [field.key, 0]),
+        ]),
+  );
+  moneyKeys.forEach((key) => {
+    form[key] = fromCent(form[key]);
+  });
+  requirementFields.forEach(({ key }) => {
+    enabledRequirements[key] = Number(form[key] || 0) !== 0;
+  });
+  formVisible.value = true;
+}
+
+function toggleRequirement(key: string, checked: boolean) {
+  enabledRequirements[key] = checked;
+  form[key] = checked ? '' : 0;
+}
+
+async function saveGrade() {
+  for (const field of fields) {
+    const value = Number(form[field.key]);
+    if (!Number.isFinite(value) || value < 0 || (field.integer && (!Number.isInteger(value) || value < 1))) {
+      message.warning(`请正确输入${field.label}`);
+      return;
+    }
+  }
+  for (const { key } of requirementFields) {
+    if (enabledRequirements[key] && (!Number.isFinite(Number(form[key])) || Number(form[key]) < 0)) {
+      message.warning('请完整填写红包领取要求');
+      return;
+    }
+  }
   saving.value = true;
   try {
-    await updateVipLevelModeApi({ VipLevelMode: vipLevelMode.value });
-    message.success('升级模式已保存');
+    const payload: Record<string, unknown> = { ...form };
+    moneyKeys.forEach((key) => {
+      payload[key] = toCent(form[key]);
+    });
+    if (editing.value) await updateVipGradeApi(payload);
+    else {
+      delete payload.Id;
+      await createVipGradeApi(payload);
+      await getProjectConfigApi();
+    }
+    formVisible.value = false;
+    message.success('操作成功');
+    await loadData();
   } finally {
     saving.value = false;
   }
 }
 
-async function saveRelegationDay() {
-  if (!relegationDay.value || relegationDay.value <= 0) {
-    message.error('请输入有效天数');
+async function saveMode() {
+  await updateVipLevelModeApi({ VipLevelMode: vipLevelMode.value });
+  message.success('更换成功');
+}
+
+async function saveDays() {
+  if (!Number.isInteger(relegationDay.value) || relegationDay.value < 1) {
+    message.warning('保级流水天数必须为正整数');
     return;
   }
   saving.value = true;
   try {
     await updateVipRelegationDayApi({ RelegationDay: relegationDay.value });
-    message.success('保级天数已保存');
-    relegationVisible.value = false;
+    daysVisible.value = false;
+    message.success('保存成功');
   } finally {
     saving.value = false;
   }
 }
 
-onMounted(() => {
-  void loadSettings();
-});
+onMounted(loadData);
 </script>
 
 <template>
-  <div>
-    <div
-      v-if="canEdit"
-      class="mb-3 flex flex-wrap items-center justify-between gap-3"
-    >
-      <Space wrap>
-        <span class="text-sm text-gray-500">升级模式</span>
-        <Radio.Group v-model:value="vipLevelMode">
-          <Radio :value="1">有效投注+存款</Radio>
-          <Radio :value="2">仅有效投注</Radio>
-        </Radio.Group>
-        <Button
-          type="primary"
-          size="small"
-          :loading="saving"
-          @click="saveVipMode"
-        >
-          保存模式
+  <Card class="toolbar-card" size="small">
+    <div class="toolbar">
+      <Space v-if="checkPermission(12_145)">
+        <span>升级模式：</span>
+        <Select
+          v-model:value="vipLevelMode"
+          :options="[
+            { label: '存款与有效投注升级', value: 1 },
+            { label: '有效投注升级', value: 2 },
+          ]"
+          style="width: 210px"
+        />
+        <Button type="primary" @click="saveMode">更换</Button>
+      </Space>
+      <Space>
+        <Button v-if="checkPermission(13_181)" type="primary" @click="openForm()">
+          新增 VIP 等级
         </Button>
-        <Button size="small" @click="relegationVisible = true">
-          保级天数（{{ relegationDay }}天）
+        <Button v-if="checkPermission(11_704)" @click="daysVisible = true">
+          保级流水天数设置
         </Button>
       </Space>
     </div>
-    <div class="mb-3 text-xs text-gray-400">
-      已支持等级参数、升级模式、保级天数。
-    </div>
-    <Grid>
-      <template #action="{ row }">
+  </Card>
+  <Card class="table-card" :bordered="false">
+    <Table
+      :columns="columns"
+      :data-source="rows"
+      :loading="loading"
+      :pagination="false"
+      :row-key="(row) => String(row.Id || row.VipLevel)"
+      :scroll="{ x: 1550 }"
+      size="small"
+    >
+      <template #bodyCell="{ column, record, index }">
+        <span v-if="column.key === 'index'">{{ index + 1 }}</span>
+        <span v-else-if="column.key === 'VipLevel'">VIP.{{ record.VipLevel }}</span>
+        <span v-else-if="moneyKeys.has(String(column.key))">
+          {{ fromCent(record[String(column.key)]) }}
+        </span>
+        <span v-else-if="column.key === 'upgradeBonus'">
+          {{ fromCent(record.UpgradeDividend) }} / {{ record.UpgradeDividendMultiple }}
+        </span>
+        <span v-else-if="column.key === 'birthdayGift'">
+          {{ fromCent(record.BirthdayDividend) }} / {{ record.BirthdayDividendMultiple }}
+        </span>
         <Button
-          v-if="canEdit"
+          v-else-if="column.key === 'action' && checkPermission(11_000)"
           size="small"
           type="primary"
-          @click="openEdit(row)"
+          @click="openForm(record)"
         >
           编辑
         </Button>
       </template>
-    </Grid>
+    </Table>
+  </Card>
 
-    <Modal
-      v-model:open="editVisible"
-      :confirm-loading="saving"
-      destroy-on-close
-      title="编辑 VIP 等级"
-      width="560px"
-      @ok="submitEdit"
-    >
-      <Form layout="vertical" class="pt-2">
+  <Modal
+    v-model:open="formVisible"
+    :confirm-loading="saving"
+    :title="editing ? '编辑 VIP 等级参数' : '新增 VIP 等级参数'"
+    width="760px"
+    @ok="saveGrade"
+  >
+    <div class="form-scroll">
+      <Form :label-col="{ span: 9 }">
         <Form.Item label="VIP 等级">
+          <InputNumber v-model:value="form.VipLevel as number" class="!w-full" disabled addon-after="级" />
+        </Form.Item>
+        <Form.Item v-for="field in fields" :key="field.key" :label="field.label" required>
           <InputNumber
-            :value="Number(form.VipLevel)"
-            disabled
+            v-model:value="form[field.key] as number"
             class="!w-full"
+            :min="field.integer ? 1 : 0"
+            :precision="field.integer ? 0 : 2"
+            :addon-after="field.suffix"
           />
         </Form.Item>
-        <Form.Item label="升级存款">
-          <InputNumber
-            v-model:value="form.UpgradeMoney"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
-        <Form.Item label="升级流水">
-          <InputNumber
-            v-model:value="form.UpgradeTurnover"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
-        <Form.Item label="保级流水">
-          <InputNumber
-            v-model:value="form.HoldLevelTurnover"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
-        <Form.Item label="日提现次数">
-          <InputNumber
-            v-model:value="form.DayWithdrawalTimes"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
-        <Form.Item label="日提现限额">
-          <InputNumber
-            v-model:value="form.DayWithdrawal"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
-        <Form.Item label="升级红利">
-          <InputNumber
-            v-model:value="form.UpgradeDividend"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
-        <Form.Item label="升级红利流水倍数">
-          <InputNumber
-            v-model:value="form.UpgradeDividendMultiple"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
-        <Form.Item label="生日礼金">
-          <InputNumber
-            v-model:value="form.BirthdayDividend"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
-        <Form.Item label="上半月红利">
-          <InputNumber
-            v-model:value="form.FirstHalfMonthDividend"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
-        <Form.Item label="下半月红利">
-          <InputNumber
-            v-model:value="form.LastHalfMonthDividend"
-            class="!w-full"
-            :min="0"
-          />
-        </Form.Item>
+        <template v-for="(item, index) in requirementFields" :key="item.key">
+          <div
+            v-if="
+              index === 0 ||
+              requirementFields[index - 1]?.group !== item.group
+            "
+            class="section-title"
+          >
+            {{ item.group }}
+          </div>
+          <Form.Item>
+            <template #label>
+              <Checkbox
+                :checked="enabledRequirements[item.key]"
+                @change="toggleRequirement(item.key, $event.target.checked)"
+              >
+                {{ item.label }}
+              </Checkbox>
+            </template>
+            <InputNumber
+              v-model:value="form[item.key] as number"
+              class="!w-full"
+              :disabled="!enabledRequirements[item.key]"
+              :min="0"
+              :precision="2"
+            />
+          </Form.Item>
+        </template>
       </Form>
-    </Modal>
-
-    <Modal
-      v-model:open="relegationVisible"
-      :confirm-loading="saving"
-      destroy-on-close
-      title="保级流水天数"
-      @ok="saveRelegationDay"
-    >
-      <Form layout="vertical" class="pt-2">
-        <Form.Item label="天数" required>
-          <InputNumber v-model:value="relegationDay" :min="1" class="!w-full" />
-        </Form.Item>
-      </Form>
-    </Modal>
-  </div>
+    </div>
+  </Modal>
+  <Modal v-model:open="daysVisible" :confirm-loading="saving" title="保级流水天数设置" @ok="saveDays">
+    <Form layout="vertical">
+      <Form.Item label="天数" required>
+        <InputNumber v-model:value="relegationDay" class="!w-full" :min="1" :precision="0" addon-after="天" />
+      </Form.Item>
+    </Form>
+  </Modal>
 </template>
+
+<style scoped>
+.toolbar-card,
+.table-card {
+  margin-bottom: 14px;
+  border-radius: 10px;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.form-scroll {
+  max-height: 70vh;
+  padding-right: 8px;
+  overflow: auto;
+}
+.section-title {
+  padding: 8px 12px;
+  margin: 12px 0;
+  font-weight: 600;
+  color: hsl(var(--primary));
+  background: hsl(var(--muted) / 45%);
+  border-left: 3px solid hsl(var(--primary));
+}
+</style>

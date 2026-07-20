@@ -1,4 +1,3 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   BrokerageBatchPayload,
@@ -14,6 +13,8 @@ import type {
   PromoterPayload,
   PromoterTeamPayload,
 } from '#/types/promotion';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 export function fetchPromoterListApi(query: PromoterListQuery) {
@@ -57,14 +58,19 @@ export function createPromoterDomainApi(data: PromoterDomainPayload) {
   return requestClient.post('/backend/promoter/domain', data);
 }
 
-export function fetchBrokerageSetListApi(query: BrokerageSetListQuery) {
-  return requestClient.get<
-    CloudListResult<BrokerageSetItem> & {
-      TeamGameDefaultRate?: BrokerageSetItem[];
-    }
+export async function fetchBrokerageSetListApi(query: BrokerageSetListQuery) {
+  const data = await requestClient.get<
+    | (CloudListResult<BrokerageSetItem> & {
+        TeamGameDefaultRate?: number;
+      })
+    | null
   >('/backend/accountteamgamerate/list', {
     params: trimSpace(query),
   });
+  return {
+    Items: data?.Items || [],
+    TeamGameDefaultRate: Number(data?.TeamGameDefaultRate || 0),
+  };
 }
 
 export function createBrokerageSetApi(data: BrokerageSetPayload) {

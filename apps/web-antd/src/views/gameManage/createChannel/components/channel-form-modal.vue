@@ -68,6 +68,7 @@ defineOptions({ name: 'ChannelFormModal' });
 
 const props = defineProps<{
   channelId?: ChannelId;
+  dataFlag?: 0 | 1;
   initialPackageId?: ChannelId;
   open: boolean;
   promoterAdminId?: ChannelId;
@@ -853,6 +854,7 @@ function buildPayload(): ChannelFormPayload {
       Object.values(languageCaptions.value),
     ),
     PackPlatformType: 'uniapp2',
+    ...(props.dataFlag === undefined ? {} : { DataFlag: props.dataFlag }),
   };
   if (payload.PushType === 2) payload.DefaultTagSelected = 2;
   if (isEdit.value) {

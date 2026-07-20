@@ -1,25 +1,30 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
+
+import { preferences } from '@vben/preferences';
 
 import {
   Button,
   DatePicker,
   Form,
   Input,
+  message,
   Modal,
   Radio,
+  Select,
+  Space,
+  Tabs,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchSiteFeeSwitchListApi,
   updateSiteFeeSwitchApi,
 } from '#/api/gameManage';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { findGameIdByApiFee } from '#/utils/game-config';
@@ -32,6 +37,7 @@ type SwitchMode = 'switch' | 'walletLock';
 interface VenueRow {
   ApiFee?: number | string;
   ApiFeeName?: string;
+  EndTime?: number;
   GameId?: number | string;
   GameMerchant?: string;
   Id: number | string;
@@ -41,8 +47,9 @@ interface VenueRow {
   LoginEnableStartTime?: number;
   LoginStatus?: number;
   OperateName?: string;
+  StartTime?: number;
   Switch?: number;
-  UpdateTime?: string;
+  UpdateTime?: number | string;
   VipLevel?: number | string;
   WalletLock?: number;
   WalletLockEndTime?: number;
@@ -50,30 +57,28 @@ interface VenueRow {
   WalletStatus?: number;
 }
 
-const { checkPermission } = useCloudPermission();
+interface LangEntry {
+  Info: string;
+  LangGroupId: number | string;
+  [key: string]: unknown;
+}
+
+const { checkPermission, projectConfig } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
 
 const filterName = ref('');
-const dialogVisible = ref(false);
-const dialogMode = ref<SwitchMode>('switch');
 const saving = ref(false);
-const timedRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
+const switchVisible = ref(false);
+const switchMode = ref<SwitchMode>('switch');
+const switchRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 const maintainVisible = ref(false);
-const maintainRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
+const maintainRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
+const langVisible = ref(false);
+const langActiveKey = ref('');
+const langRows = reactive<Record<string, LangEntry>>({});
+const langSourceRow = ref<VenueRow>();
 
-const maintainForm = reactive({
-  EndTime: 0,
-  GameId: '' as number | string,
-  Id: '' as number | string,
-  Info: '',
-  LangText: '',
-  StartTime: 0,
-  VipLevel: '' as number | string,
-  rawSwitch: 1,
-  rawWalletLock: 0,
-});
-
-const formModel = reactive({
+const switchForm = reactive({
   GameId: '' as number | string,
   Id: '' as number | string,
   LangText: '',
@@ -85,82 +90,216 @@ const formModel = reactive({
   WalletLockEndTime: 0,
   WalletLockStartTime: 0,
 });
+const maintainForm = reactive({
+  EndTime: 0,
+  GameId: '' as number | string,
+  Id: '' as number | string,
+  Info: '',
+  LangText: '',
+  StartTime: 0,
+  Switch: 2,
+  VipLevel: '' as number | string,
+  WalletLock: 0,
+});
 
-const canEdit = computed(() => checkPermission(10951));
-
-const dialogTitle = computed(() =>
-  dialogMode.value === 'switch' ? '场馆状态开关' : '钱包状态开关',
+const canMaintain = computed(() => checkPermission(10_951));
+const langGroups = computed(() =>
+  (projectConfig.value?.LangGroup || []).filter((group) => {
+    const item = group as Record<string, unknown>;
+    return item.IsActive !== false && item.IsOpen !== false;
+  }),
 );
-
+const defaultLangGroupId = computed(
+  () =>
+    langGroups.value.find((group) => group.Default)?.Id ??
+    langGroups.value[0]?.Id ??
+    1,
+);
+const currentLangGroupId = computed(() => {
+  const locale = String(preferences.app.locale || '')
+    .replaceAll('_', '-')
+    .toLowerCase();
+  const matched = langGroups.value.find((group) => {
+    const languages = Array.isArray(group.Languages)
+      ? group.Languages
+      : String(group.Languages || '').split(',');
+    return languages.some(
+      (language) =>
+        String(language).replaceAll('_', '-').toLowerCase() === locale,
+    );
+  });
+  return matched?.Id ?? defaultLangGroupId.value;
+});
+const vipOptions = computed(() => {
+  const config = projectConfig.value as
+    | null
+    | {
+        VIPLevelMap?: Array<{
+          VipLevelId: number | string;
+          VipLevelName: string;
+        }>;
+      };
+  return config?.VIPLevelMap || [];
+});
 const showTimedPicker = computed(() =>
-  dialogMode.value === 'switch'
-    ? formModel.Switch === 3
-    : formModel.WalletLock === 3,
+  switchMode.value === 'switch'
+    ? switchForm.Switch === 3
+    : switchForm.WalletLock === 3,
 );
+const switchTitle = computed(() =>
+  switchMode.value === 'switch' ? '场馆状态开关' : '钱包状态开关',
+);
+
+function parseLangMap(raw?: string) {
+  const map: Record<string, LangEntry> = {};
+  if (raw && raw !== 'null') {
+    try {
+      const parsed = JSON.parse(raw) as
+        | Array<Record<string, unknown>>
+        | Record<string, Record<string, unknown>>;
+      if (Array.isArray(parsed)) {
+        parsed.forEach((item) => {
+          const id = item.LangGroupId ?? item.Id;
+          if (id !== undefined) {
+            map[String(id)] = {
+              ...item,
+              Info: String(item.Info || ''),
+              LangGroupId: id as number | string,
+            };
+          }
+        });
+      } else {
+        Object.entries(parsed).forEach(([key, item]) => {
+          const id = item.LangGroupId ?? item.Id ?? key;
+          map[String(id)] = {
+            ...item,
+            Info: String(item.Info || ''),
+            LangGroupId: id as number | string,
+          };
+        });
+      }
+    } catch {
+      // Invalid legacy content is replaced by active language groups below.
+    }
+  }
+  langGroups.value.forEach((group) => {
+    map[String(group.Id)] ||= { Info: '', LangGroupId: group.Id };
+  });
+  if (Object.keys(map).length === 0) {
+    map[String(defaultLangGroupId.value)] = {
+      Info: '',
+      LangGroupId: defaultLangGroupId.value,
+    };
+  }
+  return map;
+}
+
+function serializeLangMap(map: Record<string, LangEntry>) {
+  return JSON.stringify(Object.values(map));
+}
+
+function venueName(row: VenueRow) {
+  return (
+    row.ApiFeeName ||
+    gameConfig.value.platformGameType[String(row.ApiFee)] ||
+    row.ApiFee ||
+    '-'
+  );
+}
+
+function displayInfo(row: VenueRow) {
+  if (row.Info) return row.Info;
+  return parseLangMap(row.LangText)[String(currentLangGroupId.value)]?.Info || '';
+}
 
 function venueStatusText(row: VenueRow) {
-  if (Number(row.LoginStatus) === 1) {
-    return '开启';
-  }
-  if (Number(row.LoginStatus) === 2) {
-    return '关闭';
-  }
+  if (Number(row.LoginStatus) === 1) return '开启';
+  if (Number(row.LoginStatus) === 2) return '关闭';
   return String(row.LoginStatus ?? '-');
 }
 
 function walletStatusText(row: VenueRow) {
-  // 旧站：0 开 / 1 关
-  if (Number(row.WalletStatus) === 0) {
-    return '开启';
-  }
-  if (Number(row.WalletStatus) === 1) {
-    return '关闭';
-  }
+  if (Number(row.WalletStatus) === 0) return '开启';
+  if (Number(row.WalletStatus) === 1) return '关闭';
   return String(row.WalletStatus ?? '-');
 }
 
+function timeRangeText(start?: number, end?: number) {
+  if (!start || !end) return '-';
+  return `${formatOperationDateTime(start)} - ${formatOperationDateTime(end)}`;
+}
+
+const columns: VxeTableGridOptions<VenueRow>['columns'] = [
+  { type: 'seq', title: '序号', width: 60 },
+  {
+    field: 'LoginStatus',
+    slots: { default: 'venueStatus' },
+    title: '场馆状态',
+    width: 150,
+  },
+  {
+    field: 'WalletStatus',
+    slots: { default: 'walletStatus' },
+    title: '钱包状态',
+    width: 150,
+  },
+  { field: 'VipLevel', minWidth: 90, title: 'VIP' },
+  {
+    field: 'ApiFee',
+    minWidth: 150,
+    slots: { default: 'venueName' },
+    title: '场馆名称',
+  },
+  { field: 'GameMerchant', minWidth: 120, title: '游戏商' },
+  {
+    field: 'maintenanceTime',
+    minWidth: 280,
+    slots: { default: 'maintenanceTime' },
+    title: '维护显示时间',
+  },
+  {
+    field: 'Info',
+    minWidth: 220,
+    showOverflow: 'tooltip',
+    slots: { default: 'maintenanceContent' },
+    title: '维护显示内容',
+  },
+  {
+    field: 'UpdateTime',
+    formatter: ({ cellValue }) => formatOperationDateTime(cellValue as string),
+    minWidth: 170,
+    title: '操作时间',
+  },
+  { field: 'OperateName', minWidth: 110, title: '操作人' },
+  {
+    field: 'language',
+    slots: { default: 'language' },
+    title: '多语言设置',
+    visible: langGroups.value.length > 1,
+    width: 120,
+  },
+  {
+    field: 'action',
+    fixed: 'right',
+    slots: { default: 'action' },
+    title: '操作',
+    visible: canMaintain.value,
+    width: 90,
+  },
+];
+
 const gridOptions: VxeTableGridOptions<VenueRow> = {
-  columns: [
-    {
-      field: 'LoginStatus',
-      slots: { default: 'venueStatus' },
-      title: '场馆状态',
-      width: 160,
-    },
-    {
-      field: 'WalletStatus',
-      slots: { default: 'walletStatus' },
-      title: '钱包状态',
-      width: 160,
-    },
-    { field: 'VipLevel', minWidth: 90, title: 'VIP' },
-    { field: 'ApiFeeName', minWidth: 140, title: '场馆名称' },
-    { field: 'GameMerchant', minWidth: 120, title: '游戏商' },
-    {
-      field: 'UpdateTime',
-      formatter: ({ cellValue }) =>
-        formatOperationDateTime(cellValue as string),
-      minWidth: 160,
-      title: '操作时间',
-    },
-    { field: 'OperateName', minWidth: 100, title: '操作人' },
-    {
-      field: 'action',
-      fixed: 'right',
-      slots: { default: 'action' },
-      title: '维护',
-      width: 100,
-    },
-  ],
+  columns,
   height: 'auto',
   pagerConfig: { enabled: false },
   proxyConfig: {
     ajax: {
       query: async () => {
+        await ensureGameConfig();
         const result = await fetchSiteFeeSwitchListApi({
           ApiFeeName: filterName.value,
           Page: 1,
-          PageSize: 200,
+          PageSize: 9999,
         });
         const items = (result.Items || []) as unknown as VenueRow[];
         return { items, total: items.length };
@@ -171,123 +310,84 @@ const gridOptions: VxeTableGridOptions<VenueRow> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
-function buildLangText(row: VenueRow) {
-  if (!row.LangText || row.LangText === 'null') {
-    return '';
-  }
-  try {
-    const parsed = JSON.parse(row.LangText) as Record<string, unknown>;
-    return JSON.stringify(Object.values(parsed));
-  } catch {
-    return row.LangText;
-  }
+function gameIdFor(row: VenueRow) {
+  return row.GameId || findGameIdByApiFee(row.ApiFee, gameConfig.value) || '';
 }
 
 function openSwitch(row: VenueRow, mode: SwitchMode) {
-  const gameId =
-    row.GameId || findGameIdByApiFee(row.ApiFee, gameConfig.value) || '';
+  const gameId = gameIdFor(row);
   if (!gameId) {
     message.error('无法解析场馆游戏 ID，请刷新后重试');
     return;
   }
+  const langMap = parseLangMap(row.LangText);
+  Object.assign(switchForm, {
+    GameId: gameId,
+    Id: row.Id,
+    LangText: serializeLangMap(langMap),
+    LoginEnableEndTime: Number(row.LoginEnableEndTime || 0),
+    LoginEnableStartTime: Number(row.LoginEnableStartTime || 0),
+    Switch: Number(row.Switch || row.LoginStatus || 1),
+    VipLevel: row.VipLevel ?? '',
+    WalletLock: Number(
+      row.WalletLock ?? (Number(row.WalletStatus) === 0 ? 0 : 1),
+    ),
+    WalletLockEndTime: Number(row.WalletLockEndTime || 0),
+    WalletLockStartTime: Number(row.WalletLockStartTime || 0),
+  });
+  switchMode.value = mode;
+  const start =
+    mode === 'switch'
+      ? switchForm.LoginEnableStartTime
+      : switchForm.WalletLockStartTime;
+  const end =
+    mode === 'switch'
+      ? switchForm.LoginEnableEndTime
+      : switchForm.WalletLockEndTime;
+  switchRange.value = start && end ? [dayjs.unix(start), dayjs.unix(end)] : undefined;
+  switchVisible.value = true;
+}
 
-  dialogMode.value = mode;
-  formModel.Id = row.Id;
-  formModel.GameId = gameId;
-  formModel.VipLevel = row.VipLevel ?? '';
-  formModel.LangText = buildLangText(row);
-  formModel.Switch = Number(row.Switch || row.LoginStatus || 1);
-  formModel.WalletLock = Number(
-    row.WalletLock ?? (Number(row.WalletStatus) === 0 ? 0 : 1),
-  );
-  formModel.LoginEnableStartTime = Number(row.LoginEnableStartTime || 0);
-  formModel.LoginEnableEndTime = Number(row.LoginEnableEndTime || 0);
-  formModel.WalletLockStartTime = Number(row.WalletLockStartTime || 0);
-  formModel.WalletLockEndTime = Number(row.WalletLockEndTime || 0);
-
-  if (mode === 'switch' && formModel.Switch === 3) {
-    timedRange.value = [
-      dayjs.unix(formModel.LoginEnableStartTime),
-      dayjs.unix(formModel.LoginEnableEndTime),
-    ];
-  } else if (mode === 'walletLock' && formModel.WalletLock === 3) {
-    timedRange.value = [
-      dayjs.unix(formModel.WalletLockStartTime),
-      dayjs.unix(formModel.WalletLockEndTime),
-    ];
+function resetSwitchTime() {
+  switchRange.value = undefined;
+  if (switchMode.value === 'switch') {
+    switchForm.LoginEnableStartTime = 0;
+    switchForm.LoginEnableEndTime = 0;
   } else {
-    timedRange.value = undefined;
+    switchForm.WalletLockStartTime = 0;
+    switchForm.WalletLockEndTime = 0;
   }
-
-  dialogVisible.value = true;
 }
 
-function onSwitchTypeChange() {
-  timedRange.value = undefined;
-  formModel.LoginEnableStartTime = 0;
-  formModel.LoginEnableEndTime = 0;
-  formModel.WalletLockStartTime = 0;
-  formModel.WalletLockEndTime = 0;
-}
-
-function onTimedRangeChange(
+function changeSwitchRange(
   value: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
 ) {
-  if (!value || !value[0] || !value[1]) {
-    timedRange.value = undefined;
-    formModel.LoginEnableStartTime = 0;
-    formModel.LoginEnableEndTime = 0;
-    formModel.WalletLockStartTime = 0;
-    formModel.WalletLockEndTime = 0;
+  if (!value?.[0] || !value[1]) {
+    resetSwitchTime();
     return;
   }
   const start = dayjs(value[0]);
   const end = dayjs(value[1]);
-  timedRange.value = [start, end];
-  if (dialogMode.value === 'switch') {
-    formModel.LoginEnableStartTime = start.unix();
-    formModel.LoginEnableEndTime = end.unix();
+  switchRange.value = [start, end];
+  if (switchMode.value === 'switch') {
+    switchForm.LoginEnableStartTime = start.unix();
+    switchForm.LoginEnableEndTime = end.unix();
   } else {
-    formModel.WalletLockStartTime = start.unix();
-    formModel.WalletLockEndTime = end.unix();
+    switchForm.WalletLockStartTime = start.unix();
+    switchForm.WalletLockEndTime = end.unix();
   }
 }
 
 async function submitSwitch() {
-  if (
-    showTimedPicker.value &&
-    (!formModel.LoginEnableStartTime || !formModel.LoginEnableEndTime) &&
-    dialogMode.value === 'switch'
-  ) {
-    message.error('请选择定时关闭时间');
+  if (showTimedPicker.value && !switchRange.value) {
+    message.warning('请选择定时关闭时间');
     return;
   }
-  if (
-    showTimedPicker.value &&
-    dialogMode.value === 'walletLock' &&
-    (!formModel.WalletLockStartTime || !formModel.WalletLockEndTime)
-  ) {
-    message.error('请选择定时关闭时间');
-    return;
-  }
-
   saving.value = true;
   try {
-    await updateSiteFeeSwitchApi({
-      GameId: formModel.GameId,
-      Id: formModel.Id,
-      IsEdit: 0,
-      LangText: formModel.LangText,
-      LoginEnableEndTime: formModel.LoginEnableEndTime,
-      LoginEnableStartTime: formModel.LoginEnableStartTime,
-      Switch: formModel.Switch,
-      VipLevel: formModel.VipLevel,
-      WalletLock: formModel.WalletLock,
-      WalletLockEndTime: formModel.WalletLockEndTime,
-      WalletLockStartTime: formModel.WalletLockStartTime,
-    });
+    await updateSiteFeeSwitchApi({ ...switchForm, IsEdit: 0 });
     message.success('操作成功');
-    dialogVisible.value = false;
+    switchVisible.value = false;
     await gridApi.reload();
   } finally {
     saving.value = false;
@@ -299,36 +399,40 @@ function openMaintain(row: VenueRow) {
     message.warning('场馆开启状态下不可编辑维护信息');
     return;
   }
-  const gameId =
-    row.GameId || findGameIdByApiFee(row.ApiFee, gameConfig.value) || '';
+  const gameId = gameIdFor(row);
   if (!gameId) {
     message.error('无法解析场馆游戏 ID，请刷新后重试');
     return;
   }
-  maintainForm.Id = row.Id;
-  maintainForm.GameId = gameId;
-  maintainForm.VipLevel = row.VipLevel ?? '';
-  maintainForm.Info = String(row.Info || '');
-  maintainForm.LangText = buildLangText(row);
-  maintainForm.rawSwitch = Number(row.Switch || row.LoginStatus || 2);
-  maintainForm.rawWalletLock = Number(
-    row.WalletLock ?? (Number(row.WalletStatus) === 0 ? 0 : 1),
-  );
-  const start = Number(
-    (row as VenueRow & { StartTime?: number }).StartTime || 0,
-  );
-  const end = Number((row as VenueRow & { EndTime?: number }).EndTime || 0);
-  maintainForm.StartTime = start;
-  maintainForm.EndTime = end;
+  const langMap = parseLangMap(row.LangText);
+  const current = langMap[String(currentLangGroupId.value)];
+  Object.assign(maintainForm, {
+    EndTime: Number(row.EndTime || 0),
+    GameId: gameId,
+    Id: row.Id,
+    Info: String(current?.Info || row.Info || ''),
+    LangText: serializeLangMap(langMap),
+    StartTime: Number(row.StartTime || 0),
+    Switch: Number(row.Switch || row.LoginStatus || 2),
+    VipLevel: row.VipLevel ?? '',
+    WalletLock: Number(
+      row.WalletLock ?? (Number(row.WalletStatus) === 0 ? 0 : 1),
+    ),
+  });
   maintainRange.value =
-    start && end ? [dayjs.unix(start), dayjs.unix(end)] : undefined;
+    maintainForm.StartTime && maintainForm.EndTime
+      ? [
+          dayjs.unix(maintainForm.StartTime),
+          dayjs.unix(maintainForm.EndTime),
+        ]
+      : undefined;
   maintainVisible.value = true;
 }
 
-function onMaintainRangeChange(
+function changeMaintainRange(
   value: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
 ) {
-  if (!value || !value[0] || !value[1]) {
+  if (!value?.[0] || !value[1]) {
     maintainRange.value = undefined;
     maintainForm.StartTime = 0;
     maintainForm.EndTime = 0;
@@ -342,29 +446,18 @@ function onMaintainRangeChange(
 }
 
 async function submitMaintain() {
+  const map = parseLangMap(maintainForm.LangText);
+  const key = String(currentLangGroupId.value);
+  map[key] = {
+    ...(map[key] || { LangGroupId: currentLangGroupId.value }),
+    Info: maintainForm.Info,
+  };
   saving.value = true;
   try {
-    let langText = maintainForm.LangText;
-    try {
-      const parsed = langText ? JSON.parse(langText) : [];
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        parsed[0] = { ...parsed[0], Info: maintainForm.Info };
-        langText = JSON.stringify(parsed);
-      }
-    } catch {
-      // keep original
-    }
     await updateSiteFeeSwitchApi({
-      EndTime: maintainForm.EndTime,
-      GameId: maintainForm.GameId,
-      Id: maintainForm.Id,
-      Info: maintainForm.Info,
+      ...maintainForm,
       IsEdit: 1,
-      LangText: langText,
-      StartTime: maintainForm.StartTime,
-      Switch: maintainForm.rawSwitch,
-      VipLevel: maintainForm.VipLevel,
-      WalletLock: maintainForm.rawWalletLock,
+      LangText: serializeLangMap(map),
     });
     message.success('维护信息已保存');
     maintainVisible.value = false;
@@ -374,111 +467,168 @@ async function submitMaintain() {
   }
 }
 
+function openLanguage(row: VenueRow) {
+  if (Number(row.LoginStatus) === 1) {
+    message.warning('场馆开启状态下不可编辑多语言维护信息');
+    return;
+  }
+  Object.keys(langRows).forEach((key) => delete langRows[key]);
+  Object.assign(langRows, parseLangMap(row.LangText));
+  langSourceRow.value = row;
+  langActiveKey.value = String(
+    langGroups.value[0]?.Id ?? defaultLangGroupId.value,
+  );
+  langVisible.value = true;
+}
+
+function languageLabel(group: Record<string, unknown>) {
+  return String(group.Name || `语言组 ${group.Id}`);
+}
+
+async function submitLanguage() {
+  if (!langSourceRow.value) return;
+  const gameId = gameIdFor(langSourceRow.value);
+  if (!gameId) {
+    message.error('无法解析场馆游戏 ID');
+    return;
+  }
+  saving.value = true;
+  try {
+    await updateSiteFeeSwitchApi({
+      ...langSourceRow.value,
+      GameId: gameId,
+      IsEdit: 1,
+      LangText: serializeLangMap(langRows),
+    });
+    message.success('多语言维护信息已保存');
+    langVisible.value = false;
+    await gridApi.reload();
+  } finally {
+    saving.value = false;
+  }
+}
+
 function handleSearch() {
-  gridApi.reload();
+  void gridApi.reload();
 }
 
 function handleReset() {
   filterName.value = '';
-  gridApi.reload();
+  void gridApi.reload();
 }
-
-onMounted(async () => {
-  await ensureGameConfig();
-});
 </script>
 
 <template>
   <div>
-    <div class="mb-3 flex flex-wrap items-center gap-2">
-      <Input
-        v-model:value="filterName"
-        allow-clear
-        class="!w-[240px]"
-        placeholder="场馆名称"
-        @press-enter="handleSearch"
-      />
-      <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
+    <div class="query-panel">
+      <Space wrap>
+        <Input
+          v-model:value="filterName"
+          allow-clear
+          class="!w-[280px]"
+          placeholder="请输入场馆名称"
+          @press-enter="handleSearch"
+        >
+          <template #addonBefore>场馆名称</template>
+        </Input>
+        <Button type="primary" @click="handleSearch">查询</Button>
+        <Button @click="handleReset">重置</Button>
+      </Space>
     </div>
 
-    <Grid>
-      <template #venueStatus="{ row }">
-        <div class="flex items-center justify-center gap-2">
-          <Tag :color="Number(row.LoginStatus) === 1 ? 'success' : 'error'">
-            {{ venueStatusText(row) }}
-          </Tag>
+    <div class="venue-grid">
+      <Grid>
+        <template #venueStatus="{ row }">
+          <Space :size="4">
+            <Tag :color="Number(row.LoginStatus) === 1 ? 'green' : 'red'">
+              {{ venueStatusText(row) }}
+            </Tag>
+            <Tag v-if="Number(row.Switch) === 3" color="blue">定时</Tag>
+            <Button size="small" type="link" @click="openSwitch(row, 'switch')">
+              设置
+            </Button>
+          </Space>
+        </template>
+        <template #walletStatus="{ row }">
+          <Space :size="4">
+            <Tag :color="Number(row.WalletStatus) === 0 ? 'green' : 'red'">
+              {{ walletStatusText(row) }}
+            </Tag>
+            <Tag v-if="Number(row.WalletLock) === 3" color="blue">定时</Tag>
+            <Button
+              size="small"
+              type="link"
+              @click="openSwitch(row, 'walletLock')"
+            >
+              设置
+            </Button>
+          </Space>
+        </template>
+        <template #venueName="{ row }">{{ venueName(row) }}</template>
+        <template #maintenanceTime="{ row }">
+          {{ timeRangeText(row.StartTime, row.EndTime) }}
+        </template>
+        <template #maintenanceContent="{ row }">
+          {{ displayInfo(row) || '-' }}
+        </template>
+        <template #language="{ row }">
           <Button
-            v-if="canEdit"
             size="small"
             type="link"
-            @click="openSwitch(row, 'switch')"
+            :disabled="Number(row.LoginStatus) === 1"
+            @click="openLanguage(row)"
           >
             设置
           </Button>
-        </div>
-      </template>
-      <template #walletStatus="{ row }">
-        <div class="flex items-center justify-center gap-2">
-          <Tag :color="Number(row.WalletStatus) === 0 ? 'success' : 'error'">
-            {{ walletStatusText(row) }}
-          </Tag>
+        </template>
+        <template #action="{ row }">
           <Button
-            v-if="canEdit"
+            v-if="canMaintain"
             size="small"
             type="link"
-            @click="openSwitch(row, 'walletLock')"
+            :disabled="Number(row.LoginStatus) === 1"
+            @click="openMaintain(row)"
           >
-            设置
+            编辑
           </Button>
-        </div>
-      </template>
-      <template #action="{ row }">
-        <Button
-          v-if="canEdit"
-          size="small"
-          :disabled="Number(row.LoginStatus) === 1"
-          @click="openMaintain(row)"
-        >
-          维护
-        </Button>
-      </template>
-    </Grid>
+        </template>
+      </Grid>
+    </div>
 
     <Modal
-      v-model:open="dialogVisible"
+      v-model:open="switchVisible"
       :confirm-loading="saving"
-      :title="dialogTitle"
       destroy-on-close
+      :title="switchTitle"
       @ok="submitSwitch"
     >
-      <Form layout="vertical" class="pt-2">
-        <Form.Item v-if="dialogMode === 'switch'" label="开关状态">
+      <Form class="pt-3" layout="vertical">
+        <Form.Item label="开关状态">
           <Radio.Group
-            v-model:value="formModel.Switch"
-            @change="onSwitchTypeChange"
+            v-if="switchMode === 'switch'"
+            v-model:value="switchForm.Switch"
+            @change="resetSwitchTime"
           >
             <Radio :value="1">开启</Radio>
             <Radio :value="2">立即关闭</Radio>
             <Radio :value="3">定时关闭</Radio>
           </Radio.Group>
-        </Form.Item>
-        <Form.Item v-else label="开关状态">
           <Radio.Group
-            v-model:value="formModel.WalletLock"
-            @change="onSwitchTypeChange"
+            v-else
+            v-model:value="switchForm.WalletLock"
+            @change="resetSwitchTime"
           >
             <Radio :value="0">开启</Radio>
             <Radio :value="1">立即关闭</Radio>
             <Radio :value="3">定时关闭</Radio>
           </Radio.Group>
         </Form.Item>
-        <Form.Item v-if="showTimedPicker" label="定时关闭时间">
+        <Form.Item v-if="showTimedPicker" label="定时关闭时间" required>
           <DatePicker.RangePicker
-            v-model:value="timedRange"
-            show-time
+            v-model:value="switchRange"
             class="w-full"
-            @change="onTimedRangeChange"
+            show-time
+            @change="changeSwitchRange"
           />
         </Form.Item>
       </Form>
@@ -488,33 +638,82 @@ onMounted(async () => {
       v-model:open="maintainVisible"
       :confirm-loading="saving"
       destroy-on-close
-      title="维护信息"
+      title="编辑场馆维护信息"
       @ok="submitMaintain"
     >
-      <Form layout="vertical" class="pt-2">
+      <Form class="pt-3" layout="vertical">
         <Form.Item label="VIP 等级">
-          <Input
-            :value="String(maintainForm.VipLevel ?? '')"
-            placeholder="VIP 等级"
-            @update:value="(v) => (maintainForm.VipLevel = v)"
+          <Select
+            v-model:value="maintainForm.VipLevel"
+            allow-clear
+            :field-names="{ label: 'VipLevelName', value: 'VipLevelId' }"
+            :options="vipOptions"
+            placeholder="请选择 VIP 等级"
           />
         </Form.Item>
         <Form.Item label="维护显示时间">
           <DatePicker.RangePicker
             v-model:value="maintainRange"
-            show-time
             class="w-full"
-            @change="onMaintainRangeChange"
+            show-time
+            @change="changeMaintainRange"
           />
         </Form.Item>
         <Form.Item label="维护显示内容">
           <Input.TextArea
             v-model:value="maintainForm.Info"
-            :rows="4"
+            :maxlength="500"
             placeholder="请输入维护提示"
+            :rows="5"
+            show-count
           />
         </Form.Item>
       </Form>
     </Modal>
+
+    <Modal
+      v-model:open="langVisible"
+      :confirm-loading="saving"
+      destroy-on-close
+      title="多语言设置"
+      width="680px"
+      @ok="submitLanguage"
+    >
+      <Tabs v-model:active-key="langActiveKey" class="pt-3">
+        <Tabs.TabPane
+          v-for="group in langGroups"
+          :key="String(group.Id)"
+          :tab="languageLabel(group)"
+        >
+          <Form layout="vertical">
+            <Form.Item label="维护显示内容">
+              <Input.TextArea
+                v-if="langRows[String(group.Id)]"
+                v-model:value="langRows[String(group.Id)]!.Info"
+                :maxlength="500"
+                :rows="5"
+                show-count
+              />
+            </Form.Item>
+          </Form>
+        </Tabs.TabPane>
+      </Tabs>
+    </Modal>
   </div>
 </template>
+
+<style scoped>
+.query-panel {
+  padding: 18px;
+  margin-bottom: 18px;
+  background: hsl(var(--muted) / 45%);
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+}
+
+.venue-grid {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+}
+</style>

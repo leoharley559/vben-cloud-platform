@@ -171,7 +171,7 @@ export function formatPercentFromStorage(value?: null | number | string) {
   if (Number.isNaN(num)) {
     return '';
   }
-  return (num / 100).toFixed(num % 100 === 0 ? 0 : 1).replace(/\.0$/, '');
+  return (num / 100).toFixed(2).replace(/\.?0+$/, '');
 }
 
 export function findGameIdByApiFee(

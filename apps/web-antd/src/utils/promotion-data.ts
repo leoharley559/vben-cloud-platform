@@ -4,9 +4,9 @@ export function calcPercent(numerator?: number, denominator?: number) {
   const num = Number(numerator || 0);
   const den = Number(denominator || 0);
   if (!den) {
-    return '0.0%';
+    return '0.00%';
   }
-  return `${((num / den) * 100).toFixed(1)}%`;
+  return `${((num / den) * 100).toFixed(2)}%`;
 }
 
 export function calcArppu(count?: number, money?: number) {

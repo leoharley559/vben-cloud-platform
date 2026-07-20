@@ -1,21 +1,27 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 
-import { Button, DatePicker, Input, Space } from 'ant-design-vue';
+import { Button, DatePicker, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 
 defineOptions({ name: 'PromoteDataSearch' });
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
+    landingOptions?: Array<{
+      label: string;
+      value: number | string | undefined;
+    }>;
     showLanding?: boolean;
     showSearchButton?: boolean;
   }>(),
   {
     showLanding: false,
     showSearchButton: true,
+    landingOptions: () => [],
   },
 );
 
@@ -23,7 +29,7 @@ const emit = defineEmits<{
   reset: [];
   search: [
     payload: {
-      AdminIds: string;
+      AdminIds: Array<number | string>;
       BeginTime: string;
       ChannelIds: Array<number | string>;
       EndTime: string;
@@ -35,7 +41,7 @@ const emit = defineEmits<{
 const defaultBegin = dayjs().subtract(7, 'day');
 const defaultEnd = dayjs();
 
-const filterAdminIds = ref('');
+const filterAdminIds = ref<Array<number | string>>([]);
 const filterChannelIds = ref<Array<number | string>>([]);
 const filterTemplateId = ref('');
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
@@ -61,7 +67,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  filterAdminIds.value = '';
+  filterAdminIds.value = [];
   filterChannelIds.value = [];
   filterTemplateId.value = '';
   filterDateRange.value = [defaultBegin, defaultEnd];
@@ -75,29 +81,24 @@ defineExpose({
 </script>
 
 <template>
-  <div class="mb-4 flex flex-wrap items-end gap-2">
-    <Input
-      v-model:value="filterAdminIds"
-      allow-clear
-      placeholder="推广账号 ID，多个逗号分隔"
-      style="width: 260px"
-      @press-enter="handleSearch"
-    >
-      <template #addonBefore>推广账号</template>
-    </Input>
+  <div class="query-panel">
+    <div class="query-field">
+      <span>推广账号</span>
+      <AccountSelect v-model="filterAdminIds" style="width: 260px" />
+    </div>
     <div class="flex items-center gap-2">
       <span class="text-sm text-gray-500">渠道</span>
       <ChannelSelect v-model="filterChannelIds" style="width: 260px" />
     </div>
-    <Input
+    <Select
       v-if="showLanding"
       v-model:value="filterTemplateId"
       allow-clear
-      placeholder="落地页 ID"
+      :options="landingOptions"
+      placeholder="落地页"
+      show-search
       style="width: 180px"
-    >
-      <template #addonBefore>落地页</template>
-    </Input>
+    />
     <div class="flex items-center gap-2">
       <span class="text-sm text-gray-500">日期</span>
       <DatePicker.RangePicker v-model:value="filterDateRange" />
@@ -106,6 +107,28 @@ defineExpose({
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
     </Space>
-    <slot />
+    <slot></slot>
   </div>
 </template>
+
+<style scoped>
+.query-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  padding: 14px;
+  margin-bottom: 16px;
+  background: hsl(var(--muted) / 35%);
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+}
+
+.query-field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+}
+</style>

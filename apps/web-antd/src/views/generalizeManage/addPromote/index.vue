@@ -10,11 +10,11 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Radio,
   Result,
   Space,
   Steps,
-  message,
 } from 'ant-design-vue';
 
 import { createPromoterApi } from '#/api/promotion/manage';
@@ -26,26 +26,33 @@ defineOptions({ name: 'AddPromote' });
 const router = useRouter();
 const { adminInfo, checkPermission, projectConfig } = useCloudPermission();
 
-const canViewPage = computed(
-  () => checkPermission(10901) || checkPermission(10902),
-);
-
 const realAdminType = computed(() => {
   const parentInfo = projectConfig.value?.ParentInfo as
-    | { AdminType?: number }
-    | undefined;
-  const admin = adminInfo.value as { realAdminType?: number } | undefined;
+    | undefined
+    | { AdminType?: number };
+  const admin = adminInfo.value as undefined | { realAdminType?: number };
   return admin?.realAdminType ?? parentInfo?.AdminType ?? 0;
+});
+
+const canViewPage = computed(() => {
+  const teamInfo = projectConfig.value?.AccountTeamInfo as
+    | undefined
+    | { AgentId?: number; Id?: number };
+  const inTeam =
+    Number(teamInfo?.Id || 0) > 0 && Number(teamInfo?.AgentId || 0) > 0;
+  return (
+    checkPermission(10_912) && (inTeam || realAdminType.value === 1)
+  );
 });
 
 const childRateConfig = computed(() => {
   const config = projectConfig.value?.AccountTeamChildCommissionRate as
+    | undefined
     | {
         FirstPayPeriod?: number;
         MaxCommissionRate?: number;
         MinCommissionRate?: number;
-      }
-    | undefined;
+      };
   return {
     firstPayPeriod: Number(config?.FirstPayPeriod || 0),
     max: Number(config?.MaxCommissionRate || 0) / 10,
@@ -55,8 +62,8 @@ const childRateConfig = computed(() => {
 
 const selfPercent = computed(() => {
   const teamInfo = projectConfig.value?.AccountTeamInfo as
-    | { CommissionRate?: number }
-    | undefined;
+    | undefined
+    | { CommissionRate?: number };
   return Number(teamInfo?.CommissionRate || 0) / 10;
 });
 
@@ -213,6 +220,10 @@ function handlePrev() {
 }
 
 async function handleSave() {
+  if (!canViewPage.value) {
+    message.error('无新增下级代理权限');
+    return;
+  }
   if (!validateStepTwo()) {
     return;
   }

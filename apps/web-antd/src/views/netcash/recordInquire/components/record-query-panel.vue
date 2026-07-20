@@ -1,145 +1,391 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type {
-  RecordQueryBaseQuery,
-  RecordQueryListResult,
-} from '#/types/netcash';
+import type { RecordQueryBaseQuery, RecordQueryListResult } from '#/types/netcash';
 
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, DatePicker, Input, Select } from 'ant-design-vue';
+import { Button, DatePicker, Input, message, Select, Space, Statistic } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useProjectConfig } from '#/composables/use-project-config';
-import { formatAmountFromCent } from '#/utils/format-amount';
 
-export interface RecordQueryPanelConfig {
-  amountField?: string;
-  amountTitle?: string;
-  columns: Array<{
-    field: string;
-    formatter?: (value: unknown) => string;
-    minWidth?: number;
-    title: string;
-  }>;
-  fetchApi: (
-    query: RecordQueryBaseQuery,
-  ) => Promise<RecordQueryListResult<Record<string, unknown>>>;
-  summaryField?: string;
-  summaryTitle?: string;
+type QueryKind = 'bonus' | 'standard' | 'transaction';
+type SelectOption = { label: string; value: number | string };
+
+export interface RecordColumn {
+  field: string;
+  formatter?: (value: unknown, row: Record<string, unknown>) => unknown;
+  minWidth?: number;
+  title: string;
 }
 
-const props = defineProps<{
-  config: RecordQueryPanelConfig;
-}>();
+export interface RecordQueryPanelConfig {
+  columns: RecordColumn[];
+  exportPermission?: boolean;
+  fetchApi: (
+    query: RecordQueryBaseQuery,
+  ) => Promise<RecordQueryListResult<any>>;
+  kind?: QueryKind;
+  showDataType?: boolean;
+  summaryItems?: Array<{ columnField?: string; field: string; title: string }>;
+  title: string;
+  transferTypeOptions?: SelectOption[];
+}
 
+const props = defineProps<{ config: RecordQueryPanelConfig }>();
 const { projectConfig } = useProjectConfig();
 
-const defaultBegin = dayjs().subtract(7, 'day').startOf('day');
-const defaultEnd = dayjs().subtract(1, 'day').endOf('day');
+const query = reactive<RecordQueryBaseQuery>({
+  AdminAccount: '',
+  AgentAccount: '',
+  BonusTitle: '',
+  BonusType: [],
+  DataSearchType: 0,
+  IsWater: -1,
+  LoginAccount: '',
+  OperatorAccount: '',
+  OperatorAccountType: 1,
+  OperatorRemark: '',
+  OperatorRemarkType: 1,
+  OrderId: '',
+  PackageId: '',
+  Page: 1,
+  PageSize: 20,
+  Status: -1,
+  TransferType: '',
+  Username: '',
+  VipLevel: -1,
+  WalletType: '',
+});
 
-const filterAgentAccount = ref('');
-const filterLoginAccount = ref('');
-const filterPackageId = ref<number | string>();
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  defaultBegin,
-  defaultEnd,
-]);
-const summaryValue = ref(0);
-
-const packageOptions = (projectConfig.value?.RealPackageIdNameMap || []).map(
-  (item) => ({
+const kind = computed<QueryKind>(() => props.config.kind || 'standard');
+const initialDays = () => (kind.value === 'standard' ? 7 : 1);
+const defaultRange = (): [dayjs.Dayjs, dayjs.Dayjs] => [
+  dayjs().subtract(initialDays(), 'day').startOf('day'),
+  dayjs().subtract(1, 'day').endOf('day'),
+];
+const primaryRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>(
+  defaultRange(),
+);
+const finishRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
+const summaries = reactive<Record<string, number>>({});
+const total = ref(0);
+const rows = ref<Record<string, unknown>[]>([]);
+const exporting = ref(false);
+const packages = computed(() =>
+  (projectConfig.value?.RealPackageIdNameMap || []).map((item) => ({
     label: item.PackageName,
     value: item.PackageId,
-  }),
+  })),
 );
+const dataTypes = [
+  { label: '全部', value: 2 },
+  { label: '正式数据', value: 0 },
+  { label: '测试数据', value: 1 },
+];
+const bonusTypes = [
+  [3, '平台红利'],
+  [4, '升级红利'],
+  [5, '每月红包'],
+  [6, '生日礼金'],
+  [7, '代理红利'],
+  [8, '推广红利'],
+  [9, '存款优惠'],
+  [10, '活动红利'],
+  [11, '负数归零'],
+  [12, '推荐红利'],
+  [13, '预约提款'],
+  [119, '确认到账'],
+  [123, '代理存款红利'],
+  [125, '首存优惠'],
+  [130, '优惠券'],
+].map(([value, label]) => ({ label, value })) as SelectOption[];
+const vipLevels = computed(() => {
+  const levels = (projectConfig.value?.VIPLevelMap || []) as Array<{
+    VipLevelId: number;
+    VipLevelName: string;
+  }>;
+  return [
+    { label: '全部会员等级', value: -1 },
+    ...levels.map((item) => ({
+      label: item.VipLevelName,
+      value: item.VipLevelId,
+    })),
+  ];
+});
+const waterOptions = [
+  { label: '全部', value: -1 },
+  { label: '是', value: 1 },
+  { label: '否', value: 0 },
+];
+const statusOptions = [
+  { label: '全部', value: -1 },
+  { label: '未申请', value: 0 },
+  { label: '审核中', value: 1 },
+  { label: '成功', value: 2 },
+  { label: '已失效', value: 3 },
+  { label: '拒绝', value: 4 },
+];
+const walletOptions = [
+  { label: '全部', value: '' },
+  { label: '佣金钱包', value: 1 },
+  { label: '信用钱包', value: 2 },
+  { label: '代客钱包', value: 3 },
+];
+const money = (v: unknown) => (Number(v || 0) / 100).toFixed(2);
 
-function getQueryParams(page: { currentPage: number; pageSize: number }) {
-  const [begin, end] = filterDateRange.value || [];
+function cleanLoginAccount() {
+  query.LoginAccount = String(query.LoginAccount || '')
+    .toLowerCase()
+    .replaceAll(/\s/g, '');
+}
+
+function build(
+  page: { currentPage: number; pageSize: number },
+  exp = false,
+): RecordQueryBaseQuery {
+  cleanLoginAccount();
+  const begin = primaryRange.value?.[0];
+  const end = primaryRange.value?.[1];
+  const base: RecordQueryBaseQuery = {
+    ...query,
+    IsExp: exp,
+    Page: exp ? 1 : page.currentPage,
+    PageSize: exp ? 99_999 : page.pageSize,
+  };
+
+  if (kind.value === 'transaction') {
+    return {
+      AdminAccount: base.AdminAccount,
+      IsExp: exp,
+      Page: base.Page,
+      PageSize: base.PageSize,
+      TransferEndTime: end?.unix() || '',
+      TransferStartTime: begin?.unix() || '',
+      TransferType: base.TransferType,
+      WalletType: base.WalletType,
+    };
+  }
+  if (kind.value === 'bonus') {
+    return {
+      ...base,
+      ApplyBeginTime: begin?.unix() || '',
+      ApplyEndTime: end?.unix() || '',
+      BonusType: Array.isArray(base.BonusType)
+        ? base.BonusType.join(',')
+        : base.BonusType,
+      FinishBeginTime: finishRange.value?.[0]?.unix() || '',
+      FinishEndTime: finishRange.value?.[1]?.unix() || '',
+    };
+  }
   return {
-    AgentAccount: filterAgentAccount.value,
-    BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
-    DataSearchType: 1,
-    EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
-    LoginAccount: filterLoginAccount.value,
-    PackageId: filterPackageId.value || '',
-    Page: page.currentPage,
-    PageSize: page.pageSize,
+    AgentAccount: base.AgentAccount,
+    BeginTime: begin?.unix() || '',
+    DataSearchType: props.config.showDataType
+      ? base.DataSearchType
+      : undefined,
+    EndTime: end?.unix() || '',
+    IsExp: exp,
+    LoginAccount: base.LoginAccount,
+    PackageId: base.PackageId,
+    Page: base.Page,
+    PageSize: base.PageSize,
   };
 }
 
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
-  columns: props.config.columns.map((column) => ({
-    field: column.field,
-    formatter: column.formatter
-      ? ({ cellValue }) => column.formatter!(cellValue)
-      : undefined,
-    minWidth: column.minWidth || 120,
-    title: column.title,
-  })),
+  columns: [
+    { type: 'seq', title: '序号', width: 60 },
+    ...props.config.columns.map((c) => ({
+      field: c.field,
+      formatter: c.formatter
+        ? ({ cellValue, row }: any) => c.formatter!(cellValue, row)
+        : undefined,
+      minWidth: c.minWidth || 130,
+      title: c.title,
+    })),
+  ],
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await props.config.fetchApi(getQueryParams(page));
-        const items = result.Items || [];
-        const summaryField = props.config.summaryField;
-        if (summaryField && result.Total?.[summaryField] !== undefined) {
-          summaryValue.value = Number(result.Total[summaryField] || 0);
-        } else {
-          summaryValue.value = 0;
+        const result = await props.config.fetchApi(build(page));
+        rows.value = result.Items;
+        total.value = Number(
+          result.Pagination.MaxCount || rows.value.length || 0,
+        );
+        for (const item of props.config.summaryItems || []) {
+          summaries[item.field] = Number(result.Total[item.field] || 0);
         }
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        return { items: rows.value, total: total.value };
       },
     },
   },
 };
-
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
-onMounted(() => {
-  gridApi.reload();
-});
+function validateRange() {
+  const begin = primaryRange.value?.[0];
+  const end = primaryRange.value?.[1];
+  if (!begin || !end) return true;
+  if (
+    kind.value === 'standard' &&
+    end.isAfter(dayjs().subtract(1, 'day').endOf('day'))
+  ) {
+    message.warning('日期只能查询今天以前的数据');
+    return false;
+  }
+  if (
+    kind.value === 'standard' &&
+    end.diff(begin, 'day', true) > 7
+  ) {
+    message.warning('查询日期范围不能超过 7 天');
+    return false;
+  }
+  return true;
+}
+
+function disableStandardDate(date: dayjs.Dayjs) {
+  return kind.value === 'standard' && !date.isBefore(dayjs(), 'day');
+}
+
+function search() {
+  if (validateRange()) void gridApi.query();
+}
+
+function reset() {
+  Object.assign(query, {
+    AdminAccount: '',
+    AgentAccount: '',
+    BonusTitle: '',
+    BonusType: [],
+    DataSearchType: 0,
+    IsWater: -1,
+    LoginAccount: '',
+    OperatorAccount: '',
+    OperatorAccountType: 1,
+    OperatorRemark: '',
+    OperatorRemarkType: 1,
+    OrderId: '',
+    PackageId: '',
+    Status: -1,
+    TransferType: '',
+    Username: '',
+    VipLevel: -1,
+    WalletType: '',
+  });
+  primaryRange.value = defaultRange();
+  finishRange.value = undefined;
+  void gridApi.query();
+}
+
+async function exportExcel() {
+  if (rows.value.length === 0) {
+    message.info('暂无可导出的数据');
+    return;
+  }
+  exporting.value = true;
+  try {
+    const result = await props.config.fetchApi(
+      build({ currentPage: 1, pageSize: 99_999 }, true),
+    );
+    const list = result.Items;
+    if (list.length === 0) {
+      message.info('暂无可导出的数据');
+      return;
+    }
+    const XLSX = await import('xlsx');
+    const data = list.map((row) =>
+      Object.fromEntries(
+        props.config.columns.map((column) => [
+          column.title,
+          column.formatter
+            ? column.formatter(row[column.field], row)
+            : (row[column.field] ?? ''),
+        ]),
+      ),
+    );
+    if (props.config.summaryItems?.length) {
+      const summaryRow: Record<string, unknown> = {
+        [props.config.columns[0]?.title || '合计']: '合计',
+      };
+      for (const item of props.config.summaryItems) {
+        const column = props.config.columns.find(
+          ({ field }) =>
+            field === (item.columnField || item.field.replace(/^Total/, '')),
+        );
+        summaryRow[column?.title || item.title] = money(
+          result.Total[item.field],
+        );
+      }
+      data.push(summaryRow);
+    }
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, props.config.title.slice(0, 31));
+    XLSX.writeFile(wb, `${props.config.title}.xlsx`);
+  } finally {
+    exporting.value = false;
+  }
+}
+
+onMounted(() => gridApi.reload());
 </script>
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterAgentAccount"
-        allow-clear
-        placeholder="代理账号"
-        style="width: 180px"
-      />
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 180px"
-      />
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        class="w-40"
-        :options="packageOptions"
-        placeholder="产品包"
-      />
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
-    </div>
+    <Space class="mb-4 flex flex-wrap" wrap>
+      <template v-if="kind === 'standard'">
+        <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" style="width: 180px" @press-enter="search" />
+        <Input v-model:value="query.LoginAccount" allow-clear placeholder="游戏账号" style="width: 180px" @blur="cleanLoginAccount" @press-enter="search" />
+        <Select v-model:value="query.PackageId" allow-clear :options="packages" placeholder="所属产品" style="width: 160px" />
+        <Select v-if="config.showDataType" v-model:value="query.DataSearchType" :options="dataTypes" placeholder="数据类型" style="width: 130px" />
+      </template>
 
-    <div v-if="config.summaryTitle" class="mb-3 text-sm text-gray-600">
-      {{ config.summaryTitle }}：
-      {{
-        config.amountField ? formatAmountFromCent(summaryValue) : summaryValue
-      }}
-    </div>
+      <template v-else-if="kind === 'bonus'">
+        <Input v-model:value="query.LoginAccount" allow-clear placeholder="游戏账号" style="width: 180px" @blur="cleanLoginAccount" @press-enter="search" />
+        <Input v-model:value="query.OrderId" allow-clear placeholder="订单号" style="width: 180px" @press-enter="search" />
+        <Input v-model:value="query.Username" allow-clear placeholder="代理账号" style="width: 180px" @press-enter="search" />
+        <Input v-model:value="query.BonusTitle" allow-clear placeholder="红利标题" style="width: 180px" @press-enter="search" />
+        <Input v-model:value="query.OperatorAccount" allow-clear placeholder="申请人/审核人" style="width: 180px">
+          <template #addonBefore>
+            <Select v-model:value="query.OperatorAccountType" :options="[{ label: '申请人', value: 1 }, { label: '审核人', value: 2 }]" style="width: 100px" />
+          </template>
+        </Input>
+        <Input v-model:value="query.OperatorRemark" allow-clear placeholder="申请/审核备注" style="width: 200px">
+          <template #addonBefore>
+            <Select v-model:value="query.OperatorRemarkType" :options="[{ label: '申请备注', value: 1 }, { label: '审核备注', value: 2 }]" style="width: 100px" />
+          </template>
+        </Input>
+        <Select v-model:value="query.PackageId" allow-clear :options="packages" placeholder="所属产品" style="width: 160px" />
+        <Select v-model:value="query.BonusType" mode="multiple" :max-tag-count="1" :options="bonusTypes" placeholder="红利类型" style="width: 180px" />
+        <Select v-model:value="query.VipLevel" :options="vipLevels" placeholder="会员等级" style="width: 150px" />
+        <Select v-model:value="query.DataSearchType" :options="dataTypes.slice(0, 2)" placeholder="数据类型" style="width: 130px" />
+        <Select v-model:value="query.IsWater" :options="waterOptions" placeholder="是否需要流水" style="width: 150px" />
+        <Select v-model:value="query.Status" :options="statusOptions" placeholder="状态" style="width: 130px" />
+      </template>
 
+      <template v-else>
+        <Input v-model:value="query.AdminAccount" allow-clear placeholder="代理账号" style="width: 180px" @press-enter="search" />
+        <Select v-model:value="query.WalletType" :options="walletOptions" placeholder="钱包类型" style="width: 140px" />
+        <Select v-model:value="query.TransferType" :options="config.transferTypeOptions" placeholder="账变类型" style="width: 170px" />
+      </template>
+
+      <span>{{ kind === 'bonus' ? '申请时间' : kind === 'transaction' ? '账变时间' : '日期' }}</span>
+      <DatePicker.RangePicker v-model:value="primaryRange" :disabled-date="disableStandardDate" show-time />
+      <template v-if="kind === 'bonus'">
+        <span>审核时间</span>
+        <DatePicker.RangePicker v-model:value="finishRange" show-time />
+      </template>
+      <Button type="primary" @click="search">查询</Button>
+      <Button @click="reset">重置</Button>
+      <Button v-if="config.exportPermission" :loading="exporting" type="primary" ghost @click="exportExcel">导出 Excel</Button>
+    </Space>
+    <div v-if="config.summaryItems?.length" class="mb-4 flex flex-wrap gap-8 rounded bg-gray-50 px-4 py-3">
+      <Statistic v-for="item in config.summaryItems" :key="item.field" :title="item.title" :value="money(summaries[item.field])" />
+    </div>
     <Grid />
   </div>
 </template>

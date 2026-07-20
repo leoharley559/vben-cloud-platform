@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -7,14 +9,13 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Select,
   Table,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
 
 import {
   createBackWaterHandApi,
@@ -61,7 +62,7 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const { ensureGameConfig, gameConfig } = useGameConfig();
 
-const canIssue = computed(() => checkPermission(11090));
+const canIssue = computed(() => checkPermission(11_090));
 
 const loading = ref(false);
 const saving = ref(false);
@@ -137,10 +138,10 @@ const venueColumns = [
 function formatRebateMode(row: VenueRow) {
   const mode = Number(row.RebateMode);
   if (mode === 1) {
-    return `周结 / 延迟${row.DaysDelay || 0}天`;
+    return `按天 / ${row.DaysOfCycle || 0}+${row.DaysDelay || 0}`;
   }
   if (mode === 2) {
-    return `周期${row.DaysOfCycle || '-'}天 / 延迟${row.DaysDelay || 0}天`;
+    return `周结 / 星期${row.DayOfWeeks || '-'}`;
   }
   return '日结';
 }
@@ -156,14 +157,6 @@ function toCent(value: number) {
 }
 
 async function handleQuery() {
-  if (!query.LoginAccount.trim()) {
-    message.warning('请输入游戏账号');
-    return;
-  }
-  if (!query.PackageName) {
-    message.warning('请选择产品包');
-    return;
-  }
   if (!query.Time) {
     message.warning('请选择发放日期');
     return;
@@ -240,7 +233,7 @@ onMounted(() => {
         <Input
           v-model:value="query.LoginAccount"
           allow-clear
-          placeholder="请输入"
+          placeholder="可按游戏账号查询"
           style="width: 180px"
           @press-enter="handleQuery"
         />
@@ -254,7 +247,17 @@ onMounted(() => {
         />
       </Form.Item>
       <Form.Item label="发放日期">
-        <DatePicker v-model:value="query.Time" style="width: 160px" />
+        <DatePicker
+          v-model:value="query.Time"
+          :disabled-date="
+            (date) =>
+              Boolean(
+                date &&
+                  date.startOf('day').isAfter(dayjs().startOf('day')),
+              )
+          "
+          style="width: 160px"
+        />
       </Form.Item>
       <Form.Item>
         <Button :loading="loading" type="primary" @click="handleQuery">
@@ -283,6 +286,11 @@ onMounted(() => {
           disabled
         />
         <Input
+          :value="String(playerInfo.GameName || '-')"
+          addon-before="所属游戏"
+          disabled
+        />
+        <Input
           :value="String(playerInfo.SchemeName || '-')"
           addon-before="返水方案"
           disabled
@@ -293,6 +301,11 @@ onMounted(() => {
           disabled
         />
         <Input
+          :value="formatAmountFromCent(playerInfo.InvalidWater)"
+          addon-before="无效流水"
+          disabled
+        />
+        <Input
           :value="formatAmountFromCent(playerInfo.BackWater)"
           addon-before="应发返水"
           disabled
@@ -300,6 +313,11 @@ onMounted(() => {
         <Input
           :value="formatAmountFromCent(playerInfo.BackedWater)"
           addon-before="已发返水"
+          disabled
+        />
+        <Input
+          :value="formatAmountFromCent(playerInfo.BackWaterMax)"
+          addon-before="周期返水上限"
           disabled
         />
         <Input
@@ -339,6 +357,21 @@ onMounted(() => {
               {{ formatRebateMode(record) }}
             </Tag>
           </template>
+        </template>
+        <template #summary>
+          <Table.Summary fixed>
+            <Table.Summary.Row>
+              <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
+              <Table.Summary.Cell :index="1">-</Table.Summary.Cell>
+              <Table.Summary.Cell :index="2">-</Table.Summary.Cell>
+              <Table.Summary.Cell :index="3">-</Table.Summary.Cell>
+              <Table.Summary.Cell :index="4">-</Table.Summary.Cell>
+              <Table.Summary.Cell :index="5">-</Table.Summary.Cell>
+              <Table.Summary.Cell :index="6">
+                {{ formatAmountFromCent(playerInfo.BackWater) }}
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          </Table.Summary>
         </template>
       </Table>
     </div>
