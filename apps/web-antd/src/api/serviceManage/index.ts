@@ -33,6 +33,14 @@ registerPermissionKeys({
   serviceVersionSwitchBtn: [12144],
 });
 
+/**
+ * 将客服模块列表响应归一为 CloudListResult。
+ *
+ * Pagination.MaxCount 优先取接口值，否则回退为 Items 长度。
+ *
+ * @param data 接口原始响应
+ * @returns 含 Items 及 Pagination.MaxCount 的列表结构
+ */
 function toListResult(data: CloudListResult<Record<string, unknown>>) {
   return {
     Items: data.Items ?? [],
@@ -42,6 +50,13 @@ function toListResult(data: CloudListResult<Record<string, unknown>>) {
   };
 }
 
+/**
+ * 客服账号列表（客服帐号页「客服帐号」Tab）。
+ *
+ * @param query 查询参数（分页、Username 等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceAccount/index.vue
+ */
 export function fetchServiceAccountListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -51,6 +66,13 @@ export function fetchServiceAccountListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服席位列表（客服帐号页「客服席位」Tab）。
+ *
+ * @param query 查询参数（分页、Username 等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceAccount/index.vue
+ */
 export function fetchServiceSeatListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -60,6 +82,13 @@ export function fetchServiceSeatListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服工时统计列表（客服帐号页「工时统计」Tab）。
+ *
+ * @param query 查询参数（分页、日期、Username 等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceAccount/index.vue
+ */
 export function fetchServiceWorkTimeListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -69,6 +98,13 @@ export function fetchServiceWorkTimeListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服进线记录列表（进线记录页「进线记录」「错过记录」Tab）。
+ *
+ * @param query 查询参数（分页、日期、Username 等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/recordTotal/index.vue
+ */
 export function fetchServiceRecordListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -78,6 +114,13 @@ export function fetchServiceRecordListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服回收站记录列表（进线记录页「回收站」Tab）。
+ *
+ * @param query 查询参数（分页、日期、Username 等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/recordTotal/index.vue
+ */
 export function fetchServiceReturnListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -87,6 +130,13 @@ export function fetchServiceReturnListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服工作统计列表（客服统计页「客服统计」Tab）。
+ *
+ * @param query 查询参数（分页、日期等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/statistics/index.vue
+ */
 export function fetchServiceStatisticsListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -96,6 +146,13 @@ export function fetchServiceStatisticsListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服评价统计列表（客服统计页「评价统计」Tab）。
+ *
+ * @param query 查询参数（分页、日期等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/statistics/index.vue
+ */
 export function fetchServiceSatisfactionListApi(
   query: Record<string, unknown>,
 ) {
@@ -107,6 +164,13 @@ export function fetchServiceSatisfactionListApi(
     .then(toListResult);
 }
 
+/**
+ * 客服进线统计列表（客服统计页「进线统计」Tab）。
+ *
+ * @param query 查询参数（分页、日期等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/statistics/index.vue
+ */
 export function fetchServiceInlineStatListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -116,6 +180,13 @@ export function fetchServiceInlineStatListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服常用语列表（客服设置页「常用语」Tab）。
+ *
+ * @param query 查询参数（分页、Username 等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceSetting/index.vue
+ */
 export function fetchEasyReplyListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -125,6 +196,13 @@ export function fetchEasyReplyListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服黑名单列表（客服设置页「黑名单」Tab）。
+ *
+ * @param query 查询参数（分页、Login 等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceSetting/index.vue
+ */
 export function fetchBlackListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -134,6 +212,13 @@ export function fetchBlackListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服敏感词列表（客服设置页「敏感词」Tab）。
+ *
+ * @param query 查询参数（分页等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceSetting/index.vue
+ */
 export function fetchFilterWordListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -143,6 +228,13 @@ export function fetchFilterWordListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服玩家标记列表（客服设置页「玩家标记」Tab）。
+ *
+ * @param query 查询参数（分页等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceSetting/index.vue
+ */
 export function fetchPlayerMarkListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -152,6 +244,13 @@ export function fetchPlayerMarkListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服评价标签列表（客服设置页「评价标签」Tab）。
+ *
+ * @param query 查询参数（分页等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceSetting/index.vue
+ */
 export function fetchEvaluationLabelListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -161,6 +260,13 @@ export function fetchEvaluationLabelListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服问题类型列表（客服设置页「问题类型」Tab）。
+ *
+ * @param query 查询参数（分页等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceSetting/index.vue
+ */
 export function fetchQuestionTypeListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -170,7 +276,13 @@ export function fetchQuestionTypeListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
-/** 结束原因/问题分类简表（Type=0 关闭分类） */
+/**
+ * 结束原因/问题分类简表（Type=0 关闭分类，客服工作台结束会话下拉）。
+ *
+ * @param query 可选附加查询参数（默认 Type=0、PageSize=999999）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceModel/components/service-workbench-panel.vue
+ */
 export function fetchEndReasonSimpleListApi(
   query: Record<string, unknown> = {},
 ) {
@@ -182,6 +294,13 @@ export function fetchEndReasonSimpleListApi(
     .then(toListResult);
 }
 
+/**
+ * AI 助手配置列表（客服设置页「AI助手」Tab）。
+ *
+ * @param query 查询参数（分页等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceSetting/index.vue
+ */
 export function fetchAiAssistantListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -191,6 +310,13 @@ export function fetchAiAssistantListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 客服音效列表（客服设置页「音效」Tab）。
+ *
+ * @param query 查询参数（分页等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/serviceSetting/index.vue
+ */
 export function fetchAudioEffectListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -200,6 +326,13 @@ export function fetchAudioEffectListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 玩家工单列表（玩家工单页）。
+ *
+ * @param query 查询参数（分页等）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/playerOrder/index.vue
+ */
 export function fetchPlayerOrderListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -209,6 +342,13 @@ export function fetchPlayerOrderListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * AI 知识库问答列表（AI 知识库管理页）。
+ *
+ * @param query 搜索条件（POST 请求体，经 trimSpace 处理）
+ * @returns Items 及 Pagination.MaxCount
+ * @see views/serviceManage/aiKnowledgeBaseManager/index.vue
+ */
 export function fetchAiKnowledgeListApi(query: Record<string, unknown>) {
   return requestClient
     .post<CloudListResult<Record<string, unknown>>>(

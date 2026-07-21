@@ -1,7 +1,8 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
-import { trimSpace } from '#/utils/string';
+
+import { requestClient } from '#/api/request';
 import { registerPermissionKeys } from '#/utils/permission';
+import { trimSpace } from '#/utils/string';
 
 registerPermissionKeys({
   chatroomBlockRecords: [11663, 11664],
@@ -16,6 +17,11 @@ registerPermissionKeys({
   chatroomWelcomeSetting: [13019],
 });
 
+/**
+ * 将云后台列表响应归一化为 Items + Pagination 结构
+ * @param data 云后台原始列表响应
+ * @returns 含 Items 数组与 Pagination.MaxCount 的标准列表结果
+ */
 function toListResult(data: CloudListResult<Record<string, unknown>>) {
   return {
     Items: data.Items ?? [],
@@ -25,6 +31,14 @@ function toListResult(data: CloudListResult<Record<string, unknown>>) {
   };
 }
 
+/**
+ * 聊天室列表（业务房）
+ *
+ * @param query 筛选/分页参数
+ * @returns Items + Pagination
+ * @see views/chatroomManage/chatroomList
+ * @see views/chatroomManage/chatroomManage
+ */
 export function fetchChatroomListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -34,6 +48,13 @@ export function fetchChatroomListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 系统聊天室列表
+ *
+ * @param query 筛选/分页参数
+ * @returns Items + Pagination
+ * @see views/chatroomManage/chatroomManage
+ */
 export function fetchChatroomSystemListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -43,6 +64,13 @@ export function fetchChatroomSystemListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 禁言/拉黑记录列表
+ *
+ * @param query 筛选/分页参数（会 trim 空格）
+ * @returns Items + Pagination
+ * @see views/chatroomManage/blockRecords
+ */
 export function fetchMuteRecordListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -52,6 +80,13 @@ export function fetchMuteRecordListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 拦截记录列表
+ *
+ * @param query 筛选/分页参数
+ * @returns Items + Pagination
+ * @see views/chatroomManage/interceptRecord
+ */
 export function fetchInterceptRecordListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -61,6 +96,13 @@ export function fetchInterceptRecordListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 聊天记录列表
+ *
+ * @param query 筛选/分页参数
+ * @returns Items + Pagination
+ * @see views/chatroomManage/chatRecord
+ */
 export function fetchChatRecordListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -70,6 +112,13 @@ export function fetchChatRecordListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 敏感词列表
+ *
+ * @param query 筛选/分页参数
+ * @returns Items + Pagination
+ * @see views/chatroomManage/sensitivePhrase
+ */
 export function fetchSensitiveWordListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -79,6 +128,13 @@ export function fetchSensitiveWordListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 常用语/话术列表
+ *
+ * @param query 筛选/分页参数
+ * @returns Items + Pagination
+ * @see views/chatroomManage/phrases
+ */
 export function fetchPhraseListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -88,6 +144,13 @@ export function fetchPhraseListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 聊天室礼物配置列表
+ *
+ * @param query 筛选参数（可选）
+ * @returns Items + Pagination（兼容数组或列表结构）
+ * @see views/chatroomManage/giftSetting
+ */
 export function fetchChatroomGiftListApi(query: Record<string, unknown> = {}) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>> | Record<string, unknown>[]>(
@@ -105,6 +168,13 @@ export function fetchChatroomGiftListApi(query: Record<string, unknown> = {}) {
     });
 }
 
+/**
+ * 欢迎语方案列表
+ *
+ * @param query 筛选参数（可选）
+ * @returns Items + Pagination（兼容数组或列表结构）
+ * @see views/chatroomManage/chatroomWelcome
+ */
 export function fetchWelcomePlanListApi(query: Record<string, unknown> = {}) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>> | Record<string, unknown>[]>(
@@ -122,6 +192,13 @@ export function fetchWelcomePlanListApi(query: Record<string, unknown> = {}) {
     });
 }
 
+/**
+ * 表情包 Tab/标签列表
+ *
+ * @param query 筛选参数（可选）
+ * @returns Items + Pagination（兼容数组或列表结构）
+ * @see views/chatroomManage/stickerSetting
+ */
 export function fetchStickerTabListApi(query: Record<string, unknown> = {}) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>> | Record<string, unknown>[]>(

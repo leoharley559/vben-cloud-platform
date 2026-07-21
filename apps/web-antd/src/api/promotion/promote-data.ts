@@ -17,6 +17,15 @@ import type {
 import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
+/**
+ * 规范化推广数据查询参数中的多选数组字段。
+ *
+ * 先 trim 全部字段，再将指定字段的数组值转为逗号分隔字符串（空数组转为 `''`）。
+ *
+ * @param query 原始查询对象
+ * @param fields 需要数组转字符串的字段名列表
+ * @returns 可直接作为 GET params 的对象
+ */
 function normalizeArrayQuery(query: Record<string, unknown>, fields: string[]) {
   const params = trimSpace({ ...query }) as Record<string, unknown>;
   for (const field of fields) {
@@ -28,6 +37,12 @@ function normalizeArrayQuery(query: Record<string, unknown>, fields: string[]) {
   return params;
 }
 
+/**
+ * 获取渠道推广数据列表
+ * @param query 日期、管理员与渠道筛选条件
+ * @returns 渠道推广数据汇总
+ * @see views/generalizeManage/promoteData/components/channel-data-list.vue
+ */
 export function fetchChannelDataListApi(query: PromoteDataBaseQuery) {
   return requestClient.get<ChannelDataResult>(
     '/backend/promotedata/channelreport',
@@ -40,6 +55,12 @@ export function fetchChannelDataListApi(query: PromoteDataBaseQuery) {
   );
 }
 
+/**
+ * 获取掉量变更记录列表
+ * @param query 日期、管理员与渠道筛选条件
+ * @returns 掉量变更汇总数据
+ * @see views/generalizeManage/promoteData/components/drop-change-list.vue
+ */
 export function fetchDropChangeListApi(query: DropChangeListQuery) {
   return requestClient.get<DropChangeResult>(
     '/backend/promotedata/getsumrecord',
@@ -52,6 +73,12 @@ export function fetchDropChangeListApi(query: DropChangeListQuery) {
   );
 }
 
+/**
+ * 获取无效用户数据
+ * @param query 日期、管理员与渠道筛选条件
+ * @returns 无效用户统计明细
+ * @see views/generalizeManage/promoteData/components/invalid-user-panel.vue
+ */
 export function fetchInvalidUserApi(query: PromoteDataBaseQuery) {
   return requestClient.get<{ Items?: InvalidUserData }>(
     '/backend/promotedata/invaliduser',
@@ -64,6 +91,12 @@ export function fetchInvalidUserApi(query: PromoteDataBaseQuery) {
   );
 }
 
+/**
+ * 获取手工录入记录列表
+ * @param query 分页与筛选条件
+ * @returns 手工录入记录列表及分页信息
+ * @see views/generalizeManage/promoteData/components/data-write-list.vue
+ */
 export function fetchHandRecordListApi(query: HandRecordListQuery) {
   return requestClient.get<CloudListResult<HandRecordItem>>(
     '/backend/handrecord/list',
@@ -76,22 +109,51 @@ export function fetchHandRecordListApi(query: HandRecordListQuery) {
   );
 }
 
+/**
+ * 获取手工录入记录详情
+ * @param id 记录 ID
+ * @returns 手工录入记录详细信息
+ * @see views/generalizeManage/promoteData/components/data-write-list.vue
+ */
 export function fetchHandRecordDetailApi(id: number | string) {
   return requestClient.get<HandRecordItem>(`/backend/handrecord/${id}`);
 }
 
+/**
+ * 新建手工录入记录
+ * @param data 录入表单数据
+ * @returns 创建结果
+ * @see views/generalizeManage/promoteData/components/data-write-list.vue
+ */
 export function createHandRecordApi(data: HandRecordPayload) {
   return requestClient.post('/backend/handrecord/', data);
 }
 
+/**
+ * 更新手工录入记录
+ * @param data 录入表单数据（含 ID）
+ * @returns 更新结果
+ * @see views/generalizeManage/promoteData/components/data-write-list.vue
+ */
 export function updateHandRecordApi(data: HandRecordPayload) {
   return requestClient.put('/backend/handrecord/', data);
 }
 
+/**
+ * 删除手工录入记录
+ * @param id 记录 ID
+ * @returns 删除结果
+ * @see views/generalizeManage/promoteData/components/data-write-list.vue
+ */
 export function deleteHandRecordApi(id: number | string) {
   return requestClient.delete(`/backend/handrecord/${id}`);
 }
 
+/**
+ * 获取全部落地页列表（下拉选项用）
+ * @returns 落地页选项数组
+ * @see views/generalizeManage/promoteData/components/data-write-list.vue
+ */
 export async function fetchLandingPageListApi() {
   const data = await requestClient.get<
     CloudListResult<LandingPageItem> | LandingPageItem[] | null
@@ -102,6 +164,12 @@ export async function fetchLandingPageListApi() {
   return Array.isArray(data) ? data : data.Items || [];
 }
 
+/**
+ * 获取渠道回本数据列表
+ * @param query 分页与筛选条件
+ * @returns 渠道回本记录列表及分页信息
+ * @see views/generalizeManage/promoteData/components/channel-recoup-list.vue
+ */
 export function fetchChannelRecoupListApi(query: ChannelRecoupListQuery) {
   return requestClient.get<CloudListResult<ChannelRecoupItem>>(
     '/backend/operation/channelbreakevenreport',
@@ -109,6 +177,12 @@ export function fetchChannelRecoupListApi(query: ChannelRecoupListQuery) {
   );
 }
 
+/**
+ * 获取汇率设置列表
+ * @returns 汇率配置数组
+ * @see views/generalizeManage/promoteData/components/data-write-list.vue
+ * @see views/generalizeManage/promoteData/components/channel-recoup-list.vue
+ */
 export function fetchExchangeRateListApi() {
   return requestClient.get<ExchangeRateItem[]>(
     '/backend/operation/exchangeratesetting',

@@ -46,7 +46,13 @@ function normalizeCloudObject<T extends Record<string, unknown>>(
   return record as T;
 }
 
-/** 联赛活动（杯赛专题）列表 */
+/**
+ * 分页查询联赛活动（杯赛专题）列表。
+ *
+ * @param query 筛选条件及分页参数
+ * @returns 联赛活动 Items 与 Pagination
+ * @see views/operationalManage/customLeague/index.vue
+ */
 export function fetchCustomLeagueListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -56,7 +62,13 @@ export function fetchCustomLeagueListApi(query: Record<string, unknown>) {
     .then((data) => normalizeCloudList<Record<string, unknown>>(data));
 }
 
-/** 根据场馆/赛事类型获取可选联赛赛事列表 */
+/**
+ * 根据场馆/赛事类型获取可选联赛赛事列表。
+ *
+ * @param query GameType 场馆类型、SportId 赛事类型
+ * @returns 可选联赛赛事 Items
+ * @see views/operationalManage/customLeague/components/custom-league-upsert-modal.vue
+ */
 export function fetchCustomLeagueLeagueListApi(query: {
   GameType?: number | string;
   SportId?: number | string;
@@ -69,29 +81,59 @@ export function fetchCustomLeagueLeagueListApi(query: {
     .then((data) => normalizeCloudList<Record<string, unknown>>(data));
 }
 
-/** 获取联赛活动详情 */
+/**
+ * 获取联赛活动详情。
+ *
+ * @param id 联赛活动 ID
+ * @returns 联赛活动详情对象
+ * @see views/operationalManage/customLeague/components/custom-league-upsert-modal.vue
+ */
 export function fetchCustomLeagueDetailApi(id: number | string) {
   return requestClient
     .get<Record<string, unknown>>(`/backend/gamecustomleague/${id}`)
     .then((data) => normalizeCloudObject<Record<string, unknown>>(data));
 }
 
-/** 新增联赛活动 */
+/**
+ * 新增联赛活动。
+ *
+ * @param data 联赛活动表单数据
+ * @returns 接口响应
+ * @see views/operationalManage/customLeague/components/custom-league-upsert-modal.vue
+ */
 export function createCustomLeagueApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/gamecustomleague/', data);
 }
 
-/** 编辑联赛活动 */
+/**
+ * 编辑联赛活动。
+ *
+ * @param data 联赛活动表单数据（含 Id）
+ * @returns 接口响应
+ * @see views/operationalManage/customLeague/components/custom-league-upsert-modal.vue
+ */
 export function updateCustomLeagueApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/gamecustomleague/', data);
 }
 
-/** 删除联赛活动 */
+/**
+ * 删除联赛活动。
+ *
+ * @param id 联赛活动 ID
+ * @returns 接口响应
+ * @see views/operationalManage/customLeague/index.vue
+ */
 export function deleteCustomLeagueApi(id: number | string) {
   return requestClient.delete(`/backend/gamecustomleague/${id}`);
 }
 
-/** 联赛活动排序（相邻互换） */
+/**
+ * 联赛活动排序（相邻两条互换 Sort）。
+ *
+ * @param data Id1、Id2 待互换的两条记录 ID
+ * @returns 接口响应
+ * @see views/operationalManage/customLeague/index.vue
+ */
 export function sortCustomLeagueApi(data: {
   Id1: number | string;
   Id2: number | string;
@@ -99,7 +141,13 @@ export function sortCustomLeagueApi(data: {
   return requestClient.put('/backend/gamecustomleague/switchsort', data);
 }
 
-/** 开关切换 */
+/**
+ * 切换联赛活动启用/停用状态。
+ *
+ * @param data 含 Id 及开关字段
+ * @returns 接口响应
+ * @see views/operationalManage/customLeague/index.vue
+ */
 export function switchCustomLeagueApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/gamecustomleague/switchactive', data);
 }

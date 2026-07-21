@@ -3,6 +3,11 @@ import type { CloudListResult } from '#/types/operation-manage';
 import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
+/**
+ * 将数组或云后台列表响应归一化为 Items + Pagination 结构
+ * @param data 原始数组或 CloudListResult 响应
+ * @returns 含 Items 数组与 Pagination.MaxCount 的标准列表结果
+ */
 function toListResult(
   data:
     | Array<Record<string, unknown>>
@@ -22,6 +27,13 @@ function toListResult(
   };
 }
 
+/**
+ * 查询包体列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchPackageListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>('/backend/package/list', {
@@ -30,6 +42,13 @@ export function fetchPackageListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询渠道列表（含分页与家长/资源扩展字段）
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchChannelListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>('/backend/channel/list', {
@@ -38,6 +57,13 @@ export function fetchChannelListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询域名列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchDomainListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>('/backend/domain/list', {
@@ -46,7 +72,13 @@ export function fetchDomainListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
-/** 单个域名启用/停用 */
+/**
+ * 切换单个域名启用/停用状态。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateDomainInUseApi(data: {
   Domain: string;
   DomainType: number;
@@ -56,7 +88,13 @@ export function updateDomainInUseApi(data: {
   return requestClient.put('/backend/domain/inused', data);
 }
 
-/** 批量域名启用/停用 */
+/**
+ * 批量切换域名启用/停用状态。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为接口响应数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function batchUpdateDomainInUseApi(data: {
   DomainIds: Array<number | string>;
   DomainType: number;
@@ -65,7 +103,13 @@ export function batchUpdateDomainInUseApi(data: {
   return requestClient.put('/backend/domain/inusedbatch', data);
 }
 
-/** 单个或批量编辑域名所属产品与备注 */
+/**
+ * 编辑域名所属包体与备注。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateDomainApi(data: {
   Id: Array<number | string> | number | string;
   PackageId: string;
@@ -74,6 +118,13 @@ export function updateDomainApi(data: {
   return requestClient.put('/backend/domain/edit', data);
 }
 
+/**
+ * 查询场馆/钱包费率开关列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchSiteFeeSwitchListApi(query: Record<string, unknown>) {
   return requestClient
     .get<
@@ -86,6 +137,13 @@ export function fetchSiteFeeSwitchListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询充值类型列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchRechargeTypeListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -95,6 +153,13 @@ export function fetchRechargeTypeListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询提现账户列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchWithdrawAccountListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -104,7 +169,12 @@ export function fetchWithdrawAccountListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
-/** 提现方式配置列表 */
+/**
+ * 查询提现方式配置列表。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchWithdrawPayTypeConfigApi() {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -113,7 +183,14 @@ export function fetchWithdrawPayTypeConfigApi() {
     .then(toListResult);
 }
 
-/** 保存提现方式手续费、区间、开关等配置 */
+/**
+ * 保存提现方式手续费、区间与开关。
+ *
+ * @param id 记录 ID
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateWithdrawPayTypeConfigApi(
   id: number | string,
   data: Record<string, unknown>,
@@ -121,12 +198,24 @@ export function updateWithdrawPayTypeConfigApi(
   return requestClient.put(`/backend/withdrawpaytypeconfig/${id}`, data);
 }
 
-/** 调整提现方式显示顺序 */
+/**
+ * 调整提现方式显示顺序。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function sortWithdrawPayTypeConfigApi(data: { Ids: string }) {
   return requestClient.put('/backend/withdrawpaytypeconfig/exchange', data);
 }
 
-/** 提现账户脚本状态 */
+/**
+ * 查询提现账户脚本运行状态。
+ *
+ * @param ids ID 列表（逗号分隔）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchWithdrawAccountStatusApi(ids: string) {
   return requestClient.get<Array<{ Id: number | string; Status: boolean }>>(
     '/backend/agentwithdrawaccount/statuslist',
@@ -134,7 +223,13 @@ export function fetchWithdrawAccountStatusApi(ids: string) {
   );
 }
 
-/** 提现方式可选玩家层级 */
+/**
+ * 查询提现方式可选玩家层级。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchWithdrawPlayerLevelListApi(
   query: Record<string, unknown> = {},
 ) {
@@ -148,12 +243,24 @@ export function fetchWithdrawPlayerLevelListApi(
     .then(toListResult);
 }
 
-/** 提现账户轮询权重或脚本模式 */
+/**
+ * 更新提现账户轮询权重或脚本模式。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateWithdrawAccountRoundApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/agentwithdrawaccount/round', data);
 }
 
-/** 刷新三方提现账户余额 */
+/**
+ * 刷新三方提现账户余额。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function refreshWithdrawAccountBalanceApi(data: {
   Ids: number | string;
 }) {
@@ -163,6 +270,13 @@ export function refreshWithdrawAccountBalanceApi(data: {
   );
 }
 
+/**
+ * 查询VIP等级列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchVipLevelListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -172,6 +286,13 @@ export function fetchVipLevelListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询短信服务列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchMessageServiceListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -181,6 +302,13 @@ export function fetchMessageServiceListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询广告模板列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchAdTemplateListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -190,6 +318,13 @@ export function fetchAdTemplateListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询无尽Admin列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchEndlessAdminListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -199,6 +334,13 @@ export function fetchEndlessAdminListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询返水方案列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchBackWaterSchemeListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -208,6 +350,13 @@ export function fetchBackWaterSchemeListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询返水记录列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchBackWaterRecordListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -217,6 +366,13 @@ export function fetchBackWaterRecordListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询iOS签名列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchIosSignatureListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -226,6 +382,13 @@ export function fetchIosSignatureListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询iOS签名Log列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchIosSignatureLogListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -235,6 +398,13 @@ export function fetchIosSignatureLogListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询企业签iOS包体列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchEnterpriseIosPackageListApi(
   query: Record<string, unknown>,
 ) {
@@ -246,6 +416,13 @@ export function fetchEnterpriseIosPackageListApi(
     .then(toListResult);
 }
 
+/**
+ * 查询手机号屏蔽列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchPhoneBlockListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -255,6 +432,13 @@ export function fetchPhoneBlockListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询币商客服客户列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchCoinDealerCustomerListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -264,6 +448,13 @@ export function fetchCoinDealerCustomerListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询充值通道列表（保留后端元数据字段）
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchRechargeChannelListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -273,6 +464,13 @@ export function fetchRechargeChannelListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询充值日汇总。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchRechargeDailyTotalApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -282,6 +480,13 @@ export function fetchRechargeDailyTotalApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询三方提现列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchThirdWithdrawListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -291,6 +496,13 @@ export function fetchThirdWithdrawListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询提现支付类型列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchWithdrawPayTypeListApi(
   query: Record<string, unknown> = {},
 ) {
@@ -302,6 +514,13 @@ export function fetchWithdrawPayTypeListApi(
     .then(toListResult);
 }
 
+/**
+ * 查询返水审核列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchBackWaterReviewListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -311,6 +530,13 @@ export function fetchBackWaterReviewListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询短信月度列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchSmsMonthListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -320,6 +546,13 @@ export function fetchSmsMonthListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询短信渠道配置列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchSmsChannelConfigListApi(
   query: Record<string, unknown> = {},
 ) {
@@ -331,6 +564,13 @@ export function fetchSmsChannelConfigListApi(
     .then(toListResult);
 }
 
+/**
+ * 查询注册验证码明细列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchRegOtpDetailListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -340,6 +580,13 @@ export function fetchRegOtpDetailListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询存款召回列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchDepositRecallListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -349,6 +596,13 @@ export function fetchDepositRecallListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询子推广渠道列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchSonPromoterChannelListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -358,6 +612,13 @@ export function fetchSonPromoterChannelListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询子游戏维护列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchSubGameMaintainListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -367,6 +628,13 @@ export function fetchSubGameMaintainListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询VIP虚拟奖励列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchVipVirtualPrizeListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -376,6 +644,13 @@ export function fetchVipVirtualPrizeListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 查询VIP图标模板列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchVipIconTemplateListApi(
   query: Record<string, unknown> = {},
 ) {
@@ -395,12 +670,24 @@ export function fetchVipIconTemplateListApi(
     });
 }
 
-/** 场馆/钱包开关与维护编辑 */
+/**
+ * 编辑场馆/钱包开关与维护状态。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateSiteFeeSwitchApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/apifeeswitch/switch', data);
 }
 
-/** 充值通道上下架 */
+/**
+ * 充值通道上下架。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function shelfRechargeTypeApi(data: {
   Id: number | string;
   OnShelf: number;
@@ -408,7 +695,13 @@ export function shelfRechargeTypeApi(data: {
   return requestClient.put('/backend/thirdrechargetypeagentconfig/shelf', data);
 }
 
-/** 已使用通道开启/关闭 */
+/**
+ * 切换充值通道启用状态。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function switchRechargeTypeUsedApi(data: {
   Id: number | string;
   InUsed: number;
@@ -416,17 +709,35 @@ export function switchRechargeTypeUsedApi(data: {
   return requestClient.put('/backend/thirdrechargetypeagentconfig/used', data);
 }
 
-/** 区号屏蔽开关 */
+/**
+ * 更新手机号区号屏蔽开关。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updatePhoneBlockApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/phonecountrycode/block', data);
 }
 
-/** 充值通道编辑（别名/档位/开放人群等） */
+/**
+ * 编辑充值通道（别名/档位/开放人群等）
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateRechargeTypeApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/thirdrechargetypeagentconfig/', data);
 }
 
-/** 充值通道密钥参数 */
+/**
+ * 更新充值通道密钥参数。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateRechargeTypeSecretApi(data: {
   Id: number | string;
   Params: string;
@@ -437,12 +748,24 @@ export function updateRechargeTypeSecretApi(data: {
   );
 }
 
-/** 子游戏编辑/开关 */
+/**
+ * 编辑子游戏开关与维护信息。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateSubGameMaintainApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/subgamemaintain/updatelist', data);
 }
 
-/** 子游戏排序（上移） */
+/**
+ * 子游戏排序（上移）
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateSubGameSortApi(data: {
   GameId: number | string;
   SubGameId: number | string;
@@ -450,7 +773,13 @@ export function updateSubGameSortApi(data: {
   return requestClient.post('/backend/subgamemaintain/updatesortid', data);
 }
 
-/** 子游戏批量编辑标签或开关 */
+/**
+ * 批量编辑子游戏标签或开关。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为接口响应数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function batchUpdateSubGameApi(data: {
   IsOpen: number | string;
   SubGameIds: string;
@@ -460,7 +789,13 @@ export function batchUpdateSubGameApi(data: {
   return requestClient.post('/backend/subgamemaintain/batchedit', data);
 }
 
-/** 提现账户启用开关 */
+/**
+ * 切换提现账户启用开关。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function switchWithdrawAccountApi(data: {
   Id: number | string;
   Switch: number;
@@ -468,35 +803,81 @@ export function switchWithdrawAccountApi(data: {
   return requestClient.put('/backend/agentwithdrawaccount/switch', data);
 }
 
+/**
+ * 查询提现账户明细。
+ *
+ * @param id 记录 ID
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchWithdrawAccountDetailApi(id: number | string) {
   return requestClient.get<Record<string, unknown>>(
     `/backend/agentwithdrawaccount/${id}`,
   );
 }
 
+/**
+ * 新增提现账户。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为新建记录或操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function createWithdrawAccountApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/agentwithdrawaccount/', data);
 }
 
+/**
+ * 更新提现账户。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateWithdrawAccountApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/agentwithdrawaccount/', data);
 }
 
+/**
+ * 删除提现账户。
+ *
+ * @param id 记录 ID
+ * @returns Promise，resolve 为删除操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function deleteWithdrawAccountApi(id: number | string) {
   return requestClient.delete(`/backend/agentwithdrawaccount/${id}`);
 }
 
-/** 兑换码生成 */
+/**
+ * 生成充值兑换码。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为新建记录或操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function createRechargeVoucherApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/agentrechargeevoucherconfig', data);
 }
 
-/** VIP 虚拟等级编辑 */
+/**
+ * 编辑 VIP 虚拟等级奖励。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateVipVirtualPrizeApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/viplevelconfig/virtualprize', data);
 }
 
-/** 返水审核 */
+/**
+ * 审核玩家返水记录。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function reviewBackWaterApi(data: {
   Approve: number;
   Ids: number | string;
@@ -505,7 +886,13 @@ export function reviewBackWaterApi(data: {
   return requestClient.post('/backend/playerbackwaterrecord/review', data);
 }
 
-/** 三方代付上下架 */
+/**
+ * 三方代付通道上下架。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function shelfThirdWithdrawApi(data: {
   Id: number | string;
   OnShelf: number;
@@ -513,29 +900,59 @@ export function shelfThirdWithdrawApi(data: {
   return requestClient.put('/backend/thirdwithdrawtypeagentconfig/shelf', data);
 }
 
-/** VIP 保级天数 */
+/**
+ * 查询 VIP 保级天数。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchVipRelegationDayApi() {
   return requestClient.get<{ RelegationDay?: number }>(
     '/backend/viplevelconfig/getrelegationday',
   );
 }
 
+/**
+ * 设置 VIP 保级天数。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateVipRelegationDayApi(data: { RelegationDay: number }) {
   return requestClient.put('/backend/viplevelconfig/setrelegationday/', data);
 }
 
-/** VIP 升级模式 */
+/**
+ * 查询 VIP 升级模式。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchVipLevelModeApi() {
   return requestClient.get<{ VipLevelMode?: number }>(
     '/backend/viplevelconfig/getviplevelmode',
   );
 }
 
+/**
+ * 设置 VIP 升级模式。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateVipLevelModeApi(data: { VipLevelMode: number }) {
   return requestClient.put('/backend/viplevelconfig/setviplevelmode/', data);
 }
 
-/** 包体备注 */
+/**
+ * 更新包体备注说明。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updatePackageDescriptionApi(data: {
   Description: string;
   Id: number | string;
@@ -543,29 +960,58 @@ export function updatePackageDescriptionApi(data: {
   return requestClient.put('/backend/package/editdescription', data);
 }
 
-/** 渠道详情 */
+/**
+ * 渠道详情。
+ *
+ * @param id 记录 ID
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchChannelDetailApi(id: number | string) {
   return requestClient.get<Record<string, unknown>>(`/backend/channel/${id}`);
 }
 
-/** 渠道邀请码 */
+/**
+ * 编辑渠道邀请码。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateChannelInviteCodeApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/channel/editinvitationcode', data);
 }
 
-/** VIP 升级系数详情 */
+/**
+ * 查询 VIP 升级系数详情。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchVipCoefficientDetailApi() {
   return requestClient.get<Record<string, unknown>>(
     '/backend/vipcoefficientconfig/detail',
   );
 }
 
-/** VIP 升级系数保存 */
+/**
+ * 保存 VIP 升级系数。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateVipCoefficientApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/vipcoefficientconfig/', data);
 }
 
-/** 三方代付密钥参数 */
+/**
+ * 更新三方代付密钥参数。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateThirdWithdrawSecretApi(data: {
   Id: number | string;
   Params: string;
@@ -576,12 +1022,24 @@ export function updateThirdWithdrawSecretApi(data: {
   );
 }
 
-/** 三方代付通道编辑 */
+/**
+ * 编辑三方代付通道。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateThirdWithdrawApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/thirdwithdrawtypeagentconfig/', data);
 }
 
-/** 手动返水查询 */
+/**
+ * 查询手动返水可发放列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchBackWaterHandListApi(query: Record<string, unknown>) {
   return requestClient.get<Record<string, unknown>>(
     '/backend/playerbackwaterrecord/waterlist',
@@ -589,7 +1047,13 @@ export function fetchBackWaterHandListApi(query: Record<string, unknown>) {
   );
 }
 
-/** 手动返水发放 */
+/**
+ * 手动发放玩家返水。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为新建记录或操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function createBackWaterHandApi(data: {
   Desc?: string;
   PlayerId: number | string;
@@ -599,7 +1063,13 @@ export function createBackWaterHandApi(data: {
   return requestClient.post('/backend/playerbackwaterrecord/backwater', data);
 }
 
-/** VIP 图标方案详情 */
+/**
+ * 查询 VIP 图标方案详情。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchVipIconsApi(data: { TemplateId: number | string }) {
   return requestClient.post<Record<string, unknown>[]>(
     '/backend/viplevelconfig/listicons/',
@@ -607,12 +1077,24 @@ export function fetchVipIconsApi(data: { TemplateId: number | string }) {
   );
 }
 
-/** 新增 VIP 图标方案 */
+/**
+ * 新增 VIP 图标方案。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为新建记录或操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function addVipIconsTemplateApi(data: { TemplateName: string }) {
   return requestClient.put('/backend/viplevelconfig/addiconstemplate/', data);
 }
 
-/** 重命名 VIP 图标方案 */
+/**
+ * 重命名 VIP 图标方案。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateVipIconsTemplateNameApi(data: {
   TemplateId: number | string;
   TemplateName: string;
@@ -620,7 +1102,13 @@ export function updateVipIconsTemplateNameApi(data: {
   return requestClient.put('/backend/viplevelconfig/iconstemplatename/', data);
 }
 
-/** 删除 VIP 图标方案 */
+/**
+ * 删除 VIP 图标方案。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为删除操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function deleteVipIconsTemplateApi(data: {
   TemplateId: number | string;
 }) {
@@ -630,7 +1118,13 @@ export function deleteVipIconsTemplateApi(data: {
   );
 }
 
-/** 恢复默认 VIP 图标方案 */
+/**
+ * 恢复 VIP 图标方案为默认。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function resetVipIconsTemplateApi(data: {
   TemplateId: number | string;
 }) {
@@ -640,7 +1134,13 @@ export function resetVipIconsTemplateApi(data: {
   );
 }
 
-/** 返水方案重命名 */
+/**
+ * 重命名返水方案。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateBackWaterSchemeNameApi(data: {
   Id: number | string;
   Name: string;
@@ -648,7 +1148,13 @@ export function updateBackWaterSchemeNameApi(data: {
   return requestClient.put('/backend/playerbackwaterscheme/name', data);
 }
 
-/** 返水方案详情 */
+/**
+ * 查询返水方案详情。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchBackWaterSchemeDetailApi(query: { Id: number | string }) {
   return requestClient.get<Record<string, unknown>>(
     '/backend/playerbackwaterscheme/scheme',
@@ -656,7 +1162,13 @@ export function fetchBackWaterSchemeDetailApi(query: { Id: number | string }) {
   );
 }
 
-/** 返水方案规则保存 */
+/**
+ * 保存返水方案规则文案。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateBackWaterSchemeRuleApi(data: {
   Id: number | string;
   LangText: string;
@@ -665,26 +1177,49 @@ export function updateBackWaterSchemeRuleApi(data: {
   return requestClient.put('/backend/playerbackwaterscheme/rule', data);
 }
 
-/** 新增返水方案 */
+/**
+ * 新增返水方案。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为新建记录或操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function createBackWaterSchemeApi(data: {
   LangGroupId: number | string;
 }) {
   return requestClient.post('/backend/playerbackwaterscheme/', data);
 }
 
-/** 删除返水方案（旧站为 GET） */
+/**
+ * 删除返水方案。
+ *
+ * @param id 记录 ID
+ * @returns Promise，resolve 为删除操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function deleteBackWaterSchemeApi(id: number | string) {
   return requestClient.get(`/backend/playerbackwaterscheme/${id}`);
 }
 
-/** 出款银行列表 */
+/**
+ * 查询出款银行列表。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchWithdrawBankListApi() {
   return requestClient.get<CloudListResult<Record<string, unknown>>>(
     '/backend/bankconfig/list',
   );
 }
 
-/** 出款银行开关 */
+/**
+ * 切换出款银行开关。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateWithdrawBankSwitchApi(data: {
   IsOpen: number;
   Key: number | string;
@@ -692,7 +1227,13 @@ export function updateWithdrawBankSwitchApi(data: {
   return requestClient.put(`/backend/bankconfig/${data.Key}`, data);
 }
 
-/** 出款银行批量开关 */
+/**
+ * 批量切换出款银行开关。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为接口响应数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function batchUpdateWithdrawBankApi(data: {
   IsOpen: number;
   Keys: string;
@@ -700,12 +1241,24 @@ export function batchUpdateWithdrawBankApi(data: {
   return requestClient.post('/backend/bankconfig/batchedit', data);
 }
 
-/** VIP 图标行保存 */
+/**
+ * 保存 VIP 图标行配置。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateVipIconsApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/viplevelconfig/icons/', data);
 }
 
-/** 热门子游戏（连中大奖） */
+/**
+ * 查询热门子游戏（连中大奖展示用）
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchHotSubGameListApi(query: Record<string, unknown> = {}) {
   return requestClient.get<{
     Items?: Array<{ Name?: string; SubGameId?: number | string }>;
@@ -714,28 +1267,59 @@ export function fetchHotSubGameListApi(query: Record<string, unknown> = {}) {
   });
 }
 
-/** 充值通道堵塞提示配置 */
+/**
+ * 查询充值通道堵塞提示配置。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchRechargeFailTipConfigApi() {
   return requestClient.get<Record<string, unknown>>(
     '/backend/rechargefailtipconfig',
   );
 }
 
+/**
+ * 保存充值通道堵塞提示配置。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateRechargeFailTipConfigApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/rechargefailtipconfig', data);
 }
 
-/** 可充值姓名数量配置 */
+/**
+ * 查询可充值姓名数量配置。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchRechargeNameConfigApi() {
   return requestClient.get<{ RechargeNameConfig?: string }>(
     '/backend/rechargenameconfig/',
   );
 }
 
+/**
+ * 设置可充值姓名数量上限。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateRechargeNameConfigApi(data: { RechargeNameNum: number }) {
   return requestClient.put('/backend/rechargenameconfig/', data);
 }
 
+/**
+ * 查询充值姓名玩家列表。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchRechargeNamePlayerListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -745,28 +1329,59 @@ export function fetchRechargeNamePlayerListApi(query: Record<string, unknown>) {
     .then(toListResult);
 }
 
+/**
+ * 添加充值姓名玩家。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为新建记录或操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function addRechargeNamePlayerApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/rechargenameconfig/addplayer', data);
 }
 
+/**
+ * 删除充值姓名玩家。
+ *
+ * @param id 记录 ID
+ * @returns Promise，resolve 为删除操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function deleteRechargeNamePlayerApi(id: number | string) {
   return requestClient.delete(`/backend/rechargenameconfig/delplayer/${id}`);
 }
 
-/** 首存最低限制 */
+/**
+ * 查询首存最低金额限制。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchMinFirstRechargeConfigApi() {
   return requestClient.get<{ MinFirstRechargeConfig?: number }>(
     '/backend/minfirstrechargeconfig',
   );
 }
 
+/**
+ * 设置首存最低金额限制。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateMinFirstRechargeConfigApi(data: {
   MinFirstRechargeConfig: number;
 }) {
   return requestClient.put('/backend/minfirstrechargeconfig', data);
 }
 
-/** 充值取消设置 */
+/**
+ * 查询充值取消次数与原因开关。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchRechargeCancelConfigApi() {
   return requestClient.get<{
     CancelReasonSwitch?: number;
@@ -774,6 +1389,12 @@ export function fetchRechargeCancelConfigApi() {
   }>('/backend/rechargenumberconfig/');
 }
 
+/**
+ * 查询充值取消提示文案配置。
+ *
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function fetchRechargeCancelTipConfigApi() {
   return requestClient.get<{
     Item?: Array<Record<string, unknown>>;
@@ -782,9 +1403,17 @@ export function fetchRechargeCancelTipConfigApi() {
   }>('/backend/golobalgametipconfig/');
 }
 
+/**
+ * 保存充值取消次数与原因开关。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
+ */
 export function updateRechargeCancelConfigApi(data: {
   CancelReasonSwitch: number;
   MaxCancelPerDay: number;
 }) {
   return requestClient.put('/backend/rechargenumberconfig/', data);
 }
+

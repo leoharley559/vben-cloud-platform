@@ -15,7 +15,15 @@ function normalizeListPayload(data: RawListPayload | null | undefined) {
   return toListResult(data ?? null);
 }
 
-/** 玩家统计报表 GET /backend/operation/playerstatistics */
+/**
+ * 玩家统计报表列表（玩家统计页明细/汇总表格）
+ *
+ * 接口可能返回 null 或非对象 payload，经 `normalizeListPayload` 归一化为稳定列表结构。
+ *
+ * @param query 筛选条件（渠道、时间、分页等；`list`/`total` 模式由页面组装）
+ * @returns Items / Pagination / Total / MoreItems 等标准列表结构
+ * @see views/dataClose/playerStatistics/index.vue
+ */
 export function fetchPlayerStatisticsListApi(query: Record<string, unknown>) {
   return requestClient
     .get<RawListPayload>('/backend/operation/playerstatistics', {
@@ -24,7 +32,15 @@ export function fetchPlayerStatisticsListApi(query: Record<string, unknown>) {
     .then(normalizeListPayload);
 }
 
-/** 玩家统计报表安全 CSV 导出 PageId=46 */
+/**
+ * 玩家统计报表安全 CSV 导出（PageId=46）
+ *
+ * 异步导出任务，返回任务 Id / Status / Remark，非直接下载文件。
+ *
+ * @param query 与列表页一致的筛选参数
+ * @returns 导出任务 Id、Status、Remark
+ * @see views/dataClose/playerStatistics/index.vue
+ */
 export function exportPlayerStatisticsCsvApi(query: Record<string, unknown>) {
   return requestClient.get<{
     Id?: number | null;
@@ -35,7 +51,13 @@ export function exportPlayerStatisticsCsvApi(query: Record<string, unknown>) {
   });
 }
 
-/** 玩家输赢 GET /backend/operation/userstatistics */
+/**
+ * 玩家输赢报表列表（用户输赢页）
+ *
+ * @param query 筛选条件；页面区分汇总/明细时传不同参数（如 IsTotal）
+ * @returns 标准列表结构 Items + Pagination
+ * @see views/dataClose/userWinLoss/index.vue
+ */
 export function fetchUserWinLossListApi(query: Record<string, unknown>) {
   return requestClient
     .get<RawListPayload>('/backend/operation/userstatistics', {
@@ -44,7 +66,13 @@ export function fetchUserWinLossListApi(query: Record<string, unknown>) {
     .then(normalizeListPayload);
 }
 
-/** 玩家分析列表 GET /backend/playeranalysis/playerlist */
+/**
+ * 玩家分析列表（玩家分析页主体表格）
+ *
+ * @param query 筛选条件；页面用不同查询模式（如 buildQuery(1)/buildQuery(2)）区分列表类型
+ * @returns 标准列表结构 Items + Pagination
+ * @see views/dataClose/playerAnalyze/index.vue
+ */
 export function fetchPlayerAnalyzeListApi(query: Record<string, unknown>) {
   return requestClient
     .get<RawListPayload>('/backend/playeranalysis/playerlist', {
@@ -53,7 +81,13 @@ export function fetchPlayerAnalyzeListApi(query: Record<string, unknown>) {
     .then(normalizeListPayload);
 }
 
-/** 玩家分析状态操作 PUT /backend/playerext/ */
+/**
+ * 玩家分析状态操作（玩家分析页启用/禁用/备注）
+ *
+ * @param data PlayerId 玩家 ID；Status 目标状态；Remark 可选备注
+ * @returns 接口原始响应
+ * @see views/dataClose/playerAnalyze/index.vue
+ */
 export function updatePlayerAnalyzeStatusApi(data: {
   PlayerId: number | string;
   Remark?: string;

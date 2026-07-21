@@ -3,9 +3,12 @@ import type { PackageAnalyticsConfig } from './package-settings';
 import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
+/** 包体管理模块记录 Id */
 export type PackageManageId = number | string;
+/** 上架平台类型 */
 export type ShelfPlatform = 'android' | 'ios';
 
+/** 包体管理列表响应结构 */
 export interface PackageManageListResult<T = Record<string, unknown>> {
   Items?: T[];
   MoreItems?: Record<string, unknown>;
@@ -16,6 +19,13 @@ export interface PackageManageListResult<T = Record<string, unknown>> {
   };
 }
 
+/**
+ * 查询企业签包体Games。
+ *
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/packageManage
+ */
 export function fetchEnterprisePackageGamesApi(
   query: Record<string, unknown>,
 ) {
@@ -25,6 +35,13 @@ export function fetchEnterprisePackageGamesApi(
   );
 }
 
+/**
+ * 查询企业签通道。
+ *
+ * @param PackageId 包体 ID
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/packageManage
+ */
 export function fetchEnterpriseChannelsApi(PackageId: PackageManageId) {
   return requestClient.get<Array<Record<string, unknown>>>(
     '/backend/channel/listall',
@@ -32,6 +49,13 @@ export function fetchEnterpriseChannelsApi(PackageId: PackageManageId) {
   );
 }
 
+/**
+ * 绑定企业签渠道。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/packageManage
+ */
 export function bindEnterpriseChannelApi(data: {
   ChannelId: PackageManageId;
   PackageId: PackageManageId;
@@ -39,10 +63,24 @@ export function bindEnterpriseChannelApi(data: {
   return requestClient.post('/backend/package/bindchannel', data);
 }
 
+/**
+ * 解绑企业签渠道。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/packageManage
+ */
 export function unbindEnterpriseChannelApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/package/', data);
 }
 
+/**
+ * 查询企业签步骤。
+ *
+ * @param PackageId 包体 ID
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/packageManage
+ */
 export function fetchEnterpriseStepApi(PackageId: PackageManageId) {
   return requestClient.get<{ Items?: Record<string, unknown> }>(
     '/backend/packagelinkios/iospackversion',
@@ -50,6 +88,13 @@ export function fetchEnterpriseStepApi(PackageId: PackageManageId) {
   );
 }
 
+/**
+ * 查询企业签包体列表。
+ *
+ * @param PackageId 包体 ID
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/packageManage
+ */
 export function fetchEnterprisePackageListApi(PackageId: PackageManageId) {
   return requestClient.get<PackageManageListResult>(
     '/backend/packagelinkios/listpackageiosdetail',
@@ -57,6 +102,13 @@ export function fetchEnterprisePackageListApi(PackageId: PackageManageId) {
   );
 }
 
+/**
+ * 新增企业签包体。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为新建记录或操作结果
+ * @see views/gameManage/packageManage
+ */
 export function createEnterprisePackageApi(data: {
   IosName: string;
   IosUploadUrl: string;
@@ -65,6 +117,13 @@ export function createEnterprisePackageApi(data: {
   return requestClient.post('/backend/packagelinkios/uploadsignpackage', data);
 }
 
+/**
+ * 更新企业签包体。
+ *
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/packageManage
+ */
 export function updateEnterprisePackageApi(data: {
   Id: PackageManageId;
   IosName: string;
@@ -73,15 +132,36 @@ export function updateEnterprisePackageApi(data: {
   return requestClient.put('/backend/packagelinkios/reuploadsignpackage', data);
 }
 
+/**
+ * 删除企业签包体。
+ *
+ * @param id 记录 ID
+ * @returns Promise，resolve 为删除操作结果
+ * @see views/gameManage/packageManage
+ */
 export function deleteEnterprisePackageApi(id: PackageManageId) {
   return requestClient.delete(`/backend/packagelinkios/${id}`);
 }
 
+/**
+ * 按平台返回上架包配置接口根路径。
+ *
+ * @param platform `ios` → iosappstoredata；否则 androidappstoreconfig
+ * @returns `/backend/...` 根路径
+ */
 const shelfPath = (platform: ShelfPlatform) =>
   platform === 'ios'
     ? '/backend/iosappstoredata'
     : '/backend/androidappstoreconfig';
 
+/**
+ * 查询上架包体列表。
+ *
+ * @param platform 上架平台（android | ios）
+ * @param query 查询条件（分页、筛选等）
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/packageManage
+ */
 export function fetchShelfPackageListApi(
   platform: ShelfPlatform,
   query: Record<string, unknown>,
@@ -92,6 +172,14 @@ export function fetchShelfPackageListApi(
   );
 }
 
+/**
+ * 新增上架包体。
+ *
+ * @param platform 上架平台（android | ios）
+ * @param data 提交数据
+ * @returns Promise，resolve 为新建记录或操作结果
+ * @see views/gameManage/packageManage
+ */
 export function createShelfPackageApi(
   platform: ShelfPlatform,
   data: Record<string, unknown>,
@@ -99,6 +187,14 @@ export function createShelfPackageApi(
   return requestClient.post(shelfPath(platform), data);
 }
 
+/**
+ * 更新上架包体。
+ *
+ * @param platform 上架平台（android | ios）
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/packageManage
+ */
 export function updateShelfPackageApi(
   platform: ShelfPlatform,
   data: Record<string, unknown>,
@@ -106,6 +202,14 @@ export function updateShelfPackageApi(
   return requestClient.put(shelfPath(platform), data);
 }
 
+/**
+ * 删除上架包体。
+ *
+ * @param platform 上架平台（android | ios）
+ * @param id 记录 ID
+ * @returns Promise，resolve 为删除操作结果
+ * @see views/gameManage/packageManage
+ */
 export function deleteShelfPackageApi(
   platform: ShelfPlatform,
   id: PackageManageId,
@@ -113,6 +217,14 @@ export function deleteShelfPackageApi(
   return requestClient.delete(`${shelfPath(platform)}/${id}`);
 }
 
+/**
+ * 查询上架统计。
+ *
+ * @param platform 上架平台（android | ios）
+ * @param AppPackageConfigId 应用包配置 ID
+ * @returns Promise，resolve 为接口返回的数据
+ * @see views/gameManage/packageManage
+ */
 export function fetchShelfAnalyticsApi(
   platform: ShelfPlatform,
   AppPackageConfigId: PackageManageId,
@@ -123,9 +235,18 @@ export function fetchShelfAnalyticsApi(
   );
 }
 
+/**
+ * 更新上架统计。
+ *
+ * @param platform 上架平台（android | ios）
+ * @param data 提交数据
+ * @returns Promise，resolve 为更新/操作结果
+ * @see views/gameManage/packageManage
+ */
 export function updateShelfAnalyticsApi(
   platform: ShelfPlatform,
   data: Record<string, unknown>,
 ) {
   return requestClient.put(`${shelfPath(platform)}/analyticinfo`, data);
 }
+

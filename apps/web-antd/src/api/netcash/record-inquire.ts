@@ -25,6 +25,13 @@ function normalizeListResult<T>(
   };
 }
 
+/**
+ * 账变调整记录列表（「记录查询」页调整 Tab）。
+ *
+ * @param query 查询参数（玩家、时间、分页等）
+ * @returns 调整记录 Items、Pagination 及 Total
+ * @see views/netcash/recordInquire/components/record-query-panel.vue
+ */
 export function fetchRecordAdjustListApi(query: RecordQueryBaseQuery) {
   return requestClient
     .get<RecordQueryListResult<RecordAdjustItem>>(
@@ -34,6 +41,13 @@ export function fetchRecordAdjustListApi(query: RecordQueryBaseQuery) {
     .then(normalizeListResult);
 }
 
+/**
+ * 充值记录列表（「记录查询」页充值 Tab）。
+ *
+ * @param query 查询参数（玩家、时间、分页等）
+ * @returns 充值记录 Items、Pagination 及 Total
+ * @see views/netcash/recordInquire/components/record-query-panel.vue
+ */
 export function fetchRecordDepositListApi(query: RecordQueryBaseQuery) {
   return requestClient
     .get<RecordQueryListResult<RecordDepositItem>>(
@@ -43,6 +57,13 @@ export function fetchRecordDepositListApi(query: RecordQueryBaseQuery) {
     .then(normalizeListResult);
 }
 
+/**
+ * 登录记录列表（「记录查询」页登录 Tab）。
+ *
+ * @param query 查询参数（玩家、时间、分页等）
+ * @returns 登录记录 Items、Pagination 及 Total
+ * @see views/netcash/recordInquire/components/record-query-panel.vue
+ */
 export function fetchRecordLoginListApi(query: RecordQueryBaseQuery) {
   return requestClient
     .get<RecordQueryListResult<RecordLoginItem>>(
@@ -52,6 +73,13 @@ export function fetchRecordLoginListApi(query: RecordQueryBaseQuery) {
     .then(normalizeListResult);
 }
 
+/**
+ * 提现记录列表（「记录查询」页提现 Tab）。
+ *
+ * @param query 查询参数（玩家、时间、分页等）
+ * @returns 提现记录 Items、Pagination 及 Total
+ * @see views/netcash/recordInquire/components/record-query-panel.vue
+ */
 export function fetchRecordWithdrawListApi(query: RecordQueryBaseQuery) {
   return requestClient
     .get<RecordQueryListResult<RecordWithdrawItem>>(
@@ -61,6 +89,13 @@ export function fetchRecordWithdrawListApi(query: RecordQueryBaseQuery) {
     .then(normalizeListResult);
 }
 
+/**
+ * 红利记录列表（「记录查询」页红利 Tab）。
+ *
+ * @param query 查询参数（玩家、时间、分页等）
+ * @returns 红利记录 Items、Pagination 及 Total
+ * @see views/netcash/recordInquire/components/record-query-panel.vue
+ */
 export function fetchRecordBonusListApi(query: RecordQueryBaseQuery) {
   return requestClient
     .get<RecordQueryListResult<RecordDepositItem>>(
@@ -70,6 +105,13 @@ export function fetchRecordBonusListApi(query: RecordQueryBaseQuery) {
     .then(normalizeListResult);
 }
 
+/**
+ * 返水记录列表（「记录查询」页返水 Tab）。
+ *
+ * @param query 查询参数（玩家、时间、分页等）
+ * @returns 返水记录 Items、Pagination 及 Total
+ * @see views/netcash/recordInquire/components/record-query-panel.vue
+ */
 export function fetchRecordBackwaterListApi(query: RecordQueryBaseQuery) {
   return requestClient
     .get<RecordQueryListResult<RecordBackwaterItem>>(
@@ -79,6 +121,13 @@ export function fetchRecordBackwaterListApi(query: RecordQueryBaseQuery) {
     .then(normalizeListResult);
 }
 
+/**
+ * 游戏记录列表（「记录查询」页游戏 Tab）。
+ *
+ * @param query 查询参数（玩家、场馆、时间、分页等）
+ * @returns 游戏记录 Items、Pagination 及 Total
+ * @see views/netcash/recordInquire/components/record-query-panel.vue
+ */
 export function fetchRecordGameListApi(query: RecordQueryBaseQuery) {
   return requestClient
     .get<RecordQueryListResult<RecordGameItem>>(
@@ -88,6 +137,13 @@ export function fetchRecordGameListApi(query: RecordQueryBaseQuery) {
     .then(normalizeListResult);
 }
 
+/**
+ * 红利明细列表（「记录查询」页红利详情子表）。
+ *
+ * @param query 查询参数（玩家、时间、分页等）
+ * @returns 红利明细 Items、Pagination 及 Total
+ * @see views/netcash/recordInquire/components/record-query-panel.vue
+ */
 export function fetchRecordBonusDetailListApi(query: RecordQueryBaseQuery) {
   return requestClient
     .get<RecordQueryListResult<RecordBonusItem>>(
@@ -97,6 +153,13 @@ export function fetchRecordBonusDetailListApi(query: RecordQueryBaseQuery) {
     .then(normalizeListResult);
 }
 
+/**
+ * 净现金流水记录列表（「记录查询」页账变/流水 Tab）。
+ *
+ * @param query 查询参数（代理、类型、时间、分页等）
+ * @returns 流水记录 Items、Pagination 及 Total
+ * @see views/netcash/recordInquire/components/record-query-panel.vue
+ */
 export function fetchRecordTransactionListApi(query: RecordQueryBaseQuery) {
   return requestClient
     .get<RecordQueryListResult<RecordTransactionItem>>(

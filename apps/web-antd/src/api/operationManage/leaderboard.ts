@@ -47,6 +47,13 @@ function normalizeCloudObject<T extends Record<string, unknown>>(
   return record as T;
 }
 
+/**
+ * 分页查询排行榜活动列表。
+ *
+ * @param query 筛选条件及分页参数
+ * @returns 排行榜活动 Items 与 Pagination
+ * @see views/operationalManage/leaderboard/components/leaderboard-active-panel.vue
+ */
 export function fetchLeaderboardListApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -56,24 +63,58 @@ export function fetchLeaderboardListApi(query: Record<string, unknown>) {
     .then((data) => normalizeCloudList<Record<string, unknown>>(data));
 }
 
+/**
+ * 按 ID 获取排行榜活动详情。
+ *
+ * @param id 排行榜活动 ID
+ * @returns 排行榜活动详情对象
+ * @see views/operationalManage/leaderboard/components/leaderboard-upsert-modal.vue
+ */
 export function fetchLeaderboardByIdApi(id: number | string) {
   return requestClient
     .get<Record<string, unknown>>(`/backend/leaderboard/${id}`)
     .then((data) => normalizeCloudObject<Record<string, unknown>>(data));
 }
 
+/**
+ * 新增排行榜活动。
+ *
+ * @param data 排行榜活动表单数据
+ * @returns 接口响应
+ * @see views/operationalManage/leaderboard/components/leaderboard-upsert-modal.vue
+ */
 export function createLeaderboardApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/leaderboard', data);
 }
 
+/**
+ * 编辑排行榜活动。
+ *
+ * @param data 排行榜活动表单数据（含 Id）
+ * @returns 接口响应
+ * @see views/operationalManage/leaderboard/components/leaderboard-upsert-modal.vue
+ */
 export function updateLeaderboardApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/leaderboard', data);
 }
 
+/**
+ * 下架排行榜活动。
+ *
+ * @param id 排行榜活动 ID
+ * @returns 接口响应
+ * @see views/operationalManage/leaderboard/components/leaderboard-active-panel.vue
+ */
 export function offshelfLeaderboardApi(id: number | string) {
   return requestClient.put(`/backend/leaderboard/offshelve/${id}`);
 }
 
+/**
+ * 获取排行榜全局主配置。
+ *
+ * @returns 排行榜全局配置对象
+ * @see views/operationalManage/leaderboard/components/leaderboard-global-config-modal.vue
+ */
 export function fetchLeaderboardMainConfigApi() {
   return requestClient
     .get<Record<string, unknown>>(
@@ -82,6 +123,13 @@ export function fetchLeaderboardMainConfigApi() {
     .then((data) => normalizeCloudObject<Record<string, unknown>>(data));
 }
 
+/**
+ * 更新排行榜全局主配置。
+ *
+ * @param data 全局配置字段
+ * @returns 接口响应
+ * @see views/operationalManage/leaderboard/components/leaderboard-global-config-modal.vue
+ */
 export function updateLeaderboardMainConfigApi(data: Record<string, unknown>) {
   return requestClient.post(
     '/backend/leaderboard/updateleaderboardmainconfig',
@@ -89,10 +137,24 @@ export function updateLeaderboardMainConfigApi(data: Record<string, unknown>) {
   );
 }
 
+/**
+ * 切换排行榜全局主配置开关。
+ *
+ * @returns 接口响应
+ * @see views/operationalManage/leaderboard/components/leaderboard-global-config-modal.vue
+ */
 export function switchLeaderboardMainConfigApi() {
   return requestClient.put('/backend/leaderboard/switchmainconfig');
 }
 
+/**
+ * 分页查询排行榜上榜记录。
+ *
+ * @param query 活动 ID、时间等筛选及分页参数
+ * @returns 上榜记录 Items 与 Pagination
+ * @see views/operationalManage/leaderboard/components/leaderboard-record-panel.vue
+ * @see views/operationalManage/leaderboard/components/leaderboard-rankings-modal.vue
+ */
 export function fetchLeaderboardRecordApi(query: Record<string, unknown>) {
   return requestClient
     .get<CloudListResult<Record<string, unknown>>>(
@@ -102,6 +164,13 @@ export function fetchLeaderboardRecordApi(query: Record<string, unknown>) {
     .then((data) => normalizeCloudList<Record<string, unknown>>(data));
 }
 
+/**
+ * 导出排行榜上榜记录 CSV。
+ *
+ * @param params 与列表一致的筛选参数
+ * @returns 导出任务信息（Id、Status 等）
+ * @see views/operationalManage/leaderboard/components/leaderboard-record-panel.vue
+ */
 export function exportLeaderboardRecordApi(params: Record<string, unknown>) {
   return requestClient.get<{ Id?: number; Remark?: string; Status?: number }>(
     '/backend/leaderboard/recordexport',

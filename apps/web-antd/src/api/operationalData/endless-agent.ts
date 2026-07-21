@@ -2,6 +2,14 @@ import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operational-data';
 import { trimSpace } from '#/utils/string';
 
+/**
+ * 将无限代理接口响应归一为 CloudListResult。
+ *
+ * Items 缺省时为 `[]`；Pagination.MaxCount 优先取接口值，否则用 Items 长度。
+ *
+ * @param data 接口原始响应（Items、Pagination）
+ * @returns 含 Items 及 Pagination.MaxCount 的列表结构
+ */
 function toListResult(data: {
   Items?: Record<string, unknown>[];
   Pagination?: { MaxCount?: number };
@@ -15,6 +23,12 @@ function toListResult(data: {
   } satisfies CloudListResult<Record<string, unknown>>;
 }
 
+/**
+ * 获取无限代理层级查询列表（多层级汇总）。
+ * @param query 查询参数（日期范围、包体筛选等）
+ * @returns Items 无限代理层级行，Pagination.MaxCount 为条目数
+ * @see views/operationalData/endlessAgent/index.vue
+ */
 export async function fetchEndlessAgentMultipleListApi(
   query: Record<string, unknown>,
 ) {
@@ -25,6 +39,12 @@ export async function fetchEndlessAgentMultipleListApi(
   return toListResult(data);
 }
 
+/**
+ * 获取无限代理按时间维度查询列表。
+ * @param query 查询参数（日期范围、包体筛选等）
+ * @returns Items 按时间聚合的无限代理行，Pagination.MaxCount 为条目数
+ * @see views/operationalData/endlessAgent/index.vue
+ */
 export async function fetchEndlessAgentByTimeListApi(
   query: Record<string, unknown>,
 ) {
@@ -35,6 +55,12 @@ export async function fetchEndlessAgentByTimeListApi(
   return toListResult(data);
 }
 
+/**
+ * 获取无限代理按用户明细查询列表。
+ * @param query 查询参数（日期范围、用户/代理筛选等）
+ * @returns Items 用户维度无限代理明细行，Pagination.MaxCount 为条目数
+ * @see views/operationalData/endlessAgent/index.vue
+ */
 export async function fetchEndlessAgentByUserListApi(
   query: Record<string, unknown>,
 ) {
@@ -45,6 +71,11 @@ export async function fetchEndlessAgentByUserListApi(
   return toListResult(data);
 }
 
+/**
+ * 获取无限代理渠道报表列表。
+ * @param query 查询参数（日期范围、渠道筛选等）
+ * @returns Items 无限代理渠道报表行，Pagination.MaxCount 为条目数
+ */
 export async function fetchEndlessChannelReportApi(
   query: Record<string, unknown>,
 ) {

@@ -2,6 +2,14 @@ import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import { trimSpace } from '#/utils/string';
 
+/**
+ * 将助力工单列表响应归一为 CloudListResult。
+ *
+ * 空响应时补默认 Pagination，避免分页组件读取 undefined。
+ *
+ * @param result 接口原始响应
+ * @returns 含 Items 及 Pagination 的列表结构
+ */
 function normalizeListResult(
   result: CloudListResult<Record<string, unknown>> | null | undefined,
 ): CloudListResult<Record<string, unknown>> {
@@ -16,6 +24,12 @@ function normalizeListResult(
   };
 }
 
+/**
+ * 查询助力工单列表
+ * @param query 筛选条件（玩家、状态、时间范围及分页）
+ * @returns 助力工单列表 Items 及 Pagination（空值已规范化）
+ * @see views/operationalManage/helpOrder/components/help-order-panel.vue
+ */
 export async function fetchHelpOrderListApi(query: Record<string, unknown>) {
   const result = await requestClient.get<
     CloudListResult<Record<string, unknown>>
@@ -23,6 +37,12 @@ export async function fetchHelpOrderListApi(query: Record<string, unknown>) {
   return normalizeListResult(result);
 }
 
+/**
+ * 执行助力工单操作并获取协助链接
+ * @param query 操作参数（工单 Id、操作类型等）
+ * @returns 协助链接 Link（无数据时返回空对象）
+ * @see views/operationalManage/helpOrder/components/help-order-panel.vue
+ */
 export async function helpOrderActionApi(query: Record<string, unknown>) {
   const result = await requestClient.get<{ Link?: string }>(
     '/backend/helprecords/help',
@@ -32,8 +52,9 @@ export async function helpOrderActionApi(query: Record<string, unknown>) {
 }
 
 /**
- * 协助链接登录：对齐旧站 LoginByUsername() 无参调用
- * 依赖请求前已写入 HelpLinkKey Cookie / HelpLink 请求头
+ * 协助链接登录（依赖 HelpLinkKey Cookie / HelpLink 请求头）
+ * @returns 登录结果（Account、Nav、Token 等）
+ * @see views/operationalManage/helpOrder/components/help-order-panel.vue
  */
 export async function helpLinkLoginApi() {
   const result = await requestClient.post<{

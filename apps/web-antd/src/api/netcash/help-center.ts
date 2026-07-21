@@ -9,6 +9,13 @@ import type {
 import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
+/**
+ * 帮助中心条目列表（「帮助中心」页主表格）。
+ *
+ * @param query 查询参数（标题、语言组、分页等）
+ * @returns 帮助条目 Items；空响应时返回 `{ Items: [] }`
+ * @see views/netcash/helpCenter/index.vue
+ */
 export function fetchHelpCenterListApi(query: HelpCenterListQuery) {
   return requestClient
     .get<NetcashListResult<HelpCenterItem> | null>('/backend/helpcenter/list', {
@@ -17,6 +24,14 @@ export function fetchHelpCenterListApi(query: HelpCenterListQuery) {
     .then((result) => result ?? { Items: [] });
 }
 
+/**
+ * 解析帮助中心多语言文案 LangText。
+ *
+ * 支持 JSON 字符串、数组，或 `{ [langGroupId]: item }` 对象；解析失败返回空数组。
+ *
+ * @param value 接口返回的 LangText（字符串、数组或对象）
+ * @returns 多语言条目数组，对象形式时会补全 LangGroupId
+ */
 function parseLangText(
   value: HelpCenterItem['LangText'],
 ): HelpCenterLangTextItem[] {
@@ -62,6 +77,13 @@ function serializeHelpCenterPayload(data: HelpCenterItem): HelpCenterItem {
   return payload;
 }
 
+/**
+ * 新增帮助中心条目。
+ *
+ * @param data 帮助条目（含多语言 LangText，提交前自动序列化）
+ * @returns 接口变更结果
+ * @see views/netcash/helpCenter/index.vue
+ */
 export function createHelpCenterApi(data: HelpCenterItem) {
   return requestClient.post<NetcashMutationResult>(
     '/backend/helpcenter',
@@ -69,6 +91,13 @@ export function createHelpCenterApi(data: HelpCenterItem) {
   );
 }
 
+/**
+ * 更新帮助中心条目。
+ *
+ * @param data 帮助条目（含 Id 及待更新字段）
+ * @returns 接口变更结果
+ * @see views/netcash/helpCenter/index.vue
+ */
 export function updateHelpCenterApi(data: HelpCenterItem) {
   return requestClient.put<NetcashMutationResult>(
     '/backend/helpcenter',
@@ -76,12 +105,26 @@ export function updateHelpCenterApi(data: HelpCenterItem) {
   );
 }
 
+/**
+ * 删除帮助中心条目。
+ *
+ * @param id 条目 Id
+ * @returns 接口变更结果
+ * @see views/netcash/helpCenter/index.vue
+ */
 export function deleteHelpCenterApi(id: number | string) {
   return requestClient.delete<NetcashMutationResult>(
     `/backend/helpcenter/${id}`,
   );
 }
 
+/**
+ * 调整帮助中心条目排序（交换两条记录的顺序）。
+ *
+ * @param data Id1、Id2 待交换的两条记录 Id
+ * @returns 接口变更结果
+ * @see views/netcash/helpCenter/index.vue
+ */
 export function sortHelpCenterApi(data: {
   Id1?: number | string;
   Id2?: number | string;
