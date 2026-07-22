@@ -40,7 +40,7 @@ const isProfitMode = computed(() => props.teamType === 2);
 const defaultBegin = dayjs().subtract(30, 'day').startOf('day');
 const defaultEnd = dayjs().endOf('day');
 const loading = ref(false);
-const filterAdminId = ref<number | string>('');
+const filterAdminId = ref<number | string | undefined>('');
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   defaultBegin,
   defaultEnd,
@@ -48,7 +48,27 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 const todayData = ref<TeamDailySummary>({});
 const historySummary = ref<TeamDailySummary>({});
 const rows = ref<TeamDailyHistoryItem[]>([]);
+const rangeSelecting = ref<dayjs.Dayjs>();
 let requestId = 0;
+
+/** 对齐旧站 SearchTypeOne limit-number=31 */
+function disabledDate(current: dayjs.Dayjs) {
+  if (!rangeSelecting.value) return false;
+  const min = rangeSelecting.value.subtract(30, 'day');
+  const max = rangeSelecting.value.add(30, 'day');
+  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
+}
+
+function onCalendarChange(
+  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
+) {
+  const first = dates?.[0];
+  rangeSelecting.value = first
+    ? dayjs.isDayjs(first)
+      ? first
+      : dayjs(first)
+    : undefined;
+}
 
 const teamAccountOptions = computed(() => {
   const source = (projectConfig.value?.ChildAccountTeam || []) as Array<{
@@ -56,16 +76,16 @@ const teamAccountOptions = computed(() => {
     TeamType?: number;
     Username?: string;
   }>;
+  // 利润模式对齐旧站 team-zong：仅 TeamType===2；提现模式展示全部子团队账号
   return source
-    .filter(
-      (item) =>
-        !isProfitMode.value || Number(item.TeamType) === 2,
+    .filter((item) =>
+      isProfitMode.value ? Number(item.TeamType) === 2 : true,
     )
     .map((item) => ({
       label: item.Username || String(item.Id),
       value: item.Id,
     }))
-    .filter((item) => item.value !== undefined);
+    .filter((item) => item.value !== undefined && item.value !== null);
 });
 
 const commissionRate = computed(() => {
@@ -140,10 +160,12 @@ const historyItems = computed(() =>
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    AdminId: filterAdminId.value,
+    // 空选对齐旧站传 ''
+    AdminId: filterAdminId.value ?? '',
     BeginTime: begin?.startOf('day').unix() || defaultBegin.unix(),
     EndTime: end?.endOf('day').unix() || defaultEnd.unix(),
     Page: 1,
+    // 覆盖近 31 日明细；旧站用全局 pageSize 可能导致历史日被截断
     PageSize: 200,
     Sort: '',
     TeamType: props.teamType,
@@ -165,9 +187,15 @@ async function loadData() {
   try {
     const result = await fetchTeamDailyListApi(getQueryParams());
     if (currentRequest !== requestId) return;
-    todayData.value = result.TodayItems;
-    historySummary.value = result.BannerItems;
-    rows.value = result.HistoryItems;
+    todayData.value = result.TodayItems || {};
+    historySummary.value = result.BannerItems || {};
+    rows.value = Array.isArray(result.HistoryItems) ? result.HistoryItems : [];
+  } catch {
+    if (currentRequest === requestId) {
+      todayData.value = {};
+      historySummary.value = {};
+      rows.value = [];
+    }
   } finally {
     if (currentRequest === requestId) loading.value = false;
   }
@@ -283,7 +311,12 @@ onMounted(() => {
               show-search
               style="width: 220px"
             />
-            <DatePicker.RangePicker v-model:value="filterDateRange" />
+            <DatePicker.RangePicker
+              v-model:value="filterDateRange"
+              :disabled-date="disabledDate"
+              @calendar-change="onCalendarChange"
+              @open-change="(open) => !open && (rangeSelecting = undefined)"
+            />
             <Button type="primary" @click="loadData">查询</Button>
             <Button @click="reset">重置</Button>
           </div>

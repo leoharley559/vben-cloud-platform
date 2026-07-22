@@ -48,7 +48,7 @@ import {
   pickBetAmount,
 } from '#/utils/bet-detail';
 import {
-  getLast7DaysToYesterdayRangeSeconds,
+  getLast7CalendarDaysRangeSeconds,
   getYesterdayToTodayRangeSeconds,
 } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -98,9 +98,9 @@ const { projectConfig } = useProjectConfig();
 const canExport = computed(() => checkPermission(12206));
 const canOpenPlayer = computed(() => checkPermission(12207));
 
-/** 全局：昨天→今天；玩家详情：近 7 天→昨天 */
+/** 全局：昨天→今天；玩家详情：近 7 自然日含今天（对齐旧站 getBeforeDateTimestamp(7)～今天） */
 const defaultRange = isPlayerScope.value
-  ? getLast7DaysToYesterdayRangeSeconds()
+  ? getLast7CalendarDaysRangeSeconds()
   : getYesterdayToTodayRangeSeconds();
 const defaultBegin = dayjs.unix(defaultRange.BeginTime);
 const defaultEnd = dayjs.unix(defaultRange.EndTime);

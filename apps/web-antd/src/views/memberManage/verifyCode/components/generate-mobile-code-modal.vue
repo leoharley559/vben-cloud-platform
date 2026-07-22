@@ -74,7 +74,7 @@ async function handleSearchPlayer() {
   searching.value = true;
   try {
     const result = await queryPlayerByAccountApi({
-      LoginAccount: loginAccount.value,
+      LoginAccount: loginAccount.value.toLowerCase().replaceAll(/\s/g, ''),
       PackageName: packageName.value,
     });
     const player = result?.Items?.[0];

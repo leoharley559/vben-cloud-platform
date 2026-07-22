@@ -23,6 +23,7 @@ import {
   sortSportsTutorialApi,
   updateSportsTutorialApi,
 } from '#/api/gameManage/system-setting';
+import { getProjectConfigApi } from '#/api/core/project';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { getServiceImageUrl } from '#/utils/media';
 
@@ -95,13 +96,21 @@ function rowLang(row: TutorialRow) {
 async function loadData() {
   loading.value = true;
   try {
+    if (!cloudStore.projectConfig?.LangGroup?.length) {
+      await getProjectConfigApi().catch(() => undefined);
+    }
     const data = await fetchSportsTutorialListApi(pager);
-    rows.value = Array.isArray(data)
-      ? (data as TutorialRow[])
-      : ((data?.Items || []) as TutorialRow[]);
-    total.value = Array.isArray(data)
-      ? data.length
-      : Number(data?.Pagination?.MaxCount || rows.value.length);
+    const result =
+      data == null
+        ? { Items: [] as TutorialRow[], Pagination: { MaxCount: 0 } }
+        : Array.isArray(data)
+          ? { Items: data as TutorialRow[], Pagination: { MaxCount: data.length } }
+          : {
+              Items: Array.isArray(data.Items) ? (data.Items as TutorialRow[]) : [],
+              Pagination: data.Pagination || { MaxCount: 0 },
+            };
+    rows.value = result.Items;
+    total.value = Number(result.Pagination?.MaxCount || rows.value.length);
   } finally {
     loading.value = false;
   }

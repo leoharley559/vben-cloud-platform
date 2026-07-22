@@ -70,9 +70,21 @@ const defaultTemplate = computed(() => Number(activeId.value) === 1);
 
 async function loadTemplates() {
   const data = await fetchVipIconTemplateListApi();
-  templates.value = Array.isArray(data)
-    ? (data as unknown as Template[])
-    : [];
+  const list = Array.isArray(data) ? data : [];
+  // 方案列表偶发夹带图标字段，按 TemplateId 去重
+  const map = new Map<string, Template>();
+  for (const item of list) {
+    const row = item as Template;
+    if (row?.TemplateId === undefined || row?.TemplateId === null) continue;
+    const key = String(row.TemplateId);
+    if (!map.has(key)) {
+      map.set(key, {
+        TemplateId: row.TemplateId,
+        TemplateName: row.TemplateName || `方案 ${row.TemplateId}`,
+      });
+    }
+  }
+  templates.value = [...map.values()];
   if (!templates.value.some((item) => String(item.TemplateId) === String(activeId.value))) {
     activeId.value = templates.value[0]?.TemplateId || 1;
   }

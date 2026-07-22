@@ -81,12 +81,22 @@ const vipLevel = computed(() =>
   String(route.query.vipLevel ?? savedContext.vipLevel ?? ''),
 );
 const editorKey = ref(0);
+const editorRef = ref<{ buildConfig?: () => BackWaterVipConfig } | null>(null);
 const loading = ref(false);
 const saving = ref(false);
 const scheme = ref<SchemeDetail>({});
 const rows = ref<BackWaterVipConfig[]>([]);
 const resolvedIndex = ref(-1);
 const form = reactive<DisplayConfig>({});
+
+const pageTitle = computed(() => {
+  const name = scheme.value.Name ? `「${scheme.value.Name}」` : '';
+  const vip =
+    form.VipLevel === undefined || form.VipLevel === null
+      ? ''
+      : ` · VIP${form.VipLevel}`;
+  return `新增/编辑返水配置${name}${vip}`;
+});
 
 const rules = {
   DefaultWater: [
@@ -187,7 +197,12 @@ function updateGameConfig(value: BackWaterVipConfig) {
   });
 }
 
+function clearRouteContext() {
+  sessionStorage.removeItem('backWaterAddConfigContext');
+}
+
 function goBack() {
+  clearRouteContext();
   void router.push({
     path: '/gameManage/backWater',
     query: { schemeId: schemeId.value, tab: 'config' },
@@ -195,13 +210,21 @@ function goBack() {
 }
 
 async function save() {
-  if (!schemeId.value || !rows.value[resolvedIndex.value]) return;
+  if (!schemeId.value || resolvedIndex.value < 0) return;
+  const latest = editorRef.value?.buildConfig?.();
+  if (latest) {
+    updateGameConfig(latest);
+  }
+  const current = rows.value[resolvedIndex.value];
+  if (!current) return;
   const next: BackWaterVipConfig = {
+    ...current,
     ...form,
     DefaultWater: formatPercentToStorage(Number(form.DefaultWater)),
     MaxWater: Math.round(Number(form.MaxWater) * 100),
     MinTurnover: Math.round(Number(form.MinTurnover) * 100),
-    MinTurnoverMultiple: Number(form.MinTurnoverMultiple),
+    MinTurnoverMultiple: Number(form.MinTurnoverMultiple || 0),
+    VipLevel: current.VipLevel,
   };
   const nextRows = [...rows.value];
   nextRows[resolvedIndex.value] = next;
@@ -231,7 +254,7 @@ onMounted(loadDetail);
   <Page
     v-else
     auto-content-height
-    title="新增/编辑返水配置"
+    :title="pageTitle"
   >
     <Spin :spinning="loading">
       <Card :bordered="false" class="config-card" title="基础配置">
@@ -287,16 +310,17 @@ onMounted(loadDetail);
           <div class="section-title">游戏返水比例</div>
           <BackWaterGameConfigEditor
             :key="editorKey"
+            ref="editorRef"
             :config="form"
             @change="updateGameConfig"
           />
 
           <div class="footer-actions">
             <Space>
-              <Button @click="goBack">返回</Button>
               <Button html-type="submit" :loading="saving" type="primary">
                 保存配置
               </Button>
+              <Button @click="goBack">返回</Button>
             </Space>
           </div>
         </Form>

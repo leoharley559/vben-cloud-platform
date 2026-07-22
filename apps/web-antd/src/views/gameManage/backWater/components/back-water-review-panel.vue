@@ -66,8 +66,8 @@ const mode = ref<ReviewMode>(canSystem.value ? 'system' : 'manual');
 const schemes = ref<Array<Record<string, unknown>>>([]);
 const levels = ref<Array<Record<string, unknown>>>([]);
 const dateRange = ref<[Dayjs, Dayjs]>([
-  dayjs().subtract(1, 'day').startOf('day'),
-  dayjs().subtract(1, 'day').endOf('day'),
+  dayjs().startOf('day'),
+  dayjs().endOf('day'),
 ]);
 const filters = reactive({
   AdminName: '',
@@ -392,8 +392,8 @@ function reset() {
     VipLevel: -1,
   });
   dateRange.value = [
-    dayjs().subtract(1, 'day').startOf('day'),
-    dayjs().subtract(1, 'day').endOf('day'),
+    dayjs().startOf('day'),
+    dayjs().endOf('day'),
   ];
   void search();
 }

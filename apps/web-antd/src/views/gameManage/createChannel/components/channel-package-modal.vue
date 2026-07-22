@@ -71,8 +71,19 @@ const title = computed(() =>
   props.platform === 'ios' ? 'iOS 包体设置' : 'Android 包体设置',
 );
 
+function nonemptyId(value: unknown): ChannelId | undefined {
+  if (value === undefined || value === null || value === '' || value === 0) {
+    return undefined;
+  }
+  return value as ChannelId;
+}
+
 const rules = computed(() => ({
-  AppPackageConfigId: [{ required: true, message: '请选择上架包' }],
+  // 上架包选项为空时（接口 respond=null）不强制，避免 WebApp/无上架包渠道无法保存签名方式
+  AppPackageConfigId:
+    shelfOptions.value.length > 0
+      ? [{ required: true, message: '请选择上架包' }]
+      : [],
   IosPackageId:
     model.ThirdOrIos === 2 ? [{ required: true, message: '请选择企业包' }] : [],
   ThirdCustomIosUrl:
@@ -138,10 +149,12 @@ async function initialize() {
       ]);
       if (generation !== loadGeneration || !props.open) return;
       shelfOptions.value = shelf;
-      enterpriseOptions.value = enterprise.Items;
-      model.AppPackageConfigId =
-        fullDetail.IosPkgConfigId ?? fullDetail.AppPackageConfigId;
-      model.IosPackageId = fullDetail.IosPackageId || '';
+      enterpriseOptions.value = enterprise.Items ?? [];
+      model.AppPackageConfigId = nonemptyId(
+        fullDetail.IosPkgConfigId ?? fullDetail.AppPackageConfigId,
+      );
+      // 旧站：IosPackageId === 0 视为未设置
+      model.IosPackageId = nonemptyId(fullDetail.IosPackageId) || '';
       model.ThirdCustomIosUrl = String(fullDetail.ThirdCustomIosUrl || '');
       if (model.IosPackageId) {
         model.ThirdOrIos = 2;
@@ -154,8 +167,9 @@ async function initialize() {
       const shelf = await fetchChannelAndroidAppPackagesApi();
       if (generation !== loadGeneration || !props.open) return;
       shelfOptions.value = shelf;
-      model.AppPackageConfigId =
-        fullDetail.AndroidPkgConfigId ?? fullDetail.AppPackageConfigId;
+      model.AppPackageConfigId = nonemptyId(
+        fullDetail.AndroidPkgConfigId ?? fullDetail.AppPackageConfigId,
+      );
       model.IosPackageId = '';
       model.ThirdCustomIosUrl = '';
       model.ThirdOrIos = 3;
@@ -228,7 +242,9 @@ async function submit() {
           <Form.Item label="iOS 签名方式" name="ThirdOrIos">
             <Radio.Group v-model:value="model.ThirdOrIos">
               <Radio :value="1">第三方签名</Radio>
-              <Radio :value="2">企业包</Radio>
+              <Radio :value="2" :disabled="enterpriseOptions.length === 0">
+                企业包
+              </Radio>
               <Radio :value="3">均不使用</Radio>
             </Radio.Group>
           </Form.Item>
@@ -259,6 +275,13 @@ async function submit() {
             />
           </Form.Item>
         </template>
+        <Alert
+          v-if="!loading && shelfOptions.length === 0"
+          class="mb-3"
+          show-icon
+          type="info"
+          message="当前环境暂无可用上架包配置（接口返回空），可仅调整签名方式后保存"
+        />
         <Form.Item
           :label="platform === 'ios' ? 'iOS 上架包' : 'Android 上架包'"
           name="AppPackageConfigId"

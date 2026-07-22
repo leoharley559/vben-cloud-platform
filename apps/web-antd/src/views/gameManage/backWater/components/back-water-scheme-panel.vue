@@ -481,11 +481,14 @@ async function saveConfig() {
     ...configForm,
     DefaultWater: formatPercentToStorage(Number(configForm.DefaultWater)),
     Games: gameRatios.value
-      .filter((item) => item.GameId !== '')
-      .map((item) => ({
-        Id: item.GameId,
-        Ratio: formatPercentToStorage(Number(item.Percent || 0)),
-      })),
+      .filter((item) => item.GameId !== '' && item.Percent !== undefined)
+      .map((item) => {
+        const numericId = Number(item.GameId);
+        return {
+          Id: Number.isFinite(numericId) ? numericId : item.GameId,
+          Ratio: formatPercentToStorage(Number(item.Percent || 0)),
+        };
+      }),
     MaxWater: Math.round(Number(configForm.MaxWater) * 100),
     MinTurnover: Math.round(Number(configForm.MinTurnover) * 100),
     WaterAvg: formatPercentToStorage(Number(configForm.WaterAvg || 0)),

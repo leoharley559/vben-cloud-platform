@@ -95,18 +95,24 @@ const openOptions = [
   { label: '开启', value: 1 },
   { label: '关闭', value: 0 },
 ];
-const venueOptions = computed(() => [
-  { label: '全部场馆', value: '' },
-  ...Object.entries(gameConfig.value.games)
+const venueOptions = computed(() =>
+  Object.entries(gameConfig.value.games)
     .filter(([, game]) => Number(game.ParentId) === 0)
     .map(([id, game]) => ({
       label: game.gameName || id,
       value: id,
     })),
-]);
+);
+
 const batchTitle = computed(() =>
   batchForm.Type === 1 ? '批量编辑游戏标签' : '批量编辑显示状态',
 );
+
+function ensureDefaultVenue() {
+  if (filters.GameId !== '' && filters.GameId != null) return;
+  const first = venueOptions.value[0];
+  if (first) filters.GameId = first.value;
+}
 
 function rowKey(row: SubGameRow) {
   return `${row.GameId}-${row.SubGameId}`;
@@ -156,6 +162,7 @@ const gridOptions: VxeTableGridOptions<SubGameRow> = {
     ajax: {
       query: async ({ page }) => {
         await ensureGameConfig();
+        ensureDefaultVenue();
         const result = await fetchSubGameMaintainListApi({
           GameId: filters.GameId,
           Lang: String(preferences.app.locale || ''),
@@ -164,6 +171,7 @@ const gridOptions: VxeTableGridOptions<SubGameRow> = {
           SearchTag: filters.SearchTag,
           SubGameId: filters.SubGameId,
           SubGameName: filters.SubGameName,
+          Sort: '',
         });
         const items = (result.Items || []) as unknown as SubGameRow[];
         return {
@@ -320,10 +328,10 @@ function handleSearch() {
 }
 
 function handleReset() {
-  filters.GameId = '';
   filters.SearchTag = 0;
   filters.SubGameId = '';
   filters.SubGameName = '';
+  filters.GameId = venueOptions.value[0]?.value || '';
   void reloadFirstPage();
 }
 </script>

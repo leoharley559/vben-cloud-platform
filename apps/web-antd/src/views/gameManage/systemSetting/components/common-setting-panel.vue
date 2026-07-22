@@ -16,6 +16,7 @@ import {
   fetchPhoneBlockSettingApi,
   updatePhoneBlockSettingApi,
 } from '#/api/gameManage/system-setting';
+import { getProjectConfigApi } from '#/api/core/project';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 
 defineOptions({ name: 'CommonSettingPanel' });
@@ -53,7 +54,9 @@ const columns = [
 ];
 
 function parseJson(value: unknown, fallback: unknown) {
-  if (!value) return fallback;
+  if (value === undefined || value === null || value === '' || value === 'null') {
+    return fallback;
+  }
   try {
     return typeof value === 'string' ? JSON.parse(value) : value;
   } catch {
@@ -64,20 +67,35 @@ function parseJson(value: unknown, fallback: unknown) {
 async function loadData() {
   loading.value = true;
   try {
+    if (!cloudStore.projectConfig?.LangGroup?.length) {
+      await getProjectConfigApi().catch(() => undefined);
+    }
     const data = (await fetchPhoneBlockSettingApi()) || {};
     setting.value = data;
     const value = parseJson(data.Value, { code: [] }) as {
       code?: string[];
     };
-    phoneList.value = Array.isArray(value.code) ? value.code : [];
-    const existing = Object.values(
-      parseJson(data.LangText, {}) as Record<string, LangPrompt>,
-    );
-    langPrompts.value = langGroups.value.map((group) => {
+    phoneList.value = Array.isArray(value.code) ? value.code.map(String) : [];
+    const parsedLang = parseJson(data.LangText, {}) as
+      | LangPrompt[]
+      | Record<string, LangPrompt>;
+    const existing = Array.isArray(parsedLang)
+      ? parsedLang
+      : Object.values(parsedLang || {});
+    const groups =
+      langGroups.value.length > 0
+        ? langGroups.value
+        : existing.map((item) => ({
+            Id: Number(item.LangGroupId),
+            Name: `语言组 ${item.LangGroupId}`,
+          }));
+    langPrompts.value = groups.map((group) => {
       const found = existing.find(
         (item) => Number(item.LangGroupId) === group.Id,
       );
-      return found || { LangGroupId: group.Id, PromptText: '' };
+      return found
+        ? { LangGroupId: group.Id, PromptText: String(found.PromptText || '') }
+        : { LangGroupId: group.Id, PromptText: '' };
     });
     activeLangId.value = langPrompts.value[0]?.LangGroupId;
   } finally {
@@ -86,6 +104,10 @@ async function loadData() {
 }
 
 async function saveSetting() {
+  if (langPrompts.value.length === 0) {
+    message.warning('缺少语言组配置，无法保存提示文本');
+    return;
+  }
   if (langPrompts.value.some((item) => !item.PromptText.trim())) {
     message.warning('请完整填写所有语言组的游戏端提示文本');
     return;

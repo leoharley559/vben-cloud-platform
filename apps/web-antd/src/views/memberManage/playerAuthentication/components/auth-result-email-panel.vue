@@ -54,25 +54,39 @@ function resolveConfig(config: PlayerAuthSettingItem['Config']) {
 }
 
 function parseLangText(raw: PlayerAuthSettingItem['LangText']) {
-  if (!raw) {
+  if (!raw || raw === 'null') {
     return {} as Record<string, PlayerAuthLangTextItem>;
   }
-  if (typeof raw === 'object' && !Array.isArray(raw)) {
-    return raw as Record<string, PlayerAuthLangTextItem>;
-  }
+
+  let parsed: unknown = raw;
   if (typeof raw === 'string') {
     try {
-      const list = JSON.parse(raw) as PlayerAuthLangTextItem[];
-      const map: Record<string, PlayerAuthLangTextItem> = {};
-      list.forEach((item) => {
-        if (item.LangGroupId !== undefined) {
-          map[String(item.LangGroupId)] = item;
-        }
-      });
-      return map;
+      parsed = JSON.parse(raw);
     } catch {
       return {};
     }
+  }
+
+  const map: Record<string, PlayerAuthLangTextItem> = {};
+  // 接口可能返回「按语言组 Id 的对象」或「数组」（旧站保存后为数组）
+  if (Array.isArray(parsed)) {
+    parsed.forEach((item) => {
+      const row = item as PlayerAuthLangTextItem;
+      if (row?.LangGroupId !== undefined && row?.LangGroupId !== null) {
+        map[String(row.LangGroupId)] = row;
+      }
+    });
+    return map;
+  }
+  if (parsed && typeof parsed === 'object') {
+    Object.entries(parsed as Record<string, PlayerAuthLangTextItem>).forEach(
+      ([key, item]) => {
+        const row = item || {};
+        const id = row.LangGroupId ?? key;
+        map[String(id)] = { ...row, LangGroupId: id };
+      },
+    );
+    return map;
   }
   return {};
 }
@@ -164,7 +178,7 @@ onMounted(loadSetting);
       <Tabs.TabPane
         v-for="group in langGroups"
         :key="String(group.Id)"
-        :tab="`语言组 ${group.Id}`"
+        :tab="String(group.Name || group.LangName || `语言组 ${group.Id}`)"
       >
         <Form v-if="langTextMap[String(group.Id)]" layout="vertical">
           <div class="grid gap-4 md:grid-cols-2">

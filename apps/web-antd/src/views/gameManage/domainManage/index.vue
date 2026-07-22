@@ -144,6 +144,23 @@ function getSelectedRows() {
   return (gridApi.grid?.getCheckboxRecords?.() || []) as DomainRow[];
 }
 
+/** 我的域名库存列表需带 IsAll=1，否则 Type=1/2/3 等在无该参数时 Items=null（渠道选域/代理域名同参）。 */
+function buildDomainListQuery(
+  page: { currentPage: number; pageSize: number },
+  extra: Record<string, unknown> = {},
+) {
+  return {
+    Domain: '',
+    InUsed: filters.InUsed,
+    IsAll: 1,
+    Keyword: filters.Keyword.trim(),
+    Page: page.currentPage,
+    PageSize: page.pageSize,
+    Type: filters.Type,
+    ...extra,
+  };
+}
+
 const columns: VxeTableGridOptions<DomainRow>['columns'] = [
   { type: 'checkbox', width: 48 },
   { type: 'seq', title: '序号', width: 60 },
@@ -206,14 +223,7 @@ const gridOptions: VxeTableGridOptions<DomainRow> = {
     autoLoad: canList.value,
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchDomainListApi({
-          Domain: '',
-          InUsed: filters.InUsed,
-          Keyword: filters.Keyword.trim(),
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-          Type: filters.Type,
-        });
+        const result = await fetchDomainListApi(buildDomainListQuery(page));
         const items = (result.Items || []) as DomainRow[];
         return {
           items,
@@ -364,15 +374,12 @@ function blockStatusText(state?: number) {
 async function exportDomains() {
   exportLoading.value = true;
   try {
-    const result = await fetchDomainListApi({
-      Domain: '',
-      InUsed: filters.InUsed,
-      IsExp: true,
-      Keyword: filters.Keyword.trim(),
-      Page: 1,
-      PageSize: 99_999,
-      Type: filters.Type,
-    });
+    const result = await fetchDomainListApi(
+      buildDomainListQuery(
+        { currentPage: 1, pageSize: 99_999 },
+        { IsExp: true },
+      ),
+    );
     const rows = (result.Items || []) as DomainRow[];
     if (rows.length === 0) {
       message.info('当前条件下没有可导出的数据');

@@ -110,8 +110,9 @@ const actionId = ref<number | string>();
 const formOpen = ref(false);
 const editId = ref<number | string | null>(null);
 const createHandleType = ref(1);
-const currentPayType = ref(2);
+const currentPayType = ref<number | string>('');
 const payTypes = ref<PayTypeRow[]>([]);
+const payTypeBootstrapped = ref(false);
 const payTypeOpen = ref(false);
 const payTypeSaving = ref(false);
 const payTypeForm = reactive({
@@ -304,6 +305,7 @@ const gridOptions: VxeTableGridOptions<WithdrawAccountRow> = {
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
+    autoLoad: false,
     ajax: {
       query: async ({ page }) => {
         if (!canViewAccounts.value) {
@@ -385,10 +387,14 @@ async function loadPayTypes() {
   payTypes.value = ((result.Items || []) as unknown as PayTypeRow[]).toSorted(
     (a, b) => Number(a.Sort || 0) - Number(b.Sort || 0),
   );
+  // 对齐旧站：优先选中已开启类型（Status=1）；否则取排序首项
   const enabled =
     payTypes.value.find((item) => Number(item.Status) === 1) ||
     payTypes.value[0];
-  if (
+  if (!payTypeBootstrapped.value) {
+    payTypeBootstrapped.value = true;
+    if (enabled) currentPayType.value = enabled.PayType;
+  } else if (
     enabled &&
     !payTypes.value.some((item) => item.PayType === currentPayType.value)
   ) {
@@ -760,7 +766,10 @@ function refreshBalance(row: WithdrawAccountRow) {
 }
 
 onMounted(() => {
-  void Promise.all([loadPayTypes(), loadPlayerLevels()]);
+  void (async () => {
+    await Promise.all([loadPayTypes(), loadPlayerLevels()]);
+    if (canViewAccounts.value) await gridApi.reload();
+  })();
   syncBalanceLock();
   if (balanceLockSeconds.value > 0) {
     balanceTimer = setInterval(syncBalanceLock, 1000);

@@ -11,8 +11,16 @@ import { trimSpace } from '#/utils/string';
 function toListResult(
   data:
     | Array<Record<string, unknown>>
-    | CloudListResult<Record<string, unknown>>,
+    | CloudListResult<Record<string, unknown>>
+    | null
+    | undefined,
 ) {
+  if (data == null) {
+    return {
+      Items: [],
+      Pagination: { MaxCount: 0 },
+    };
+  }
   if (Array.isArray(data)) {
     return {
       Items: data,
@@ -1208,9 +1216,12 @@ export function deleteBackWaterSchemeApi(id: number | string) {
  * @see views/gameManage/*（域名/站点/渠道/充值/提现/VIP/返水等）
  */
 export function fetchWithdrawBankListApi() {
-  return requestClient.get<CloudListResult<Record<string, unknown>>>(
-    '/backend/bankconfig/list',
-  );
+  return requestClient
+    .get<
+      | Array<Record<string, unknown>>
+      | CloudListResult<Record<string, unknown>>
+    >('/backend/bankconfig/list')
+    .then(toListResult);
 }
 
 /**

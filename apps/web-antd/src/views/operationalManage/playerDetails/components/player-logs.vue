@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import { fetchPlayerActionLogsApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 
 defineOptions({ name: 'PlayerLogsPanel' });
 
@@ -22,7 +22,7 @@ const { checkPermission } = useCloudPermission();
 
 const canViewTable = computed(() => checkPermission(13313));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 
 const filterType = ref('');
 const filterUsername = ref('');

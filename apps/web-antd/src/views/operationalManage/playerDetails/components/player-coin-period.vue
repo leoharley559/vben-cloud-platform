@@ -12,7 +12,7 @@ import dayjs from 'dayjs';
 
 import { fetchPlayerGoldTotalApi } from '#/api/operationManage/player';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 import PlayerCoinSettlePanel from './player-coin-settle.vue';
@@ -27,7 +27,7 @@ const emit = defineEmits<{
   dateChange: [beginTime: number, endTime: number];
 }>();
 
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),

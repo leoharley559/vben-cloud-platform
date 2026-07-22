@@ -31,12 +31,17 @@ const filterLoginAccount = ref('');
 const filterPhoneNum = ref('');
 const filterPackageId = ref<number | string>('');
 
-const packageSelectOptions = computed(() =>
-  packageOptions.value.map((item) => ({
+const packageSelectOptions = computed(() => [
+  { label: '全部', value: '' as number | string },
+  ...packageOptions.value.map((item) => ({
     label: item.PackageName,
     value: item.PackageId,
   })),
-);
+]);
+
+function normalizeLoginAccount(value: string) {
+  return value.toLowerCase().replaceAll(/\s/g, '');
+}
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -51,9 +56,10 @@ function formatDateTime(value?: number | string) {
 
 function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   return {
-    LoginAccount: filterLoginAccount.value || undefined,
+    // 对齐旧站 keyup：账号转小写去空格
+    LoginAccount: normalizeLoginAccount(filterLoginAccount.value) || undefined,
     PackageId: filterPackageId.value === '' ? undefined : filterPackageId.value,
-    PhoneNum: filterPhoneNum.value || undefined,
+    PhoneNum: filterPhoneNum.value.trim() || undefined,
     ...extra,
   };
 }

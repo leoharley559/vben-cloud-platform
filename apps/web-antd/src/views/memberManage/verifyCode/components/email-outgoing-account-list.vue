@@ -47,15 +47,7 @@ const form = ref<EmailOutgoingAccountForm>({
 async function loadList() {
   loading.value = true;
   try {
-    const result = await fetchEmailOutgoingAccountListApi();
-    if (Array.isArray(result)) {
-      list.value = result;
-    } else if (result && typeof result === 'object') {
-      const items = (result as { Items?: EmailOutgoingAccountItem[] }).Items;
-      list.value = Array.isArray(items) ? items : [];
-    } else {
-      list.value = [];
-    }
+    list.value = await fetchEmailOutgoingAccountListApi();
   } finally {
     loading.value = false;
   }

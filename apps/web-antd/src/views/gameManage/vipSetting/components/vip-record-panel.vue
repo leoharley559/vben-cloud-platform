@@ -17,6 +17,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 
 import { fetchVipRecordListApi } from '#/api/gameManage/vip-setting';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 
 defineOptions({ name: 'VipRecordPanel' });
 
@@ -36,20 +37,30 @@ interface VipRecordRow extends Record<string, unknown> {
   VipLevel?: number;
 }
 
+/** 对齐旧站 getBeforeDateTimestamp(1,false)～今天结束 */
+function defaultDateRange(): [Dayjs, Dayjs] {
+  const { BeginTime, EndTime } = getTodayRangeSeconds();
+  return [dayjs.unix(BeginTime), dayjs.unix(EndTime)];
+}
+
+function toUnix(value: Dayjs | string | undefined) {
+  if (!value) return undefined;
+  const parsed = dayjs.isDayjs(value) ? value : dayjs(value);
+  return parsed.isValid() ? parsed.unix() : undefined;
+}
+
 const { checkPermission } = useCloudPermission();
 const loading = ref(false);
 const exporting = ref(false);
 const rows = ref<VipRecordRow[]>([]);
 const total = ref(0);
 const aggregate = ref<Record<string, number>>({});
-const dateRange = ref<[Dayjs, Dayjs]>([
-  dayjs().subtract(1, 'day').startOf('day'),
-  dayjs().endOf('day'),
-]);
+const dateRange = ref<[Dayjs, Dayjs]>(defaultDateRange());
 const filters = reactive({
   LoginAccount: '',
   PackageName: '',
-  Status: undefined as number | undefined,
+  PlayerId: '',
+  Status: '' as number | string,
   VipLevel: '',
 });
 const pager = reactive({ Page: 1, PageSize: 10 });
@@ -86,18 +97,25 @@ const moneyKeys = new Set([
 ]);
 
 function queryParams(isExport = false) {
+  const begin = toUnix(dateRange.value?.[0]);
+  const end = toUnix(dateRange.value?.[1]);
   return {
-    ...filters,
-    ...pager,
-    BeginTime: dateRange.value[0].unix(),
-    EndTime: dateRange.value[1].unix(),
+    BeginTime: begin,
+    EndTime: end,
     IsExp: isExport || undefined,
+    LoginAccount: filters.LoginAccount,
+    PackageName: filters.PackageName,
+    Page: pager.Page,
+    PageSize: pager.PageSize,
+    PlayerId: filters.PlayerId,
+    Status: filters.Status === undefined || filters.Status === null ? '' : filters.Status,
+    VipLevel: filters.VipLevel,
   };
 }
 
 function normalizeResult(data: unknown) {
   const result = (data || {}) as {
-    Items?: VipRecordRow[];
+    Items?: null | VipRecordRow[];
     Pagination?: { MaxCount?: number };
     Total?: Record<string, number>;
   };
@@ -126,18 +144,20 @@ function search() {
     message.warning('游戏账号必须为 4～20 位字母或数字');
     return;
   }
+  if (toUnix(dateRange.value?.[0]) === undefined || toUnix(dateRange.value?.[1]) === undefined) {
+    message.warning('请选择有效的时间范围');
+    return;
+  }
   loadData();
 }
 
 function reset() {
   filters.LoginAccount = '';
   filters.PackageName = '';
-  filters.Status = undefined;
+  filters.PlayerId = '';
+  filters.Status = '';
   filters.VipLevel = '';
-  dateRange.value = [
-    dayjs().subtract(1, 'day').startOf('day'),
-    dayjs().endOf('day'),
-  ];
+  dateRange.value = defaultDateRange();
   search();
 }
 
@@ -276,12 +296,12 @@ onMounted(() => {
             value: Number(value),
           }))"
           placeholder="状态"
+          @clear="filters.Status = ''"
         />
         <DatePicker.RangePicker
           v-model:value="dateRange"
           :show-time="true"
           format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
         />
         <Space>
           <Button type="primary" @click="search">查询</Button>

@@ -231,10 +231,10 @@ const columns: VxeTableGridOptions<ChannelRow>['columns'] = [
     field: 'CreateTime',
     formatter: ({ cellValue }) => formatDateTime(cellValue),
     minWidth: 165,
-    sortable: true,
     title: '创建时间',
   },
-  { field: 'ChannelId', minWidth: 105, sortable: true, title: '渠道号' },
+  // 排序走筛选区 Sort（-CreateTime 等）；表头 sortable 仅客户端翻页内排序，易误导
+  { field: 'ChannelId', minWidth: 105, title: '渠道号' },
   {
     field: 'ChannelName',
     minWidth: 140,

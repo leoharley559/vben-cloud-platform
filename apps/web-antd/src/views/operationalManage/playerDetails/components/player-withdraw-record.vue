@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 
 import { fetchWithdrawListApi } from '#/api/operationManage/withdraw';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   calcWithdrawStatusText,
@@ -24,7 +24,7 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const totalAmount = ref(0);
 
 const filterOrderId = ref('');

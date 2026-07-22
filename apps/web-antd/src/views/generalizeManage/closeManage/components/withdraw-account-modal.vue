@@ -99,6 +99,8 @@ async function loadAccounts() {
   try {
     const result = await fetchWithdrawAccountListApi();
     accountList.value = result.Items || [];
+  } catch {
+    accountList.value = [];
   } finally {
     loading.value = false;
   }
@@ -129,11 +131,16 @@ async function openEdit(row: WithdrawAccountItem) {
   try {
     const detail = await fetchWithdrawAccountDetailApi(row.Id);
     formId.value = detail.Id ?? row.Id;
-    formAccountType.value = detail.AccountType || 2;
+    formAccountType.value = Number(
+      detail.AccountType ?? row.AccountType ?? 1,
+    );
     formRealName.value = detail.RealName || '';
     formAccount.value = detail.Account || '';
     formBankName.value = detail.BankName || '';
     formVerifyCode.value = '';
+  } catch {
+    message.error('加载账号详情失败');
+    formVisible.value = false;
   } finally {
     saving.value = false;
   }
@@ -205,6 +212,8 @@ async function handleSubmit() {
     resetForm();
     await loadAccounts();
     emit('change');
+  } catch {
+    // requestClient 已提示业务错误（如 10173）
   } finally {
     saving.value = false;
   }
@@ -220,10 +229,14 @@ async function handleDelete(id?: number | string) {
   if (!id) {
     return;
   }
-  await deleteWithdrawAccountApi(id);
-  message.success('删除成功');
-  await loadAccounts();
-  emit('change');
+  try {
+    await deleteWithdrawAccountApi(id);
+    message.success('删除成功');
+    await loadAccounts();
+    emit('change');
+  } catch {
+    // requestClient 已提示业务错误（如 10002）
+  }
 }
 
 function handleClose() {

@@ -55,8 +55,8 @@ function formatDateTime(value?: number | string) {
 
 function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   return {
-    CountryName: filterCountryName.value,
-    DialingCode: filterDialingCode.value,
+    CountryName: filterCountryName.value.trim() || undefined,
+    DialingCode: filterDialingCode.value.trim() || undefined,
     ...extra,
   };
 }

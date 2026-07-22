@@ -23,6 +23,15 @@ export interface SmsChannelListResult {
   RecallSmsConfigId?: number | string;
 }
 
+function withItems<T extends { Items?: null | unknown[] }>(
+  result: null | T | undefined,
+): T & { Items: NonNullable<T['Items']> extends Array<infer U> ? U[] : unknown[] } {
+  return {
+    ...(result ?? ({} as T)),
+    Items: (result?.Items ?? []) as never,
+  };
+}
+
 /**
  * 查询短信日列表。
  *
@@ -30,10 +39,12 @@ export interface SmsChannelListResult {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/messageManage
  */
-export function fetchSmsDailyListApi(query: Record<string, unknown>) {
-  return requestClient.get<SmsListResult>('/backend/shortmessageservice/list', {
-    params: trimSpace(query),
-  });
+export async function fetchSmsDailyListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<SmsListResult>(
+    '/backend/shortmessageservice/list',
+    { params: trimSpace(query) },
+  );
+  return withItems(result);
 }
 
 /**
@@ -42,10 +53,11 @@ export function fetchSmsDailyListApi(query: Record<string, unknown>) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/messageManage
  */
-export function fetchSmsOverviewApi() {
-  return requestClient.get<Record<string, unknown>>(
+export async function fetchSmsOverviewApi() {
+  const result = await requestClient.get<null | Record<string, unknown>>(
     '/backend/shortmessageservice/info',
   );
+  return result ?? {};
 }
 
 /**
@@ -77,11 +89,12 @@ export function updateSmsAutoBuyApi(Auto: 1 | 2) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/messageManage
  */
-export function fetchSmsMonthlyListApi(query: Record<string, unknown>) {
-  return requestClient.get<SmsListResult>(
+export async function fetchSmsMonthlyListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<SmsListResult>(
     '/backend/shortmessageservice/monthlist',
     { params: trimSpace(query) },
   );
+  return withItems(result);
 }
 
 /**
@@ -91,11 +104,14 @@ export function fetchSmsMonthlyListApi(query: Record<string, unknown>) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/messageManage
  */
-export function fetchSmsChannelsApi(query: Record<string, unknown> = {}) {
-  return requestClient.get<SmsChannelListResult>(
+export async function fetchSmsChannelsApi(query: Record<string, unknown> = {}) {
+  const result = await requestClient.get<SmsChannelListResult>(
     '/backend/smschannelconfig/list',
     { params: trimSpace(query) },
   );
+  return withItems(result) as SmsChannelListResult & {
+    Items: Array<Record<string, unknown>>;
+  };
 }
 
 /**
@@ -143,11 +159,12 @@ export function updateSmsChannelConfigApi(data: Record<string, unknown>) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/messageManage
  */
-export function fetchSmsTemplateListApi(query: Record<string, unknown>) {
-  return requestClient.get<SmsListResult>(
+export async function fetchSmsTemplateListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<SmsListResult>(
     '/backend/smsannouncementconfig/list',
     { params: trimSpace(query) },
   );
+  return withItems(result);
 }
 
 /**
@@ -182,11 +199,12 @@ export function switchSmsTemplateApi(data: {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/messageManage
  */
-export function fetchRegisterOtpDailyApi(query: Record<string, unknown>) {
-  return requestClient.get<SmsListResult>(
+export async function fetchRegisterOtpDailyApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<SmsListResult>(
     '/backend/operation/phoneregisterotpday',
     { params: trimSpace(query) },
   );
+  return withItems(result);
 }
 
 /**
@@ -196,11 +214,14 @@ export function fetchRegisterOtpDailyApi(query: Record<string, unknown>) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/messageManage
  */
-export function fetchRegisterOtpDetailApi(query: Record<string, unknown>) {
-  return requestClient.get<SmsListResult>(
+export async function fetchRegisterOtpDetailApi(
+  query: Record<string, unknown>,
+) {
+  const result = await requestClient.get<SmsListResult>(
     '/backend/operation/phoneregisterotpdetail',
     { params: trimSpace(query) },
   );
+  return withItems(result);
 }
 
 /**
@@ -220,14 +241,15 @@ const recallPath = (type: 'deposit' | 'register') =>
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/messageManage
  */
-export function fetchRecallListApi(
+export async function fetchRecallListApi(
   type: 'deposit' | 'register',
   query: Record<string, unknown>,
 ) {
-  return requestClient.get<SmsListResult>(
+  const result = await requestClient.get<SmsListResult>(
     `/backend/operation/${recallPath(type)}`,
     { params: trimSpace(query) },
   );
+  return withItems(result);
 }
 
 /**
@@ -238,14 +260,15 @@ export function fetchRecallListApi(
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/messageManage
  */
-export function fetchRecallDetailApi(
+export async function fetchRecallDetailApi(
   type: 'deposit' | 'register',
   query: Record<string, unknown>,
 ) {
-  return requestClient.get<SmsListResult>(
+  const result = await requestClient.get<SmsListResult>(
     `/backend/operation/${recallPath(type)}detail`,
     { params: trimSpace(query) },
   );
+  return withItems(result);
 }
 
 /**

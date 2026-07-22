@@ -30,6 +30,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   buyPackageNumberApi,
   deletePackageApi,
+  fetchBackWaterSchemeListApi,
   fetchPackageListApi,
 } from '#/api/gameManage/package';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -88,6 +89,7 @@ const canBuyQuota = computed(() => accountLevel.value === 3);
 const packageName = ref('');
 const resources = ref<PackageResourceItem[]>([]);
 const vipBadgeGroups = ref<PackageVipBadgeGroup[]>([]);
+const rebateSchemes = ref<Array<{ Id?: PackageId; Name?: string }>>([]);
 const total = ref(0);
 const deletingId = ref<PackageId>();
 const quotaLoading = ref(false);
@@ -256,6 +258,42 @@ function resolveVipBadge(row: PackageListItem) {
   );
 }
 
+function rebateModeLabel(row: PackageListItem) {
+  try {
+    const parsed =
+      typeof row.BetWaterMode === 'string'
+        ? JSON.parse(row.BetWaterMode)
+        : row.BetWaterMode;
+    const mode = Number(
+      parsed && typeof parsed === 'object'
+        ? (parsed as Record<string, unknown>).Mode
+        : 0,
+    );
+    return (
+      (
+        {
+          0: '日结',
+          1: '按天数',
+          2: '周结',
+        } as Record<number, string>
+      )[mode] || '日结'
+    );
+  } catch {
+    return '日结';
+  }
+}
+
+function formatRebateConfig(row: PackageListItem) {
+  if (!row.BetWaterTemplateIdV2) {
+    return '未配置';
+  }
+  const schemeName =
+    rebateSchemes.value.find(
+      (item) => String(item.Id) === String(row.BetWaterTemplateIdV2),
+    )?.Name || `方案 ${row.BetWaterTemplateIdV2}`;
+  return `${schemeName}（${rebateModeLabel(row)}）`;
+}
+
 const gridOptions: VxeTableGridOptions<PackageListItem> = {
   columns: [
     {
@@ -352,11 +390,25 @@ const gridOptions: VxeTableGridOptions<PackageListItem> = {
     autoLoad: true,
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchPackageListApi({
-          PackageName: packageName.value.trim(),
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-        });
+        const [result] = await Promise.all([
+          fetchPackageListApi({
+            PackageName: packageName.value.trim(),
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+          }),
+          rebateSchemes.value.length
+            ? Promise.resolve(null)
+            : fetchBackWaterSchemeListApi({}).then((schemes) => {
+                const items = Array.isArray(schemes)
+                  ? schemes
+                  : ((schemes as { Items?: Array<Record<string, unknown>> })
+                      ?.Items ?? []);
+                rebateSchemes.value = items.map((item) => ({
+                  Id: item.Id as PackageId,
+                  Name: String(item.Name ?? ''),
+                }));
+              }),
+        ]);
         const items = result.Items || [];
         resources.value = result.MoreItems?.Resources || [];
         vipBadgeGroups.value = result.VIPBadgeGroups || [];
@@ -618,7 +670,7 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
 
         <template #rebateConfig="{ row }">
           <Tag :color="row.BetWaterTemplateIdV2 ? 'green' : 'default'">
-            {{ row.BetWaterTemplateIdV2 ? '已配置' : '未配置' }}
+            {{ formatRebateConfig(row) }}
           </Tag>
         </template>
 

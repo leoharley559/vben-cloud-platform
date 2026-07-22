@@ -25,12 +25,13 @@ const filterEmailAccount = ref('');
 const filterPackageId = ref<number | string>('');
 const loading = ref(false);
 
-const packageSelectOptions = computed(() =>
-  packageOptions.value.map((item) => ({
+const packageSelectOptions = computed(() => [
+  { label: '全部', value: '' as number | string },
+  ...packageOptions.value.map((item) => ({
     label: item.PackageName,
     value: item.PackageId,
   })),
-);
+]);
 
 const packageNameMap = computed(() => {
   const map = new Map<string, string>();
@@ -41,6 +42,10 @@ const packageNameMap = computed(() => {
   });
   return map;
 });
+
+function normalizeLoginAccount(value: string) {
+  return value.toLowerCase().replaceAll(/\s/g, '');
+}
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -113,8 +118,9 @@ async function handleSearch() {
   loading.value = true;
   try {
     const result = await fetchEmailVerifyCodeListApi({
-      EmailAccount: filterEmailAccount.value || undefined,
-      LoginAccount: filterLoginAccount.value || undefined,
+      EmailAccount: filterEmailAccount.value.trim() || undefined,
+      LoginAccount:
+        normalizeLoginAccount(filterLoginAccount.value) || undefined,
       PackageId:
         filterPackageId.value === '' ? undefined : filterPackageId.value,
     });

@@ -112,17 +112,14 @@ async function load() {
   if (!props.id) return;
   loading.value = true;
   try {
-    raw.value = (await fetchShelfAnalyticsApi(
-      props.platform,
-      props.id,
-    )) || {};
+    raw.value = await fetchShelfAnalyticsApi(props.platform, props.id);
     assignStrings(form.Adjust, raw.value);
     assignStrings(form.AppsFlyer, raw.value);
     assignStrings(form.Facebook, raw.value);
     assignStrings(form.Google, raw.value);
     form.H5Analytic.AnalyticsScript = String(raw.value.AnalyticsScript || '');
     form.Okspin.OkSpinPixelId = String(raw.value.OkSpinPixelId || '');
-    form.Riobest.IsRoibestOpen = Boolean(raw.value.IsRoibestOpen ?? true);
+    form.Riobest.IsRoibestOpen = raw.value.IsRoibestOpen !== false;
   } finally {
     loading.value = false;
   }

@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 
 import { fetchPlayerPointsRecordApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { POINT_TYPE_MAP, POINT_TYPE_OPTIONS } from '#/utils/player-detail-maps';
 
 defineOptions({ name: 'PlayerPointsPanel' });
@@ -18,7 +18,7 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 
 const filterPointType = ref(-1);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([

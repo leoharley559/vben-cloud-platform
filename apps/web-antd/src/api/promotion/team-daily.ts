@@ -11,12 +11,20 @@ import { trimSpace } from '#/utils/string';
  * @see views/mobile/data/index.vue
  */
 export async function fetchTeamDailyListApi(query: TeamDailyListQuery) {
-  const data = await requestClient.get<null | TeamDailyResult>('/backend/accountteamdaily/list', {
-    params: trimSpace(query),
-  });
+  const data = await requestClient.get<null | TeamDailyResult>(
+    '/backend/accountteamdaily/list',
+    {
+      params: trimSpace(query),
+    },
+  );
+  // 空环境 HistoryItems 常为 null；Today/Banner 可能为全 0 对象
   return {
-    BannerItems: data?.BannerItems || {},
-    HistoryItems: data?.HistoryItems || [],
-    TodayItems: data?.TodayItems || {},
-  };
+    BannerItems: data?.BannerItems && typeof data.BannerItems === 'object'
+      ? data.BannerItems
+      : {},
+    HistoryItems: Array.isArray(data?.HistoryItems) ? data.HistoryItems : [],
+    TodayItems: data?.TodayItems && typeof data.TodayItems === 'object'
+      ? data.TodayItems
+      : {},
+  } satisfies TeamDailyResult;
 }

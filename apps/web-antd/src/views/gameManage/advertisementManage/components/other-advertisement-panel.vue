@@ -234,13 +234,16 @@ const columns = computed(() => {
 });
 
 function toItems(data: unknown) {
+  if (data == null) return [] as OtherRow[];
   if (Array.isArray(data)) return data as OtherRow[];
   const value = data as {
-    Data?: OtherRow[];
-    Items?: OtherRow[];
+    Data?: null | OtherRow[];
+    Items?: null | OtherRow[];
     Pagination?: unknown;
   };
-  return value?.Items || value?.Data || [];
+  if (Array.isArray(value.Items)) return value.Items;
+  if (Array.isArray(value.Data)) return value.Data;
+  return [];
 }
 
 function parseLanguages(value: unknown) {
@@ -536,8 +539,8 @@ function recover() {
       await (subtype.value === 7 ? recoverVenueRebateApi({
           TemplateId: activeProgrammeId.value,
         }) : recoverAdvertisementProgrammeApi({
+          // 旧站仅传 Id（首个方案），不传 SubType
           Id: programmes.value[0]?.Id,
-          SubType: subtype.value,
         }));
       message.success('操作成功');
       await loadRows();
@@ -684,7 +687,7 @@ onMounted(loadProgrammes);
       </div>
     </Card>
 
-    <Card class="section-card" :bordered="false">
+    <Card v-if="checkPermission(11_238)" class="section-card" :bordered="false">
       <Table
         :columns="columns"
         :data-source="rows"

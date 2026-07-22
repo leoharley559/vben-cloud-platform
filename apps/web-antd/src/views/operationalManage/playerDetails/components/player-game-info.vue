@@ -17,7 +17,7 @@ import dayjs from 'dayjs';
 import { fetchPlayerGameDetailListApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useGameConfig } from '#/composables/use-game-config';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatGoldReason } from '#/utils/game-config';
 
@@ -26,7 +26,7 @@ defineOptions({ name: 'PlayerGameInfoPanel' });
 const props = defineProps<{ playerId: number | string }>();
 
 const { ensureGameConfig, gameConfig } = useGameConfig();
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const sumAddGold = ref(0);
 
 const filterLogId = ref('');

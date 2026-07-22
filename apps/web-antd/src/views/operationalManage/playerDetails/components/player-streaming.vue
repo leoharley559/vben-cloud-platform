@@ -26,7 +26,7 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -51,7 +51,7 @@ const canViewTable = computed(() => checkPermission(12940));
 const canExport = computed(() => checkPermission(12939));
 const canResetRollover = computed(() => checkPermission(13163));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const waterDetail = ref<PlayerDrawWaterSummary>({});
 const selectedOrderIds = ref<string[]>([]);
 const addModalOpen = ref(false);

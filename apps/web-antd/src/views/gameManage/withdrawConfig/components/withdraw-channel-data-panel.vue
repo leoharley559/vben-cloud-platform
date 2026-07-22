@@ -53,7 +53,8 @@ const sort = ref('');
 const account = ref('');
 const dataSearchType = ref(0);
 const dateRange = ref<[Dayjs, Dayjs]>([
-  dayjs().subtract(31, 'day').startOf('day'),
+  // 对齐旧站 getBeforeDateTimestamp(31, false) → days-1=30，即近 30 天 0 点～今日结束
+  dayjs().subtract(30, 'day').startOf('day'),
   dayjs().endOf('day'),
 ]);
 
@@ -161,7 +162,7 @@ function handleReset() {
   sort.value = '';
   page.value = 1;
   dateRange.value = [
-    dayjs().subtract(31, 'day').startOf('day'),
+    dayjs().subtract(30, 'day').startOf('day'),
     dayjs().endOf('day'),
   ];
   void loadData();

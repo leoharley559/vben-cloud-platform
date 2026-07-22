@@ -226,13 +226,17 @@ const gridOptions: VxeTableGridOptions<HandRecordItem> = {
   proxyConfig: {
     ajax: {
       query: async ({ page, sort }) => {
-        const result = await fetchHandRecordListApi(
-          getQueryParams(page, sort),
-        );
-        return {
-          items: result.Items || [],
-          total: Number(result.Pagination?.MaxCount || 0),
-        };
+        try {
+          const result = await fetchHandRecordListApi(
+            getQueryParams(page, sort),
+          );
+          return {
+            items: result.Items || [],
+            total: Number(result.Pagination?.MaxCount || 0),
+          };
+        } catch {
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -263,6 +267,7 @@ onMounted(async () => {
           value: item.Id,
         }))
       "
+      :max-range-days="30"
       show-landing
       @search="handleSearch"
     >

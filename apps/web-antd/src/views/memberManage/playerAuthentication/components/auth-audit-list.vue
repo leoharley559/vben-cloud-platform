@@ -54,12 +54,13 @@ const actionType = ref<'approve' | 'reject'>('approve');
 const actionRow = ref<PlayerAuthListItem | null>(null);
 const actionOrderIds = ref('');
 
-const packageSelectOptions = computed(() =>
-  packageOptions.value.map((item) => ({
+const packageSelectOptions = computed(() => [
+  { label: '全部', value: '' as number | string },
+  ...packageOptions.value.map((item) => ({
     label: item.PackageName,
     value: item.PackageId,
   })),
-);
+]);
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -81,17 +82,19 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AgentId: filterAgentId.value || undefined,
-    // 「全部」不传 AuthScenario（与传 -1 行为一致，本环境均通）
-    AuthScenario:
-      filterAuthScenario.value === -1 ? undefined : filterAuthScenario.value,
+    // 对齐旧站：全部时传 AuthScenario=-1
+    AuthScenario: filterAuthScenario.value,
     BeginTime: begin ? begin.startOf('day').unix() : undefined,
     ChannelId: filterChannelId.value
       ? String(filterChannelId.value)
       : undefined,
     EndTime: end ? end.endOf('day').unix() : undefined,
-    LoginAccount: filterLoginAccount.value || undefined,
-    PackageId: filterPackageId.value || undefined,
-    PlayerId: filterPlayerId.value || undefined,
+    LoginAccount: filterLoginAccount.value.trim() || undefined,
+    PackageId:
+      filterPackageId.value === '' || filterPackageId.value === undefined
+        ? undefined
+        : filterPackageId.value,
+    PlayerId: filterPlayerId.value.trim() || undefined,
   };
 }
 

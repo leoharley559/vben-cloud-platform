@@ -78,13 +78,18 @@ function formatDateTime(value?: number | string) {
     : String(value);
 }
 
+function normalizeLoginAccount(value: string) {
+  return value.toLowerCase().replaceAll(/\s/g, '');
+}
+
 function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BankCardNum: filterBankCardNum.value,
+    BankCardNum: filterBankCardNum.value.trim() || undefined,
     BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
     EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
-    LoginAccount: filterLoginAccount.value,
+    // 对齐旧站 keyup：账号转小写去空格
+    LoginAccount: normalizeLoginAccount(filterLoginAccount.value) || undefined,
     ...extra,
   };
 }
@@ -238,7 +243,7 @@ onMounted(() => {
     <Grid>
       <template #remark="{ row }">
         <Tooltip
-          v-if="row.MerchantOrderNo || row.ThirdPartyUserId"
+          v-if="row.MerchantOrderNo && row.ThirdPartyUserId"
           :title="`专项账号: ${row.MerchantOrderNo || '-'} / 三方专项: ${row.ThirdPartyUserId || '-'}`"
         >
           <span class="cursor-pointer text-primary">详情</span>

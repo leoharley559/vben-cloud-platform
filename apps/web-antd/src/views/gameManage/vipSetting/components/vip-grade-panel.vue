@@ -103,7 +103,9 @@ async function loadData() {
     ]);
     rows.value = Array.isArray(list) ? (list as Row[]) : [];
     vipLevelMode.value = Number(mode?.VipLevelMode || 1);
-    relegationDay.value = Number(day?.RelegationDay || 90);
+    // 对齐旧站：仅当接口返回 >0 才覆盖，否则保持默认 90
+    const nextDay = Number(day?.RelegationDay || 0);
+    if (nextDay > 0) relegationDay.value = nextDay;
   } finally {
     loading.value = false;
   }

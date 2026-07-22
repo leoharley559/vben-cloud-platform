@@ -47,21 +47,20 @@ watch(
 async function validateInvitationCode() {
   const value = form.InvitationCode.trim();
   if (!value) throw new Error('请输入邀请码');
-  if (!/^[a-z0-9]+$/i.test(value)) throw new Error('邀请码只能包含字母和数字');
-  if (value.length < 4 || value.length > 20) {
-    throw new Error('邀请码长度须为 4-20 位');
-  }
-  if (!/[a-z]/i.test(value) || !/\d/.test(value)) {
-    throw new Error('邀请码必须同时包含字母和数字');
-  }
-  const original = String(detail.value?.InvitationCode || '').toLowerCase();
-  if (
-    value.toLowerCase() !== original &&
-    props.existingCodes.some(
-      (code) => code.toLowerCase() === value.toLowerCase(),
-    )
-  ) {
-    throw new Error('邀请码已被当前列表中的渠道使用');
+  const original = String(detail.value?.InvitationCode || '');
+  // 历史短码（如 100/103）允许原样保留；仅改码时对齐旧站规则
+  if (value.toLowerCase() !== original.toLowerCase()) {
+    const pattern = /^([a-z]+\d+|\d+[a-z]+)[a-z0-9]*$/i;
+    if (!pattern.test(value) || value.length < 4 || value.length > 20) {
+      throw new Error('邀请码须为 4-20 位，且同时包含字母和数字');
+    }
+    if (
+      props.existingCodes.some(
+        (code) => code.toLowerCase() === value.toLowerCase(),
+      )
+    ) {
+      throw new Error('邀请码已被当前列表中的渠道使用');
+    }
   }
 }
 
@@ -111,7 +110,7 @@ async function handleOk() {
         <Input
           v-model:value="form.InvitationCode"
           :maxlength="20"
-          placeholder="4-20 位，必须同时包含字母和数字"
+          placeholder="字母+数字组合，4-20 位；历史短码可原样保留"
           @press-enter="handleOk"
         />
       </FormItem>

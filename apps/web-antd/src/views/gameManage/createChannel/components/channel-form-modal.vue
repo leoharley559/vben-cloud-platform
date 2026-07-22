@@ -476,10 +476,17 @@ function sessionOwner(): ChannelAdminOption {
 
 function hydrateDetail(detail: ChannelDetail) {
   const base = createDefaults();
+  const zeroAsEmpty = (value: unknown) =>
+    value === 0 || value === '0' ? undefined : value;
   replaceModel({
     ...base,
     ...detail,
+    AndroidPkgConfigId: zeroAsEmpty(detail.AndroidPkgConfigId) as
+      | ChannelId
+      | undefined,
     H5Version: 2,
+    IosPackageId: (zeroAsEmpty(detail.IosPackageId) as ChannelId | undefined) || '',
+    IosPkgConfigId: zeroAsEmpty(detail.IosPkgConfigId) as ChannelId | undefined,
     PackageConfigId: detail.PackageConfigId ?? base.PackageConfigId,
   });
   const langs = parseArray<LangCaption>(detail.H5DownloadDialogLangText);
@@ -605,8 +612,14 @@ function applyDomainRangeFilter() {
 }
 
 async function loadLandingResources(selectFirst = false) {
+  const agentId = resolveSessionAdminId();
+  if (agentId == null || agentId === '') {
+    landingResources.value = [];
+    landingTotal.value = 0;
+    throw new Error('缺少 AgentId，无法加载落地页资源');
+  }
   const result = await fetchChannelLandingResourcesApi({
-    AgentId: resolveSessionAdminId(),
+    AgentId: agentId,
     Page: landingPage.value,
     PageSize: 4,
     PictureStyle: landingStyle.value,

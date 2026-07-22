@@ -4,7 +4,6 @@ import type { InvalidUserData } from '#/types/promotion';
 import { computed, onMounted, ref } from 'vue';
 
 import { Result, Table } from 'ant-design-vue';
-import dayjs from 'dayjs';
 
 import { fetchInvalidUserApi } from '#/api/promotion/promote-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -17,6 +16,7 @@ defineOptions({ name: 'InvalidUserPanel' });
 const { checkPermission } = useCloudPermission();
 const canViewPage = computed(() => checkPermission(10_888));
 
+const searchRef = ref<InstanceType<typeof PromoteDataSearch>>();
 const loading = ref(false);
 const data = ref<InvalidUserData>({
   CountDeviceNum: 0,
@@ -34,6 +34,14 @@ const columns = [
   { dataIndex: 'count1', key: 'count1', title: '计数1' },
   { dataIndex: 'count3', key: 'count3', title: '计数3' },
 ];
+
+const emptyData: InvalidUserData = {
+  CountDeviceNum: 0,
+  CountNum0: 0,
+  CountNum1: 0,
+  CountNum3: 0,
+  CountRegNum: 0,
+};
 
 const tableData = computed(() => [
   {
@@ -56,7 +64,7 @@ const tableData = computed(() => [
   },
 ]);
 
-async function handleSearch(payload: {
+async function handleSearch(payload?: {
   AdminIds: Array<number | string>;
   BeginTime: string;
   ChannelIds: Array<number | string>;
@@ -64,14 +72,15 @@ async function handleSearch(payload: {
 }) {
   loading.value = true;
   try {
-    const result = await fetchInvalidUserApi(payload);
-    data.value = result.Items && Object.keys(result.Items).length > 0 ? result.Items : {
-        CountDeviceNum: 0,
-        CountNum0: 0,
-        CountNum1: 0,
-        CountNum3: 0,
-        CountRegNum: 0,
-      };
+    const query = payload || searchRef.value?.buildPayload();
+    if (!query) return;
+    const result = await fetchInvalidUserApi(query);
+    data.value =
+      result.Items && Object.keys(result.Items).length > 0
+        ? result.Items
+        : { ...emptyData };
+  } catch {
+    data.value = { ...emptyData };
   } finally {
     loading.value = false;
   }
@@ -81,18 +90,13 @@ onMounted(() => {
   if (!canViewPage.value) {
     return;
   }
-  handleSearch({
-    AdminIds: [],
-    BeginTime: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
-    ChannelIds: [],
-    EndTime: dayjs().format('YYYY-MM-DD'),
-  });
+  void handleSearch();
 });
 </script>
 
 <template>
   <div v-if="canViewPage">
-    <PromoteDataSearch @search="handleSearch" />
+    <PromoteDataSearch ref="searchRef" @search="handleSearch" />
     <Table
       bordered
       :columns="columns"

@@ -191,8 +191,6 @@ async function loadAuxiliary() {
   try {
     const [levelResult, templateResult] = await Promise.all([
       fetchRechargePlayerLevelsApi({
-        BeginTime: 1,
-        EndTime: 1,
         Page: 1,
         PageSize: 200,
       }),

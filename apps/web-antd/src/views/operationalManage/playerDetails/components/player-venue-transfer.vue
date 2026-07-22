@@ -26,7 +26,7 @@ import { fetchPlayerVenueTransferListApi } from '#/api/operationManage/player-de
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatGameName } from '#/utils/game-config';
@@ -49,7 +49,7 @@ const canExport = computed(() => checkPermission(12094));
 const canManual = computed(() => checkPermission(12095));
 const canChangeState = computed(() => checkPermission(12096));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const totalAmount = ref(0);
 const exportLoading = ref(false);
 const stateSaving = ref(false);

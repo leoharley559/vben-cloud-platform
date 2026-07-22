@@ -184,6 +184,15 @@ function isFunctionDisabled(value: string) {
   }
 }
 
+function ensureDefaultTeamIfEmpty() {
+  if (
+    formTeamIds.value.length === 0 &&
+    defaultSteamerGroupId.value !== undefined
+  ) {
+    formTeamIds.value = [defaultSteamerGroupId.value];
+  }
+}
+
 async function loadSteamerGroups() {
   const result = await fetchSteamerGroupListApi();
   const items = [...(result.Items || [])].filter(
@@ -198,6 +207,9 @@ async function loadSteamerGroups() {
   defaultSteamerGroupId.value = defaultItem?.Id;
   if (!isEdit.value && defaultItem?.Id) {
     formTeamIds.value = [defaultItem.Id];
+  } else {
+    // 编辑态若直属分组接口失败/空选，回落到默认分组（与旧站 min=1 一致）
+    ensureDefaultTeamIfEmpty();
   }
 }
 
@@ -238,15 +250,22 @@ async function loadDetail() {
         formFunctions.value = [];
       }
     }
-    const directGroup = await fetchSteamerDirectGroupApi({
-      AdminId: detail.AdminId ?? detail.Id,
-    });
-    formQingLiu.value = Boolean(directGroup.CanQingLiu);
-    formTeamIds.value =
-      directGroup.Teams?.filter(
-        (item) =>
-          item.Checked && item.Id !== undefined && item.Id !== null,
-      ).map((item) => item.Id!) || [];
+    // 直属分组与详情解耦：分组服务 20001 时仍保留账号信息可编辑
+    try {
+      const directGroup = await fetchSteamerDirectGroupApi({
+        AdminId: detail.AdminId ?? detail.Id,
+      });
+      formQingLiu.value = Boolean(directGroup.CanQingLiu);
+      formTeamIds.value =
+        directGroup.Teams?.filter(
+          (item) =>
+            item.Checked && item.Id !== undefined && item.Id !== null,
+        ).map((item) => item.Id!) || [];
+      ensureDefaultTeamIfEmpty();
+    } catch {
+      message.warning('直播分组配置加载失败，已保留默认分组（如有）');
+      ensureDefaultTeamIfEmpty();
+    }
   } finally {
     loading.value = false;
   }
@@ -284,8 +303,8 @@ function validateStepOne() {
     message.warning('账号姓名最多 20 个字符');
     return false;
   }
-  if (formNote.value && formNote.value.length > 255) {
-    message.warning('备注最多 255 个字符');
+  if (formNote.value && formNote.value.length > 400) {
+    message.warning('备注最多 400 个字符');
     return false;
   }
   return true;
@@ -485,13 +504,13 @@ onMounted(async () => {
             <Input v-model:value="formName" :maxlength="20" show-count />
           </Form.Item>
           <Form.Item label="联系方式">
-            <Input v-model:value="formContact" :maxlength="255" />
+            <Input v-model:value="formContact" :maxlength="400" />
           </Form.Item>
           <Form.Item label="备注">
             <Input.TextArea
               v-model:value="formNote"
               :auto-size="{ minRows: 2, maxRows: 5 }"
-              :maxlength="255"
+              :maxlength="400"
               show-count
             />
           </Form.Item>
@@ -575,7 +594,7 @@ onMounted(async () => {
             />
             <Checkbox
               v-model:checked="groupCheckAll"
-              :disabled="!canQingLiu"
+              :disabled="!canQingLiu || steamerGroups.length === 0"
               :indeterminate="groupIndeterminate"
               class="mb-3"
             >
@@ -610,6 +629,15 @@ onMounted(async () => {
         <Divider>信息确认</Divider>
         <div class="mb-4 space-y-2">
           <div>账号：{{ formUsername }}</div>
+          <div>
+            密码：{{
+              formPassword
+                ? formPassword
+                : isEdit
+                  ? '（未修改）'
+                  : '-'
+            }}
+          </div>
           <div>姓名：{{ formName }}</div>
           <div>联系方式：{{ formContact || '-' }}</div>
           <div>
@@ -667,7 +695,13 @@ onMounted(async () => {
         <Button v-if="activeStep < 2" type="primary" @click="handleNext">
           下一步
         </Button>
-        <Button v-else :loading="saving" type="primary" @click="handleSubmit">
+        <Button
+          v-else
+          :disabled="steamerGroups.length === 0"
+          :loading="saving"
+          type="primary"
+          @click="handleSubmit"
+        >
           确认提交
         </Button>
       </div>

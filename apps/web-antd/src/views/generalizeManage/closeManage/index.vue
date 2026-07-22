@@ -83,7 +83,8 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
   return {
     BeginTime: begin?.unix() || '',
     EndTime: end?.unix() || '',
-    MoneyType: filterMoneyType.value.join(','),
+    // allow-clear 后可能为 undefined，需兜底避免 join 崩溃
+    MoneyType: (filterMoneyType.value || []).join(','),
     Page: page.currentPage,
     PageSize: page.pageSize,
     Sort: '',
@@ -140,24 +141,25 @@ const gridOptions: VxeTableGridOptions<CloseManageItem> = {
         try {
           const result = await fetchCloseManageListApi(getQueryParams(page));
           if (requestId !== latestListRequestId) return latestGridResult;
-          useMoney.value = Number(result.MoreItems.Money || 0);
-          noCloseMoney.value = Number(result.MoreItems.FreezeMoney || 0);
-          accountRate.value = result.MoreItems.PayRate || [];
+          const items = Array.isArray(result.Items) ? result.Items : [];
+          const more = result.MoreItems || {};
+          useMoney.value = Number(more.Money || 0);
+          noCloseMoney.value = Number(more.FreezeMoney || 0);
+          accountRate.value = Array.isArray(more.PayRate) ? more.PayRate : [];
           latestGridResult = {
-            items: result.Items,
-            total: Number(
-              result.Pagination?.MaxCount || result.Items.length,
-            ),
+            items,
+            total: Number(result.Pagination?.MaxCount ?? items.length),
           };
           return latestGridResult;
-        } catch (error) {
+        } catch {
+          // 失败清空列表，不重抛避免表格二次报错
           if (requestId === latestListRequestId) {
             useMoney.value = 0;
             noCloseMoney.value = 0;
             accountRate.value = [];
             latestGridResult = { items: [], total: 0 };
           }
-          throw error;
+          return { items: [], total: 0 };
         }
       },
     },
@@ -167,12 +169,17 @@ const gridOptions: VxeTableGridOptions<CloseManageItem> = {
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 async function loadMeta() {
-  const [accounts, info] = await Promise.all([
+  // 账户列表与登录信息互相独立，避免一侧失败拖垮整页卡片状态
+  const [accountsResult, infoResult] = await Promise.allSettled([
     fetchWithdrawAccountListApi(),
     fetchWithdrawUserInfoApi(),
   ]);
-  accountList.value = accounts.Items || [];
-  userInfo.value = info || {};
+  accountList.value =
+    accountsResult.status === 'fulfilled'
+      ? accountsResult.value.Items || []
+      : [];
+  userInfo.value =
+    infoResult.status === 'fulfilled' ? infoResult.value || {} : {};
 }
 
 function handleWithdrawSuccess() {

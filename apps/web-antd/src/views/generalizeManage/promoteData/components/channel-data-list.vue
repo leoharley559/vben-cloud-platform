@@ -132,6 +132,8 @@ async function loadData() {
       result.ItemsTotal || [],
     );
     expandedKeys.value = rows.value.map((item) => String(item.RowKey));
+  } catch {
+    rows.value = [];
   } finally {
     loading.value = false;
   }
@@ -203,9 +205,10 @@ function cellValue(row: ChannelDataRow, key: string) {
       );
     }
     case 'profitRoi': {
+      // 对齐旧站：分母成本不乘汇率（充值ROI 才乘）
       return calcPercent(
         (payMoney - Number(row.SumWithdrawMoney || 0)) * currentRate.value,
-        cost * currentRate.value * 100,
+        cost * 100,
       );
     }
     case 'retention': {
@@ -239,7 +242,7 @@ onMounted(async () => {
 
 <template>
   <div v-if="canViewTable">
-    <PromoteDataSearch ref="searchRef" @search="loadData">
+    <PromoteDataSearch ref="searchRef" :max-range-days="6" @search="loadData">
       <div class="flex items-center gap-2">
         <span class="text-sm text-gray-500">汇率</span>
         <Select

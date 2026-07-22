@@ -18,7 +18,7 @@ import dayjs from 'dayjs';
 import { fetchEasyRechargeListApi } from '#/api/operationManage/easy-recharge';
 import EasyRechargeVoucherCell from '#/components/easy-recharge/easy-recharge-voucher-cell.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   EASY_RECHARGE_STATUS_OPTIONS,
@@ -32,7 +32,7 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const totalAmount = ref(0);
 
 const filterOrderId = ref('');

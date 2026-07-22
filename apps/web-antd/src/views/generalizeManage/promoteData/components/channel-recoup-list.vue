@@ -19,33 +19,53 @@ import {
 import dayjs from 'dayjs';
 
 import { fetchChannelRecoupListApi } from '#/api/promotion/promote-data';
+import AccountSelect from '#/components/global/account-select.vue';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 defineOptions({ name: 'ChannelRecoupList' });
 
+interface RecoupRow extends ChannelRecoupItem {
+  _periodIndex?: number;
+  _periodStart?: number;
+  _periodYear?: number;
+}
+
 const { checkPermission } = useCloudPermission();
 const canViewPage = computed(() => checkPermission(13_187));
 const canExport = computed(() => checkPermission(10_016));
 const dayLabels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 28, 30];
-const rows = ref<ChannelRecoupItem[]>([]);
+const rows = ref<RecoupRow[]>([]);
 const loading = ref(false);
 const exportLoading = ref(false);
+const filterAdminIds = ref<Array<number | string>>([]);
 const filterAdminSearch = ref('');
 const filterAdminSearchType = ref(0);
+const filterChannelIds = ref<Array<number | string>>([]);
 const filterChannelSearch = ref('');
 const filterChannelSearchType = ref(0);
 const filterReportType = ref(3);
 const filterType = ref(1);
 const filterIsTotal = ref(0);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(currentWeek());
+const currentDateNum = ref(getWeekNumber(new Date()));
+const currentYear = ref(new Date().getFullYear());
 
 function currentWeek(): [dayjs.Dayjs, dayjs.Dayjs] {
   const now = dayjs();
   const daysFromMonday = (now.day() + 6) % 7;
   const monday = now.subtract(daysFromMonday, 'day').startOf('day');
   return [monday, monday.add(6, 'day')];
+}
+
+/** 对齐旧站 getWeekNumber（ISO 周） */
+function getWeekNumber(date: Date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7);
 }
 
 const datePickerMode = computed<'date' | 'month' | 'week'>(() =>
@@ -58,28 +78,40 @@ const datePickerMode = computed<'date' | 'month' | 'week'>(() =>
 
 function resetDateByReportType() {
   if (filterReportType.value === 2) {
+    // 对齐旧站 getBeforeDateStr(30/1) → [today-29, today]
     filterDateRange.value = [
-      dayjs().subtract(30, 'day'),
-      dayjs().subtract(1, 'day'),
+      dayjs().subtract(29, 'day'),
+      dayjs(),
     ];
+    currentDateNum.value = Date.now();
   } else if (filterReportType.value === 3) {
     filterDateRange.value = currentWeek();
+    currentDateNum.value = getWeekNumber(new Date());
   } else {
-    filterDateRange.value = [
-      dayjs().subtract(120, 'month').startOf('month'),
-      dayjs().subtract(1, 'month').startOf('month'),
-    ];
+    // 对齐旧站 getBeforeMonthStr(120/1)+'-01'
+    const beginMonth = dayjs().subtract(119, 'day').startOf('month');
+    filterDateRange.value = [beginMonth, dayjs().startOf('month')];
+    currentDateNum.value = new Date().getMonth() + 1;
   }
+  currentYear.value = new Date().getFullYear();
   rows.value = [];
 }
 
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
+  const adminSearch =
+    filterAdminSearchType.value === 0
+      ? filterAdminIds.value.join(',')
+      : filterAdminSearch.value.trim();
+  const channelSearch =
+    filterChannelSearchType.value === 0
+      ? filterChannelIds.value.join(',')
+      : filterChannelSearch.value.trim();
   return {
-    AdminSearch: filterAdminSearch.value.trim(),
+    AdminSearch: adminSearch,
     AdminSearchType: filterAdminSearchType.value,
     BeginTime: begin?.format('YYYY-MM-DD') || '',
-    ChannelSearch: filterChannelSearch.value.trim(),
+    ChannelSearch: channelSearch,
     ChannelSearchType: filterChannelSearchType.value,
     EndTime: end?.format('YYYY-MM-DD') || '',
     IsTotal: Boolean(filterIsTotal.value),
@@ -88,25 +120,45 @@ function getQueryParams() {
   };
 }
 
+function enrichRows(items: ChannelRecoupItem[]): RecoupRow[] {
+  return items.map((item) => {
+    const row: RecoupRow = { ...item };
+    if (filterReportType.value === 2) {
+      row._periodStart = new Date(String(item.RegisterPeriod || '')).getTime();
+    } else {
+      const parts = String(item.RegisterPeriod || '').split('-');
+      row._periodYear = Number(parts[0] || 0);
+      row._periodIndex = Number(parts[1] || 0);
+    }
+    return row;
+  });
+}
+
 async function loadData() {
   loading.value = true;
   try {
     const result = await fetchChannelRecoupListApi(getQueryParams());
-    rows.value = result.Items || [];
+    rows.value = enrichRows(result.Items || []);
+  } catch {
+    rows.value = [];
   } finally {
     loading.value = false;
   }
 }
 
 function reset() {
+  filterAdminIds.value = [];
   filterAdminSearch.value = '';
   filterAdminSearchType.value = 0;
+  filterChannelIds.value = [];
   filterChannelSearch.value = '';
   filterChannelSearchType.value = 0;
   filterReportType.value = 3;
   filterType.value = 1;
   filterIsTotal.value = 0;
   filterDateRange.value = currentWeek();
+  currentDateNum.value = getWeekNumber(new Date());
+  currentYear.value = new Date().getFullYear();
   loadData();
 }
 
@@ -132,7 +184,7 @@ function reportDate(value?: string) {
   return `${year}年第${week}周`;
 }
 
-function rowArray(row: ChannelRecoupItem) {
+function rowArray(row: RecoupRow) {
   const suffix = filterIsTotal.value ? 'Total' : '';
   const fieldMap: Record<number, string> = {
     1: 'SumBetNum',
@@ -142,11 +194,29 @@ function rowArray(row: ChannelRecoupItem) {
     5: 'SumPayNum',
   };
   const field = `${fieldMap[filterType.value] || 'SumBetNum'}${suffix}`;
-  const value = row[field];
+  const value = row[field as keyof RecoupRow];
   return Array.isArray(value) ? value : [];
 }
 
-function dynamicValue(row: ChannelRecoupItem, index: number) {
+/** 对齐旧站 formatValue：未到期周期显示 '-' */
+function isPastPeriod(row: RecoupRow, index: number, dayReportIndex = 1) {
+  if (filterReportType.value === 2) {
+    const start = Number(row._periodStart || 0);
+    return start + dayReportIndex * 86_400_000 < currentDateNum.value;
+  }
+  const period = Number(row._periodIndex || 0);
+  const year = Number(row._periodYear || 0);
+  return (
+    period + index < currentDateNum.value || year < currentYear.value
+  );
+}
+
+function dynamicValue(row: RecoupRow, index: number) {
+  const dayReportIndex =
+    filterReportType.value === 2 ? dayLabels[index] || 1 : 1;
+  if (!isPastPeriod(row, index, dayReportIndex)) {
+    return '-';
+  }
   const value = rowArray(row)[index];
   if (value === undefined || value === null) return '-';
   return [2, 3, 4].includes(filterType.value)
@@ -154,7 +224,12 @@ function dynamicValue(row: ChannelRecoupItem, index: number) {
     : value;
 }
 
-function dynamicRawValue(row: ChannelRecoupItem, index: number) {
+function dynamicRawValue(row: RecoupRow, index: number) {
+  const dayReportIndex =
+    filterReportType.value === 2 ? dayLabels[index] || 1 : 1;
+  if (!isPastPeriod(row, index, dayReportIndex)) {
+    return 0;
+  }
   return Number(rowArray(row)[index] || 0);
 }
 
@@ -164,7 +239,7 @@ const dynamicLabels = computed(() =>
     : Array.from({ length: 12 }, (_, index) => index + 1),
 );
 
-const columns = computed<TableColumnsType<ChannelRecoupItem>>(() => [
+const columns = computed<TableColumnsType<RecoupRow>>(() => [
   { dataIndex: 'RegisterPeriod', fixed: 'left', key: 'date', title: '日期', width: 130 },
   { dataIndex: 'RegNum', fixed: 'left', key: 'RegNum', title: '注册人数', width: 100 },
   { dataIndex: 'FirstPayNum', fixed: 'left', key: 'FirstPayNum', title: '首存人数', width: 100 },
@@ -190,7 +265,7 @@ async function handleExport() {
         { header: '首存人数', value: (row) => row.FirstPayNum ?? 0 },
         ...dynamicLabels.value.map((label, index) => ({
           header: periodLabel(label),
-          value: (row: ChannelRecoupItem) => dynamicValue(row, index),
+          value: (row: RecoupRow) => dynamicValue(row, index),
         })),
       ],
       `渠道回本数据_${dayjs().format('YYYYMMDDHHmmss')}`,
@@ -218,7 +293,13 @@ onMounted(() => {
           ]"
           style="width: 80px"
         />
+        <AccountSelect
+          v-if="filterAdminSearchType === 0"
+          v-model="filterAdminIds"
+          style="width: 220px"
+        />
         <Input
+          v-else
           v-model:value="filterAdminSearch"
           allow-clear
           placeholder="推广账号"
@@ -234,7 +315,13 @@ onMounted(() => {
           ]"
           style="width: 80px"
         />
+        <ChannelSelect
+          v-if="filterChannelSearchType === 0"
+          v-model="filterChannelIds"
+          style="width: 220px"
+        />
         <Input
+          v-else
           v-model:value="filterChannelSearch"
           allow-clear
           placeholder="渠道"

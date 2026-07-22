@@ -53,12 +53,16 @@ const gridOptions: VxeTableGridOptions<DropChangeItem> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchDropChangeListApi(getQueryParams(page));
-        const items = result.Item || [];
-        return {
-          items,
-          total: Number(result.Page?.MaxCount || items.length),
-        };
+        try {
+          const result = await fetchDropChangeListApi(getQueryParams(page));
+          const items = result.Item || [];
+          return {
+            items,
+            total: Number(result.Page?.MaxCount || items.length),
+          };
+        } catch {
+          return { items: [], total: 0 };
+        }
       },
     },
   },

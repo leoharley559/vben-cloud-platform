@@ -48,16 +48,18 @@ async function handleSubmit(isAccept: number) {
   }
   saving.value = true;
   try {
+    // 对齐旧站：UpdateAdminId != adminInfo.Admin.Id
     await finishCloseOrderApi({
       Desc: formDesc.value,
       Id: props.row.Id,
       IsAccept: isAccept,
-      IsYourSure:
-        String(props.row.UpdateAdminId) !== String(props.currentAdminId),
+      IsYourSure: props.row.UpdateAdminId != props.currentAdminId,
     });
     message.success('处理成功');
     emit('success');
     handleClose();
+  } catch {
+    // requestClient 已提示业务错误（如 10403）
   } finally {
     saving.value = false;
   }

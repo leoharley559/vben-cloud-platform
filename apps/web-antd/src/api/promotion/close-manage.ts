@@ -20,9 +20,14 @@ export async function fetchCloseManageListApi(query: CloseManageListQuery) {
     '/backend/accountteamwithdraw/list',
     { params: trimSpace(query) },
   );
+  const more = data?.MoreItems || {};
   return {
-    Items: data?.Items || [],
-    MoreItems: data?.MoreItems || {},
+    Items: Array.isArray(data?.Items) ? data.Items : [],
+    MoreItems: {
+      FreezeMoney: Number(more.FreezeMoney || 0),
+      Money: Number(more.Money || 0),
+      PayRate: Array.isArray(more.PayRate) ? more.PayRate : [],
+    },
     Pagination: data?.Pagination,
   };
 }

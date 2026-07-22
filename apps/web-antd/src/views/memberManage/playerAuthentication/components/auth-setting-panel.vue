@@ -95,9 +95,10 @@ async function loadSettings() {
     const sameIdConfig = parsed.find((item) => item.SubType === 1003);
 
     enableMobileOtp.value = Boolean(resolveConfig(otpConfig?.Config).IsOpen);
-    unverifiedGracePeriod.value = Number(
-      resolveConfig(verifyConfig?.Config).Days || 7,
-    );
+    // Days=0 为合法值，不能用 || 7（否则会误显示成 7）
+    const graceDays = resolveConfig(verifyConfig?.Config).Days;
+    unverifiedGracePeriod.value =
+      graceDays === undefined || graceDays === null ? 7 : Number(graceDays);
     enableSameIdSetting.value = Boolean(
       resolveConfig(sameIdConfig?.Config).IsOpen,
     );
@@ -239,6 +240,10 @@ onMounted(() => {
       </template>
     </Table>
 
+    <div class="mt-2 text-sm text-red-500">
+      # 充值时，提现时，活动里任何一个状态开启时，也会开启游戏里「用户名编辑」需完成身份验证
+    </div>
+
     <div class="mt-6 space-y-4">
       <div class="flex items-center gap-3">
         <span class="w-56 text-sm text-gray-600">手机号 OTP 验证</span>
@@ -251,18 +256,11 @@ onMounted(() => {
         <span class="w-56 text-sm text-gray-600">注册后限定时间内完成验证</span>
         <InputNumber
           v-model:value="unverifiedGracePeriod"
-          :min="1"
+          :min="0"
           addon-after="天"
           class="w-40"
         />
         <Button type="primary" @click="saveGracePeriod">保存</Button>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="w-56 text-sm text-gray-600">同证件 ID 唯一校验</span>
-        <Switch
-          :checked="enableSameIdSetting"
-          @change="(checked) => handleExtraSwitch(checked, 1003)"
-        />
       </div>
     </div>
 
@@ -272,7 +270,20 @@ onMounted(() => {
       @success="loadSettings"
     />
 
-    <AuthResultEmailPanel @reload="loadSettings" />
+    <!-- 对齐旧站顺序：验证信息开关 → 同证件校验 → 结果通知邮件 -->
     <AuthInfoSwitchPanel @reload="loadSettings" />
+
+    <div class="mt-8 border-t pt-6">
+      <div class="mb-3 font-medium">同姓名校验设置</div>
+      <div class="flex items-center gap-3">
+        <span class="w-56 text-sm text-gray-600">同证件 ID 唯一校验</span>
+        <Switch
+          :checked="enableSameIdSetting"
+          @change="(checked) => handleExtraSwitch(checked, 1003)"
+        />
+      </div>
+    </div>
+
+    <AuthResultEmailPanel @reload="loadSettings" />
   </div>
 </template>

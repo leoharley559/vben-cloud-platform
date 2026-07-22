@@ -309,9 +309,8 @@ async function loadDependencies() {
   dependenciesLoading.value = true;
   try {
     const [firstLevels, quickTemplates] = await Promise.all([
+      // 勿传 BeginTime/EndTime=1，否则本环境层级列表空
       fetchRechargePlayerLevelsApi({
-        BeginTime: 1,
-        EndTime: 1,
         Page: 1,
         PageSize: PAGE_SIZE,
       }),
@@ -327,8 +326,6 @@ async function loadDependencies() {
         ? await Promise.all(
             Array.from({ length: pageCount - 1 }, (_, index) =>
               fetchRechargePlayerLevelsApi({
-                BeginTime: 1,
-                EndTime: 1,
                 Page: index + 2,
                 PageSize: PAGE_SIZE,
               }),

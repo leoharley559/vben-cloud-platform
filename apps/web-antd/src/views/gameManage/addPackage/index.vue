@@ -375,8 +375,10 @@ const previewUrl = computed(() => {
     {
       ...payload,
       MusicData: rawDetail.value?.MusicData,
-      SkinColor: form.appColorValue,
-      SkinColorPc: form.pcColorValue,
+      SkinColor: hasColorId(form.appColorValue) ? form.appColorValue : undefined,
+      SkinColorPc: hasColorId(form.pcColorValue)
+        ? form.pcColorValue
+        : undefined,
     },
     (projectConfig.value?.AgentAccount as Record<string, unknown> | undefined)
       ?.Id,
@@ -491,8 +493,18 @@ function initializeGames(detail?: PackageDetail) {
 async function fetchResources() {
   const requestId = ++resourceRequestId.value;
   const family = form.StyleSetting;
+  const agentId = getAdminId();
+  if (agentId === undefined || agentId === null || agentId === '') {
+    appResources.value = [];
+    pcResources.value = [];
+    iconResources.value = [];
+    appTotal.value = 0;
+    pcTotal.value = 0;
+    message.error('缺少 AgentId，无法加载皮肤/图标资源');
+    return;
+  }
   resourcesLoading.value = true;
-  const common = { AgentId: getAdminId(), Page: 1, PageSize: 1000 };
+  const common = { AgentId: agentId, Page: 1, PageSize: 1000 };
   const [appState, pcState, iconState] = await Promise.allSettled([
     fetchPackageResourceListApi({
       ...common,
@@ -575,6 +587,11 @@ async function fetchResources() {
   }
 }
 
+function hasColorId(value: unknown): value is PackageId {
+  if (value === undefined || value === null || value === '') return false;
+  return Number(value) !== 0;
+}
+
 function applyDetail(detail: PackageDetail) {
   rawDetail.value = { ...detail };
   form.PackageName = String(detail.PackageName || '');
@@ -599,22 +616,17 @@ function applyDetail(detail: PackageDetail) {
     detail.CsLineConfig,
     structuredClone(EMPTY_CS_LINE_CONFIG),
   );
+  // 对齐旧站：SkinColor/PackageColorStyle 为 0 表示未配置配色
   const appColorId =
     detail.SkinColor ?? detail.PackageColorStyleId ?? detail.PackageColorStyle;
-  form.appColorId =
-    typeof appColorId === 'string' || typeof appColorId === 'number'
-      ? appColorId
-      : '';
+  form.appColorId = hasColorId(appColorId) ? appColorId : '';
   form.appColorValue = form.appColorId;
   const pcColorId = detail.SkinColorPc ?? detail.PackageColorStylePc;
-  form.pcColorId =
-    typeof pcColorId === 'string' || typeof pcColorId === 'number'
-      ? pcColorId
-      : '';
+  form.pcColorId = hasColorId(pcColorId) ? pcColorId : '';
   form.pcColorValue = form.pcColorId;
-  if (form.appColorId !== '')
+  if (hasColorId(form.appColorId))
     appColorByStyle[String(form.StyleType)] = form.appColorId;
-  if (form.pcColorId !== '')
+  if (hasColorId(form.pcColorId))
     pcColorByStyle[String(form.StyleTypePc)] = form.pcColorId;
 
   Object.assign(
@@ -695,11 +707,12 @@ function buildPayload(): PackageFormPayload {
   delete payload.PackageColorStyle;
   delete payload.PackageColorStyleId;
   delete payload.PackageColorStylePc;
-  if (form.appColorValue !== '') {
+  if (hasColorId(form.appColorValue)) {
     payload.PackageColorStyle = form.appColorValue;
     payload.PackageColorStyleId = form.appColorId;
   }
-  if (form.pcColorValue !== '') payload.PackageColorStylePc = form.pcColorValue;
+  if (hasColorId(form.pcColorValue))
+    payload.PackageColorStylePc = form.pcColorValue;
   if (isEdit.value) {
     payload.Id = packageId.value as PackageId;
     if (original.LangText !== undefined) {
@@ -717,6 +730,8 @@ function validateStep(step = activeStep.value) {
     validationMessage.value = '请至少选择一种支持语言';
   } else if (step === 2 && !form.StyleType) {
     validationMessage.value = '请选择 APP / H5 皮肤';
+  } else if (step === 3 && pcResources.value.length > 0 && !form.StyleTypePc) {
+    validationMessage.value = '请选择 PC 皮肤';
   } else if (step === 4) {
     if (!form.PackageName.trim()) validationMessage.value = '请填写 APP 名称';
     else if (form.PackageName.trim().length > 255)
@@ -786,13 +801,13 @@ function selectSkin(device: DeviceKind, value: number | string) {
   if (device === 'app') {
     form.StyleType = normalizedValue;
     const color = appColorByStyle[normalizedValue] ?? '';
-    form.appColorId = color;
-    form.appColorValue = color;
+    form.appColorId = hasColorId(color) ? color : '';
+    form.appColorValue = form.appColorId;
   } else {
     form.StyleTypePc = normalizedValue;
     const color = pcColorByStyle[normalizedValue] ?? '';
-    form.pcColorId = color;
-    form.pcColorValue = color;
+    form.pcColorId = hasColorId(color) ? color : '';
+    form.pcColorValue = form.pcColorId;
   }
 }
 
@@ -814,6 +829,12 @@ async function openThemePicker(device: DeviceKind) {
       ...item,
       Color: parseJson<Record<string, string>>(item.Color, {}),
     }));
+    if (
+      colorThemeFamilies.value.length === 0 &&
+      colorThemeDetails.value.length === 0
+    ) {
+      message.warning('当前环境暂无配色模板');
+    }
     const selected =
       device === 'app'
         ? appColorByStyle[String(form.StyleType)]
@@ -836,14 +857,15 @@ async function openThemePicker(device: DeviceKind) {
 
 function selectColorTheme(theme: PackageColorThemeItem) {
   const id = theme.Id ?? '';
+  if (!hasColorId(id)) return;
   if (themeDevice.value === 'app') {
     form.appColorId = id;
     form.appColorValue = id;
-    if (id !== '') appColorByStyle[String(form.StyleType)] = id;
+    appColorByStyle[String(form.StyleType)] = id;
   } else {
     form.pcColorId = id;
     form.pcColorValue = id;
-    if (id !== '') pcColorByStyle[String(form.StyleTypePc)] = id;
+    pcColorByStyle[String(form.StyleTypePc)] = id;
   }
   themeModalOpen.value = false;
 }
@@ -906,7 +928,7 @@ function resetEditorState() {
 
 async function submit() {
   if (fatalInitError.value || skinConfigurationMissing.value) return;
-  if (![0, 2, 4, 5].every((step) => validateStep(step))) {
+  if (![0, 2, 3, 4, 5].every((step) => validateStep(step))) {
     message.error(validationMessage.value);
     return;
   }

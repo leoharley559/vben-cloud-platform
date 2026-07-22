@@ -14,6 +14,7 @@ import {
   buildTimeshareChart,
   buildTimeshareTable,
   TIMESHARE_METRIC_MAP,
+  timeshareLegendSelected,
   type TimeshareChartType,
   type TimeshareMetricKey,
 } from '#/utils/timeshare-data';
@@ -26,7 +27,6 @@ const props = defineProps<{
 
 const chartRef = ref<EchartsUIType>();
 const { renderEcharts } = useEcharts(chartRef);
-const sharedLegendSelected: Record<string, boolean> = {};
 
 const tableData = computed(() => buildTimeshareTable(props.data, props.metric));
 
@@ -65,7 +65,7 @@ async function renderChart() {
   const selected = Object.fromEntries(
     chart.legend.map((day, index) => [
       day,
-      sharedLegendSelected[day] ?? index === 0,
+      timeshareLegendSelected[day] ?? index === 0,
     ]),
   );
   const instance = await renderEcharts({
@@ -103,7 +103,7 @@ async function renderChart() {
     'legendselectchanged',
     (event: unknown) => {
       const payload = event as { selected?: Record<string, boolean> };
-      Object.assign(sharedLegendSelected, payload.selected || {});
+      Object.assign(timeshareLegendSelected, payload.selected || {});
     },
   );
 }
@@ -127,6 +127,7 @@ watch(
       :pagination="false"
       :scroll="{ x: 'max-content', y: antTableScrollY(100) }"
       size="small"
+      :row-key="(row) => String(row.hour)"
     />
   </div>
   <div v-else class="h-[520px] w-full">

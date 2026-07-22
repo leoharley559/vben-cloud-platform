@@ -47,7 +47,26 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   defaultEnd,
 ]);
 const rawData = ref<TimeshareHourItem[][]>([]);
+const rangeSelecting = ref<dayjs.Dayjs>();
 let latestRequestId = 0;
+
+function disabledDate(current: dayjs.Dayjs) {
+  if (!rangeSelecting.value) return false;
+  const min = rangeSelecting.value.subtract(6, 'day');
+  const max = rangeSelecting.value.add(6, 'day');
+  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
+}
+
+function onCalendarChange(
+  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
+) {
+  const first = dates?.[0];
+  rangeSelecting.value = first
+    ? dayjs.isDayjs(first)
+      ? first
+      : dayjs(first)
+    : undefined;
+}
 
 const realAdminType = computed(() => {
   const parentInfo = projectConfig.value?.ParentInfo as
@@ -57,7 +76,8 @@ const realAdminType = computed(() => {
 });
 
 function canViewMetric(metric: TimeshareMetricKey) {
-  if (realAdminType.value === 1) {
+  // 对齐旧站：仅 AdminType===2 做功能权限裁剪；1 及其它类型展示全部 Tab
+  if (realAdminType.value !== 2) {
     return true;
   }
   if (metric === 'addPayMoney' || metric === 'addPayNum') {
@@ -113,9 +133,13 @@ async function loadData() {
   try {
     const result = await fetchTimeshareDataApi(getQueryParams());
     if (requestId !== latestRequestId) return;
-    rawData.value = result.Items || [];
+    rawData.value = Array.isArray(result.Items) ? result.Items : [];
     if (rawData.value.length === 0) {
       message.info('暂无数据');
+    }
+  } catch {
+    if (requestId === latestRequestId) {
+      rawData.value = [];
     }
   } finally {
     if (requestId === latestRequestId) loading.value = false;
@@ -164,7 +188,12 @@ watch(visibleTabs, (tabs) => {
           <span>渠道</span>
           <ChannelSelect v-model="filterChannelIds" style="width: 240px" />
         </div>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <DatePicker.RangePicker
+          v-model:value="filterDateRange"
+          :disabled-date="disabledDate"
+          @calendar-change="onCalendarChange"
+          @open-change="(open) => !open && (rangeSelecting = undefined)"
+        />
         <Button type="primary" @click="loadData">查询</Button>
         <Button @click="reset">重置</Button>
         <div class="ml-auto">

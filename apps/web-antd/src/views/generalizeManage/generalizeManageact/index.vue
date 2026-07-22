@@ -63,6 +63,7 @@ const allRows = ref<PromoterListItem[]>([]);
 const total = ref(0);
 const currentDomain = ref('');
 const query = reactive<PromoterListQuery>({
+  Keyword: '',
   Name: '',
   Page: 1,
   PageSize: 20,
@@ -117,7 +118,13 @@ const settleOptions = Object.entries(PROMOTER_SETTLE_TYPE_MAP)
   .map(([value, label]) => ({ label, value: Number(value) }));
 const columns = computed<TableColumnsType<PromoterListItem>>(() => [
   { key: 'Status', title: '状态', width: 90 },
-  { key: 'CreateTime', sorter: true, title: '创建时间', width: 170 },
+  {
+    dataIndex: 'CreateTime',
+    key: 'CreateTime',
+    sorter: true,
+    title: '创建时间',
+    width: 170,
+  },
   { key: 'AccountType', title: '账号类型', width: 160 },
   { dataIndex: 'Username', key: 'Username', title: '账号用户名', width: 140 },
   { dataIndex: 'Name', key: 'Name', title: '账号名称', width: 140 },
@@ -189,14 +196,16 @@ function calculateTotal(
 }
 
 function normalizeRows(
-  items: PromoterListItem[] = [],
-  totals: PromoterTotalItem[] = [],
+  items: PromoterListItem[] | null | undefined = [],
+  totals: PromoterTotalItem[] | null | undefined = [],
   child = false,
 ) {
-  return items.map((item) => ({
+  const list = Array.isArray(items) ? items : [];
+  const totalList = Array.isArray(totals) ? totals : [];
+  return list.map((item) => ({
     ...item,
     IsOneTui: child ? false : item.IsOneTui,
-    Total: calculateTotal(item, totals),
+    Total: calculateTotal(item, totalList),
     hasChildren:
       realAdminType.value === 1 &&
       Boolean(item.HasChildren ?? item.hasChildren ?? true),
@@ -207,7 +216,7 @@ async function loadData() {
   loading.value = true;
   try {
     query.ParentId = '';
-    const result = await fetchPromoterListApi(query);
+    const result = (await fetchPromoterListApi(query)) || {};
     rows.value = normalizeRows(result.Items, result.ItemsTotal);
     allRows.value = [...rows.value];
     total.value = Number(result.Pagination?.MaxCount || 0);
@@ -220,12 +229,13 @@ async function loadData() {
 
 async function loadChildren(row: PromoterListItem) {
   if (row.children || row.Id === undefined) return;
-  const result = await fetchPromoterListApi({
-    ...query,
-    Page: 1,
-    PageSize: 9999,
-    ParentId: row.Id,
-  });
+  const result =
+    (await fetchPromoterListApi({
+      ...query,
+      Page: 1,
+      PageSize: 9999,
+      ParentId: row.Id,
+    })) || {};
   row.children = normalizeRows(result.Items, result.ItemsTotal, true);
   allRows.value.push(...row.children);
   if (row.children.length === 0) message.info('暂无下级推广账号');
@@ -247,6 +257,7 @@ function search() {
 
 function reset() {
   Object.assign(query, {
+    Keyword: '',
     Name: '',
     Page: 1,
     ParentId: '',
@@ -263,12 +274,15 @@ const changeTable: TableProps['onChange'] = (pagination, _filters, sorter) => {
   const currentSorter = Array.isArray(sorter) ? sorter[0] : sorter;
   query.Page = pagination.current || 1;
   query.PageSize = pagination.pageSize || 20;
+  const sortField = String(
+    currentSorter?.field || currentSorter?.columnKey || 'CreateTime',
+  );
   query.Sort =
     currentSorter?.order === 'ascend'
-      ? String(currentSorter.field || 'CreateTime')
-      : (currentSorter?.order === 'descend'
-        ? `-${String(currentSorter.field || 'CreateTime')}`
-        : '');
+      ? sortField
+      : currentSorter?.order === 'descend'
+        ? `-${sortField}`
+        : '';
   loadData();
 };
 
@@ -478,8 +492,8 @@ async function saveCost() {
 async function openDomain() {
   loading.value = true;
   try {
-    const result = await fetchDomainListApi({ Type: 10 });
-    domainList.value = result.Items || [];
+    const result = (await fetchDomainListApi({ Type: 10 })) || {};
+    domainList.value = Array.isArray(result.Items) ? result.Items : [];
     domainForm.Domain = currentDomain.value;
     domainVisible.value = true;
   } finally {
@@ -561,12 +575,14 @@ onMounted(() => {
             { label: '停用', value: 2 },
           ]"
           placeholder="状态"
+          @clear="query.Status = ''"
         />
         <Select
           v-model:value="query.SettleType"
           allow-clear
           :options="settleOptions"
           placeholder="结算方式"
+          @clear="query.SettleType = ''"
         />
         <Space wrap>
           <Button type="primary" @click="search">查询</Button>

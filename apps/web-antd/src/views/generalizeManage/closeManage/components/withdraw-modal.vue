@@ -113,9 +113,11 @@ async function handleSubmit() {
     return;
   }
   const amount = Number(formGetMoney.value);
+  // 对齐旧站：仅当 min/max 均非 0 时校验区间
   if (
-    (selectedRange.value.min > 0 && amount < selectedRange.value.min) ||
-    (selectedRange.value.max > 0 && amount > selectedRange.value.max)
+    selectedRange.value.min !== 0 &&
+    selectedRange.value.max !== 0 &&
+    (amount < selectedRange.value.min || amount > selectedRange.value.max)
   ) {
     message.warning(
       `提现金额应在 ${selectedRange.value.min}-${selectedRange.value.max} 之间`,
@@ -144,6 +146,8 @@ async function handleSubmit() {
     message.success('提现申请已提交');
     emit('success');
     handleClose();
+  } catch {
+    // requestClient 已提示业务错误
   } finally {
     saving.value = false;
   }

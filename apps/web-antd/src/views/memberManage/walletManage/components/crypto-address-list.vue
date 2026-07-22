@@ -38,15 +38,10 @@ const canAdd = computed(() => checkPermission(11476));
 const canEdit = computed(() => checkPermission(11475));
 const canDelete = computed(() => checkPermission(11477));
 
-const defaultBegin = dayjs().subtract(1, 'month').startOf('day');
-const defaultEnd = dayjs().endOf('day');
-
 const filterLoginAccount = ref('');
 const filterDigitalAddress = ref('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  defaultBegin,
-  defaultEnd,
-]);
+/** 对齐旧站：首屏/重置不传日期（listQuery BeginTime/EndTime 为空） */
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 
 const formOpen = ref(false);
 const formMode = ref<'create' | 'edit'>('create');
@@ -67,13 +62,18 @@ function formatDateTime(value?: number | string) {
     : String(value);
 }
 
+function normalizeLoginAccount(value: string) {
+  return value.toLowerCase().replaceAll(/\s/g, '');
+}
+
 function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
-    DigitalAddress: filterDigitalAddress.value,
-    EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
-    LoginAccount: filterLoginAccount.value,
+    // 对齐旧站首屏/重置：空日期不传 BeginTime/EndTime
+    BeginTime: begin ? begin.startOf('day').unix() : undefined,
+    DigitalAddress: filterDigitalAddress.value.trim() || undefined,
+    EndTime: end ? end.endOf('day').unix() : undefined,
+    LoginAccount: normalizeLoginAccount(filterLoginAccount.value) || undefined,
     ...extra,
   };
 }
@@ -135,7 +135,7 @@ function handleSearch() {
 function handleReset() {
   filterLoginAccount.value = '';
   filterDigitalAddress.value = '';
-  filterDateRange.value = [defaultBegin, defaultEnd];
+  filterDateRange.value = undefined;
   gridApi.reload();
 }
 

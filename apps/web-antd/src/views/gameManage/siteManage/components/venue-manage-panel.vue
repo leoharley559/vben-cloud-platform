@@ -207,21 +207,45 @@ function venueName(row: VenueRow) {
   );
 }
 
+/** 本环境 list 常无 LoginStatus，回退 Switch（1开/2关/3定时）。 */
+function effectiveLoginStatus(row: VenueRow) {
+  if (row.LoginStatus !== undefined && row.LoginStatus !== null) {
+    return Number(row.LoginStatus);
+  }
+  return Number(row.Switch || 0);
+}
+
+/** 本环境 list 常无 WalletStatus，回退 WalletLock（0开/1关/3定时）。 */
+function effectiveWalletStatus(row: VenueRow) {
+  if (row.WalletStatus !== undefined && row.WalletStatus !== null) {
+    return Number(row.WalletStatus);
+  }
+  const lock = Number(row.WalletLock);
+  if (lock === 0) return 0;
+  return 1;
+}
+
+function isVenueOpen(row: VenueRow) {
+  return effectiveLoginStatus(row) === 1;
+}
+
 function displayInfo(row: VenueRow) {
   if (row.Info) return row.Info;
   return parseLangMap(row.LangText)[String(currentLangGroupId.value)]?.Info || '';
 }
 
 function venueStatusText(row: VenueRow) {
-  if (Number(row.LoginStatus) === 1) return '开启';
-  if (Number(row.LoginStatus) === 2) return '关闭';
-  return String(row.LoginStatus ?? '-');
+  const status = effectiveLoginStatus(row);
+  if (status === 1) return '开启';
+  if (status === 2 || status === 3) return '关闭';
+  return String(row.LoginStatus ?? row.Switch ?? '-');
 }
 
 function walletStatusText(row: VenueRow) {
-  if (Number(row.WalletStatus) === 0) return '开启';
-  if (Number(row.WalletStatus) === 1) return '关闭';
-  return String(row.WalletStatus ?? '-');
+  const status = effectiveWalletStatus(row);
+  if (status === 0) return '开启';
+  if (status === 1) return '关闭';
+  return String(row.WalletStatus ?? row.WalletLock ?? '-');
 }
 
 function timeRangeText(start?: number, end?: number) {
@@ -395,7 +419,7 @@ async function submitSwitch() {
 }
 
 function openMaintain(row: VenueRow) {
-  if (Number(row.LoginStatus) === 1) {
+  if (isVenueOpen(row)) {
     message.warning('场馆开启状态下不可编辑维护信息');
     return;
   }
@@ -468,7 +492,7 @@ async function submitMaintain() {
 }
 
 function openLanguage(row: VenueRow) {
-  if (Number(row.LoginStatus) === 1) {
+  if (isVenueOpen(row)) {
     message.warning('场馆开启状态下不可编辑多语言维护信息');
     return;
   }
@@ -540,7 +564,7 @@ function handleReset() {
       <Grid>
         <template #venueStatus="{ row }">
           <Space :size="4">
-            <Tag :color="Number(row.LoginStatus) === 1 ? 'green' : 'red'">
+            <Tag :color="isVenueOpen(row) ? 'green' : 'red'">
               {{ venueStatusText(row) }}
             </Tag>
             <Tag v-if="Number(row.Switch) === 3" color="blue">定时</Tag>
@@ -551,7 +575,7 @@ function handleReset() {
         </template>
         <template #walletStatus="{ row }">
           <Space :size="4">
-            <Tag :color="Number(row.WalletStatus) === 0 ? 'green' : 'red'">
+            <Tag :color="effectiveWalletStatus(row) === 0 ? 'green' : 'red'">
               {{ walletStatusText(row) }}
             </Tag>
             <Tag v-if="Number(row.WalletLock) === 3" color="blue">定时</Tag>
@@ -575,7 +599,7 @@ function handleReset() {
           <Button
             size="small"
             type="link"
-            :disabled="Number(row.LoginStatus) === 1"
+            :disabled="isVenueOpen(row)"
             @click="openLanguage(row)"
           >
             设置
@@ -586,7 +610,7 @@ function handleReset() {
             v-if="canMaintain"
             size="small"
             type="link"
-            :disabled="Number(row.LoginStatus) === 1"
+            :disabled="isVenueOpen(row)"
             @click="openMaintain(row)"
           >
             编辑

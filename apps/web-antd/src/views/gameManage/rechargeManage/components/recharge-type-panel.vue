@@ -60,13 +60,15 @@ const loadError = ref('');
 const actionKey = ref('');
 const items = ref<RechargeChannelItem[]>([]);
 const typeList = ref<RechargePayTypeConfig[]>([]);
-// 旧项目首次请求固定以 PayType=1 获取支付类型元数据和通道列表。
-const selectedPayType = ref<number | string>(1);
+// 对齐旧站：listQuery 首次 PayType=1 拉元数据；active 初始为 0，拿到 TypeList 后选 Sort 最小项。
+const selectedPayType = ref<number | string>(0);
 const keyword = ref('');
 const sort = ref('');
 const page = ref(1);
 const pageSize = ref(20);
 const total = ref(0);
+/** 是否已按 TypeList 完成首次自动选中（对应旧站 active==0 分支） */
+const typeBootstrapped = ref(false);
 const editorOpen = ref(false);
 const editingRow = ref<null | RechargeChannelItem>(null);
 
@@ -189,35 +191,44 @@ async function load(discover = false) {
   loading.value = true;
   loadError.value = '';
   try {
+    // 首次/刷新：与旧站相同，先用 PayType=1 拉 TypeList+Total；之后按当前选中类型查列表
+    const requestPayType =
+      discover || !typeBootstrapped.value ? 1 : selectedPayType.value;
     const result = await fetchRechargeChannelListApi({
       Keyword: keyword.value,
       OnShelf: 1,
       Page: page.value,
       PageSize: pageSize.value,
-      PayType:
-        discover && !selectedPayType.value ? undefined : selectedPayType.value,
+      PayType: requestPayType,
       Sort: sort.value,
     });
     mergeMetadata(result.TypeList, result.Total);
     await overridePrivateCardCounts();
-    if (!selectedPayType.value && typeList.value.length > 0) {
-      selectedPayType.value = typeList.value[0]!.PayType;
-      page.value = 1;
-      await load(false);
-      return;
-    }
-    if (
+
+    if (!typeBootstrapped.value) {
+      typeBootstrapped.value = true;
+      if (typeList.value.length > 0) {
+        selectedPayType.value = typeList.value[0]!.PayType;
+        page.value = 1;
+        // 旧站 getList → 设 active → getAisleListByType 再请求一次
+        if (String(selectedPayType.value) !== String(requestPayType)) {
+          await load(false);
+          return;
+        }
+      }
+    } else if (
       selectedPayType.value &&
+      typeList.value.length > 0 &&
       !typeList.value.some(
         (item) => String(item.PayType) === String(selectedPayType.value),
-      ) &&
-      typeList.value.length > 0
+      )
     ) {
       selectedPayType.value = typeList.value[0]!.PayType;
       page.value = 1;
       await load(false);
       return;
     }
+
     if (isSpecialized.value) {
       items.value = [];
       total.value = 0;
@@ -225,7 +236,13 @@ async function load(discover = false) {
       items.value = result.Items.toSorted(
         (a, b) => Number(b.Index || 0) - Number(a.Index || 0),
       );
-      total.value = Number(result.Pagination?.MaxCount || items.value.length);
+      // 接口常缺 MaxCount，回退当前页条数（与空结果 0 区分）
+      const maxCount = result.Pagination?.MaxCount;
+      total.value = Number(
+        maxCount == null || maxCount === ''
+          ? items.value.length
+          : maxCount,
+      );
     }
   } catch (error) {
     loadError.value =
@@ -236,6 +253,9 @@ async function load(discover = false) {
 }
 
 async function completeReload() {
+  typeBootstrapped.value = false;
+  selectedPayType.value = 0;
+  page.value = 1;
   await load(true);
 }
 

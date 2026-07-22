@@ -204,7 +204,7 @@ async function submitEdit() {
   try {
     await updateSmsTemplateApi({
       ...editForm.raw,
-      ApplyGamePackageIds: editForm.ApplyGamePackageIds,
+      ApplyGamePackageIds: editForm.ApplyGamePackageIds.join(','),
     });
     message.success('模板已保存');
     editVisible.value = false;

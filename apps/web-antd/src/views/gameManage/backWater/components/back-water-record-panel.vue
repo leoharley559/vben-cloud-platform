@@ -174,21 +174,23 @@ function cycleText(row: BackWaterRow) {
 }
 
 function awardStatusText(row: BackWaterRow) {
-  if (Number(row.Reject) === 1 || Number(row.AwardStatus) === 1) return '成功';
-  if (
-    Number(row.Reject) === 3 ||
-    Number(row.ReviewStatus) === 2 ||
-    Number(row.AwardStatus) === 2
-  ) {
-    return '失败';
-  }
-  return '待发放';
+  if (Number(row.Reject) === 1) return '成功';
+  if (Number(row.Reject) === 3) return '失败';
+  if (Number(row.ReviewStatus) === 2) return '失败';
+  if (String(row.ReviewAdminName || '')) return '成功';
+  if (Number(row.AwardStatus) === 0) return '待发放';
+  if (Number(row.AwardStatus) === 1) return '成功';
+  if (Number(row.AwardStatus) === 2) return '失败';
+  return String(row.AwardStatus ?? '-');
 }
 
 function awardTypeText(row: BackWaterRow) {
-  return Number(row.Reject) > 0 || Number(row.AwardType) === 1
-    ? '手动'
-    : '自动';
+  const reject = Number(row.Reject);
+  if (reject === 1 || reject === 2 || reject === 3) return '手动';
+  if (Number(row.AwardType) === 0) return '自动';
+  if (Number(row.AwardType) === 1) return '手动';
+  if (Number(row.AwardType) === -1) return '全部';
+  return String(row.AwardType ?? '-');
 }
 
 function queryParams(page: { currentPage: number; pageSize: number }) {

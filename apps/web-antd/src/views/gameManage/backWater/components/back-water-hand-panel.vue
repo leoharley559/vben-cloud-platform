@@ -157,6 +157,14 @@ function toCent(value: number) {
 }
 
 async function handleQuery() {
+  if (!query.LoginAccount.trim()) {
+    message.warning('请输入游戏账号');
+    return;
+  }
+  if (!query.PackageName) {
+    message.warning('请选择产品包');
+    return;
+  }
   if (!query.Time) {
     message.warning('请选择发放日期');
     return;
@@ -174,6 +182,8 @@ async function handleQuery() {
     if (!playerInfo.value.PlayerId) {
       message.warning('未查询到返水数据');
     }
+  } catch {
+    playerInfo.value = null;
   } finally {
     loading.value = false;
   }

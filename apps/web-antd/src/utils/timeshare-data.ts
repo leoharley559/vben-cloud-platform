@@ -30,11 +30,13 @@ export const TIMESHARE_METRIC_MAP: Record<
 };
 
 function sortDayGroups(data: TimeshareHourItem[][]) {
-  return data.filter((group) => Array.isArray(group) && group.length > 0).toSorted((a, b) => {
-    const aDay = a?.[0]?.ReportDay || '';
-    const bDay = b?.[0]?.ReportDay || '';
-    return new Date(bDay).getTime() - new Date(aDay).getTime();
-  });
+  return [...data]
+    .filter((group) => Array.isArray(group) && group.length > 0)
+    .sort((a, b) => {
+      const aDay = a?.[0]?.ReportDay || '';
+      const bDay = b?.[0]?.ReportDay || '';
+      return new Date(bDay).getTime() - new Date(aDay).getTime();
+    });
 }
 
 function getMetricValue(item: TimeshareHourItem, metric: TimeshareMetricKey) {
@@ -107,3 +109,6 @@ export function buildTimeshareChart(
   }));
   return { legend, series, xAxis: HOUR_LABELS };
 }
+
+/** 跨 Tab 共享图例选中态（对齐旧站 vuex legendSeleced） */
+export const timeshareLegendSelected: Record<string, boolean> = {};

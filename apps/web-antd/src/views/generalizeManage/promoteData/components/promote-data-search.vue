@@ -9,18 +9,21 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 
 defineOptions({ name: 'PromoteDataSearch' });
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     landingOptions?: Array<{
       label: string;
       value: number | string | undefined;
     }>;
+    /** 可选日期跨度上限（天），对齐旧站 limit-number；0 表示不限制 */
+    maxRangeDays?: number;
     showLanding?: boolean;
     showSearchButton?: boolean;
   }>(),
   {
     showLanding: false,
     showSearchButton: true,
+    maxRangeDays: 0,
     landingOptions: () => [],
   },
 );
@@ -38,7 +41,8 @@ const emit = defineEmits<{
   ];
 }>();
 
-const defaultBegin = dayjs().subtract(7, 'day');
+// 对齐旧站 getBeforeDateStr(7)：内部 days-1 → 近 7 个自然日（含今天）
+const defaultBegin = dayjs().subtract(6, 'day');
 const defaultEnd = dayjs();
 
 const filterAdminIds = ref<Array<number | string>>([]);
@@ -48,6 +52,25 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   defaultBegin,
   defaultEnd,
 ]);
+const rangeSelecting = ref<dayjs.Dayjs>();
+
+function disabledDate(current: dayjs.Dayjs) {
+  if (!props.maxRangeDays || !rangeSelecting.value) return false;
+  const min = rangeSelecting.value.subtract(props.maxRangeDays, 'day');
+  const max = rangeSelecting.value.add(props.maxRangeDays, 'day');
+  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
+}
+
+function onCalendarChange(
+  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
+) {
+  const first = dates?.[0];
+  rangeSelecting.value = first
+    ? dayjs.isDayjs(first)
+      ? first
+      : dayjs(first)
+    : undefined;
+}
 
 function buildPayload() {
   const [begin, end] = filterDateRange.value || [];
@@ -101,7 +124,12 @@ defineExpose({
     />
     <div class="flex items-center gap-2">
       <span class="text-sm text-gray-500">日期</span>
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <DatePicker.RangePicker
+        v-model:value="filterDateRange"
+        :disabled-date="disabledDate"
+        @calendar-change="onCalendarChange"
+        @open-change="(open) => !open && (rangeSelecting = undefined)"
+      />
     </div>
     <Space v-if="showSearchButton">
       <Button type="primary" @click="handleSearch">查询</Button>

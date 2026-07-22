@@ -14,16 +14,38 @@ export interface BackWaterListResult<T = Record<string, unknown>> {
   [key: string]: unknown;
 }
 
+function withItems<T extends { Items?: null | unknown[] }>(
+  result: null | T | undefined,
+): T & {
+  Items: NonNullable<T['Items']> extends Array<infer U> ? U[] : unknown[];
+} {
+  return {
+    ...(result ?? ({} as T)),
+    Items: (result?.Items ?? []) as never,
+  };
+}
+
+function asSchemeList(
+  result: Array<Record<string, unknown>> | null | Record<string, unknown>,
+): Array<Record<string, unknown>> {
+  if (Array.isArray(result)) return result;
+  if (result && Array.isArray((result as { Items?: unknown }).Items)) {
+    return (result as { Items: Array<Record<string, unknown>> }).Items;
+  }
+  return [];
+}
+
 /**
  * 查询返水方案。
  *
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/backWater
  */
-export function fetchBackWaterSchemesApi() {
-  return requestClient.get<Array<Record<string, unknown>> | null>(
-    '/backend/playerbackwaterscheme/allscheme',
-  );
+export async function fetchBackWaterSchemesApi() {
+  const result = await requestClient.get<
+    Array<Record<string, unknown>> | null | Record<string, unknown>
+  >('/backend/playerbackwaterscheme/allscheme');
+  return asSchemeList(result);
 }
 
 /**
@@ -123,11 +145,12 @@ export function deleteBackWaterSchemeApi(id: number | string) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/backWater
  */
-export function fetchBackWaterRecordApi(query: Record<string, unknown>) {
-  return requestClient.get<BackWaterListResult>(
+export async function fetchBackWaterRecordApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<BackWaterListResult>(
     '/backend/playerbackwaterrecord/list',
     { params: trimSpace(query) },
   );
+  return withItems(result);
 }
 
 /**
@@ -137,13 +160,14 @@ export function fetchBackWaterRecordApi(query: Record<string, unknown>) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/backWater
  */
-export function fetchBackWaterRecordDetailApi(
+export async function fetchBackWaterRecordDetailApi(
   query: Record<string, unknown>,
 ) {
-  return requestClient.get<BackWaterListResult>(
+  const result = await requestClient.get<BackWaterListResult>(
     '/backend/playerbackwaterrecord/detaillist',
     { params: trimSpace(query) },
   );
+  return withItems(result);
 }
 
 /**
@@ -153,13 +177,15 @@ export function fetchBackWaterRecordDetailApi(
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/backWater
  */
-export function fetchBackWaterOrderDetailsApi(
+export async function fetchBackWaterOrderDetailsApi(
   query: Record<string, unknown>,
 ) {
-  return requestClient.get<Array<Record<string, unknown>> | null>(
-    '/backend/playerbackwaterrecord/detail',
-    { params: trimSpace(query) },
-  );
+  const result = await requestClient.get<
+    Array<Record<string, unknown>> | null
+  >('/backend/playerbackwaterrecord/detail', {
+    params: trimSpace(query),
+  });
+  return result ?? [];
 }
 
 /**
@@ -190,11 +216,12 @@ export function exportBackWaterRecordApi(
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/backWater
  */
-export function fetchBackWaterReviewApi(query: Record<string, unknown>) {
-  return requestClient.get<BackWaterListResult>(
+export async function fetchBackWaterReviewApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<BackWaterListResult>(
     '/backend/playerbackwaterrecord/reviewlist',
     { params: trimSpace(query) },
   );
+  return withItems(result);
 }
 
 /**
@@ -207,4 +234,3 @@ export function fetchBackWaterReviewApi(query: Record<string, unknown>) {
 export function reviewBackWaterApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/playerbackwaterrecord/review', data);
 }
-

@@ -55,12 +55,13 @@ const filterStatus = ref<number | string>('');
 const filterUploadDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 const filterVerifyDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 
-const packageSelectOptions = computed(() =>
-  packageOptions.value.map((item) => ({
+const packageSelectOptions = computed(() => [
+  { label: '全部', value: '' as number | string },
+  ...packageOptions.value.map((item) => ({
     label: item.PackageName,
     value: item.PackageId,
   })),
-);
+]);
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -85,16 +86,19 @@ function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
     AgentId: filterAgentId.value || undefined,
     AuthBeginTime: verifyBegin ? verifyBegin.startOf('day').unix() : undefined,
     AuthEndTime: verifyEnd ? verifyEnd.endOf('day').unix() : undefined,
-    AuthScenario:
-      filterAuthScenario.value === -1 ? undefined : filterAuthScenario.value,
+    // 对齐旧站：全部时传 AuthScenario=-1
+    AuthScenario: filterAuthScenario.value,
     BeginTime: uploadBegin ? uploadBegin.startOf('day').unix() : undefined,
     ChannelId: filterChannelId.value
       ? String(filterChannelId.value)
       : undefined,
     EndTime: uploadEnd ? uploadEnd.endOf('day').unix() : undefined,
-    LoginAccount: filterLoginAccount.value || undefined,
-    PackageId: filterPackageId.value || undefined,
-    PlayerId: filterPlayerId.value || undefined,
+    LoginAccount: filterLoginAccount.value.trim() || undefined,
+    PackageId:
+      filterPackageId.value === '' || filterPackageId.value === undefined
+        ? undefined
+        : filterPackageId.value,
+    PlayerId: filterPlayerId.value.trim() || undefined,
     Status: filterStatus.value === '' ? undefined : filterStatus.value,
     ...extra,
   };

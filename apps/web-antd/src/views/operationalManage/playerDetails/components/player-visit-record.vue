@@ -22,7 +22,7 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 
 defineOptions({ name: 'PlayerVisitRecordPanel' });
 
@@ -35,7 +35,7 @@ const { projectConfig } = useProjectConfig();
 
 const canViewTable = computed(() => checkPermission(12739));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const categoryOptions = ref<Array<{ label: string; value: number | string }>>(
   [],
 );

@@ -24,10 +24,20 @@ import { trimSpace } from '#/utils/string';
  * @see views/generalizeManage/generalizeManageact/index.vue
  * @see views/mobile/openAccount/index.vue
  */
-export function fetchPromoterListApi(query: PromoterListQuery) {
-  return requestClient.get<PromoterListResult>('/backend/promoter/list', {
-    params: trimSpace(query),
-  });
+export async function fetchPromoterListApi(query: PromoterListQuery) {
+  const data = await requestClient.get<PromoterListResult | null>(
+    '/backend/promoter/list',
+    {
+      params: trimSpace(query),
+    },
+  );
+  // 空环境常返回 Items/ItemsTotal=null，统一归一避免页面崩溃
+  return {
+    Config: data?.Config,
+    Items: Array.isArray(data?.Items) ? data.Items : [],
+    ItemsTotal: Array.isArray(data?.ItemsTotal) ? data.ItemsTotal : [],
+    Pagination: data?.Pagination,
+  } satisfies PromoterListResult;
 }
 
 /**
@@ -131,7 +141,7 @@ export async function fetchBrokerageSetListApi(query: BrokerageSetListQuery) {
     params: trimSpace(query),
   });
   return {
-    Items: data?.Items || [],
+    Items: Array.isArray(data?.Items) ? data.Items : [],
     TeamGameDefaultRate: Number(data?.TeamGameDefaultRate || 0),
   };
 }

@@ -707,6 +707,19 @@ async function loadAppearance() {
           ),
           value: (item.LogoGroupId ?? item.Id ?? 0) as PackageId,
         }));
+        const current = appearanceForm.LogoGroupId;
+        if (
+          current &&
+          Number(current) !== 0 &&
+          !logoOptions.value.some(
+            (item) => String(item.value) === String(current),
+          )
+        ) {
+          logoOptions.value.unshift({
+            label: `方案 ${current}`,
+            value: current,
+          });
+        }
       }),
     );
   }

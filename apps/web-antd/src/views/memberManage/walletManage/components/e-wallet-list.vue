@@ -72,10 +72,10 @@ function formatDateTime(value?: number | string) {
 function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    AccountNum: filterAccountNum.value || undefined,
+    AccountNum: filterAccountNum.value.trim() || undefined,
     BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
     EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
-    LoginAccount: filterLoginAccount.value || undefined,
+    LoginAccount: filterLoginAccount.value.trim() || undefined,
     PayType: filterPayType.value === '' ? undefined : filterPayType.value,
     ...extra,
   };

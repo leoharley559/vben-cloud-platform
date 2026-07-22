@@ -43,8 +43,8 @@ function normalizeArrayQuery(query: Record<string, unknown>, fields: string[]) {
  * @returns 渠道推广数据汇总
  * @see views/generalizeManage/promoteData/components/channel-data-list.vue
  */
-export function fetchChannelDataListApi(query: PromoteDataBaseQuery) {
-  return requestClient.get<ChannelDataResult>(
+export async function fetchChannelDataListApi(query: PromoteDataBaseQuery) {
+  const data = await requestClient.get<ChannelDataResult | null>(
     '/backend/promotedata/channelreport',
     {
       params: normalizeArrayQuery(query as unknown as Record<string, unknown>, [
@@ -53,6 +53,11 @@ export function fetchChannelDataListApi(query: PromoteDataBaseQuery) {
       ]),
     },
   );
+  return {
+    Items: Array.isArray(data?.Items) ? data.Items : [],
+    ItemsCost: Array.isArray(data?.ItemsCost) ? data.ItemsCost : [],
+    ItemsTotal: Array.isArray(data?.ItemsTotal) ? data.ItemsTotal : [],
+  } satisfies ChannelDataResult;
 }
 
 /**
@@ -61,8 +66,8 @@ export function fetchChannelDataListApi(query: PromoteDataBaseQuery) {
  * @returns 掉量变更汇总数据
  * @see views/generalizeManage/promoteData/components/drop-change-list.vue
  */
-export function fetchDropChangeListApi(query: DropChangeListQuery) {
-  return requestClient.get<DropChangeResult>(
+export async function fetchDropChangeListApi(query: DropChangeListQuery) {
+  const data = await requestClient.get<DropChangeResult | null>(
     '/backend/promotedata/getsumrecord',
     {
       params: normalizeArrayQuery(query as unknown as Record<string, unknown>, [
@@ -71,6 +76,10 @@ export function fetchDropChangeListApi(query: DropChangeListQuery) {
       ]),
     },
   );
+  return {
+    Item: Array.isArray(data?.Item) ? data.Item : [],
+    Page: data?.Page,
+  } satisfies DropChangeResult;
 }
 
 /**
@@ -79,8 +88,8 @@ export function fetchDropChangeListApi(query: DropChangeListQuery) {
  * @returns 无效用户统计明细
  * @see views/generalizeManage/promoteData/components/invalid-user-panel.vue
  */
-export function fetchInvalidUserApi(query: PromoteDataBaseQuery) {
-  return requestClient.get<{ Items?: InvalidUserData }>(
+export async function fetchInvalidUserApi(query: PromoteDataBaseQuery) {
+  const data = await requestClient.get<{ Items?: InvalidUserData } | null>(
     '/backend/promotedata/invaliduser',
     {
       params: normalizeArrayQuery(query as unknown as Record<string, unknown>, [
@@ -89,6 +98,7 @@ export function fetchInvalidUserApi(query: PromoteDataBaseQuery) {
       ]),
     },
   );
+  return { Items: data?.Items };
 }
 
 /**
@@ -97,8 +107,8 @@ export function fetchInvalidUserApi(query: PromoteDataBaseQuery) {
  * @returns 手工录入记录列表及分页信息
  * @see views/generalizeManage/promoteData/components/data-write-list.vue
  */
-export function fetchHandRecordListApi(query: HandRecordListQuery) {
-  return requestClient.get<CloudListResult<HandRecordItem>>(
+export async function fetchHandRecordListApi(query: HandRecordListQuery) {
+  const data = await requestClient.get<CloudListResult<HandRecordItem> | null>(
     '/backend/handrecord/list',
     {
       params: normalizeArrayQuery(query as unknown as Record<string, unknown>, [
@@ -107,6 +117,10 @@ export function fetchHandRecordListApi(query: HandRecordListQuery) {
       ]),
     },
   );
+  return {
+    Items: Array.isArray(data?.Items) ? data.Items : [],
+    Pagination: data?.Pagination,
+  } satisfies CloudListResult<HandRecordItem>;
 }
 
 /**
@@ -170,11 +184,15 @@ export async function fetchLandingPageListApi() {
  * @returns 渠道回本记录列表及分页信息
  * @see views/generalizeManage/promoteData/components/channel-recoup-list.vue
  */
-export function fetchChannelRecoupListApi(query: ChannelRecoupListQuery) {
-  return requestClient.get<CloudListResult<ChannelRecoupItem>>(
+export async function fetchChannelRecoupListApi(query: ChannelRecoupListQuery) {
+  const data = await requestClient.get<CloudListResult<ChannelRecoupItem> | null>(
     '/backend/operation/channelbreakevenreport',
     { params: trimSpace(query) },
   );
+  return {
+    Items: Array.isArray(data?.Items) ? data.Items : [],
+    Pagination: data?.Pagination,
+  } satisfies CloudListResult<ChannelRecoupItem>;
 }
 
 /**
@@ -183,8 +201,10 @@ export function fetchChannelRecoupListApi(query: ChannelRecoupListQuery) {
  * @see views/generalizeManage/promoteData/components/data-write-list.vue
  * @see views/generalizeManage/promoteData/components/channel-recoup-list.vue
  */
-export function fetchExchangeRateListApi() {
-  return requestClient.get<ExchangeRateItem[]>(
-    '/backend/operation/exchangeratesetting',
-  );
+export async function fetchExchangeRateListApi() {
+  const data = await requestClient.get<
+    CloudListResult<ExchangeRateItem> | ExchangeRateItem[] | null
+  >('/backend/operation/exchangeratesetting');
+  if (!data) return [];
+  return Array.isArray(data) ? data : data.Items || [];
 }

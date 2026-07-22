@@ -85,12 +85,19 @@ async function loadData() {
       ...pager,
       Type: mode.value,
     });
+    if (data == null) {
+      rows.value = [];
+      total.value = 0;
+      return;
+    }
     rows.value = Array.isArray(data)
       ? (data as TemplateRow[])
-      : ((data?.Items || []) as TemplateRow[]);
+      : Array.isArray(data.Items)
+        ? (data.Items as TemplateRow[])
+        : [];
     total.value = Array.isArray(data)
       ? data.length
-      : Number(data?.Pagination?.MaxCount || rows.value.length);
+      : Number(data.Pagination?.MaxCount || rows.value.length);
   } finally {
     loading.value = false;
   }
@@ -99,10 +106,15 @@ async function loadData() {
 async function loadDependencies() {
   await ensureGameConfig();
   if (mode.value === 1 && adminList.value.length === 0) {
-    const data = await fetchChildAdminInfoApi();
-    adminList.value = Array.isArray(data?.ChildAdminInfo)
-      ? (data.ChildAdminInfo as AdminItem[])
-      : [];
+    try {
+      const data = await fetchChildAdminInfoApi();
+      adminList.value = Array.isArray(data?.ChildAdminInfo)
+        ? (data.ChildAdminInfo as AdminItem[])
+        : [];
+    } catch {
+      adminList.value = [];
+      message.warning('代理成员列表加载失败，请确认账号权限');
+    }
   }
 }
 
@@ -173,14 +185,24 @@ function buildVenueGames(categories: string[]) {
   )) {
     const classify = Array.isArray(game.ClientClassify)
       ? game.ClientClassify
-      : String(game.ClientClassify || '').split(',');
+      : String(game.ClientClassify || '')
+          .split(',')
+          .filter(Boolean)
+          .map((item) => (Number.isFinite(Number(item)) ? Number(item) : item));
+    // 对齐旧站：ClientClassify.includes(Number(k))
     if (
       categories.some((value) =>
-        classify.some((item) => String(item) === String(value)),
+        classify.some(
+          (item) =>
+            String(item) === String(value) ||
+            Number(item) === Number(value),
+        ),
       )
     ) {
       ids.push(id);
-      if (game.PlatfromCode !== undefined) codes.push(game.PlatfromCode as number | string);
+      if (game.PlatfromCode !== undefined) {
+        codes.push(game.PlatfromCode as number | string);
+      }
     }
   }
   return { codes, ids };

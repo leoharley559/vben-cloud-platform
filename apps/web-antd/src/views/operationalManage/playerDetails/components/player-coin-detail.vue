@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 
 import PlayerCoinPeriodPanel from './player-coin-period.vue';
 import PlayerGoldChangePanel from './player-gold-change.vue';
@@ -12,7 +12,7 @@ defineProps<{
   playerId: number | string;
 }>();
 
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const beginTime = ref(defaultRange.BeginTime);
 const endTime = ref(defaultRange.EndTime);
 

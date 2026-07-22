@@ -19,6 +19,22 @@ export interface PackageManageListResult<T = Record<string, unknown>> {
   };
 }
 
+/** 空列表常返回 Items=null；保留 MoreItems（如 package/list 的 Resources）。 */
+function normalizeListResult<T = Record<string, unknown>>(
+  data: null | PackageManageListResult<T> | undefined,
+): PackageManageListResult<T> {
+  const items = Array.isArray(data?.Items) ? data.Items : [];
+  return {
+    Items: items,
+    MoreItems: data?.MoreItems ?? {},
+    Pagination: {
+      CurrPage: data?.Pagination?.CurrPage,
+      MaxCount: data?.Pagination?.MaxCount ?? items.length,
+      PageSize: data?.Pagination?.PageSize,
+    },
+  };
+}
+
 /**
  * 查询企业签包体Games。
  *
@@ -29,10 +45,11 @@ export interface PackageManageListResult<T = Record<string, unknown>> {
 export function fetchEnterprisePackageGamesApi(
   query: Record<string, unknown>,
 ) {
-  return requestClient.get<PackageManageListResult>(
-    '/backend/package/list',
-    { params: trimSpace(query) },
-  );
+  return requestClient
+    .get<PackageManageListResult>('/backend/package/list', {
+      params: trimSpace(query),
+    })
+    .then(normalizeListResult);
 }
 
 /**
@@ -42,11 +59,11 @@ export function fetchEnterprisePackageGamesApi(
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/packageManage
  */
-export function fetchEnterpriseChannelsApi(PackageId: PackageManageId) {
-  return requestClient.get<Array<Record<string, unknown>>>(
-    '/backend/channel/listall',
-    { params: { PackageId } },
-  );
+export async function fetchEnterpriseChannelsApi(PackageId: PackageManageId) {
+  const result = await requestClient.get<
+    Array<Record<string, unknown>> | null
+  >('/backend/channel/listall', { params: { PackageId } });
+  return Array.isArray(result) ? result : [];
 }
 
 /**
@@ -81,11 +98,14 @@ export function unbindEnterpriseChannelApi(data: Record<string, unknown>) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/packageManage
  */
-export function fetchEnterpriseStepApi(PackageId: PackageManageId) {
-  return requestClient.get<{ Items?: Record<string, unknown> }>(
-    '/backend/packagelinkios/iospackversion',
-    { params: { PackageId } },
-  );
+export async function fetchEnterpriseStepApi(PackageId: PackageManageId) {
+  const result = await requestClient.get<{
+    Items?: null | Record<string, unknown>;
+  }>('/backend/packagelinkios/iospackversion', { params: { PackageId } });
+  return {
+    Items:
+      result?.Items && typeof result.Items === 'object' ? result.Items : {},
+  };
 }
 
 /**
@@ -96,10 +116,12 @@ export function fetchEnterpriseStepApi(PackageId: PackageManageId) {
  * @see views/gameManage/packageManage
  */
 export function fetchEnterprisePackageListApi(PackageId: PackageManageId) {
-  return requestClient.get<PackageManageListResult>(
-    '/backend/packagelinkios/listpackageiosdetail',
-    { params: { PackageId } },
-  );
+  return requestClient
+    .get<PackageManageListResult>(
+      '/backend/packagelinkios/listpackageiosdetail',
+      { params: { PackageId } },
+    )
+    .then(normalizeListResult);
 }
 
 /**
@@ -166,10 +188,11 @@ export function fetchShelfPackageListApi(
   platform: ShelfPlatform,
   query: Record<string, unknown>,
 ) {
-  return requestClient.get<PackageManageListResult>(
-    `${shelfPath(platform)}/list`,
-    { params: trimSpace(query) },
-  );
+  return requestClient
+    .get<PackageManageListResult>(`${shelfPath(platform)}/list`, {
+      params: trimSpace(query),
+    })
+    .then(normalizeListResult);
 }
 
 /**
@@ -225,14 +248,15 @@ export function deleteShelfPackageApi(
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/packageManage
  */
-export function fetchShelfAnalyticsApi(
+export async function fetchShelfAnalyticsApi(
   platform: ShelfPlatform,
   AppPackageConfigId: PackageManageId,
 ) {
-  return requestClient.get<PackageAnalyticsConfig>(
+  const result = await requestClient.get<null | PackageAnalyticsConfig>(
     `${shelfPath(platform)}/analyticinfo`,
     { params: { AppPackageConfigId } },
   );
+  return result ?? {};
 }
 
 /**

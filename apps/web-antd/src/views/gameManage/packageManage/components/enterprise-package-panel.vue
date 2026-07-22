@@ -170,10 +170,22 @@ async function loadGames(selectFirst = true) {
     ) {
       selectedGame.value = games.value[0];
     }
-    if (selectedGame.value) await loadSelectedGame();
+    if (selectedGame.value) {
+      await loadSelectedGame();
+    } else {
+      clearSelectedDetail();
+    }
   } finally {
     gameLoading.value = false;
   }
+}
+
+function clearSelectedDetail() {
+  clearTimeout(pollTimer);
+  clearTimeout(stepPollTimer);
+  channels.value = [];
+  enterpriseRows.value = [];
+  stepInfo.value = {};
 }
 
 async function loadSelectedGame() {
@@ -206,7 +218,7 @@ async function loadSelectedGame() {
           }
         }),
         fetchEnterpriseChannelsApi(packageId).then((result) => {
-          channels.value = Array.isArray(result) ? result : [];
+          channels.value = result;
         }),
       );
     }
@@ -310,11 +322,29 @@ function handleUploadChange(info: UploadChangeParam) {
   if (info.file.status === 'done') {
     const response = info.file.response as
       | undefined
-      | { Data?: { title?: string; url?: string } };
-    uploadForm.IosUploadUrl = String(response?.Data?.url || '');
-    uploadForm.IosName = String(response?.Data?.title || info.file.name);
+      | {
+          Data?: { title?: string; url?: string };
+          FileName?: string;
+          Path?: string;
+          Url?: string;
+          title?: string;
+        };
+    const url =
+      response?.Data?.url ||
+      response?.Url ||
+      response?.Path ||
+      response?.FileName ||
+      '';
+    uploadForm.IosUploadUrl = String(url);
+    uploadForm.IosName = String(
+      response?.Data?.title || response?.title || info.file.name || '',
+    );
     uploadLoading.value = false;
-    message.success('文件上传成功');
+    if (url) {
+      message.success('文件上传成功');
+    } else {
+      message.error('上传响应中没有文件地址');
+    }
   } else if (info.file.status === 'error') {
     uploadLoading.value = false;
     message.error('文件上传失败');

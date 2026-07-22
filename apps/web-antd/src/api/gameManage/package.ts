@@ -35,10 +35,27 @@ import {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/inclusionDeploy
  */
-export function fetchPackageListApi(query: PackageListQuery) {
-  return requestClient.get<PackageListResult>('/backend/package/list', {
-    params: trimSpace(query),
-  });
+export async function fetchPackageListApi(query: PackageListQuery) {
+  const result = await requestClient.get<PackageListResult | null>(
+    '/backend/package/list',
+    {
+      params: trimSpace(query),
+    },
+  );
+  return {
+    ...(result || {}),
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    MoreItems: {
+      ...(result?.MoreItems || {}),
+      Resources: Array.isArray(result?.MoreItems?.Resources)
+        ? result.MoreItems.Resources
+        : [],
+    },
+    Pagination: result?.Pagination,
+    VIPBadgeGroups: Array.isArray(result?.VIPBadgeGroups)
+      ? result.VIPBadgeGroups
+      : [],
+  } satisfies PackageListResult;
 }
 
 /**
@@ -106,10 +123,18 @@ export function deletePackageApi(id: PackageId) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/inclusionDeploy
  */
-export function fetchPackageResourceListApi(query: PackageResourceQuery) {
-  return requestClient.get<PackageResourceListResult>('/api/resource/list', {
-    params: trimSpace(query),
-  });
+export async function fetchPackageResourceListApi(query: PackageResourceQuery) {
+  const result = await requestClient.get<PackageResourceListResult | null>(
+    '/api/resource/list',
+    {
+      params: trimSpace(query),
+    },
+  );
+  return {
+    ...(result || {}),
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    Pagination: result?.Pagination,
+  } satisfies PackageResourceListResult;
 }
 
 /**
@@ -165,11 +190,18 @@ export function updatePackageUnderageConfigApi(data: PackageUnderagePayload) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/inclusionDeploy
  */
-export function fetchPackageColorThemeListApi(query: PackageColorThemeQuery) {
-  return requestClient.get<PackageColorThemeListResult>(
+export async function fetchPackageColorThemeListApi(
+  query: PackageColorThemeQuery,
+) {
+  const result = await requestClient.get<PackageColorThemeListResult | null>(
     '/api/resource/packagecolorthemelist',
     { params: trimSpace(query) },
   );
+  return {
+    ...(result || {}),
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    Pagination: result?.Pagination,
+  } satisfies PackageColorThemeListResult;
 }
 
 /**
@@ -179,13 +211,18 @@ export function fetchPackageColorThemeListApi(query: PackageColorThemeQuery) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/inclusionDeploy
  */
-export function fetchPackageColorThemeDetailListApi(
+export async function fetchPackageColorThemeDetailListApi(
   query: PackageColorThemeQuery,
 ) {
-  return requestClient.get<PackageColorThemeListResult>(
+  const result = await requestClient.get<PackageColorThemeListResult | null>(
     '/api/resource/packagecolorthemedetaillist',
     { params: trimSpace(query) },
   );
+  return {
+    ...(result || {}),
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    Pagination: result?.Pagination,
+  } satisfies PackageColorThemeListResult;
 }
 
 /**
@@ -229,12 +266,20 @@ export function fetchAdTemplateListApi(query: Record<string, unknown> = {}) {
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/inclusionDeploy
  */
-export function fetchPackageActivityListApi(
+export async function fetchPackageActivityListApi(
   query: Record<string, unknown> = {},
 ) {
-  return fetchAdActivityJumpListApi(trimSpace(query)) as Promise<
-    PackageDependencyItem[] | PackageDependencyListResult
-  >;
+  const result = await fetchAdActivityJumpListApi(trimSpace(query));
+  if (Array.isArray(result)) {
+    return result as PackageDependencyItem[];
+  }
+  if (result && typeof result === 'object') {
+    const record = result as PackageDependencyListResult;
+    if (Array.isArray(record.Items)) {
+      return record;
+    }
+  }
+  return [] as PackageDependencyItem[];
 }
 
 /**
@@ -243,10 +288,11 @@ export function fetchPackageActivityListApi(
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/inclusionDeploy
  */
-export function fetchPackageLogoGroupListApi() {
-  return requestClient.get<PackageDependencyItem[]>(
+export async function fetchPackageLogoGroupListApi() {
+  const result = await requestClient.get<PackageDependencyItem[] | null>(
     '/backend/gameadtemplate/listlogogroup',
   );
+  return Array.isArray(result) ? result : [];
 }
 
 /**

@@ -347,9 +347,8 @@ async function loadDependencies() {
   dependenciesLoading.value = true;
   try {
     const [levelResult, templateResult] = await Promise.all([
+      // 勿传 BeginTime/EndTime=1：本环境会 Items=null；对齐兑换码面板拉全量层级
       fetchRechargePlayerLevelsApi({
-        BeginTime: 1,
-        EndTime: 1,
         LevelName: '',
         Page: 1,
         PageSize: 999,

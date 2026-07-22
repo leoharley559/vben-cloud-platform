@@ -78,11 +78,9 @@ const canExport = computed(() => checkPermission(11_964));
 const canView = computed(() => canDetail.value || canStatistics.value);
 
 const activeTab = ref<'detail' | 'statistics'>('detail');
+// 对齐旧站 getBeforeDateTimestamp(1,false)→今日 0 点，getBeforeDateTimestamp()→今日结束
 const defaultRange = () =>
-  [
-    dayjs().subtract(1, 'day').startOf('day'),
-    dayjs().subtract(1, 'day').endOf('day'),
-  ] as [Dayjs, Dayjs];
+  [dayjs().startOf('day'), dayjs().endOf('day')] as [Dayjs, Dayjs];
 
 const withdrawPageOptions = computed(() => {
   const list = projectConfig.value?.WithdrawTypeList as

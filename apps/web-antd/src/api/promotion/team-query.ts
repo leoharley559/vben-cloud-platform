@@ -12,12 +12,15 @@ import { trimSpace } from '#/utils/string';
  * @see views/mobile/team/history/index.vue
  */
 export async function fetchTeamQueryListApi(query: TeamQueryListQuery) {
-  const data = await requestClient.get<CloudListResult<TeamQueryItem> | null>(
-    '/backend/accountteamsearch/list',
-    { params: trimSpace(query) },
-  );
+  const data = await requestClient.get<
+    | (CloudListResult<TeamQueryItem> & { Items2?: TeamQueryItem[] | null })
+    | null
+  >('/backend/accountteamsearch/list', { params: trimSpace(query) });
+  // 空环境常返回 Items/Items2=null，且可能无 Pagination
   return {
-    Items: data?.Items || [],
-    Pagination: data?.Pagination,
-  };
+    Items: Array.isArray(data?.Items) ? data.Items : [],
+    Pagination: data?.Pagination ?? {
+      MaxCount: 0,
+    },
+  } satisfies CloudListResult<TeamQueryItem>;
 }

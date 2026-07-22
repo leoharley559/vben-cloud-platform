@@ -54,13 +54,23 @@ const columns: TableColumnsType<ExchangeRow> = [
 async function loadData() {
   loading.value = true;
   try {
-    const data = await fetchExchangeRateListApi(pager);
+    const data = await fetchExchangeRateListApi({
+      ...pager,
+      Keyword: '',
+    });
+    if (data == null) {
+      rows.value = [];
+      total.value = 0;
+      return;
+    }
     rows.value = Array.isArray(data)
       ? (data as ExchangeRow[])
-      : ((data?.Items || []) as ExchangeRow[]);
+      : Array.isArray(data.Items)
+        ? (data.Items as ExchangeRow[])
+        : [];
     total.value = Array.isArray(data)
       ? data.length
-      : Number(data?.Pagination?.MaxCount || rows.value.length);
+      : Number(data.Pagination?.MaxCount || rows.value.length);
   } finally {
     loading.value = false;
   }

@@ -155,24 +155,28 @@ const gridOptions: VxeTableGridOptions<RecallRow> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchRecallListApi(props.type, {
-          BeginTime: dateRange.value[0].format('YYYY-MM-DD'),
-          EndTime: dateRange.value[1].format('YYYY-MM-DD'),
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-        });
-        switchConfig.IsAuto =
-          result.Switch?.IsAuto === true ||
-          Number(result.Switch?.IsAuto) === 1;
-        switchConfig.IsOpen =
-          result.Switch?.IsOpen === true ||
-          Number(result.Switch?.IsOpen) === 1;
-        recallMessage.value = String(result.Message || '');
-        const items = (result.Items || []) as RecallRow[];
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount ?? items.length),
-        };
+        try {
+          const result = await fetchRecallListApi(props.type, {
+            BeginTime: dateRange.value[0].format('YYYY-MM-DD'),
+            EndTime: dateRange.value[1].format('YYYY-MM-DD'),
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+          });
+          switchConfig.IsAuto =
+            result.Switch?.IsAuto === true ||
+            Number(result.Switch?.IsAuto) === 1;
+          switchConfig.IsOpen =
+            result.Switch?.IsOpen === true ||
+            Number(result.Switch?.IsOpen) === 1;
+          recallMessage.value = String(result.Message || '');
+          const items = (result.Items || []) as RecallRow[];
+          return {
+            items,
+            total: Number(result.Pagination?.MaxCount ?? items.length),
+          };
+        } catch {
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -198,16 +202,23 @@ function reset() {
 }
 
 function changeSwitch(field: 'IsAuto' | 'IsOpen', checked: boolean) {
+  const previous = switchConfig[field];
+  switchConfig[field] = checked;
   const label = field === 'IsOpen' ? '召回开关' : '自动发送';
   Modal.confirm({
     content: `确认${checked ? '开启' : '关闭'}${label}？`,
+    onCancel() {
+      switchConfig[field] = previous;
+    },
     async onOk() {
-      await updateRecallSwitchApi(props.type, {
-        ...switchConfig,
-        [field]: checked,
-      });
-      message.success(`${label}已更新`);
-      await gridApi.reload();
+      try {
+        await updateRecallSwitchApi(props.type, { ...switchConfig });
+        message.success(`${label}已更新`);
+        await gridApi.reload();
+      } catch (error) {
+        switchConfig[field] = previous;
+        throw error;
+      }
     },
     title: '开关确认',
   });

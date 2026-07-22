@@ -181,13 +181,27 @@ export function findGameIdByApiFee(
   if (apiFee === undefined || apiFee === null || apiFee === '') {
     return '';
   }
-  const name = config.platformGameType[String(apiFee)] || '';
-  if (!name) {
-    return '';
+  const apiFeeKey = String(apiFee);
+  const name = config.platformGameType[apiFeeKey] || '';
+  if (name) {
+    for (const [gameId, game] of Object.entries(config.games)) {
+      if (game.gameName === name) {
+        return gameId;
+      }
+    }
   }
-  for (const [gameId, game] of Object.entries(config.games)) {
-    if (game.gameName === name) {
-      return gameId;
+  // 部分环境 games 字典不全，回退 GroupPlatformGameType（如 BTI → 1300）
+  for (const group of Object.values(config.GroupPlatformGameType || {})) {
+    for (const item of group.gametypes || []) {
+      const code = String(item.gamecode ?? '');
+      const itemName = String(item.gamename ?? '');
+      if (
+        code === apiFeeKey ||
+        (name && itemName === name) ||
+        itemName === apiFeeKey
+      ) {
+        return item.gameid ?? '';
+      }
     }
   }
   return '';

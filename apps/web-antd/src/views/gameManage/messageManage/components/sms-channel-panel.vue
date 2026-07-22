@@ -82,24 +82,28 @@ const gridOptions: VxeTableGridOptions<ChannelRow> = {
     ajax: {
       query: async ({ page }) => {
         if (!canManage.value) return { items: [], total: 0 };
-        const result = await fetchSmsChannelsApi({
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-        });
-        allChannels.value = (result.Items || []) as unknown as ChannelRow[];
-        otpChannel.value = result.CurrentSmsConfigId || 0;
-        noticeChannel.value = result.CurrentSmsAnnouncementConfigId || 0;
-        recallChannel.value = result.RecallSmsConfigId || 0;
-        current.otp = otpChannel.value;
-        current.notice = noticeChannel.value;
-        current.recall = recallChannel.value;
-        const items = allChannels.value.filter(
-          (item) => Number(item.AgentId) !== 0,
-        );
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount ?? items.length),
-        };
+        try {
+          // 旧站无分页参数，一次拉全量；下拉用全量，表格仅展示 AgentId!==0
+          const result = await fetchSmsChannelsApi({});
+          allChannels.value = (result.Items || []) as unknown as ChannelRow[];
+          otpChannel.value = result.CurrentSmsConfigId || 0;
+          noticeChannel.value = result.CurrentSmsAnnouncementConfigId || 0;
+          recallChannel.value = result.RecallSmsConfigId || 0;
+          current.otp = otpChannel.value;
+          current.notice = noticeChannel.value;
+          current.recall = recallChannel.value;
+          const filtered = allChannels.value.filter(
+            (item) => Number(item.AgentId) !== 0,
+          );
+          const start = (page.currentPage - 1) * page.pageSize;
+          return {
+            items: filtered.slice(start, start + page.pageSize),
+            total: filtered.length,
+          };
+        } catch {
+          allChannels.value = [];
+          return { items: [], total: 0 };
+        }
       },
     },
   },

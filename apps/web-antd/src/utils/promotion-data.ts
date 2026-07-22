@@ -1,4 +1,4 @@
-import { formatAmountFromCent } from '#/utils/format-amount';
+import BigNumber from 'bignumber.js';
 
 export function calcPercent(numerator?: number, denominator?: number) {
   const num = Number(numerator || 0);
@@ -18,8 +18,10 @@ export function calcArppu(count?: number, money?: number) {
   return (totalMoney / totalCount / 100).toFixed(2);
 }
 
+/** 分转元 + 汇率，固定两位小数（对齐旧站 RMBfilters） */
 export function formatPromoteMoney(value?: number, rate = 1) {
-  return formatAmountFromCent(Number(value || 0) * rate);
+  const amount = new BigNumber(Number(value || 0) * rate).dividedBy(100);
+  return amount.isNaN() ? '0.00' : amount.toFormat(2);
 }
 
 export function getPayUserCount(row: {

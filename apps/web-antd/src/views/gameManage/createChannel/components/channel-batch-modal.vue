@@ -307,12 +307,18 @@ async function loadDependencies(type: ActionType, force = false) {
         break;
       }
       case 3: {
+        const agentId = currentAdminId();
+        if (agentId == null || agentId === '') {
+          throw new Error('缺少 AgentId，无法加载落地页资源');
+        }
+        // 对齐旧站 bgQuery.PictureType=1；缺省会 Items=null
         const result = await fetchChannelLandingResourcesApi({
-          AgentId: currentAdminId(),
+          AgentId: agentId,
           Page: 1,
           PageSize: 1000,
+          PictureType: 1,
         });
-        landingResources.value = result.Items;
+        landingResources.value = result.Items ?? [];
         if (landingResources.value.length > 0 && form.BackgroundId == null) {
           form.BackgroundId = landingResources.value[0]?.Id;
         }

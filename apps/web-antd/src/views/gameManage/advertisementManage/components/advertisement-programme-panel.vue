@@ -128,9 +128,11 @@ interface PermissionSet {
 
 interface SelectSource {
   Id?: number | string;
+  LangText?: string;
   Name?: string;
   Title?: string;
   Type?: number | string;
+  [key: string]: unknown;
 }
 
 const PERMISSIONS: Record<number, PermissionSet> = {
@@ -331,12 +333,15 @@ const columns = computed(() => {
 });
 
 function toItems(data: unknown) {
+  if (data == null) return [] as Record<string, unknown>[];
   if (Array.isArray(data)) return data as Record<string, unknown>[];
   const result = data as {
-    Data?: Record<string, unknown>[];
-    Items?: Record<string, unknown>[];
+    Data?: null | Record<string, unknown>[];
+    Items?: null | Record<string, unknown>[];
   };
-  return result?.Items || result?.Data || [];
+  if (Array.isArray(result.Items)) return result.Items;
+  if (Array.isArray(result.Data)) return result.Data;
+  return [];
 }
 
 function parseLanguageText(value: unknown) {
@@ -404,15 +409,21 @@ async function loadRows() {
   }
   loading.value = true;
   try {
+    const params: Record<string, unknown> = {
+      TemplateId: activeProgrammeId.value,
+      Type: props.adType,
+    };
+    // 旧站：弹窗仅 TemplateId+Type；轮播/支付带 Title/Status；仅轮播带日期（空串）
+    if (!isHomeDialog.value) {
+      params.Title = filters.Title;
+      params.Status = filters.Status;
+    }
+    if (isCarousel.value) {
+      params.BeginTime = filters.Time[0]?.unix() ?? '';
+      params.EndTime = filters.Time[1]?.unix() ?? '';
+    }
     rows.value = normalizeRows(
-      await fetchAdvertisementListApi({
-        BeginTime: filters.Time[0]?.unix(),
-        EndTime: filters.Time[1]?.unix(),
-        Status: filters.Status,
-        TemplateId: activeProgrammeId.value,
-        Title: filters.Title,
-        Type: props.adType,
-      }),
+      await fetchAdvertisementListApi(params),
     ) as AdvertisementRow[];
   } finally {
     loading.value = false;
@@ -520,6 +531,8 @@ function defaultForm() {
     OpenType: 1,
     RegEndDate: '',
     RegStartDate: '',
+    // 轮播：2=不限；弹窗：0=关闭 / 1=开启
+    RegStartEndDate: props.adType === 1 ? 2 : 0,
     RegTime: undefined,
     ShieldAppUrl: [],
     ShieldChannels: [],
@@ -574,6 +587,25 @@ function openForm(source?: AdvertisementRow | Record<string, unknown>) {
   form.ShieldChannels = decodeJsonSelection(row?.ShieldChannels, 'ChannelId');
   form.ValidAppUrl = decodeJsonSelection(row?.ValidAppUrl, 'AppUrl');
   form.ShieldAppUrl = decodeJsonSelection(row?.ShieldAppUrl, 'AppUrl');
+  if (row) {
+    const start = Number(row.RegStartDate || 0);
+    const end = Number(row.RegEndDate || 0);
+    if (isCarousel.value) {
+      form.RegStartEndDate =
+        Number(row.RegStartEndDate) === 1 || (start > 0 && end > 0) ? 1 : 2;
+      if (Number(form.RegStartEndDate) === 2) {
+        form.RegStartDate = '';
+        form.RegEndDate = '';
+      }
+    } else if (isHomeDialog.value) {
+      form.RegStartEndDate =
+        Number(row.RegStartEndDate) === 1 || (start > 0 && end > 0) ? 1 : 0;
+      if (Number(form.RegStartEndDate) === 0) {
+        form.RegStartDate = '';
+        form.RegEndDate = '';
+      }
+    }
+  }
   formVisible.value = true;
 }
 
@@ -654,15 +686,22 @@ async function saveAdvertisement() {
     message.warning('请上传默认语言 Web 横版图片');
     return;
   }
-  if (isHomeDialog.value) {
+  if (isCarousel.value && Number(form.RegStartEndDate) === 1) {
     const start = Number(form.RegStartDate || 0);
     const end = Number(form.RegEndDate || 0);
-    if (
-      (start || end) &&
-      (start < 1 || end < 1 || start > 365 || end > 365 || start > end)
-    ) {
+    if (start < 1 || end < 1 || start > 365 || end > 365 || start > end) {
       message.warning('注册天数须为 1~365，且开始天数不能大于结束天数');
       return;
+    }
+  }
+  if (isHomeDialog.value) {
+    if (Number(form.RegStartEndDate) === 1) {
+      const start = Number(form.RegStartDate || 0);
+      const end = Number(form.RegEndDate || 0);
+      if (start < 1 || end < 1 || start > 365 || end > 365 || start > end) {
+        message.warning('注册天数须为 1~365，且开始天数不能大于结束天数');
+        return;
+      }
     }
     if (Number(form.DailyCount) === 1 && Number(form.DailyCountValue) < 1) {
       message.warning('请输入正确的每日展示次数');
@@ -678,22 +717,53 @@ async function saveAdvertisement() {
     await registerImages();
     const time = form.Time as Dayjs[];
     const showTime = form.ShowTime as Dayjs[];
+    // 轮播：RegStartEndDate=2 不限；弹窗：0=关闭。关闭时清空天数（对齐旧站）
+    let regStartDate: number | string = (form.RegStartDate as number | string) || '';
+    let regEndDate: number | string = (form.RegEndDate as number | string) || '';
+    let regStartEndDate = Number(form.RegStartEndDate);
+    if (isCarousel.value) {
+      if (regStartEndDate !== 1) {
+        regStartEndDate = 2;
+        regStartDate = '';
+        regEndDate = '';
+      }
+    } else if (isHomeDialog.value) {
+      if (regStartEndDate !== 1) {
+        regStartEndDate = 0;
+        regStartDate = '';
+        regEndDate = '';
+      }
+    }
     const payload: Record<string, unknown> = {
       ...form,
       BeginTime: time?.[0]?.unix() || '',
       DisplayDevices: (form.DisplayDevices as string[])?.join(',') || '',
       EndTime: time?.[1]?.unix() || '',
       LangText: JSON.stringify(Object.values(languageContent)),
-      RegTime: (form.RegTime as Dayjs | undefined)?.unix() || '',
+      RegEndDate: regEndDate,
+      RegStartDate: regStartDate,
+      RegStartEndDate: regStartEndDate,
+      RegTime: form.IsRegTime
+        ? (form.RegTime as Dayjs | undefined)?.unix() || ''
+        : '',
       ShieldAppUrl: serializeSelection(form.ShieldAppUrl, 'AppUrl', 'AppName'),
       ShieldChannels: serializeSelection(
         form.ShieldChannels,
         'ChannelId',
         'ChannelName',
       ),
-      ShowEndTime: showTime?.[1]?.format('HH:mm:ss') || '',
-      ShowStartTime: showTime?.[0]?.format('HH:mm:ss') || '',
+      ShowEndTime:
+        form.IsShowTime && showTime?.[1]
+          ? showTime[1].format('HH:mm:ss')
+          : '',
+      ShowStartTime:
+        form.IsShowTime && showTime?.[0]
+          ? showTime[0].format('HH:mm:ss')
+          : '',
       TemplateId: activeProgrammeId.value,
+      TotalCount: form.IsTotalCount ? form.TotalCount : '',
+      DailyCountValue:
+        Number(form.DailyCount) === 1 ? form.DailyCountValue : '',
       Type: props.adType,
       ValidAppUrl: serializeSelection(form.ValidAppUrl, 'AppUrl', 'AppName'),
       ValidChannels: serializeSelection(
@@ -794,10 +864,34 @@ onMounted(async () => {
   await Promise.all([
     ensureGameConfig(),
     fetchAdvertisementActivityListApi().then((data) => {
-      activities.value = data || [];
+      activities.value = Array.isArray(data) ? data : [];
     }),
     fetchAdvertisementNoticeListApi().then((data) => {
-      notices.value = data || [];
+      const list = Array.isArray(data) ? data : [];
+      const langId = String(defaultLanguageId.value);
+      notices.value = list.map((item) => {
+        let title = String(item.Title || '');
+        if (!title && item.LangText) {
+          try {
+            const parsed =
+              typeof item.LangText === 'string'
+                ? JSON.parse(item.LangText)
+                : item.LangText;
+            const map = (parsed || {}) as Record<string, { Title?: string }>;
+            title = String(
+              map[langId]?.Title ||
+                Object.values(map)[0]?.Title ||
+                '',
+            );
+          } catch {
+            title = '';
+          }
+        }
+        return {
+          ...item,
+          Title: title || item.Id,
+        };
+      });
     }),
   ]);
   await loadProgrammes();
@@ -1200,6 +1294,35 @@ onMounted(async () => {
               :options="deviceOptions"
             />
           </Form.Item>
+          <Form.Item v-if="isCarousel" label="注册天数">
+            <Space>
+              <Switch
+                :checked="Number(form.RegStartEndDate) === 1"
+                @update:checked="
+                  (checked: boolean) => {
+                    form.RegStartEndDate = checked ? 1 : 2;
+                    if (!checked) {
+                      form.RegStartDate = '';
+                      form.RegEndDate = '';
+                    }
+                  }
+                "
+              />
+              <InputNumber
+                v-model:value="form.RegStartDate as number"
+                :disabled="Number(form.RegStartEndDate) !== 1"
+                :min="1"
+                :max="365"
+              />
+              <span>-</span>
+              <InputNumber
+                v-model:value="form.RegEndDate as number"
+                :disabled="Number(form.RegStartEndDate) !== 1"
+                :min="1"
+                :max="365"
+              />
+            </Space>
+          </Form.Item>
           <Form.Item v-if="!isPayment" label="游客展示">
             <Radio.Group v-model:value="form.IsShowForGuest">
               <Radio :value="0">是</Radio>
@@ -1233,9 +1356,31 @@ onMounted(async () => {
             </Form.Item>
             <Form.Item label="注册天数">
               <Space>
-                <InputNumber v-model:value="form.RegStartDate as number" :min="1" :max="365" />
+                <Switch
+                  :checked="Number(form.RegStartEndDate) === 1"
+                  @update:checked="
+                    (checked: boolean) => {
+                      form.RegStartEndDate = checked ? 1 : 0;
+                      if (!checked) {
+                        form.RegStartDate = '';
+                        form.RegEndDate = '';
+                      }
+                    }
+                  "
+                />
+                <InputNumber
+                  v-model:value="form.RegStartDate as number"
+                  :disabled="Number(form.RegStartEndDate) !== 1"
+                  :min="1"
+                  :max="365"
+                />
                 <span>-</span>
-                <InputNumber v-model:value="form.RegEndDate as number" :min="1" :max="365" />
+                <InputNumber
+                  v-model:value="form.RegEndDate as number"
+                  :disabled="Number(form.RegStartEndDate) !== 1"
+                  :min="1"
+                  :max="365"
+                />
               </Space>
             </Form.Item>
             <Form.Item label="注册时间">

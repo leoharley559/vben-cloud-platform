@@ -18,7 +18,7 @@ import dayjs from 'dayjs';
 import { fetchPlayerRebateListApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   REBATE_AWARD_STATUS_MAP,
@@ -36,7 +36,7 @@ const { checkPermission } = useCloudPermission();
 
 const canViewTable = computed(() => checkPermission(11610));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const sumBackWater = ref(0);
 
 const filterOrderId = ref('');

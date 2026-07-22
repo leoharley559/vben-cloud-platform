@@ -58,10 +58,13 @@ function normalizeClassify(value: unknown) {
 }
 
 function parseGameInfo(value: unknown) {
-  if (!value) return {} as Record<string, number>;
+  // 接口空配置常返回 '' / null，不能 JSON.parse('')
+  if (value === undefined || value === null || value === '') {
+    return {} as Record<string, number>;
+  }
   try {
     const parsed = typeof value === 'string' ? JSON.parse(value) : value;
-    return parsed && typeof parsed === 'object'
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
       ? (parsed as Record<string, number>)
       : {};
   } catch {

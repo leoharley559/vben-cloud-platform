@@ -299,6 +299,7 @@ async function submitForm() {
     payload.EnterprisePackageId = '';
     payload.IosPackageId = '';
   } else if (model.BanCountryInstallOpt === 2) {
+    payload.IosPackageId = '';
     payload.ThirdCustomIosUrl = '';
   } else {
     payload.EnterprisePackageId = '';

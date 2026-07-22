@@ -29,8 +29,7 @@ import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
-import { useOperationOptions } from '#/composables/use-operation-options';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatGameName } from '#/utils/game-config';
@@ -45,14 +44,13 @@ const LOGIN_ACCOUNT_RE = /^[a-zA-Z0-9]{4,20}$/;
 
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
-const { memberTypeOptions } = useOperationOptions();
 
 const canViewPage = computed(() => checkPermission(12210));
 const canExport = computed(() => checkPermission(12211));
 const canManual = computed(() => checkPermission(12212));
 const canChangeState = computed(() => checkPermission(12213));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const exportLoading = ref(false);
 const submitting = ref(false);
 
@@ -63,6 +61,7 @@ const filterType = ref<string>('');
 const filterOutGameId = ref<number | string>('');
 const filterInGameId = ref<number | string>('');
 const filterState = ref(-2);
+/** 对齐旧站 SearchTypeTwo：仅 全部/正式（测试项已注释） */
 const filterDataSearchType = ref(0);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
@@ -106,6 +105,12 @@ const stateFilterOptions = [
   { label: '成功', value: 0 },
   { label: '转人工处理', value: 5 },
   { label: '失败', value: 18 },
+];
+
+/** 对齐旧站：全部=2 / 正式=0（测试项旧站已注释） */
+const dataSearchTypeOptions = [
+  { label: '全部', value: 2 },
+  { label: '正式', value: 0 },
 ];
 
 /** 变更状态弹窗：对齐旧站 success=1 / fail=2 */
@@ -474,7 +479,7 @@ onMounted(async () => {
             <Select
               v-model:value="filterDataSearchType"
               style="width: 120px"
-              :options="memberTypeOptions"
+              :options="dataSearchTypeOptions"
             />
           </div>
           <div class="flex flex-col gap-1">

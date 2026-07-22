@@ -36,6 +36,7 @@ const pageSize = ref(20);
 
 const filterAccount = ref('');
 const filterPackageId = ref<number | string>('');
+const filterChannelId = ref('');
 const addAccount = ref('');
 const addPackageId = ref<number | string>('');
 
@@ -44,6 +45,10 @@ const packageSelectOptions = computed(() =>
 );
 
 const selectedRowKeys = ref<Array<number | string>>([]);
+
+function normalizeAccount(value: string) {
+  return value.toLowerCase().replaceAll(/\s/g, '');
+}
 
 function onSelectChange(keys: Array<number | string>) {
   selectedRowKeys.value = keys;
@@ -54,6 +59,7 @@ watch(open, (value) => {
     page.value = 1;
     filterAccount.value = '';
     filterPackageId.value = '';
+    filterChannelId.value = '';
     addAccount.value = '';
     addPackageId.value = packageSelectOptions.value[0]?.PackageId ?? '';
     selectedRowKeys.value = [];
@@ -65,8 +71,14 @@ async function loadList() {
   loading.value = true;
   try {
     const result = await fetchMobileVerifyWhitelistApi({
-      Account: filterAccount.value,
-      PackageId: filterPackageId.value,
+      Account: normalizeAccount(filterAccount.value) || undefined,
+      // 对齐旧站：无产品时不传 PackageId
+      ...(filterPackageId.value === '' || filterPackageId.value === undefined
+        ? {}
+        : { PackageId: filterPackageId.value }),
+      ...(filterChannelId.value.trim()
+        ? { ChannelId: filterChannelId.value.trim() }
+        : {}),
       Page: page.value,
       PageSize: pageSize.value,
     });
@@ -85,6 +97,7 @@ function handleSearch() {
 function handleReset() {
   filterAccount.value = '';
   filterPackageId.value = '';
+  filterChannelId.value = '';
   page.value = 1;
   loadList();
 }
@@ -99,8 +112,9 @@ async function handleAdd() {
   );
   adding.value = true;
   try {
+    const account = normalizeAccount(addAccount.value);
     const matched = await queryPlayerByAccountApi({
-      LoginAccount: addAccount.value,
+      LoginAccount: account,
       PackageName: pkg?.PackageName || '',
     });
     const player = matched?.Items?.[0];
@@ -113,7 +127,7 @@ async function handleAdd() {
       return;
     }
     await addMobileVerifyWhitelistApi({
-      Account: addAccount.value,
+      Account: account,
       PackageId: addPackageId.value,
       PlayerId: player.PlayerId,
     });
@@ -171,7 +185,7 @@ function handleTableChange(pagination: {
         v-model:value="filterAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 200px"
+        style="width: 160px"
       />
       <Select
         v-model:value="filterPackageId"
@@ -182,7 +196,13 @@ function handleTableChange(pagination: {
         ]"
         placeholder="所属产品"
         show-search
-        style="width: 180px"
+        style="width: 160px"
+      />
+      <Input
+        v-model:value="filterChannelId"
+        allow-clear
+        placeholder="渠道 ID"
+        style="width: 140px"
       />
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">

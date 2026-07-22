@@ -45,11 +45,31 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 ]);
 const breadcrumbItems = ref<Array<{ id: number | string; name: string }>>([]);
 const summary = ref(sumTeamQueryStats());
+const rangeSelecting = ref<dayjs.Dayjs>();
 let latestRequestId = 0;
 let latestResult: { items: TeamQueryItem[]; total: number } = {
   items: [],
   total: 0,
 };
+
+/** 对齐旧站 SearchTypeTwo limit-number=30 */
+function disabledDate(current: dayjs.Dayjs) {
+  if (!rangeSelecting.value) return false;
+  const min = rangeSelecting.value.subtract(30, 'day');
+  const max = rangeSelecting.value.add(30, 'day');
+  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
+}
+
+function onCalendarChange(
+  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
+) {
+  const first = dates?.[0];
+  rangeSelecting.value = first
+    ? dayjs.isDayjs(first)
+      ? first
+      : dayjs(first)
+    : undefined;
+}
 
 const canDrillDown = computed(() => {
   const accountInfo = projectConfig.value?.AccountInfo as
@@ -74,8 +94,8 @@ function resetBreadcrumb() {
 function getQueryParams(page?: { currentPage?: number; pageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    AdminId: filterAdminId.value,
-    AdminUsername: filterAdminUsername.value,
+    AdminId: filterAdminId.value ?? '',
+    AdminUsername: filterAdminUsername.value.trim(),
     BeginTime: begin ? begin.unix() : defaultBegin.unix(),
     EndTime: end ? end.unix() : defaultEnd.unix(),
     Page: page?.currentPage || 1,
@@ -102,19 +122,19 @@ async function loadData(page?: { currentPage?: number; pageSize?: number }) {
   try {
     const result = await fetchTeamQueryListApi(getQueryParams(page));
     if (requestId !== latestRequestId) return latestResult;
-    const items = result.Items;
+    const items = Array.isArray(result.Items) ? result.Items : [];
     latestResult = {
       items,
-      total: Number(result.Pagination?.MaxCount || items.length),
+      total: Number(result.Pagination?.MaxCount ?? items.length),
     };
     summary.value = sumTeamQueryStats(items);
     return latestResult;
-  } catch (error) {
+  } catch {
     if (requestId === latestRequestId) {
       latestResult = { items: [], total: 0 };
       summary.value = sumTeamQueryStats();
     }
-    throw error;
+    return { items: [], total: 0 };
   }
 }
 
@@ -270,8 +290,11 @@ onMounted(() => {
           <span class="text-sm text-gray-500">统计时间</span>
           <DatePicker.RangePicker
             v-model:value="filterDateRange"
+            :disabled-date="disabledDate"
             format="YYYY-MM-DD HH:mm:ss"
             show-time
+            @calendar-change="onCalendarChange"
+            @open-change="(open) => !open && (rangeSelecting = undefined)"
           />
         </div>
         <Button type="primary" @click="handleSearch">查询</Button>

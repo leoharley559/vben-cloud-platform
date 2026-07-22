@@ -309,23 +309,36 @@ function updateBatch(type: 'down' | 'set' | 'up') {
 
 function emitConfig() {
   if (!initialized.value) return;
+  emit('change', buildConfig());
+}
+
+function buildConfig(): BackWaterVipConfig {
+  if (!initialized.value) {
+    return { ...props.config };
+  }
   const setGames = games.value.filter((item) => item.Percent !== undefined);
-  emit('change', {
+  return {
     ...props.config,
-    Games: setGames.map((item) => ({
-      Id: item.GameId,
-      Ratio: formatPercentToStorage(Number(item.Percent)),
-    })),
+    Games: setGames.map((item) => {
+      const numericId = Number(item.GameId);
+      return {
+        Id: Number.isFinite(numericId) ? numericId : item.GameId,
+        Ratio: formatPercentToStorage(Number(item.Percent)),
+      };
+    }),
     WaterAvg: formatPercentToStorage(stats.value.average),
     WaterMax: formatPercentToStorage(stats.value.maximum),
     WaterMin: formatPercentToStorage(stats.value.minimum),
-  });
+  };
 }
 
 onMounted(async () => {
   await ensureGameConfig(Object.keys(gameConfig.value.games).length === 0);
   initialize();
+  emitConfig();
 });
+
+defineExpose({ buildConfig });
 </script>
 
 <template>

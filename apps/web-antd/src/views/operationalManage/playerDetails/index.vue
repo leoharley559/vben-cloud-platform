@@ -178,7 +178,7 @@ async function handleSearch() {
   searchLoading.value = true;
   try {
     const result = await queryPlayerByAccountApi({
-      LoginAccount: searchLoginAccount.value.trim(),
+      LoginAccount: searchLoginAccount.value.trim().toLowerCase().replaceAll(/\s/g, ''),
       PackageId: searchPackageId.value,
     });
     const first = result?.Items?.[0];

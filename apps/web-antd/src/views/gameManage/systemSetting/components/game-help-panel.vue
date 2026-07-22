@@ -30,6 +30,7 @@ import {
   updateGameHelpContentApi,
   updateGameHelpTabApi,
 } from '#/api/gameManage/system-setting';
+import { getProjectConfigApi } from '#/api/core/project';
 import RichTextEditor from '#/components/global/rich-text-editor.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
@@ -90,6 +91,7 @@ const editingSource = ref<HelpContent>();
 
 const langGroups = computed(() =>
   (cloudStore.projectConfig?.LangGroup || []).map((item) => ({
+    Default: Boolean(item.Default),
     Id: Number(item.Id),
     Languages: Array.isArray(item.Languages)
       ? item.Languages
@@ -97,11 +99,12 @@ const langGroups = computed(() =>
     Name: String(item.Name || `语言组 ${item.Id}`),
   })),
 );
-const currentLangGroupId = computed(
-  () =>
-    Number(langGroups.value.find((item) => item.Id)?.Id) ||
-    Number(langGroups.value[0]?.Id || 0),
-);
+// 对齐旧站 currentLangGroupId：优先 Default
+const currentLangGroupId = computed(() => {
+  const preferred =
+    langGroups.value.find((item) => item.Default) || langGroups.value[0];
+  return Number(preferred?.Id || 0);
+});
 const activeTab = computed(() => tabs.value[activeIndex.value]);
 const secondaryOptions = computed(() =>
   displayContents.value
@@ -189,6 +192,9 @@ const displayContents = computed(() => {
 async function loadData() {
   loading.value = true;
   try {
+    if (!cloudStore.projectConfig?.LangGroup?.length) {
+      await getProjectConfigApi().catch(() => undefined);
+    }
     const [tabData, contentData] = await Promise.all([
       fetchGameHelpTabsApi(),
       fetchGameHelpContentsApi(),
@@ -351,7 +357,10 @@ function confirmDeleteTab() {
 }
 
 function confirmDeleteContent(row: HelpContent) {
-  if (row.Id === undefined) return;
+  // 分组父行 Id 为合成值，禁止误删
+  if (row.Id === undefined || row.children?.length || String(row.Id).includes('-group')) {
+    return;
+  }
   const id = row.Id;
   Modal.confirm({
     content: `确定删除“${row.SecName}”吗？`,

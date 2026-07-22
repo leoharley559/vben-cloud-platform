@@ -11,10 +11,15 @@ import { trimSpace } from '#/utils/string';
  * @returns 主播团队分组列表及分页信息
  * @see views/generalizeManage/addGeneralize/index.vue
  */
-export function fetchSteamerGroupListApi() {
-  return requestClient.get<CloudListResult<SteamerGroupItem>>(
+export async function fetchSteamerGroupListApi() {
+  const data = await requestClient.get<CloudListResult<SteamerGroupItem> | null>(
     '/backend/sportsteamerteam/list',
   );
+  // 空环境偶发 Items=null，统一归一避免页面崩溃
+  return {
+    Items: Array.isArray(data?.Items) ? data.Items : [],
+    Pagination: data?.Pagination,
+  } satisfies CloudListResult<SteamerGroupItem>;
 }
 
 /**
@@ -23,11 +28,15 @@ export function fetchSteamerGroupListApi() {
  * @returns 直属团队分组数据
  * @see views/generalizeManage/addGeneralize/index.vue
  */
-export function fetchSteamerDirectGroupApi(query: {
+export async function fetchSteamerDirectGroupApi(query: {
   AdminId?: number | string;
 }) {
-  return requestClient.get<SteamerDirectGroupResult>(
+  const data = await requestClient.get<SteamerDirectGroupResult | null>(
     '/backend/sportsteamerteam/getadminteams',
     { params: trimSpace(query) },
   );
+  return {
+    CanQingLiu: Boolean(data?.CanQingLiu),
+    Teams: Array.isArray(data?.Teams) ? data.Teams : [],
+  } satisfies SteamerDirectGroupResult;
 }

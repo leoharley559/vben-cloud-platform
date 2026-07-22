@@ -11,28 +11,43 @@ import { trimSpace } from '#/utils/string';
  * 邮箱验证码查询列表（验证码管理 · 邮箱验证码 Tab）。
  *
  * @param query 查询参数（玩家、邮箱、时间等筛选）
- * @returns 邮箱验证码记录数组
+ * @returns 邮箱验证码记录数组（空结果归一为 `[]`）
  * @see views/memberManage/verifyCode/components/email-code-query-list.vue
  */
-export function fetchEmailVerifyCodeListApi(query: EmailVerifyCodeListQuery) {
-  return requestClient.get<EmailVerifyCodeListItem[]>(
-    '/backend/emailverifycode/list',
-    {
-      params: trimSpace({ ...query }),
-    },
-  );
+export async function fetchEmailVerifyCodeListApi(
+  query: EmailVerifyCodeListQuery,
+) {
+  const result = await requestClient.get<
+    EmailVerifyCodeListItem[] | { Items?: EmailVerifyCodeListItem[] } | null
+  >('/backend/emailverifycode/list', {
+    params: trimSpace({ ...query }),
+  });
+  if (Array.isArray(result)) {
+    return result;
+  }
+  if (result && typeof result === 'object' && Array.isArray(result.Items)) {
+    return result.Items;
+  }
+  return [];
 }
 
 /**
  * 邮箱发信账号列表（验证码管理 · 邮箱发信账号 Tab）。
  *
- * @returns 发信账号配置项列表
+ * @returns 发信账号配置项列表（空结果归一为 `[]`）
  * @see views/memberManage/verifyCode/components/email-outgoing-account-list.vue
  */
-export function fetchEmailOutgoingAccountListApi() {
-  return requestClient.get<EmailOutgoingAccountItem[]>(
-    '/backend/emailverifycode/listemailconfig',
-  );
+export async function fetchEmailOutgoingAccountListApi() {
+  const result = await requestClient.get<
+    EmailOutgoingAccountItem[] | { Items?: EmailOutgoingAccountItem[] } | null
+  >('/backend/emailverifycode/listemailconfig');
+  if (Array.isArray(result)) {
+    return result;
+  }
+  if (result && typeof result === 'object' && Array.isArray(result.Items)) {
+    return result.Items;
+  }
+  return [];
 }
 
 /**

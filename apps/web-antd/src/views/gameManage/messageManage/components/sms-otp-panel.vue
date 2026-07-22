@@ -94,12 +94,18 @@ const deviceNameMap = computed(
       deviceOptions.value.map((item) => [String(item.value), item.label]),
     ),
 );
-const todayRows = computed(() =>
-  reportRows.value.filter((row) => row.Day === dayjs().format('YYYY-MM-DD')),
-);
-const historyRows = computed(() =>
-  reportRows.value.filter((row) => row.Day !== dayjs().format('YYYY-MM-DD')),
-);
+const todayRows = computed(() => {
+  const today = dayjs().format('YYYY-MM-DD');
+  return reportRows.value.filter((row) =>
+    String(row.Day || '').startsWith(today),
+  );
+});
+const historyRows = computed(() => {
+  const today = dayjs().format('YYYY-MM-DD');
+  return reportRows.value.filter(
+    (row) => !String(row.Day || '').startsWith(today),
+  );
+});
 
 const reportColumns = [
   { dataIndex: 'Day', key: 'Day', title: '日期', width: 120 },

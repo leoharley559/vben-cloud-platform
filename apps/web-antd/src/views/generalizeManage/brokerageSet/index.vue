@@ -113,9 +113,14 @@ const gameSelectOptions = computed(() =>
 );
 
 function getQueryParams() {
+  // 对齐旧站 listQuery 字段；PageSize 用 500 拉取全量覆盖项（页面无分页，树由游戏配置合并）
   return {
+    GameId: '',
     Page: 1,
     PageSize: 500,
+    PlayerId: '',
+    PlayerName: '',
+    Sort: '',
   };
 }
 
@@ -165,10 +170,16 @@ async function handleSave() {
       Id: editingRow.value.Id,
       Rate: Math.round(Number(editRate.value) * 10),
     };
-    await (editingRow.value.Type === 'update' || editingRow.value.Id ? updateBrokerageSetApi(payload) : createBrokerageSetApi({
+    const isUpdate =
+      editingRow.value.Type === 'update' || Boolean(editingRow.value.Id);
+    if (isUpdate) {
+      await updateBrokerageSetApi(payload);
+    } else {
+      await createBrokerageSetApi({
         ...payload,
         Hash: createRequestHash(),
-      }));
+      });
+    }
     if (
       Number(editingRow.value.resType) === 8 &&
       editingRow.value.children?.length
@@ -184,6 +195,8 @@ async function handleSave() {
     message.success('保存成功');
     editOpen.value = false;
     await Promise.all([gridApi.reload(), getProjectConfigApi()]);
+  } catch {
+    // requestClient 已提示业务错误（如 10000/10002）
   } finally {
     editLoading.value = false;
   }
@@ -219,6 +232,8 @@ async function handleBatchSave() {
     message.success('批量设置成功');
     batchOpen.value = false;
     await Promise.all([gridApi.reload(), getProjectConfigApi()]);
+  } catch {
+    // requestClient 已提示业务错误
   } finally {
     batchLoading.value = false;
   }
@@ -234,6 +249,8 @@ function handleReset() {
         await resetBrokerageSetApi({ Hash: createRequestHash() });
         message.success('已恢复默认设置');
         await Promise.all([gridApi.reload(), getProjectConfigApi()]);
+      } catch {
+        // requestClient 已提示业务错误
       } finally {
         resetLoading.value = false;
       }
@@ -243,32 +260,33 @@ function handleReset() {
 }
 
 const columns: VxeTableGridOptions<BrokerageSetItem>['columns'] = [
-    { type: 'seq', title: '编号', width: 70 },
-    {
-      field: 'GameId',
-      formatter: ({ cellValue }) =>
-        formatBrokerageGameName(cellValue, gameConfig.value.games),
-      minWidth: 160,
-      title: '子游戏',
-    },
-    {
-      field: 'Rate',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined ? '-' : `${Number(cellValue) / 10}%`,
-      minWidth: 110,
-      title: '佣金系数',
-    },
-    { field: 'Desc', minWidth: 180, showOverflow: 'tooltip', title: '说明' },
-  ];
-if (canEdit.value) {
-  columns.push({
-      field: 'actions',
-      fixed: 'right',
-      slots: { default: 'actions' },
-      title: '操作',
-      width: 100,
-    });
-}
+  { type: 'seq', title: '编号', width: 70 },
+  {
+    field: 'GameId',
+    formatter: ({ cellValue }) =>
+      formatBrokerageGameName(cellValue, gameConfig.value.games),
+    minWidth: 160,
+    title: '子游戏',
+  },
+  {
+    field: 'Rate',
+    formatter: ({ cellValue }) =>
+      cellValue === undefined || cellValue === null
+        ? '-'
+        : `${Number(cellValue) / 10}%`,
+    minWidth: 110,
+    title: '佣金系数',
+  },
+  { field: 'Desc', minWidth: 180, showOverflow: 'tooltip', title: '说明' },
+  // 始终挂载操作列，按钮权限由模板 v-if 控制（避免 setup 时权限未就绪漏列）
+  {
+    field: 'actions',
+    fixed: 'right',
+    slots: { default: 'actions' },
+    title: '操作',
+    width: 100,
+  },
+];
 
 const gridOptions: VxeTableGridOptions<BrokerageSetItem> = {
   columns,
@@ -278,12 +296,15 @@ const gridOptions: VxeTableGridOptions<BrokerageSetItem> = {
     autoLoad: false,
     ajax: {
       query: async () => {
-        const result = await fetchBrokerageSetListApi(getQueryParams());
-        gameTree.value = buildGameTree(
-          result.Items,
-          result.TeamGameDefaultRate,
-        );
-        return { items: gameTree.value, total: gameTree.value.length };
+        try {
+          const result = await fetchBrokerageSetListApi(getQueryParams());
+          const items = Array.isArray(result.Items) ? result.Items : [];
+          gameTree.value = buildGameTree(items, result.TeamGameDefaultRate);
+          return { items: gameTree.value, total: gameTree.value.length };
+        } catch {
+          gameTree.value = buildGameTree([], 0);
+          return { items: gameTree.value, total: gameTree.value.length };
+        }
       },
     },
   },
@@ -299,7 +320,11 @@ onMounted(async () => {
   if (!canViewPage.value) {
     return;
   }
-  await ensureGameConfig();
+  try {
+    await ensureGameConfig();
+  } catch {
+    // 游戏配置失败时仍可展示空树 / 默认费率
+  }
   if (canViewTable.value) gridApi.reload();
   else gameTree.value = buildGameTree();
 });

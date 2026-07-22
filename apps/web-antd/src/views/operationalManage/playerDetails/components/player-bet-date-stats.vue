@@ -14,7 +14,7 @@ import {
   BET_TIME_TYPE_OPTIONS,
   calcBetWinLoss,
 } from '#/utils/bet-detail';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 defineOptions({ name: 'PlayerBetDateStats' });
@@ -24,7 +24,7 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const summary = ref({
   Count: 0,
   SumBetGold: 0,

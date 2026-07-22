@@ -94,14 +94,15 @@ const currentAdminId = computed(() => {
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    AdminUserName: filterAdminUserName.value,
+    AdminUserName: filterAdminUserName.value || '',
     BeginTime: begin?.unix() || '',
     EndTime: end?.unix() || '',
-    OrderId: filterOrderId.value,
+    OrderId: filterOrderId.value || '',
     Page: page.currentPage,
     PageSize: page.pageSize,
     Sort: '',
-    Status: filterStatus.value.join(','),
+    // allow-clear 后可能为 undefined，需兜底避免 join 崩溃
+    Status: (filterStatus.value || []).join(','),
   };
 }
 
@@ -203,7 +204,10 @@ const gridOptions: VxeTableGridOptions<CloseOrderItem> = {
         try {
           const result = await fetchCloseOrderListApi(getQueryParams(page));
           if (requestId !== latestListRequestId) return latestGridResult;
-          const moreItems = result.MoreItems;
+          const items = Array.isArray(result.Items) ? result.Items : [];
+          const moreItems = Array.isArray(result.MoreItems)
+            ? result.MoreItems
+            : [];
           const getSum = (status: number, rate = false) => {
             const item = moreItems.find(
               (entry) => Number(entry.Status) === status,
@@ -221,13 +225,12 @@ const gridOptions: VxeTableGridOptions<CloseOrderItem> = {
             remitRateMoney: getSum(3, true),
           };
           latestGridResult = {
-            items: result.Items,
-            total: Number(
-              result.Pagination?.MaxCount || result.Items.length,
-            ),
+            items,
+            total: Number(result.Pagination?.MaxCount ?? items.length),
           };
           return latestGridResult;
-        } catch (error) {
+        } catch {
+          // 与 teamQuery 一致：失败清空列表，不重抛避免表格二次报错
           if (requestId === latestListRequestId) {
             latestGridResult = { items: [], total: 0 };
             headerData.value = {
@@ -238,7 +241,7 @@ const gridOptions: VxeTableGridOptions<CloseOrderItem> = {
               remitRateMoney: 0,
             };
           }
-          throw error;
+          return { items: [], total: 0 };
         }
       },
     },
@@ -269,29 +272,34 @@ function handleStart(row: CloseOrderItem) {
         await startCloseOrderApi({ Id: row.Id });
         message.success('已开始处理');
         if (canFinish.value) {
-          const latest = await fetchCloseOrderListApi({
-            AdminUserName: '',
-            BeginTime: '',
-            EndTime: '',
-            OrderId: row.OrderId || '',
-            Page: 1,
-            PageSize: 20,
-            Sort: '',
-            Status: 2,
-          });
-          const updatedRow = latest.Items.find(
-            (item) => String(item.Id) === String(row.Id),
-          );
-          if (updatedRow) {
-            currentRow.value = updatedRow;
-            finishOpen.value = true;
-          } else {
-            message.warning('订单状态已更新，请在处理中列表继续操作');
-            reloadGrid();
+          // 开始处理后刷新该单，避免沿用旧 Status/UpdateAdminId 导致 IsYourSure 误判
+          try {
+            const latest = await fetchCloseOrderListApi({
+              AdminUserName: '',
+              BeginTime: '',
+              EndTime: '',
+              OrderId: row.OrderId || '',
+              Page: 1,
+              PageSize: 20,
+              Sort: '',
+              Status: '2',
+            });
+            const updatedRow = (latest.Items || []).find(
+              (item) => String(item.Id) === String(row.Id),
+            );
+            if (updatedRow) {
+              currentRow.value = updatedRow;
+              finishOpen.value = true;
+              return;
+            }
+          } catch {
+            // 刷新失败则回列表
           }
-        } else {
-          reloadGrid();
+          message.warning('订单状态已更新，请在处理中列表继续操作');
         }
+        reloadGrid();
+      } catch {
+        // requestClient 已提示业务错误（如 10402）
       } finally {
         startingOrderId.value = '';
       }
@@ -325,9 +333,8 @@ function handleMoreColumnsChange(values: unknown) {
     ? values.map(Number).filter((value) => [0, 1, 2].includes(value))
     : [];
   moreColumns.value = selected;
-  const legacyValue = [0, 1, 2]
-    .map((index) => selected.includes(index))
-    .toString();
+  // 对齐旧站 storage：boolean[]，loadMoreColumns 已兼容该格式
+  const legacyValue = [0, 1, 2].map((index) => selected.includes(index));
   localStorage.setItem('teamCloseOrder', JSON.stringify(legacyValue));
   gridApi.setGridOptions({ columns: buildColumns() });
 }
