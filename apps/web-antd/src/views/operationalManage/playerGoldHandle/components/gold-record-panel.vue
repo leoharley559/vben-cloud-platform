@@ -72,14 +72,14 @@ const { packageOptions } = useOperationOptions();
 const canViewTable = computed(() => checkPermission(10090));
 const canExport = computed(() => checkPermission(10091));
 
-/** 与旧站 listQuery 对齐，默认昨日 */
+/** 与旧站 listQuery 对齐，默认昨日；Done/Reason 支持多选 join(',') */
 const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>();
 const filterChannelIds = ref<Array<number | string> | number | string>();
 const filterOrderId = ref('');
 const filterWaterType = ref<number>(0);
-const filterDone = ref<number | string>();
-const filterReason = ref<number | string>();
+const filterDone = ref<Array<number | string>>([]);
+const filterReason = ref<Array<number | string>>([]);
 const filterDataSearchType = ref(0);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs().subtract(1, 'day').startOf('day'),
@@ -87,6 +87,7 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 ]);
 
 const totalAmount = ref(0);
+const totalRealAmount = ref(0);
 const exportLoading = ref(false);
 
 const packageSelectOptions = computed(() =>
@@ -130,13 +131,27 @@ function channelIdsParam() {
   return value || '';
 }
 
+/** 旧站 filter-change：多选 → join(',')；空=全部 */
+function multiFilterParam(values: Array<number | string>) {
+  if (!values?.length) {
+    return '';
+  }
+  return values.join(',');
+}
+
+function normalizeLoginAccount() {
+  filterLoginAccount.value = filterLoginAccount.value
+    .toLowerCase()
+    .replace(/\s/g, '');
+}
+
 function buildListQuery(page?: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value;
   return {
     BeginTime: begin.startOf('day').unix(),
     ChannelIds: channelIdsParam(),
     DataSearchType: filterDataSearchType.value,
-    Done: filterDone.value ?? '',
+    Done: multiFilterParam(filterDone.value),
     EndTime: end.endOf('day').unix(),
     HandleType: 1,
     LoginAccount: filterLoginAccount.value.trim(),
@@ -144,7 +159,8 @@ function buildListQuery(page?: { currentPage: number; pageSize: number }) {
     PackageId: filterPackageId.value || '',
     Page: page?.currentPage ?? 1,
     PageSize: page?.pageSize ?? 20,
-    Reason: filterReason.value ?? '',
+    Reason: multiFilterParam(filterReason.value),
+    Sort: '',
     WaterType: filterWaterType.value,
   };
 }
@@ -257,6 +273,9 @@ const gridOptions: VxeTableGridOptions<RecordRow> = {
         const result = await fetchPlayerGoldHandleListApi(buildListQuery(page));
         const items = (result.Items || []) as unknown as RecordRow[];
         totalAmount.value = Number(result.Total?.Total || 0);
+        totalRealAmount.value = Number(
+          (result.Total as { TotalReal?: number } | undefined)?.TotalReal || 0,
+        );
         return {
           items,
           total: Number(result.Pagination?.MaxCount || items.length),
@@ -274,8 +293,8 @@ function resetFilters() {
   filterChannelIds.value = undefined;
   filterOrderId.value = '';
   filterWaterType.value = 0;
-  filterDone.value = undefined;
-  filterReason.value = undefined;
+  filterDone.value = [];
+  filterReason.value = [];
   filterDataSearchType.value = 0;
   filterDateRange.value = [
     dayjs().subtract(1, 'day').startOf('day'),
@@ -361,6 +380,7 @@ async function handleExport() {
         allow-clear
         placeholder="请输入"
         style="width: 220px"
+        @change="normalizeLoginAccount"
       >
         <template #addonBefore>游戏账号</template>
       </Input>
@@ -405,7 +425,9 @@ async function handleExport() {
         <Select
           v-model:value="filterDone"
           allow-clear
-          class="w-36"
+          class="w-44"
+          :max-tag-count="1"
+          mode="multiple"
           :options="doneOptions"
           placeholder="全部"
         />
@@ -416,7 +438,9 @@ async function handleExport() {
         <Select
           v-model:value="filterReason"
           allow-clear
-          class="w-36"
+          class="w-44"
+          :max-tag-count="1"
+          mode="multiple"
           :options="reasonOptions"
           placeholder="全部"
         />
@@ -444,10 +468,18 @@ async function handleExport() {
       </Button>
     </div>
 
-    <div class="mb-3 text-sm text-gray-600">
-      金额总计：
-      <span class="font-medium text-gray-900">
-        {{ formatAmountFromCent(totalAmount) }}
+    <div class="mb-3 flex flex-wrap gap-4 text-sm text-gray-600">
+      <span>
+        申请金额总计：
+        <span class="font-medium text-gray-900">
+          {{ formatAmountFromCent(totalAmount) }}
+        </span>
+      </span>
+      <span>
+        实际金额总计：
+        <span class="font-medium text-gray-900">
+          {{ formatAmountFromCent(totalRealAmount) }}
+        </span>
       </span>
     </div>
 

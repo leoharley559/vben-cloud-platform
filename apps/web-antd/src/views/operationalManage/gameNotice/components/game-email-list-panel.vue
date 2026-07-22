@@ -25,6 +25,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import AccountSelect from '#/components/global/account-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { useProjectConfig } from '#/composables/use-project-config';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 import GameEmailFormModal from './game-email-form-modal.vue';
@@ -64,12 +65,22 @@ const EMAIL_STATUS_MAP: Record<number, { color: string; text: string }> = {
 
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
+const { projectConfig } = useProjectConfig();
 const router = useRouter();
 
 const canViewTable = computed(() => checkPermission(10077));
 const canCreate = computed(() => checkPermission(10078));
 const canEditOrView = computed(() => checkPermission(10077));
 const canDelete = computed(() => checkPermission(13368));
+
+/** 对齐旧站 currentLangGroupId */
+const currentLangGroupId = computed(() => {
+  const groups = projectConfig.value?.LangGroup || [];
+  const preferred = groups.find((item) => item.Default) || groups[0];
+  return preferred?.Id !== undefined && preferred?.Id !== null
+    ? String(preferred.Id)
+    : '';
+});
 
 const actionId = ref<number | string>();
 const formOpen = ref(false);
@@ -112,6 +123,12 @@ function parseLangText(raw: EmailRow['LangText']) {
 
 function resolveLangField(row: EmailRow, field: 'Title' | 'Content') {
   const lang = parseLangText(row.LangText);
+  const preferred = currentLangGroupId.value
+    ? lang[currentLangGroupId.value]
+    : undefined;
+  if (preferred?.[field]) {
+    return String(preferred[field]);
+  }
   const first = Object.values(lang)[0];
   return first?.[field] || '-';
 }
@@ -165,6 +182,7 @@ const gridOptions: VxeTableGridOptions<EmailRow> = {
       formatter: ({ cellValue }) =>
         formatOperationDateTime(cellValue as string),
       minWidth: 160,
+      sortable: true,
       title: '创建时间',
     },
     {
@@ -176,6 +194,7 @@ const gridOptions: VxeTableGridOptions<EmailRow> = {
         return formatOperationDateTime(cellValue as string);
       },
       minWidth: 160,
+      sortable: true,
       title: '发送时间',
     },
     {
@@ -278,14 +297,22 @@ const gridOptions: VxeTableGridOptions<EmailRow> = {
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
-      query: async ({ page }) => {
+      query: async ({ page, sort }) => {
         if (!canViewTable.value) {
           return { items: [], total: 0 };
+        }
+        const sortField = sort?.field;
+        const sortOrder = sort?.order;
+        let sortParam = '';
+        if (sortField && sortOrder) {
+          sortParam =
+            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
         const query: Record<string, unknown> = {
           Page: page.currentPage,
           PageSize: page.pageSize,
           Sender: filterSender.value.trim(),
+          Sort: sortParam,
           Username: usernameParam(),
         };
         if (filterDateRange.value?.[0] && filterDateRange.value?.[1]) {
@@ -300,6 +327,9 @@ const gridOptions: VxeTableGridOptions<EmailRow> = {
         };
       },
     },
+  },
+  sortConfig: {
+    remote: true,
   },
 };
 

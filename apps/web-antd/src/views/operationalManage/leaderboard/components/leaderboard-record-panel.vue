@@ -62,6 +62,8 @@ const filterStatus = ref<number>(-1);
 const filterActivityType = ref<number | string>('');
 const filterVipLevel = ref<number | string>(-1);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
+/** 对齐旧站：Ranking / -Ranking */
+const sortField = ref('');
 
 const typeFilterOptions = LEADERBOARD_TYPE_OPTIONS.map((item) => ({
   label: item.label,
@@ -76,14 +78,14 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
     ActivityType:
       filterActivityType.value === '' ? '' : filterActivityType.value,
     ChannelId: channelIds,
-    // 测试环境 YYYY-MM-DD 会 10000，改用 unix 秒
-    EndTime: end ? end.endOf('day').unix() : '',
-    LoginAccount: filterLoginAccount.value.trim(),
+    // record 接口要求 YYYY-MM-DD；传 unix 会 status=10037
+    EndTime: end ? end.format('YYYY-MM-DD') : '',
+    LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     PackageId: filterPackageId.value ?? '',
     Page: page.currentPage,
     PageSize: page.pageSize,
-    Sort: '',
-    StartTime: begin ? begin.startOf('day').unix() : '',
+    Sort: sortField.value,
+    StartTime: begin ? begin.format('YYYY-MM-DD') : '',
     Status: filterStatus.value,
     VipLevel:
       filterVipLevel.value === -1 || filterVipLevel.value === ''
@@ -197,7 +199,15 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
-      query: async ({ page }) => {
+      query: async ({ page, sorts }) => {
+        const sort = Array.isArray(sorts) ? sorts[0] : undefined;
+        if (sort?.field && sort.order === 'asc') {
+          sortField.value = String(sort.field);
+        } else if (sort?.field && sort.order === 'desc') {
+          sortField.value = `-${sort.field}`;
+        } else {
+          sortField.value = '';
+        }
         const result = await fetchLeaderboardRecordApi(buildQuery(page));
         const items = result.Items || [];
         totalCount.value = Number(result.Pagination?.MaxCount || items.length);
@@ -207,6 +217,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
         };
       },
     },
+    sort: true,
   },
 };
 
@@ -225,6 +236,7 @@ function handleReset() {
   filterActivityType.value = '';
   filterVipLevel.value = -1;
   filterDateRange.value = undefined;
+  sortField.value = '';
   gridApi.reload();
 }
 
@@ -308,6 +320,11 @@ onMounted(() => {
         allow-clear
         placeholder="游戏账号"
         style="width: 160px"
+        @change="
+          filterLoginAccount = String(filterLoginAccount || '')
+            .trim()
+            .toLowerCase()
+        "
       />
       <Select
         v-model:value="filterStatus"

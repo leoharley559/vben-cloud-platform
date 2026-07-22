@@ -48,7 +48,7 @@ const packageOptions = computed(() => {
 function buildQuery(page: { currentPage: number; pageSize: number }) {
   return {
     ActivityId: props.activityId,
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     PackageId: filterPackageId.value ?? '',
     Page: page.currentPage,
     PageSize: page.pageSize,

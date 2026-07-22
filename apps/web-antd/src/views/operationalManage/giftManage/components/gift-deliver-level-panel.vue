@@ -35,6 +35,7 @@ import {
   formatGiftDeliverStatus,
   formatPlayerStatus,
   formatVipLevel,
+  giftListTotal,
   giftNameText,
   parseGiftNames,
 } from './gift-shared';
@@ -268,7 +269,7 @@ const gridOptions: VxeTableGridOptions<DeliverRow> = {
         const items = normalizeRows(result.Items || []);
         return {
           items,
-          total: Number(result.Pagination?.MaxCount || items.length),
+          total: giftListTotal(result.Pagination, items.length),
         };
       },
     },

@@ -140,6 +140,7 @@ const canFilterBindPhone = computed(() => checkPermission(11397));
 const canFilterTag = computed(() => checkPermission(12158));
 const canFilterFirstPay = computed(() => checkPermission(13205));
 const canFilterMemberType = computed(() => checkPermission(12296));
+const canFilterRegDate = computed(() => checkPermission(11399));
 
 const filterStatus = ref<number[]>([]);
 const filterLoginAccount = ref('');
@@ -938,12 +939,13 @@ onMounted(async () => {
             <Select
               v-model:value="filterPackageId"
               style="width: 150px"
-              :options="
-                packageOptions.map((item) => ({
+              :options="[
+                { label: '全部', value: '' },
+                ...packageOptions.map((item) => ({
                   label: item.PackageName,
                   value: item.PackageId,
-                }))
-              "
+                })),
+              ]"
             />
           </div>
           <div v-if="canFilterVip" class="flex flex-col gap-1">
@@ -979,8 +981,8 @@ onMounted(async () => {
               style="width: 120px"
               :options="[
                 { label: '全部', value: -1 },
-                { label: '未绑定', value: 0 },
                 { label: '已绑定', value: 1 },
+                { label: '未绑定', value: 2 },
               ]"
             />
           </div>
@@ -992,7 +994,7 @@ onMounted(async () => {
               style="width: 120px"
             />
           </div>
-          <div class="flex flex-col gap-1">
+          <div v-if="canFilterRegDate" class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">注册时间</span>
             <DatePicker.RangePicker
               v-model:value="filterDateRange"

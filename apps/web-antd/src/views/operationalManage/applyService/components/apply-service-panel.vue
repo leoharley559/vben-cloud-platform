@@ -22,6 +22,7 @@ import {
   handleApplyServiceApi,
   rejectApplyServiceApi,
 } from '#/api/operationManage/apply-service';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -37,10 +38,14 @@ interface ApplyRow {
   Id: number | string;
   Content?: string;
   CreateTime?: number | string;
+  FileUrl?: string;
   LoginAccount?: string;
   OperatorUsername?: string;
   OrderId?: string;
   PackageName?: string;
+  PlayerId?: number | string;
+  Remark?: string;
+  RemarkStatusChange?: string;
   Status?: number;
   SupporterName?: string;
   SupporterUsername?: string;
@@ -48,6 +53,7 @@ interface ApplyRow {
   UpdateTime?: number | string;
   WorkQuestionType?: number | string;
   WorkQuestionTypeName?: string;
+  newQuest?: string;
 }
 
 interface OptionItem {
@@ -58,21 +64,39 @@ interface OptionItem {
 const { checkPermission, checkPermissionByKey } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canPass = computed(
-  () => checkPermissionByKey('applyServicePass') || checkPermission(10079),
-);
-const canReject = computed(
+/** 操作列：旧站 pleyerOrderHandle(12431) || 12430 */
+const canShowActions = computed(
   () =>
-    checkPermissionByKey('pleyerOrderReject') ||
-    checkPermissionByKey('applyServicePass') ||
-    checkPermission(10079),
+    checkPermissionByKey('pleyerOrderHandle') ||
+    checkPermission(12_430) ||
+    checkPermission(10_079),
+);
+/** 通过：applyServicePass(12437) */
+const canPass = computed(
+  () => checkPermissionByKey('applyServicePass') || checkPermission(10_079),
+);
+/** 驳回：applyService 模式下旧站无额外权限门禁（仅 Status==2） */
+const canReject = computed(() => true);
+/** 查看：applyServiceCheck(12438) || pleyerOrderCheck(12439) */
+const canCheck = computed(
+  () =>
+    checkPermissionByKey('applyServiceCheck') ||
+    checkPermissionByKey('pleyerOrderCheck') ||
+    checkPermission(10_079),
 );
 const canFilterQuestType = computed(
-  () => checkPermissionByKey('playerOrderQuestType') || checkPermission(10079),
+  () =>
+    checkPermissionByKey('playerOrderQuestType') || checkPermission(10_079),
 );
 const canExport = computed(
-  () => checkPermission(12546) || checkPermission(12547),
+  () => checkPermission(12_546) || checkPermission(12_547),
 );
+
+/** 对齐旧站 listQuery：默认今天（getBeforeDateTimestamp(1,false)～今天 23:59） */
+const todayRange = (): [dayjs.Dayjs, dayjs.Dayjs] => [
+  dayjs().startOf('day'),
+  dayjs().endOf('day'),
+];
 
 /** 与旧站 listQuery / Status 对齐 */
 const filterOrderId = ref('');
@@ -85,10 +109,7 @@ const filterEndReasonType = ref<number | string>();
 /** 旧站多选；含 '' 表示全部 */
 const filterStatus = ref<Array<number | string>>(['']);
 const isAllStatus = ref(true);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs().subtract(1, 'day').startOf('day'),
-  dayjs().subtract(1, 'day').endOf('day'),
-]);
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(todayRange());
 
 const workQuestOptions = ref<OptionItem[]>([]);
 const endReasonOptions = ref<OptionItem[]>([]);
@@ -120,12 +141,6 @@ const form = reactive({
   mode: 'pass' as 'pass' | 'reject',
 });
 
-function normalizeLoginAccount() {
-  filterLoginAccount.value = filterLoginAccount.value
-    .toLowerCase()
-    .replace(/\s/g, '');
-}
-
 function statusColor(status?: number) {
   if (Number(status) === 1) {
     return 'success';
@@ -150,6 +165,39 @@ function resolveQuestTypeLabel(row: ApplyRow) {
   return workQuestTitleMap.value.get(id) || String(id);
 }
 
+/** 对齐旧站 handleDataList：Content 第 3 段为「新问题」 */
+function resolveNewQuest(row: ApplyRow) {
+  if (row.newQuest) {
+    return String(row.newQuest);
+  }
+  const content = String(row.Content || '');
+  if (!content.includes('|')) {
+    return content || '-';
+  }
+  return content.split('|')[2] || '-';
+}
+
+function parseContentParts(content?: string) {
+  const parts = String(content || '').split('|');
+  return {
+    after: parts[2] || '',
+    before: parts[1] || '',
+    name: parts[0] || '',
+  };
+}
+
+/** 对齐旧站：仅 Status==2（处理中）可过审/驳回 */
+function isProcessing(row: ApplyRow) {
+  return Number(row.Status) === 2;
+}
+
+function normalizeListItems(items: ApplyRow[]) {
+  return items.map((item) => ({
+    ...item,
+    newQuest: resolveNewQuest(item),
+  }));
+}
+
 /** 旧站 Status.toString()：全部 → ''；多选 → '1,2' */
 function buildStatusParam() {
   const values = filterStatus.value;
@@ -170,6 +218,7 @@ function buildListQuery(page?: { currentPage: number; pageSize: number }) {
     PackageId: filterPackageId.value || '',
     Page: page?.currentPage ?? 1,
     PageSize: page?.pageSize ?? 20,
+    Sort: '',
     Status: buildStatusParam(),
     SupporterUsername: filterSupporterUsername.value.trim(),
     Type: filterEndReasonType.value || '',
@@ -191,6 +240,7 @@ const gridOptions: VxeTableGridOptions<ApplyRow> = {
       formatter: ({ cellValue }) =>
         formatOperationDateTime(cellValue as string),
       minWidth: 160,
+      sortable: true,
       title: '申请时间',
     },
     {
@@ -198,9 +248,15 @@ const gridOptions: VxeTableGridOptions<ApplyRow> = {
       formatter: ({ cellValue }) =>
         formatOperationDateTime(cellValue as string),
       minWidth: 160,
+      sortable: true,
       title: '完成时间',
     },
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 140,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'TypeName', minWidth: 120, title: '结束理由' },
     {
@@ -208,6 +264,12 @@ const gridOptions: VxeTableGridOptions<ApplyRow> = {
       formatter: ({ row }) => resolveQuestTypeLabel(row),
       minWidth: 120,
       title: '问题类型',
+    },
+    {
+      field: 'newQuest',
+      formatter: ({ row }) => resolveNewQuest(row),
+      minWidth: 140,
+      title: '新问题',
     },
     {
       field: 'SupporterName',
@@ -222,22 +284,39 @@ const gridOptions: VxeTableGridOptions<ApplyRow> = {
       fixed: 'right',
       slots: { default: 'action' },
       title: '操作',
-      width: 160,
+      width: 220,
     },
   ],
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
-      query: async ({ page }) => {
-        const result = await fetchApplyServiceListApi(buildListQuery(page));
-        const items = (result.Items || []) as unknown as ApplyRow[];
+      query: async ({ page, sort }) => {
+        const query = buildListQuery(page);
+        const sortField = sort?.field;
+        const sortOrder = sort?.order;
+        let sortParam = '';
+        if (sortField && sortOrder) {
+          // 对齐旧站 sortChange：升序 field，降序 -field
+          sortParam =
+            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
+        }
+        const result = await fetchApplyServiceListApi({
+          ...query,
+          Sort: sortParam,
+        });
+        const items = normalizeListItems(
+          (result.Items || []) as unknown as ApplyRow[],
+        );
         return {
           items,
           total: Number(result.Pagination?.MaxCount || items.length),
         };
       },
     },
+  },
+  sortConfig: {
+    remote: true,
   },
 };
 
@@ -269,10 +348,7 @@ function resetFilters() {
   filterEndReasonType.value = undefined;
   filterStatus.value = [''];
   isAllStatus.value = true;
-  filterDateRange.value = [
-    dayjs().subtract(1, 'day').startOf('day'),
-    dayjs().subtract(1, 'day').endOf('day'),
-  ];
+  filterDateRange.value = todayRange();
   gridApi.reload();
 }
 
@@ -281,6 +357,52 @@ function openAction(row: ApplyRow, mode: 'pass' | 'reject') {
   form.mode = mode;
   form.Remark = '';
   modalOpen.value = true;
+}
+
+const detailOpen = ref(false);
+const detailRow = ref<ApplyRow | null>(null);
+const detailContent = ref({ after: '', before: '', name: '' });
+const historyList = ref<ApplyRow[]>([]);
+const historyLoading = ref(false);
+const recordList = ref<
+  Array<{ RemarkStatusChange?: string; Record: number; Time?: string; User?: string }>
+>([]);
+
+async function openCheck(row: ApplyRow) {
+  detailRow.value = row;
+  detailContent.value = parseContentParts(row.Content);
+  recordList.value = [
+    {
+      Record: 0,
+      RemarkStatusChange: row.Remark,
+      Time: formatOperationDateTime(row.CreateTime as string),
+      User: String(row.SupporterName || row.SupporterUsername || '-'),
+    },
+  ];
+  if (Number(row.Status) !== 2) {
+    recordList.value.unshift({
+      Record: Number(row.Status || 0),
+      RemarkStatusChange: row.RemarkStatusChange,
+      Time: formatOperationDateTime(row.UpdateTime as string),
+      User: row.OperatorUsername || '-',
+    });
+  }
+  detailOpen.value = true;
+  historyLoading.value = true;
+  try {
+    const result = await fetchApplyServiceListApi({
+      LoginAccount: row.LoginAccount || '',
+      Page: 1,
+      PageSize: 50,
+    });
+    historyList.value = normalizeListItems(
+      (result.Items || []) as unknown as ApplyRow[],
+    );
+  } catch {
+    historyList.value = [];
+  } finally {
+    historyLoading.value = false;
+  }
 }
 
 async function submitAction() {
@@ -348,6 +470,10 @@ async function handleExport() {
         {
           header: '问题类型',
           value: (row) => resolveQuestTypeLabel(row),
+        },
+        {
+          header: '新问题',
+          value: (row) => resolveNewQuest(row),
         },
         {
           header: '申请人',
@@ -538,10 +664,16 @@ onMounted(() => {
           }}
         </Tag>
       </template>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId"
+        />
+      </template>
       <template #action="{ row }">
-        <div v-if="isProcessing(row)" class="flex flex-wrap gap-1">
+        <div v-if="canShowActions" class="flex flex-wrap gap-1">
           <Button
-            v-if="canPass"
+            v-if="isProcessing(row) && canPass"
             size="small"
             type="primary"
             @click="openAction(row, 'pass')"
@@ -549,12 +681,20 @@ onMounted(() => {
             通过
           </Button>
           <Button
-            v-if="canReject"
+            v-if="isProcessing(row) && canReject"
             danger
             size="small"
             @click="openAction(row, 'reject')"
           >
             驳回
+          </Button>
+          <Button
+            v-if="canCheck"
+            size="small"
+            type="default"
+            @click="openCheck(row)"
+          >
+            查看
           </Button>
         </div>
         <span v-else>-</span>
@@ -577,6 +717,79 @@ onMounted(() => {
           />
         </Form.Item>
       </Form>
+    </Modal>
+
+    <Modal
+      v-model:open="detailOpen"
+      :footer="null"
+      destroy-on-close
+      title="查看工单"
+      width="720px"
+    >
+      <div v-if="detailRow" class="space-y-3 text-sm">
+        <div class="grid grid-cols-2 gap-2">
+          <div>订单编号：{{ detailRow.OrderId || '-' }}</div>
+          <div>
+            状态：
+            {{
+              APPLY_SERVICE_STATUS_MAP[Number(detailRow.Status)] ||
+              String(detailRow.Status ?? '-')
+            }}
+          </div>
+          <div>游戏账号：{{ detailRow.LoginAccount || '-' }}</div>
+          <div>所属产品：{{ detailRow.PackageName || '-' }}</div>
+          <div>问题类型：{{ resolveQuestTypeLabel(detailRow) }}</div>
+          <div>新问题：{{ resolveNewQuest(detailRow) }}</div>
+          <div>申请人：{{ detailRow.SupporterName || detailRow.SupporterUsername || '-' }}</div>
+          <div>审核人：{{ detailRow.OperatorUsername || '-' }}</div>
+        </div>
+        <div v-if="detailContent.name || detailContent.before || detailContent.after">
+          <div class="mb-1 font-medium">工单内容</div>
+          <div>字段：{{ detailContent.name || '-' }}</div>
+          <div>修改前：{{ detailContent.before || '-' }}</div>
+          <div>修改后：{{ detailContent.after || '-' }}</div>
+        </div>
+        <div>
+          <div class="mb-1 font-medium">处理记录</div>
+          <div
+            v-for="(item, index) in recordList"
+            :key="`${item.Time}-${index}`"
+            class="mb-1 rounded border border-gray-100 px-2 py-1"
+          >
+            {{ item.Time }} ·
+            {{
+              item.Record === 0
+                ? '创建工单'
+                : APPLY_SERVICE_STATUS_MAP[item.Record] || item.Record
+            }}
+            · {{ item.User || '-' }}
+            <div v-if="item.RemarkStatusChange" class="text-gray-500">
+              {{ item.RemarkStatusChange }}
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="mb-1 font-medium">历史工单</div>
+          <div v-if="historyLoading">加载中…</div>
+          <div v-else-if="!historyList.length" class="text-gray-400">暂无</div>
+          <div v-else class="max-h-48 overflow-auto">
+            <div
+              v-for="item in historyList"
+              :key="String(item.Id)"
+              class="mb-1 flex justify-between gap-2 border-b border-gray-50 py-1"
+            >
+              <span>{{ item.OrderId || item.Id }}</span>
+              <span>
+                {{
+                  APPLY_SERVICE_STATUS_MAP[Number(item.Status)] ||
+                  String(item.Status ?? '-')
+                }}
+              </span>
+              <span>{{ formatOperationDateTime(item.CreateTime as string) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </Modal>
   </div>
 </template>

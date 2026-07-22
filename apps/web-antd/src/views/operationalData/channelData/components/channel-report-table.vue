@@ -18,12 +18,18 @@ const props = withDefaults(
     loading?: boolean;
     /** today 不显示日期；history 显示 */
     mode?: 'history' | 'today';
+    /**
+     * 区间报（ReportType=3）日期列展示查询区间，对齐旧站 HistoryAgentData：
+     * 行内 BeginTime/EndTime 常为空，应使用查询条件而非 row 字段。
+     */
+    queryDateLabel?: string;
     /** 月报显示场馆费/净输赢 */
     reportType?: number;
   }>(),
   {
     loading: false,
     mode: 'today',
+    queryDateLabel: '',
     reportType: 1,
   },
 );
@@ -50,13 +56,17 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
     cols.push({
       customRender: ({ record }) => {
         if (Number(props.reportType) === 3) {
-          return `${record.BeginTime || ''} ~ ${record.EndTime || ''}`;
+          if (props.queryDateLabel) return props.queryDateLabel;
+          if (record.BeginTime || record.EndTime) {
+            return `${record.BeginTime || ''} ~ ${record.EndTime || ''}`;
+          }
+          return String(record.ReportDay || '');
         }
         return String(record.ReportDay || '');
       },
       fixed: 'left',
       title: '日期',
-      width: 120,
+      width: Number(props.reportType) === 3 ? 200 : 120,
     });
   }
 

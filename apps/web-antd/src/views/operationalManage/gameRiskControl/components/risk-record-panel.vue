@@ -104,9 +104,14 @@ function resolveListTotal(
   result: CloudListResult<Record<string, unknown>> & { Total?: number },
   items: Record<string, unknown>[],
 ) {
-  const max = Number(result?.Pagination?.MaxCount);
-  if (Number.isFinite(max) && max >= 0) {
-    return max;
+  const pag = result?.Pagination;
+  if (
+    pag &&
+    pag.MaxCount !== undefined &&
+    pag.MaxCount !== null &&
+    String(pag.MaxCount) !== ''
+  ) {
+    return Number(pag.MaxCount);
   }
   const total = Number(result?.Total);
   if (Number.isFinite(total) && total >= 0) {

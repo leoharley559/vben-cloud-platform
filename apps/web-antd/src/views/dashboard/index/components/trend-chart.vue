@@ -20,6 +20,8 @@ const props = defineProps<{
   activeKey: PanelMetricKey;
   chartType: 'bar' | 'line';
   loading?: boolean;
+  /** 是否展示折线/柱状切换；在线总览旧站仅折线，默认 true */
+  showTypeSwitch?: boolean;
   today: string;
   totalCount: Record<string, Array<Record<string, unknown>>>;
   totalHours: Record<string, Array<Record<string, unknown>>>;
@@ -30,6 +32,8 @@ const emit = defineEmits<{
   'change-type': [type: 'bar' | 'line'];
   'reload-dates': [dates: { Date1?: string; Date2?: string; Date3?: string }];
 }>();
+
+const showTypeSwitch = computed(() => props.showTypeSwitch !== false);
 
 const chartRef = ref<EchartsUIType>();
 const { renderEcharts, resize } = useEcharts(chartRef);
@@ -135,6 +139,12 @@ const hasChartData = computed(() =>
   legendDates.value.some(
     (item) => resolveDayRows(chartSource.value, item.date).length > 0,
   ),
+);
+
+const emptyHint = computed(() =>
+  props.activeKey === 'SumOnlinePlayerNum'
+    ? '暂无分时数据：接口 TotalCount 为空或为 null（在线人数卡片来自 Items 日汇总，与折线 5 分钟点不是同一字段）'
+    : '暂无分时数据：接口 TotalHours 为空或为 null（上方卡片来自 Items 日汇总，与折线分时数据不是同一字段）',
 );
 
 async function renderChart() {
@@ -254,20 +264,22 @@ onMounted(() => {
   <div>
     <div class="mb-3 flex flex-wrap items-center justify-end gap-2">
       <Space>
-        <Button
-          :type="chartType === 'line' ? 'primary' : 'default'"
-          size="small"
-          @click="emit('change-type', 'line')"
-        >
-          折线图
-        </Button>
-        <Button
-          :type="chartType === 'bar' ? 'primary' : 'default'"
-          size="small"
-          @click="emit('change-type', 'bar')"
-        >
-          柱状图
-        </Button>
+        <template v-if="showTypeSwitch">
+          <Button
+            :type="chartType === 'line' ? 'primary' : 'default'"
+            size="small"
+            @click="emit('change-type', 'line')"
+          >
+            折线图
+          </Button>
+          <Button
+            :type="chartType === 'bar' ? 'primary' : 'default'"
+            size="small"
+            @click="emit('change-type', 'bar')"
+          >
+            柱状图
+          </Button>
+        </template>
         <Popover
           v-model:open="popoverOpen"
           placement="bottomRight"
@@ -307,8 +319,7 @@ onMounted(() => {
         v-if="!loading && !hasChartData"
         class="absolute inset-0 flex items-center justify-center bg-white px-6 text-center text-sm text-gray-400"
       >
-        暂无分时数据：接口 TotalHours 为空或为 null（上方卡片来自 Items
-        日汇总，与折线分时数据不是同一字段）
+        {{ emptyHint }}
       </div>
     </div>
   </div>

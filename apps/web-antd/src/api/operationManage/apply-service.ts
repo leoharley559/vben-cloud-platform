@@ -1,6 +1,16 @@
 import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
+import { registerPermissionKeys } from '#/utils/permission';
 import { trimSpace } from '#/utils/string';
+
+registerPermissionKeys({
+  applyServicePass: [12_437],
+  applyServiceCheck: [12_438],
+  pleyerOrderHandle: [12_431],
+  pleyerOrderCheck: [12_439],
+  pleyerOrderReject: [12_440],
+  playerOrderQuestType: [12_436],
+});
 
 /**
  * 查询客服申请/工单列表

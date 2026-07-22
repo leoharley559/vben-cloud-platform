@@ -29,6 +29,7 @@ export const SEND_TYPE_OPTIONS = [
   { label: '自动发放', value: 0 },
   { label: '手动领取', value: 1 },
   { label: '手动发放', value: 2 },
+  { label: '审核后发放', value: 3 },
 ];
 
 export const IS_WATER_OPTIONS = [
@@ -111,6 +112,7 @@ const SEND_TYPE_MAP: Record<number, string> = {
   0: '自动发放',
   1: '手动领取',
   2: '手动发放',
+  3: '审核后发放',
 };
 
 const BONUS_STATUS_MAP: Record<number, string> = {

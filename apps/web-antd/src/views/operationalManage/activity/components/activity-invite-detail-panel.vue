@@ -21,20 +21,31 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const canView = checkPermission(10329);
 
+/** 对齐旧站 RegisterTime 默认 getBeforeDateStr(1)：今天 */
+function defaultDayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  return [dayjs().startOf('day'), dayjs().endOf('day')];
+}
+
 const filterReferenceLoginAccount = ref('');
 const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>();
-const registerTimeRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
+const registerTimeRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>(
+  defaultDayRange(),
+);
 const awardTimeRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
 
 function buildQuery(page: { currentPage: number; pageSize: number }) {
   return {
     DataSearchType: 0,
-    LoginAccount: filterLoginAccount.value || '',
+    LoginAccount: String(filterLoginAccount.value || '')
+      .trim()
+      .toLowerCase(),
     PackageId: filterPackageId.value || '',
     Page: page.currentPage,
     PageSize: page.pageSize,
-    ReferenceLoginAccount: filterReferenceLoginAccount.value || '',
+    ReferenceLoginAccount: String(filterReferenceLoginAccount.value || '')
+      .trim()
+      .toLowerCase(),
     ...buildUnixRangeQuery(
       registerTimeRange.value,
       'RegisterTimeBegin',
@@ -132,12 +143,28 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <DatePicker.RangePicker
           v-model:value="registerTimeRange"
           :placeholder="['注册开始', '注册结束']"
+          show-time
         />
         <DatePicker.RangePicker
           v-model:value="awardTimeRange"
           :placeholder="['派奖开始', '派奖结束']"
+          show-time
         />
         <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <Button
+          @click="
+            () => {
+              filterReferenceLoginAccount = '';
+              filterLoginAccount = '';
+              filterPackageId = undefined;
+              registerTimeRange = defaultDayRange();
+              awardTimeRange = undefined;
+              gridApi.reload();
+            }
+          "
+        >
+          重置
+        </Button>
       </div>
       <Grid />
     </template>

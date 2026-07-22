@@ -25,13 +25,12 @@ import {
   deliverGiftApi,
   fetchGiftDeliverListApi,
   queryPlayerGiftDeliverInfoApi,
-  receiveGiftApi,
   refuseGiftDeliverApi,
   remarkGiftApi,
 } from '#/api/operationManage/gift-manage';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { ACTIVITY_TYPE_OPTIONS, VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
+import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
 import { GIFT_DELIVER_STATUS_MAP } from '#/utils/operation-status';
@@ -39,6 +38,7 @@ import { GIFT_DELIVER_STATUS_MAP } from '#/utils/operation-status';
 import {
   ACTIVITY_TYPE_LUCKY_DRAW,
   GIFT_IS_MANUAL_OPTIONS,
+  GIFT_LUCKY_ACTIVITY_TYPE_OPTIONS,
   GIFT_LUCKY_DELIVER_STATUS_OPTIONS,
   GIFT_RISK_OPTIONS,
   GIFT_TYPE_FILTER_OPTIONS,
@@ -49,6 +49,7 @@ import {
   formatGiftType,
   formatLuckyBonusCategory,
   formatPlayerStatus,
+  giftListTotal,
   giftNameText,
   parseGiftNames,
 } from './gift-shared';
@@ -98,7 +99,6 @@ const canExport = computed(() => checkPermission(10189));
 const canBatchDeliver = computed(() => checkPermission(10190));
 const canBatchReject = computed(() => checkPermission(10182));
 const canRemark = computed(() => checkPermission(10192));
-const canReceive = computed(() => checkPermission(10194));
 const canDeliver = computed(() => checkPermission(10195));
 const canRefuse = computed(() => checkPermission(10196));
 
@@ -172,7 +172,7 @@ const uploadSummary = reactive({
   total: 0,
 });
 
-const activityTypeOptions = ACTIVITY_TYPE_OPTIONS;
+const activityTypeOptions = GIFT_LUCKY_ACTIVITY_TYPE_OPTIONS;
 const playerStatusOptions = [
   { label: '全部', value: -1 },
   ...PLAYER_STATUS_OPTIONS,
@@ -325,7 +325,7 @@ const gridOptions: VxeTableGridOptions<LuckyDeliverRow> = {
         const items = normalizeRows(result.Items || []);
         return {
           items,
-          total: Number(result.Pagination?.MaxCount || items.length),
+          total: giftListTotal(result.Pagination, items.length),
         };
       },
     },
@@ -479,18 +479,6 @@ async function submitBatchReject() {
   } finally {
     submitting.value = false;
   }
-}
-
-function handleReceive(row: LuckyDeliverRow) {
-  Modal.confirm({
-    content: `确认订单 ${row.OrderId || row.Id} 已收货？`,
-    onOk: async () => {
-      await receiveGiftApi({ Id: row.Id });
-      message.success('已确认收货');
-      await gridApi.reload();
-    },
-    title: '确认收货',
-  });
 }
 
 function openRefuse(row: LuckyDeliverRow) {
@@ -755,24 +743,20 @@ onMounted(() => {
             v-if="canDeliver"
             size="small"
             type="primary"
-            :disabled="Number(row.Status) !== 1"
+            :disabled="Number(row.Status) === 3 || Number(row.Status) === 4"
             @click="openShip(row)"
           >
             发货
           </Button>
           <Button
-            v-if="canReceive"
-            size="small"
-            :disabled="Number(row.Status) === 4 || Number(row.Status) === 5"
-            @click="handleReceive(row)"
-          >
-            收货
-          </Button>
-          <Button
             v-if="canRefuse"
             danger
             size="small"
-            :disabled="Number(row.Status) === 4 || Number(row.Status) === 5"
+            :disabled="
+              Number(row.Status) === 3 ||
+              Number(row.Status) === 4 ||
+              Number(row.Status) === 5
+            "
             @click="openRefuse(row)"
           >
             拒绝

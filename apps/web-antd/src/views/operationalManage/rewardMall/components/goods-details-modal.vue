@@ -65,10 +65,11 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
   const [exchangeBegin, exchangeEnd] = filterExchangeDateRange.value || [];
   const [regBegin, regEnd] = filterRegDateRange.value || [];
   return {
-    ChannelId: filterChannelIds.value,
+    // 与兑换记录列表一致：多选拼成逗号串，避免 qs 数组 brackets
+    ChannelId: filterChannelIds.value.filter(Boolean).join(','),
     ExchangeTimeBegin: exchangeBegin ? exchangeBegin.startOf('day').unix() : '',
     ExchangeTimeEnd: exchangeEnd ? exchangeEnd.endOf('day').unix() : '',
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     OrderId: filterOrderId.value.trim(),
     PackageId: filterPackageId.value ?? '',
     Page: page.currentPage,
@@ -76,7 +77,9 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
     ProductId: props.product?.Id ?? '',
     RegisterTimeBegin: regBegin ? regBegin.startOf('day').unix() : '',
     RegisterTimeEnd: regEnd ? regEnd.endOf('day').unix() : '',
-    VipLevel: filterVipLevel.value,
+    VipLevel: filterVipLevel.value
+      .filter((v) => v !== undefined && v !== null && v !== '')
+      .join(','),
   };
 }
 

@@ -316,12 +316,15 @@ async function loadSwitch() {
   }
   const result = await fetchSendOrderSwitchApi();
   const raw = result as Record<string, unknown>;
+  const nested = raw?.respond as Record<string, unknown> | undefined;
+  // 实测 getswitch2 返回 { Status }；旧站读 DistributeOrderStatus；兼容 Switch
   const value =
-    raw?.Switch ??
     raw?.DistributeOrderStatus ??
-    (raw?.respond as Record<string, unknown> | undefined)?.Switch ??
-    (raw?.respond as Record<string, unknown> | undefined)
-      ?.DistributeOrderStatus;
+    raw?.Switch ??
+    raw?.Status ??
+    nested?.DistributeOrderStatus ??
+    nested?.Switch ??
+    nested?.Status;
   autoSwitch.value = Number(value) === 1;
 }
 

@@ -25,7 +25,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatGoldReason } from '#/utils/game-config';
 import {
@@ -49,7 +49,7 @@ const { projectConfig } = useProjectConfig();
 const canViewPage = computed(() => checkPermission(12208));
 const canOpenPlayer = computed(() => checkPermission(12209));
 
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const summary = ref({ SumAddGold: 0 });
 const hasQueried = ref(false);
 
@@ -71,12 +71,13 @@ const reasonOptions = computed(() =>
   })),
 );
 
-const packageSelectOptions = computed(() =>
-  packageOptions.value.map((item) => ({
+const packageSelectOptions = computed(() => [
+  { label: '全部', value: '' },
+  ...packageOptions.value.map((item) => ({
     label: item.PackageName,
     value: item.PackageId,
   })),
-);
+]);
 
 const dataSearchTypeOptions = [
   { label: '全部', value: 2 },
@@ -289,10 +290,8 @@ onMounted(async () => {
             <span class="text-xs text-gray-500">所属产品</span>
             <Select
               v-model:value="filterPackageId"
-              allow-clear
               show-search
               option-filter-prop="label"
-              placeholder="请选择"
               style="width: 160px"
               :options="packageSelectOptions"
             />

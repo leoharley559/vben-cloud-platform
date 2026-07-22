@@ -4,8 +4,7 @@ import { computed } from 'vue';
 import { Card, Table } from 'ant-design-vue';
 
 import { useGameConfig } from '#/composables/use-game-config';
-import { formatGameName } from '#/utils/game-config';
-import { toNumber } from '#/utils/dashboard';
+import { formatGameId, toNumber } from '#/utils/dashboard';
 
 import OnlinePieChart from './online-pie-chart.vue';
 import OnlineWorldMap from './online-world-map.vue';
@@ -24,15 +23,18 @@ function resolveVenueGameId(row: Record<string, unknown>) {
   return row.LastGameId ?? row.GameId ?? row.SubGameId;
 }
 
+/** 对齐旧站 formatGameId(LastGameId)；优先接口自带名称 */
 function resolveVenueName(row: Record<string, unknown>) {
   const direct = row.GameName || row.VenueName || row.ShowName;
   if (direct) {
     return String(direct);
   }
-  return formatGameName(
-    resolveVenueGameId(row) as number | string | undefined,
-    gameConfig.value.games,
-  );
+  return formatGameId(resolveVenueGameId(row), gameConfig.value.games);
+}
+
+function resolveRegionName(row: Record<string, unknown>) {
+  const name = String(row.IpDetailName ?? '').trim();
+  return name || '-';
 }
 
 const venuePieData = computed(() =>
@@ -44,7 +46,7 @@ const venuePieData = computed(() =>
 
 const userMapData = computed(() =>
   props.userList.map((row) => ({
-    name: String(row.IpDetailName || '-'),
+    name: resolveRegionName(row),
     value: toNumber(row.Count),
   })),
 );
@@ -65,9 +67,10 @@ const venueColumns = [
 
 const userColumns = [
   {
-    dataIndex: 'IpDetailName',
-    key: 'IpDetailName',
+    key: 'region',
     title: '地区',
+    customRender: ({ record }: { record: Record<string, unknown> }) =>
+      resolveRegionName(record),
   },
   {
     dataIndex: 'Count',

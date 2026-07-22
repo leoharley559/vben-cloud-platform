@@ -25,6 +25,7 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { useProjectConfig } from '#/composables/use-project-config';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 import GameNoticeFormModal from './game-notice-form-modal.vue';
@@ -43,6 +44,8 @@ interface NoticeRow {
   Packages?: string | number;
   ShowIdx?: number;
   ShowStage?: number;
+  /** 行内 Status：2=已关闭（与筛选 Status 语义不同） */
+  Status?: number;
   StartTime?: number | string;
   UpdateTime?: number | string;
 }
@@ -65,12 +68,22 @@ const SHOW_STAGE_MAP: Record<number, string> = {
 
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
+const { projectConfig } = useProjectConfig();
 const router = useRouter();
 
 const canViewTable = computed(() => checkPermission(10073));
 const canCreate = computed(() => checkPermission(10074));
 const canEdit = computed(() => checkPermission(10075));
 const canDelete = computed(() => checkPermission(10076));
+
+/** 对齐旧站 currentLangGroupId：优先 Default，再取首个 */
+const currentLangGroupId = computed(() => {
+  const groups = projectConfig.value?.LangGroup || [];
+  const preferred = groups.find((item) => item.Default) || groups[0];
+  return preferred?.Id !== undefined && preferred?.Id !== null
+    ? String(preferred.Id)
+    : '';
+});
 
 const actionId = ref<number | string>();
 const formOpen = ref(false);
@@ -110,6 +123,12 @@ function parseLangText(raw: NoticeRow['LangText']) {
 
 function resolveLangField(row: NoticeRow, field: 'Title' | 'Notice'): string {
   const lang = parseLangText(row.LangText);
+  const preferred = currentLangGroupId.value
+    ? lang[currentLangGroupId.value]
+    : undefined;
+  if (preferred?.[field]) {
+    return String(preferred[field]);
+  }
   const first = Object.values(lang)[0];
   return first?.[field] || '-';
 }
@@ -128,8 +147,11 @@ function resolvePackages(packages: NoticeRow['Packages']) {
   return ids.map((id) => packageNameMap.value.get(id) || id).join(',') || '-';
 }
 
-/** 旧站 statusFilter：按 Start/End/IsOpen 计算展示状态 */
+/** 对齐旧站：Status==2 显示已关闭；否则按 Start/End/IsOpen 计算 */
 function resolveRuntimeStatus(row: NoticeRow) {
+  if (Number(row.Status) === 2) {
+    return { color: 'error' as const, text: '已关闭' };
+  }
   const now = Date.now();
   const start = Number(row.StartTime || 0) * 1000;
   const end = Number(row.EndTime || 0) * 1000;
@@ -171,6 +193,7 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
       formatter: ({ cellValue }) =>
         formatOperationDateTime(cellValue as string),
       minWidth: 160,
+      sortable: true,
       title: '开始日期',
     },
     {
@@ -182,6 +205,7 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
         return formatOperationDateTime(cellValue as string);
       },
       minWidth: 160,
+      sortable: true,
       title: '结束日期',
     },
     {
@@ -189,9 +213,10 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
       formatter: ({ cellValue }) =>
         formatOperationDateTime(cellValue as string),
       minWidth: 160,
+      sortable: true,
       title: '创建时间',
     },
-    { field: 'ShowIdx', minWidth: 80, title: '排序' },
+    { field: 'ShowIdx', minWidth: 80, sortable: true, title: '排序' },
     {
       field: 'Packages',
       formatter: ({ row }) => resolvePackages(row.Packages),
@@ -251,14 +276,23 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
-      query: async ({ page }) => {
+      query: async ({ page, sort }) => {
         if (!canViewTable.value) {
           return { items: [], total: 0 };
+        }
+        const sortField = sort?.field;
+        const sortOrder = sort?.order;
+        let sortParam = '';
+        if (sortField && sortOrder) {
+          // 对齐旧站 sortChange：升序 field，降序 -field
+          sortParam =
+            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
         const query: Record<string, unknown> = {
           Creator: filterCreator.value.trim(),
           Page: page.currentPage,
           PageSize: page.pageSize,
+          Sort: sortParam,
           Status: filterStatus.value ?? '',
           Title: filterTitle.value.trim(),
         };
@@ -274,6 +308,9 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
         };
       },
     },
+  },
+  sortConfig: {
+    remote: true,
   },
 };
 

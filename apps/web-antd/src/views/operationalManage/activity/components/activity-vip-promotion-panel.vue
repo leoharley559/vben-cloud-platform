@@ -15,7 +15,8 @@ const loading = ref(false);
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
     {
-      field: 'Vip',
+      // 接口字段为 VipLevel（旧站编辑态才映射为 Vip）
+      field: 'VipLevel',
       formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
       minWidth: 90,
       title: 'VIP等级',
@@ -46,7 +47,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       title: '奖品名称',
     },
     {
-      field: 'enabled',
+      field: 'UpgradePrizeEnabled',
       formatter: ({ cellValue }) => (Number(cellValue) === 1 ? '开启' : '关闭'),
       minWidth: 90,
       title: '状态',

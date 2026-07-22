@@ -26,7 +26,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatMemberType } from '#/utils/player-status';
 import { MEMBER_LOGIN_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
@@ -40,7 +40,7 @@ const { projectConfig } = useProjectConfig();
 const canViewTable = computed(() => checkPermission(12221));
 const canExport = computed(() => checkPermission(12246));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const exportLoading = ref(false);
 const totalCount = ref(0);
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
@@ -56,12 +56,13 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.EndTime),
 ]);
 
-const packageSelectOptions = computed(() =>
-  packageOptions.value.map((item) => ({
+const packageSelectOptions = computed(() => [
+  { label: '全部', value: '' },
+  ...packageOptions.value.map((item) => ({
     label: item.PackageName,
     value: item.PackageId,
   })),
-);
+]);
 
 const devicePlatformOptions = computed(() => {
   const map = projectConfig.value?.DevicePlatformAll || {};
@@ -101,7 +102,10 @@ function getQueryParams() {
     ChannelId: filterChannelId.value || '',
     EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
     Ip: filterIp.value.trim(),
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/\s/g, ''),
     LoginPlatform: filterLoginPlatform.value,
     PackageId: filterPackageId.value,
     PlayerId: filterPlayerId.value.trim(),
@@ -248,8 +252,6 @@ onMounted(() => {
         <span class="text-xs text-gray-500">产品名称</span>
         <Select
           v-model:value="filterPackageId"
-          allow-clear
-          placeholder="全部产品"
           style="width: 160px"
           :options="packageSelectOptions"
         />

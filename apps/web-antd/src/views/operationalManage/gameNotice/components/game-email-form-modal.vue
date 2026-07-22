@@ -88,7 +88,8 @@ function resetForm() {
   form.PlayerList = '';
   form.Title = '';
   form.Content = '';
-  form.SendTime = dayjs();
+  // 对齐旧站：新建默认不设发送时间（空=不立即发）
+  form.SendTime = undefined;
 }
 
 function normalizePlayerList(value: string) {
@@ -158,7 +159,7 @@ async function loadDetail(id: number | string) {
     }
     form.SendTime = detail.SendTime
       ? dayjs.unix(Number(detail.SendTime))
-      : dayjs();
+      : undefined;
   } finally {
     loading.value = false;
   }
@@ -182,7 +183,7 @@ function closeModal() {
 }
 
 function buildPayload() {
-  const sendUnix = form.SendTime ? form.SendTime.unix() : dayjs().unix();
+  const sendUnix = form.SendTime ? form.SendTime.unix() : 0;
   const now = dayjs().unix();
   const langText = [
     {
@@ -196,7 +197,8 @@ function buildPayload() {
     LangText: JSON.stringify(langText),
     PackageIds: form.PackageIds,
     PlayerList: normalizePlayerList(form.PlayerList),
-    SendNow: sendUnix <= now,
+    // 无发送时间时不视为立即发送
+    SendNow: Boolean(form.SendTime) && sendUnix <= now,
     SendTime: sendUnix,
     Type: form.Type,
   };

@@ -55,9 +55,14 @@ async function loadReport(
   if (!canChart.value) return;
   reportLoading.value = true;
   try {
-    const params: Record<string, unknown> = { ...extraDates };
+    // 对齐数据总览 / 旧站：仅透传合法自选日期，首屏无参
+    const params: Record<string, unknown> = {};
+    if (extraDates.Date1) params.Date1 = extraDates.Date1;
+    if (extraDates.Date2) params.Date2 = extraDates.Date2;
+    if (extraDates.Date3) params.Date3 = extraDates.Date3;
+
     const data = (await fetchDashboardReportApi(params)) || {};
-    const items = data.Items || [];
+    const items = Array.isArray(data.Items) ? data.Items : [];
     todayRow.value =
       items.find((item) => normalizeReportDay(item.ReportDay) === todayStr) ||
       {};
@@ -76,6 +81,7 @@ async function loadSummary() {
   summaryLoading.value = true;
   try {
     const data = (await fetchOnlineSummaryApi()) || {};
+    // 无数据统一按 []，避免 null 进入表格/图表
     venueList.value = Array.isArray(data.GameResult) ? data.GameResult : [];
     deviceList.value = Array.isArray(data.DeviceResult)
       ? data.DeviceResult
@@ -116,6 +122,7 @@ onMounted(async () => {
                 active-key="SumOnlinePlayerNum"
                 chart-type="line"
                 :loading="reportLoading"
+                :show-type-switch="false"
                 :today="todayStr"
                 :total-count="totalCount"
                 :total-hours="{}"

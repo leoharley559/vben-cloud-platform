@@ -75,6 +75,7 @@ async function loadList() {
   loading.value = true;
   try {
     const result = await fetchPlayerRemarkListApi({
+      IsSelf: true,
       Page: page.value,
       PageSize: pageSize.value,
       PlayerId: props.playerId,

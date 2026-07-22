@@ -23,6 +23,7 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import {
   HELP_RECORD_STATUS_MAP,
   formatOperationDateTime,
@@ -46,12 +47,18 @@ const canAgree = computed(() => checkPermission(10231));
 const canReject = computed(() => checkPermission(10232));
 const canClose = computed(() => checkPermission(10233));
 
+/**
+ * 对齐旧站 listQuery / SearchTypeTwo：
+ * getBeforeDateStr(1)～getBeforeDateStr(1,false) 与 getBeforeDateTimestamp(1,false)～今天结束
+ * （GLOBAL 内 days-1，参数 1 实际为今天）
+ */
+function todayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  const range = getTodayRangeSeconds();
+  return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+}
+
 const filterHelperAccount = ref('');
-/** 对齐旧站：默认昨天 */
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs().subtract(1, 'day').startOf('day'),
-  dayjs().subtract(1, 'day').endOf('day'),
-]);
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(todayRange());
 /** 对齐旧站 el-table 列筛选：客户端过滤当前页 */
 const filterStatus = ref<number | string>('');
 const sortValue = ref('');
@@ -63,13 +70,6 @@ const statusOptions = [
   { label: '进行中', value: 2 },
   { label: '已关闭', value: 3 },
 ];
-
-function yesterdayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
-  return [
-    dayjs().subtract(1, 'day').startOf('day'),
-    dayjs().subtract(1, 'day').endOf('day'),
-  ];
-}
 
 function isOverdue(row: HelpRow) {
   const confirm = Number(row.ConfirmTime || 0);
@@ -174,10 +174,12 @@ const gridOptions: VxeTableGridOptions<HelpRow> = {
           sortValue.value = '';
         }
 
-        const [begin, end] = filterDateRange.value;
+        const fallback = getTodayRangeSeconds();
+        const [begin, end] = filterDateRange.value || [];
+        // 对齐旧站 SearchTypeTwo：保留 RangePicker 时分秒，勿强制日边界
         const result = await fetchHelpManageListApi({
-          BeginTime: begin.startOf('day').unix(),
-          EndTime: end.endOf('day').unix(),
+          BeginTime: begin ? begin.unix() : fallback.BeginTime,
+          EndTime: end ? end.unix() : fallback.EndTime,
           HelperAccount: filterHelperAccount.value.trim(),
           Page: page.currentPage,
           PageSize: page.pageSize,
@@ -209,7 +211,7 @@ function handleReset() {
   filterHelperAccount.value = '';
   filterStatus.value = '';
   sortValue.value = '';
-  filterDateRange.value = yesterdayRange();
+  filterDateRange.value = todayRange();
   gridApi.reload();
 }
 

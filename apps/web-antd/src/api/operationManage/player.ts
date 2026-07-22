@@ -50,6 +50,14 @@ function normalizePlayerQuery(query: PlayerListQuery) {
       .join(',');
   }
 
+  // 对齐旧站：游戏账号/上级账号强制小写并去空格
+  for (const key of ['LoginAccount', 'InviterLoginAccount'] as const) {
+    const value = params[key];
+    if (typeof value === 'string' && value) {
+      params[key] = value.toLowerCase().replaceAll(/\s/g, '');
+    }
+  }
+
   return params;
 }
 

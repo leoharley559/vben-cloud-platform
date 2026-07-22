@@ -92,8 +92,21 @@ function formatDateTime(value?: number | string) {
     : String(value);
 }
 
+const packageSelectOptions = computed(() =>
+  packageOptions.value.map((item) => ({
+    label: item.PackageName,
+    value: item.PackageId,
+  })),
+);
+
 function channelIdsParam() {
   return filterChannelIds.value.filter(Boolean).join(',');
+}
+
+function normalizeLoginAccount() {
+  filterLoginAccount.value = filterLoginAccount.value
+    .toLowerCase()
+    .replaceAll(/\s/g, '');
 }
 
 function getQueryParams(page?: { currentPage: number; pageSize: number }) {
@@ -105,9 +118,12 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
     ChannelIds: channelIdsParam(),
     EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
     HandleType: filterHandleType.value,
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/\s/g, ''),
     OrderId: filterOrderId.value.trim(),
-    PackageId: filterPackageId.value,
+    PackageId: filterPackageId.value || '',
     Page: page?.currentPage ?? 1,
     PageSize: page?.pageSize ?? 20,
     Reason: filterReason.value,
@@ -350,8 +366,7 @@ function openReject(row?: PlayerAdjustListItem) {
 
 function resetFilters() {
   filterLoginAccount.value = '';
-  filterPackageId.value =
-    packageOptions.value.find((item) => item.PackageId)?.PackageId ?? '';
+  filterPackageId.value = '';
   filterChannelIds.value = [];
   filterAdminUserName.value = '';
   filterReason.value = -1;
@@ -429,8 +444,6 @@ function onRejectSuccess() {
 }
 
 onMounted(() => {
-  filterPackageId.value =
-    packageOptions.value.find((item) => item.PackageId)?.PackageId ?? '';
   if (canViewTable.value) {
     gridApi.reload();
   }
@@ -445,22 +458,23 @@ onMounted(() => {
         allow-clear
         placeholder="请输入"
         style="width: 200px"
+        @change="normalizeLoginAccount"
       >
         <template #addonBefore>游戏账号</template>
       </Input>
       <Select
         v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
+        allow-clear
+        :options="packageSelectOptions"
         placeholder="产品名称"
         style="width: 160px"
         show-search
+        :filter-option="
+          (input, option) =>
+            String(option?.label ?? '')
+              .toLowerCase()
+              .includes(input.toLowerCase())
+        "
       />
       <ChannelSelect v-model:value="filterChannelIds" style="width: 220px" />
       <Input

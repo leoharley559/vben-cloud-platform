@@ -67,7 +67,10 @@ const canCreate = computed(() => checkPermission(13403) && !props.isHistory);
 const canEdit = computed(() => checkPermission(13404) && !props.isHistory);
 const canOffshelf = computed(() => checkPermission(13405) && !props.isHistory);
 const canClone = computed(() => checkPermission(13357) && props.isHistory);
-const canViewDetail = computed(() => checkPermission(13351));
+/** 当前票券详情 13351；历史票券详情 13352（对齐旧站） */
+const canViewDetail = computed(() =>
+  props.isHistory ? checkPermission(13352) : checkPermission(13351),
+);
 
 const globalActive = ref(false);
 const globalLoading = ref(false);

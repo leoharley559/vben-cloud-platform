@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import { fetchNoticeStatisticListApi } from '#/api/operationManage/game-notice';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 
 import { parseProjectConfigOptions, percentOf } from './visit-statistic-shared';
 
@@ -55,7 +55,8 @@ const deviceList = ref<StatRow[]>([]);
 const userTypeList = ref<StatRow[]>([]);
 const vipList = ref<StatRow[]>([]);
 
-const defaultRange = getYesterdayRangeSeconds();
+/** 对齐旧站 noticeStatistics：默认今天 */
+const defaultRange = getTodayRangeSeconds();
 const filterSubGroup = ref<number | string>('');
 const filterVisitRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
@@ -127,6 +128,7 @@ async function loadData() {
     vipList.value = [];
     return;
   }
+  const fallback = getTodayRangeSeconds();
   const [begin, end] = filterVisitRange.value || [];
   loading.value = true;
   try {
@@ -134,8 +136,8 @@ async function loadData() {
       Group: props.group,
       Key: props.titleId,
       SubGroup: filterSubGroup.value,
-      VisitBeginTime: begin ? begin.unix() : defaultRange.BeginTime,
-      VisitEndTime: end ? end.unix() : defaultRange.EndTime,
+      VisitBeginTime: begin ? begin.unix() : fallback.BeginTime,
+      VisitEndTime: end ? end.unix() : fallback.EndTime,
     });
     deviceList.value = (result.DeviceList || []) as StatRow[];
     userTypeList.value = (result.UserTypeList || []) as StatRow[];
@@ -159,9 +161,10 @@ function handleSearch() {
 
 function handleReset() {
   filterSubGroup.value = '';
+  const range = getTodayRangeSeconds();
   filterVisitRange.value = [
-    dayjs.unix(defaultRange.BeginTime),
-    dayjs.unix(defaultRange.EndTime),
+    dayjs.unix(range.BeginTime),
+    dayjs.unix(range.EndTime),
   ];
   handleSearch();
 }

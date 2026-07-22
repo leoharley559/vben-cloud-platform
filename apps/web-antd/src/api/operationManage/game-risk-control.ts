@@ -8,11 +8,16 @@ import { trimSpace } from '#/utils/string';
  * @returns IP 风控记录列表 Items 及 Pagination
  * @see views/operationalManage/gameRiskControl/components/risk-record-panel.vue
  */
-export function fetchGameIpRiskListApi(query: Record<string, unknown>) {
-  return requestClient.get<CloudListResult<Record<string, unknown>>>(
-    '/backend/gameipriskcontrol/list',
-    { params: trimSpace(query) },
-  );
+export async function fetchGameIpRiskListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<
+    CloudListResult<Record<string, unknown>> & { Total?: number }
+  >('/backend/gameipriskcontrol/list', { params: trimSpace(query) });
+  return {
+    ...result,
+    Items: result?.Items || [],
+    Pagination: result?.Pagination,
+    Total: result?.Total,
+  };
 }
 
 /**
@@ -21,11 +26,16 @@ export function fetchGameIpRiskListApi(query: Record<string, unknown>) {
  * @returns 设备风控记录列表 Items 及 Pagination
  * @see views/operationalManage/gameRiskControl/components/risk-record-panel.vue
  */
-export function fetchGameRiskListApi(query: Record<string, unknown>) {
-  return requestClient.get<CloudListResult<Record<string, unknown>>>(
-    '/backend/gameriskcontrol/list',
-    { params: trimSpace(query) },
-  );
+export async function fetchGameRiskListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<
+    CloudListResult<Record<string, unknown>> & { Total?: number }
+  >('/backend/gameriskcontrol/list', { params: trimSpace(query) });
+  return {
+    ...result,
+    Items: result?.Items || [],
+    Pagination: result?.Pagination,
+    Total: result?.Total,
+  };
 }
 
 /**
@@ -34,11 +44,15 @@ export function fetchGameRiskListApi(query: Record<string, unknown>) {
  * @returns 银行卡黑名单列表 Items 及 Pagination
  * @see views/operationalManage/gameRiskControl/components/bank-card-risk-panel.vue
  */
-export function fetchGameBankRiskListApi(query: Record<string, unknown>) {
-  return requestClient.get<CloudListResult<Record<string, unknown>>>(
-    '/backend/playerbankcard/blacklist',
-    { params: trimSpace(query) },
-  );
+export async function fetchGameBankRiskListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<
+    CloudListResult<Record<string, unknown>>
+  >('/backend/playerbankcard/blacklist', { params: trimSpace(query) });
+  return {
+    ...result,
+    Items: result?.Items || [],
+    Pagination: result?.Pagination,
+  };
 }
 
 /**
@@ -47,11 +61,18 @@ export function fetchGameBankRiskListApi(query: Record<string, unknown>) {
  * @returns App Store 白名单列表数据
  * @see views/operationalManage/gameRiskControl/components/appstore-whitelist-panel.vue
  */
-export function fetchAppStoreWhiteRiskListApi(query: Record<string, unknown>) {
-  return requestClient.get<Record<string, unknown>>(
+export async function fetchAppStoreWhiteRiskListApi(
+  query: Record<string, unknown>,
+) {
+  const result = await requestClient.get<Record<string, unknown>>(
     '/backend/appstorewhitelistrisk/list',
     { params: trimSpace(query) },
   );
+  return {
+    ...result,
+    WhitelistList:
+      (result?.WhitelistList as unknown[] | null | undefined) || [],
+  };
 }
 
 /**

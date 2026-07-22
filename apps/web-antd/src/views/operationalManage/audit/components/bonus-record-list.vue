@@ -96,12 +96,10 @@ const playerStatusOptions = [
 ];
 
 const packageSelectOptions = computed(() =>
-  packageOptions.value
-    .filter((item) => item.PackageId !== '')
-    .map((item) => ({
-      label: item.PackageName,
-      value: item.PackageId,
-    })),
+  packageOptions.value.map((item) => ({
+    label: item.PackageName,
+    value: item.PackageId,
+  })),
 );
 
 function formatDateTime(value?: number | string) {
@@ -113,6 +111,12 @@ function formatDateTime(value?: number | string) {
   return parsed.isValid()
     ? parsed.format('YYYY-MM-DD HH:mm:ss')
     : String(value);
+}
+
+function normalizeLoginAccount() {
+  filterLoginAccount.value = filterLoginAccount.value
+    .toLowerCase()
+    .replaceAll(/\s/g, '');
 }
 
 function getQueryParams() {
@@ -127,26 +131,29 @@ function getQueryParams() {
     ApplyEndTime: applyEnd
       ? applyEnd.endOf('day').unix()
       : defaultRange.EndTime,
-    BonusTitle: filterBonusTitle.value,
+    BonusTitle: filterBonusTitle.value.trim(),
     BonusType: filterBonusTypes.value,
     ChannelIds: filterChannelIds.value,
     FinishBeginTime: finishBegin ? finishBegin.startOf('day').unix() : '',
     FinishEndTime: finishEnd ? finishEnd.endOf('day').unix() : '',
     IsExp: false,
     IsWater: filterIsWater.value,
-    LoginAccount: filterLoginAccount.value,
-    OperatorAccount: filterOperatorAccount.value,
+    LoginAccount: filterLoginAccount.value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/\s/g, ''),
+    OperatorAccount: filterOperatorAccount.value.trim(),
     OperatorAccountType: filterOperatorAccountType.value,
-    OperatorRemark: filterOperatorRemark.value,
+    OperatorRemark: filterOperatorRemark.value.trim(),
     OperatorRemarkType: filterOperatorRemarkType.value,
-    OrderId: filterOrderId.value,
-    PackageId: filterPackageId.value,
-    PageTitle: filterPageTitle.value,
+    OrderId: filterOrderId.value.trim(),
+    PackageId: filterPackageId.value || '',
+    PageTitle: filterPageTitle.value.trim(),
     PageType: filterPageType.value,
     PlayerStatus: filterPlayerStatus.value,
     SendType: filterSendType.value,
     Status: filterStatus.value,
-    Username: filterUsername.value,
+    Username: filterUsername.value.trim(),
     VipLevel: filterVipLevel.value,
     WaterType: filterWaterType.value,
   };
@@ -437,8 +444,7 @@ function resetFilters() {
   filterSendType.value = -1;
   filterVipLevel.value = -1;
   filterBonusTypes.value = [];
-  filterPackageId.value =
-    packageOptions.value.find((item) => item.PackageId)?.PackageId ?? '';
+  filterPackageId.value = '';
   filterApplyDateRange.value = [
     dayjs.unix(defaultRange.BeginTime),
     dayjs.unix(defaultRange.EndTime),
@@ -472,8 +478,6 @@ async function handleExport() {
 }
 
 onMounted(() => {
-  filterPackageId.value =
-    packageOptions.value.find((item) => item.PackageId)?.PackageId ?? '';
   if (canViewTable.value) {
     gridApi.reload();
   }
@@ -488,6 +492,7 @@ onMounted(() => {
         allow-clear
         placeholder="游戏账号"
         style="width: 200px"
+        @change="normalizeLoginAccount"
       >
         <template #addonBefore>游戏账号</template>
       </Input>
@@ -591,8 +596,17 @@ onMounted(() => {
       />
       <Select
         v-model:value="filterPackageId"
+        allow-clear
         :options="packageSelectOptions"
+        placeholder="产品名称"
         style="width: 160px"
+        show-search
+        :filter-option="
+          (input, option) =>
+            String(option?.label ?? '')
+              .toLowerCase()
+              .includes(input.toLowerCase())
+        "
       />
       <Select
         v-model:value="filterVipLevel"

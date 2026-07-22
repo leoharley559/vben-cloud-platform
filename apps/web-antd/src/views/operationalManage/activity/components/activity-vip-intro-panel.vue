@@ -15,11 +15,20 @@ const loading = ref(false);
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
     { field: 'ThirdId', minWidth: 100, title: '特权ID' },
-    { field: 'Title', minWidth: 180, title: 'VIP标题' },
+    {
+      // Title 常为空，回退 Name（与旧站列表展示一致）
+      field: 'Name',
+      formatter: ({ row }) =>
+        String(row.Title || row.Name || '-'),
+      minWidth: 180,
+      title: 'VIP标题',
+    },
     { field: 'Desc', minWidth: 240, title: '特权简介' },
     {
       field: 'DescEnabled',
-      formatter: ({ cellValue }) => (Number(cellValue) === 2 ? '展示' : '隐藏'),
+      // 旧站：DescEnabled===2 为展示
+      formatter: ({ cellValue }) =>
+        Number(cellValue) === 2 ? '展示' : '隐藏',
       minWidth: 90,
       title: '描述展示',
     },

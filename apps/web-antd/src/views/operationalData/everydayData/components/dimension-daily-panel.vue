@@ -6,6 +6,7 @@ import {
   Card,
   DatePicker,
   Input,
+  Pagination,
   Radio,
   Select,
   Space,
@@ -66,6 +67,9 @@ const dataSearchType = ref(0);
 const devicePlatform = ref<Array<string>>([]);
 const vipLevel = ref<Array<number | string>>([]);
 const dateRange = ref<[Dayjs, Dayjs]>();
+const page = ref(1);
+const pageSize = ref(15);
+const total = ref(0);
 
 const loading = ref(false);
 const exportLoading = ref(false);
@@ -110,7 +114,10 @@ function initDateRange(type = reportType.value) {
   dateRange.value = [dayjs(range[0]), dayjs(range[1])];
 }
 
-function buildQuery(searchType?: 'old' | 'today') {
+function buildQuery(
+  searchType?: 'old' | 'today',
+  extra: Record<string, unknown> = {},
+) {
   const adminValue = normalizeSearchValue(
     adminSearch.value,
     adminSearchType.value,
@@ -147,9 +154,15 @@ function buildQuery(searchType?: 'old' | 'today') {
     query.VIPLevel = isHistory.value ? joinMultiValue(vipLevel.value) : '';
   }
 
+  if (searchType === 'old' || (!searchType && isHistory.value)) {
+    query.Page = page.value;
+    query.PageSize = pageSize.value;
+  }
+
   if (searchType) {
     query.SearchType = searchType;
   }
+  Object.assign(query, extra);
   return query;
 }
 
@@ -177,6 +190,7 @@ async function loadData() {
       const items = calcDailyReportRows(
         (data.Items || []).map((row) => formatHistoryRow(row)),
       );
+      total.value = data.Pagination?.MaxCount ?? items.length;
       if (data.BannerItems && Object.keys(data.BannerItems).length > 0) {
         const totalRow = calcDailyReportRow({
           ...data.BannerItems,
@@ -188,6 +202,7 @@ async function loadData() {
         tableData.value = items;
       }
     } else {
+      total.value = 0;
       tableData.value = normalizeTodayItems(data.TodayItems);
     }
   } finally {
@@ -196,6 +211,7 @@ async function loadData() {
 }
 
 async function handleSearch() {
+  page.value = 1;
   await loadData();
 }
 
@@ -209,25 +225,36 @@ function handleReset() {
   dataSearchType.value = 0;
   devicePlatform.value = [];
   vipLevel.value = [];
+  page.value = 1;
   initDateRange(1);
-  void handleSearch();
+  void loadData();
 }
 
 function handleViewModeChange() {
   reportType.value = 1;
   devicePlatform.value = [];
   vipLevel.value = [];
+  page.value = 1;
   initDateRange(1);
-  void handleSearch();
+  void loadData();
+}
+
+function handlePageChange(nextPage: number, nextSize: number) {
+  page.value = nextPage;
+  pageSize.value = nextSize;
+  void loadData();
 }
 
 async function handleExport() {
   exportLoading.value = true;
   try {
-    const data = await props.fetchApi({
-      ...buildQuery(isHistory.value ? 'old' : 'today'),
-      IsExp: true,
-    });
+    const data = await props.fetchApi(
+      buildQuery(isHistory.value ? 'old' : 'today', {
+        IsExp: true,
+        Page: 1,
+        PageSize: 10_000,
+      }),
+    );
     let rows: DailyReportRow[] = [];
     if (isHistory.value) {
       rows = calcDailyReportRows(
@@ -422,6 +449,15 @@ onMounted(() => {
       </template>
       <Spin :spinning="loading">
         <DailyReportTable :list="tableData" :variant="tableVariant" />
+        <div v-if="isHistory" class="mt-3 flex justify-end">
+          <Pagination
+            :current="page"
+            :page-size="pageSize"
+            :total="total"
+            show-size-changer
+            @change="handlePageChange"
+          />
+        </div>
       </Spin>
     </Card>
   </div>

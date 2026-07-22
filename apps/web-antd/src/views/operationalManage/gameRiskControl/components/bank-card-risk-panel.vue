@@ -344,10 +344,18 @@ onMounted(() => {
         placeholder="卡号关键字"
         style="width: 180px"
       />
+      <Select
+        v-model:value="filterSourceType"
+        :options="sourceTypeOptions"
+        placeholder="来源"
+        style="width: 140px"
+      />
       <DatePicker.RangePicker v-model:value="filterDateRange" />
       <Space>
         <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <Button @click="resetFilters">重置</Button>
         <Button v-if="canWrite" type="primary" @click="openCreate">新增</Button>
+        <Button v-if="canWrite" @click="importOpen = true">批量导入</Button>
         <Button v-if="canWrite" danger @click="handleBatchDelete">
           批量删除
         </Button>

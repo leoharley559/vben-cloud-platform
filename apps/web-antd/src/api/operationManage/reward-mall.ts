@@ -34,6 +34,10 @@ function normalizeCloudObject<T extends Record<string, unknown>>(
     return null;
   }
   const record = data as Record<string, unknown> & { Items?: unknown };
+  // 全局配置空库常见 `{ Items: null }`，按无配置处理
+  if ('Items' in record && record.Items == null) {
+    return null;
+  }
   if (
     record.Items &&
     typeof record.Items === 'object' &&

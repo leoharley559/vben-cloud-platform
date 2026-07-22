@@ -60,6 +60,7 @@ const filterPackageId = ref<number | string>('');
 const filterOrderId = ref('');
 const filterPageTitle = ref('');
 const filterBonusTitle = ref('');
+const filterApplyNote = ref('');
 const filterAuditStatus = ref<number | undefined>(undefined);
 const filterPlayerStatus = ref<number | undefined>(undefined);
 const filterVipLevel = ref(-1);
@@ -88,6 +89,13 @@ const reviewNoteOptions = [
   { label: '同设备', value: '同设备' },
 ];
 
+const packageSelectOptions = computed(() =>
+  packageOptions.value.map((item) => ({
+    label: item.PackageName,
+    value: item.PackageId,
+  })),
+);
+
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
     return '-';
@@ -99,17 +107,27 @@ function formatDateTime(value?: number | string) {
     : String(value);
 }
 
+function normalizeLoginAccount() {
+  filterLoginAccount.value = filterLoginAccount.value
+    .toLowerCase()
+    .replaceAll(/\s/g, '');
+}
+
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
+    ApplyNote: filterApplyNote.value.trim(),
     AuditStatus: filterAuditStatus.value ?? '',
-    BonusTitle: filterBonusTitle.value,
+    BonusTitle: filterBonusTitle.value.trim(),
     EndApplyTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
     IsExp: false,
-    LoginAccount: filterLoginAccount.value,
-    OrderId: filterOrderId.value,
-    PackageId: filterPackageId.value,
-    PageTitle: filterPageTitle.value,
+    LoginAccount: filterLoginAccount.value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/\s/g, ''),
+    OrderId: filterOrderId.value.trim(),
+    PackageId: filterPackageId.value || '',
+    PageTitle: filterPageTitle.value.trim(),
     PlayerStatus: filterPlayerStatus.value ?? '',
     ReviewNote: filterReviewNote.value,
     StartApplyTime: begin
@@ -452,8 +470,6 @@ async function handleExport() {
 }
 
 onMounted(() => {
-  filterPackageId.value =
-    packageOptions.value.find((item) => item.PackageId)?.PackageId ?? '';
   if (canViewTable.value) {
     gridApi.reload();
   }
@@ -468,20 +484,23 @@ onMounted(() => {
         allow-clear
         placeholder="游戏账号"
         style="width: 200px"
+        @change="normalizeLoginAccount"
       >
         <template #addonBefore>游戏账号</template>
       </Input>
       <Select
         v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
+        allow-clear
+        :options="packageSelectOptions"
+        placeholder="产品名称"
         style="width: 160px"
+        show-search
+        :filter-option="
+          (input, option) =>
+            String(option?.label ?? '')
+              .toLowerCase()
+              .includes(input.toLowerCase())
+        "
       />
       <Input
         v-model:value="filterBonusTitle"
@@ -506,6 +525,14 @@ onMounted(() => {
         style="width: 200px"
       >
         <template #addonBefore>订单号</template>
+      </Input>
+      <Input
+        v-model:value="filterApplyNote"
+        allow-clear
+        placeholder="申请信息"
+        style="width: 180px"
+      >
+        <template #addonBefore>申请信息</template>
       </Input>
       <Select
         v-model:value="filterAuditStatus"

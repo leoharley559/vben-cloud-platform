@@ -83,14 +83,23 @@ function formatDateTime(value?: number | string) {
     : String(value);
 }
 
+function normalizeLoginAccount() {
+  filterLoginAccount.value = filterLoginAccount.value
+    .toLowerCase()
+    .replaceAll(/\s/g, '');
+}
+
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
     EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
     InGameId: filterInGameId.value,
-    LoginAccount: filterLoginAccount.value,
-    OrderId: filterOrderId.value,
+    LoginAccount: filterLoginAccount.value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/\s/g, ''),
+    OrderId: filterOrderId.value.trim(),
     OutGameId: filterOutGameId.value,
     State: filterState.value,
     Type: filterType.value,
@@ -312,6 +321,7 @@ onMounted(async () => {
         allow-clear
         placeholder="游戏账号"
         style="width: 200px"
+        @change="normalizeLoginAccount"
       >
         <template #addonBefore>游戏账号</template>
       </Input>

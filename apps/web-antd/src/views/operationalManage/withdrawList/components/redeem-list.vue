@@ -270,7 +270,9 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
         const sortOrder = sort?.order;
         let sortParam = '';
         if (sortField && sortOrder) {
-          sortParam = `${sortField} ${sortOrder === 'asc' ? 'asc' : 'desc'}`;
+          // 对齐旧站 withdrawList/list：升序 field，降序 -field（`field desc` 会导致 Items=null）
+          sortParam =
+            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
 
         const result = await fetchWithdrawListApi({

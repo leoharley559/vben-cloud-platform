@@ -21,7 +21,6 @@ import {
   Select,
   Statistic,
   message,
-  Space,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -36,7 +35,7 @@ import PassPopup from '#/components/security/pass-popup.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { RELATION_QUERY_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 defineOptions({ name: 'OperationalRelationQuery' });
@@ -49,14 +48,18 @@ const { packageOptions } = useOperationOptions();
 
 const canViewPage = computed(() => checkPermission(10023));
 
-const defaultRange = getYesterdayRangeSeconds();
+/**
+ * 对齐旧站 relationQuery：getBeforeDateStr(1)～getBeforeDateStr(1,false)
+ * （GLOBAL days-1，参数 1 实际为今天）
+ */
+const defaultRange = getTodayRangeSeconds();
 const totalData = ref<RelationQueryTotal>({});
 const totalCount = ref(0);
 const exportLoading = ref(false);
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 
 const filterLoginAccount = ref('');
-/** 对齐旧站：默认全部产品 */
+/** 对齐旧站：默认全部产品 PackageId='' */
 const filterPackageId = ref<number | string>('');
 const filterInviterLoginAccount = ref('');
 const filterDeviceId = ref('');
@@ -72,6 +75,13 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.EndTime),
 ]);
 
+const packageSelectOptions = computed(() => [
+  { label: '全部', value: '' },
+  ...packageOptions.value.map((item) => ({
+    label: item.PackageName,
+    value: item.PackageId,
+  })),
+]);
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
     return '-';
@@ -107,16 +117,17 @@ function getChannelParams() {
 }
 
 function getQueryParams() {
+  const fallback = getTodayRangeSeconds();
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
-    DeviceId: filterDeviceId.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
-    InviterLoginAccount: filterInviterLoginAccount.value,
+    BeginTime: begin ? begin.startOf('day').unix() : fallback.BeginTime,
+    DeviceId: filterDeviceId.value.trim(),
+    EndTime: end ? end.endOf('day').unix() : fallback.EndTime,
+    InviterLoginAccount: filterInviterLoginAccount.value.trim(),
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value),
-    LoginAddress: filterLoginAddress.value,
-    LoginIp: filterLoginIp.value,
-    LoginPlatform: filterLoginPlatform.value,
+    LoginAddress: filterLoginAddress.value.trim(),
+    LoginIp: filterLoginIp.value.trim(),
+    LoginPlatform: filterLoginPlatform.value.trim(),
     PackageId: filterPackageId.value,
     ...getChannelParams(),
   };
@@ -219,10 +230,8 @@ function handleReset() {
   filterChannelIds.value = [];
   filterChannelExact.value = '';
   filterPackageId.value = '';
-  filterDateRange.value = [
-    dayjs.unix(defaultRange.BeginTime),
-    dayjs.unix(defaultRange.EndTime),
-  ];
+  const range = getTodayRangeSeconds();
+  filterDateRange.value = [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
   handleSearch();
 }
 
@@ -297,13 +306,10 @@ onMounted(() => {
             <span class="text-xs text-gray-500">所属产品</span>
             <Select
               v-model:value="filterPackageId"
+              allow-clear
+              placeholder="全部"
               style="width: 160px"
-              :options="
-                packageOptions.map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-              "
+              :options="packageSelectOptions"
             />
           </div>
           <div class="flex flex-col gap-1">

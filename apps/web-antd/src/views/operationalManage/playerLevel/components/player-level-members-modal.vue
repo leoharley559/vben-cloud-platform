@@ -38,23 +38,31 @@ const canFilter = computed(() => checkPermission(12282));
 const filterLoginAccount = ref('');
 const filterPlayerIdsStr = ref('');
 const filterChannelIds = ref('');
-const filterPackageId = ref<number | string | undefined>(undefined);
+const filterPackageId = ref<number | string>('');
 const selectedIds = ref<Array<number | string>>([]);
 const deleting = ref(false);
 
-const packageSelectOptions = computed(() =>
-  packageOptions.value.map((item) => ({
+const packageSelectOptions = computed(() => [
+  { label: '全部', value: '' },
+  ...packageOptions.value.map((item) => ({
     label: item.PackageName,
     value: item.PackageId,
   })),
-);
+]);
 
 function buildQuery(page: { currentPage: number; pageSize: number }) {
+  const loginAccount = filterLoginAccount.value
+    .trim()
+    .toLowerCase()
+    .replaceAll(/\s/g, '');
   return {
     ChannelId: filterChannelIds.value.trim() || undefined,
     Id: props.levelId,
-    LoginAccount: filterLoginAccount.value.trim() || undefined,
-    PackageId: filterPackageId.value,
+    LoginAccount: loginAccount || undefined,
+    PackageId:
+      filterPackageId.value === undefined || filterPackageId.value === null
+        ? ''
+        : filterPackageId.value,
     Page: page.currentPage,
     PageSize: page.pageSize,
     PlayerId: filterPlayerIdsStr.value.trim() || undefined,
@@ -111,7 +119,7 @@ function resetFilters() {
   filterLoginAccount.value = '';
   filterPlayerIdsStr.value = '';
   filterChannelIds.value = '';
-  filterPackageId.value = undefined;
+  filterPackageId.value = '';
   selectedIds.value = [];
 }
 
@@ -191,8 +199,6 @@ watch(open, (visible) => {
       />
       <Select
         v-model:value="filterPackageId"
-        allow-clear
-        placeholder="全部产品"
         style="width: 160px"
         :options="packageSelectOptions"
       />

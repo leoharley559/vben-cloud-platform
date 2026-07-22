@@ -22,8 +22,8 @@ watch(open, (visible) => {
 function handleOk() {
   const normalized = text.value
     .replaceAll('，', ',')
-    .split(/[\n,]+/)
-    .map((item) => item.trim())
+    .split(/[\n,;]+/)
+    .map((item) => item.trim().toLowerCase().replaceAll(/\s/g, ''))
     .filter(Boolean)
     .join(',');
   if (!normalized) {

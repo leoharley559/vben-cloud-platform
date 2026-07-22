@@ -27,6 +27,7 @@ import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useAuthStore } from '#/store';
 import { removeHelpLink, setHelpLink } from '#/utils/auth-token';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import {
   HELP_RECORD_STATUS_MAP,
   formatOperationDateTime,
@@ -57,11 +58,17 @@ const router = useRouter();
 const actionId = ref<number | string>();
 const keywordType = ref<KeywordType>('All');
 const keywordValue = ref('');
-/** 对齐旧站：默认昨天 */
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs().subtract(1, 'day').startOf('day'),
-  dayjs().subtract(1, 'day').endOf('day'),
-]);
+
+/**
+ * 对齐旧站 helpOrder：getBeforeDateStr(1)～getBeforeDateStr(1,false)
+ * （GLOBAL days-1，参数 1 实际为今天）
+ */
+function todayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  const range = getTodayRangeSeconds();
+  return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+}
+
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(todayRange());
 const filterStatus = ref<number | string>('');
 const sortValue = ref('');
 
@@ -76,13 +83,6 @@ const statusOptions = [
   { label: '进行中', value: 2 },
   { label: '已关闭', value: 3 },
 ];
-
-function yesterdayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
-  return [
-    dayjs().subtract(1, 'day').startOf('day'),
-    dayjs().subtract(1, 'day').endOf('day'),
-  ];
-}
 
 function isOverdue(row: HelpOrderRow) {
   const confirm = Number(row.ConfirmTime || 0);
@@ -131,10 +131,13 @@ function matchStatusFilter(row: HelpOrderRow) {
 }
 
 function buildQuery(page: { currentPage: number; pageSize: number }) {
-  const [begin, end] = filterDateRange.value;
+  const fallback = getTodayRangeSeconds();
+  const [begin, end] = filterDateRange.value || [];
   const query: Record<string, unknown> = {
-    BeginTime: begin.startOf('day').unix(),
-    EndTime: end.endOf('day').unix(),
+    // 对齐旧站 SearchTypeTwo：保留 RangePicker 时分秒
+    BeginTime: begin ? begin.unix() : fallback.BeginTime,
+    Creator: '',
+    EndTime: end ? end.unix() : fallback.EndTime,
     Keyword: '',
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -245,7 +248,7 @@ function handleReset() {
   keywordValue.value = '';
   filterStatus.value = '';
   sortValue.value = '';
-  filterDateRange.value = yesterdayRange();
+  filterDateRange.value = todayRange();
   gridApi.reload();
 }
 

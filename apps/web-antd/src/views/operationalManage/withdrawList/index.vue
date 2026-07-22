@@ -26,7 +26,10 @@ const canSendOrderManage = computed(() => checkPermission(10348));
 const canSendOrderList = computed(() => checkPermission(10349));
 const canWithdrawSonList = computed(() => checkPermission(10350));
 const canOrderStat = computed(() => checkPermission(10387));
-const canThirdPartyRecord = computed(() => checkPermission(13165));
+// 对齐旧站：页签入口 13164，表权限在子组件用 13165
+const canThirdPartyRecord = computed(
+  () => checkPermission(13164) || checkPermission(13165),
+);
 const canWithdrawWater = computed(() => checkPermission(13230));
 
 const canViewAny = computed(

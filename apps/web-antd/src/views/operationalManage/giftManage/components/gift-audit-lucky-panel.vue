@@ -24,7 +24,7 @@ import {
 } from '#/api/operationManage/gift-manage';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { ACTIVITY_TYPE_OPTIONS, VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
+import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
 import { GIFT_AUDIT_STATUS_MAP } from '#/utils/operation-status';
@@ -32,6 +32,7 @@ import { GIFT_AUDIT_STATUS_MAP } from '#/utils/operation-status';
 import {
   ACTIVITY_TYPE_LUCKY_DRAW,
   GIFT_IS_MANUAL_OPTIONS,
+  GIFT_LUCKY_ACTIVITY_TYPE_OPTIONS,
   GIFT_LUCKY_AUDIT_STATUS_OPTIONS,
   GIFT_RISK_OPTIONS,
   GIFT_TYPE_FILTER_OPTIONS,
@@ -45,6 +46,7 @@ import {
   formatPlayerMetric,
   formatPlayerStatus,
   formatVipLevel,
+  giftListTotal,
   giftNameText,
   parseGiftNames,
 } from './gift-shared';
@@ -134,7 +136,7 @@ const remarkForm = reactive({
   Remark: '',
 });
 
-const activityTypeOptions = ACTIVITY_TYPE_OPTIONS;
+const activityTypeOptions = GIFT_LUCKY_ACTIVITY_TYPE_OPTIONS;
 const playerStatusOptions = [
   { label: '全部', value: -1 },
   ...PLAYER_STATUS_OPTIONS,
@@ -319,7 +321,7 @@ const gridOptions: VxeTableGridOptions<LuckyAuditRow> = {
         const items = normalizeRows(result.Items || []);
         return {
           items,
-          total: Number(result.Pagination?.MaxCount || items.length),
+          total: giftListTotal(result.Pagination, items.length),
         };
       },
     },

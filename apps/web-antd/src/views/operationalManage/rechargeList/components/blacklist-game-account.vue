@@ -23,7 +23,6 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { useRechargePayTypeOptions } from '#/utils/recharge-pay-type';
 
 import RechargeBlackPlayerModal from './recharge-black-player-modal.vue';
@@ -41,16 +40,13 @@ const canBatchDelete = computed(() => checkPermission(10290));
 const canEdit = computed(() => checkPermission(10291));
 const canDelete = computed(() => checkPermission(10292));
 
-const defaultRange = getYesterdayRangeSeconds();
 const selectedIds = ref<string[]>([]);
 
 const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>('');
 const filterDeviceId = ref('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs.unix(defaultRange.BeginTime),
-  dayjs.unix(defaultRange.EndTime),
-]);
+/** 对齐旧站 gameAccount：首屏 BeginTime/EndTime 为空，不默认昨日 */
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
 
 const formOpen = ref(false);
 const formMode = ref<'auto' | 'create' | 'edit'>('create');
@@ -70,11 +66,11 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DeviceId: filterDeviceId.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     LoginAccount: filterLoginAccount.value,
-    PackageId: filterPackageId.value,
+    PackageId: filterPackageId.value || '',
   };
 }
 
@@ -215,9 +211,16 @@ function handleBatchDelete() {
   });
 }
 
+function handleReset() {
+  filterLoginAccount.value = '';
+  filterPackageId.value = '';
+  filterDeviceId.value = '';
+  filterDateRange.value = undefined;
+  gridApi.reload();
+}
+
 onMounted(() => {
-  filterPackageId.value =
-    packageOptions.value.find((item) => item.PackageId)?.PackageId ?? '';
+  // 对齐旧站：PackageId 默认空（全部产品），勿自动选中首个产品
   if (canViewTable.value) {
     gridApi.reload();
   }
@@ -238,14 +241,17 @@ onMounted(() => {
       </Input>
       <Select
         v-model:value="filterPackageId"
-        :options="
-          packageOptions
+        :options="[
+          { label: '全部产品', value: '' },
+          ...packageOptions
             .filter((item) => item.PackageId !== '')
             .map((item) => ({
               label: item.PackageName,
               value: item.PackageId,
-            }))
-        "
+            })),
+        ]"
+        allow-clear
+        placeholder="全部产品"
         style="width: 160px"
       />
       <Input
@@ -256,11 +262,15 @@ onMounted(() => {
       >
         <template #addonBefore>设备号</template>
       </Input>
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <DatePicker.RangePicker
+        v-model:value="filterDateRange"
+        allow-clear
+      />
       <Space wrap>
         <Button :loading="loading" type="primary" @click="gridApi.reload()">
           查询
         </Button>
+        <Button @click="handleReset">重置</Button>
         <Button v-if="canCreate" type="primary" @click="openCreate">
           手动添加
         </Button>

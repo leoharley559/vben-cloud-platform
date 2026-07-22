@@ -109,7 +109,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
     EndReceiveVoucherTime: recvEnd ? recvEnd.endOf('day').unix() : '',
     EndRegisterTime: regEnd ? regEnd.endOf('day').unix() : '',
     Id: props.voucherId ?? '',
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     PackageId: filterPackageId.value ?? '',
     Page: page.currentPage,
     PageSize: page.pageSize,

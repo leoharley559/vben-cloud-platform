@@ -42,8 +42,11 @@ const saving = ref(false);
 const filterName = ref('');
 /** 1=按钮关闭为屏蔽(CountriesAllow/Status1)；2=按钮关闭允许访问(Countries/Status2) */
 const mode = ref<1 | 2>(1);
-const tableData = ref<CountryRow[]>([]);
+/** 完整国家列表（搜索仅做前端过滤，避免保存时覆盖未展示项） */
+const allTableData = ref<CountryRow[]>([]);
 const selectedRowKeys = ref<number[]>([]);
+/** 状态接口原始字段，保存时与 Countries/CountriesAllow/Option 合并（对齐旧站） */
+const stateSnapshot = ref<Record<string, unknown>>({});
 const originalPayload = ref({
   Countries: '',
   CountriesAllow: '',
@@ -72,12 +75,29 @@ const columns = [
   },
 ];
 
-/** Option1 → CountriesAllow；Option2 → Countries */
+const tableData = computed(() => {
+  const keyword = filterName.value.trim().toLowerCase();
+  if (!keyword) {
+    return allTableData.value;
+  }
+  return allTableData.value.filter((item) => {
+    const name = String(item.FieldName || '').toLowerCase();
+    const gameName = String(item.FieldNameForGame || '').toLowerCase();
+    const label = `${gameName}-${name}`;
+    return (
+      name.includes(keyword) ||
+      gameName.includes(keyword) ||
+      label.includes(keyword)
+    );
+  });
+});
+
+/** Option1 → CountriesAllow；Option2 → Countries（基于全量列表） */
 function buildPayloadCountries() {
-  const allowIds = tableData.value
+  const allowIds = allTableData.value
     .filter((item) => item.Status1 === 1)
     .map((item) => item.Id);
-  const blockIds = tableData.value
+  const blockIds = allTableData.value
     .filter((item) => item.Status2 === 1)
     .map((item) => item.Id);
   return {
@@ -105,24 +125,32 @@ function parseIdList(value: unknown) {
     .filter((item) => Number.isFinite(item));
 }
 
+/** 后端 Option=0 时归一为模式 1（旧站 select 无 0 选项会导致开关不渲染） */
+function normalizeOption(value: unknown): 1 | 2 {
+  return Number(value) === 2 ? 2 : 1;
+}
+
 async function loadData() {
   loading.value = true;
   selectedRowKeys.value = [];
   try {
+    // 始终拉全量配置；名称筛选改前端过滤，避免带 Name 查询后保存丢其它国家
     const [configResult, stateResult] = await Promise.all([
       fetchCountriesConfigListApi({
-        Name: filterName.value.trim(),
+        Name: '',
         Page: 1,
         PageSize: 9999,
       }),
       fetchGameCountriesStateApi(),
     ]);
 
+    const state = (stateResult || {}) as Record<string, unknown>;
+    stateSnapshot.value = { ...state };
+
     // Countries → Status2（模式2）；CountriesAllow → Status1（模式1）
-    const countries = parseIdList(stateResult.Countries);
-    const countriesAllow = parseIdList(stateResult.CountriesAllow);
-    const optionRaw = Number(stateResult.Option);
-    const option = optionRaw === 2 ? 2 : 1;
+    const countries = parseIdList(state.Countries);
+    const countriesAllow = parseIdList(state.CountriesAllow);
+    const option = normalizeOption(state.Option);
 
     originalPayload.value = {
       Countries: countries.join(','),
@@ -131,7 +159,7 @@ async function loadData() {
     };
     mode.value = option;
 
-    tableData.value = ((configResult.Items || []) as CountryRow[]).map(
+    allTableData.value = ((configResult.Items || []) as CountryRow[]).map(
       (item) => ({
         ...item,
         Status1: countriesAllow.includes(item.Id) ? 1 : 0,
@@ -144,24 +172,29 @@ async function loadData() {
 }
 
 function handleSearch() {
-  void loadData();
+  selectedRowKeys.value = [];
 }
 
 function resetFilters() {
   filterName.value = '';
-  void loadData();
+  selectedRowKeys.value = [];
 }
 
 function handleModeChange() {
   selectedRowKeys.value = [];
 }
 
+function handleSelectionChange(keys: (number | string)[]) {
+  selectedRowKeys.value = keys.map(Number).filter((id) => Number.isFinite(id));
+}
+
 function changeAllStatus(status: 0 | 1) {
   if (!selectedRowKeys.value.length) {
     return;
   }
-  tableData.value = tableData.value.map((item) => {
-    if (!selectedRowKeys.value.includes(item.Id)) {
+  const selected = new Set(selectedRowKeys.value);
+  allTableData.value = allTableData.value.map((item) => {
+    if (!selected.has(item.Id)) {
       return item;
     }
     return mode.value === 1
@@ -173,12 +206,12 @@ function changeAllStatus(status: 0 | 1) {
 /** 恢复当前模式下的默认（全部关闭），需再点保存提交 */
 function handleResetDefault() {
   if (mode.value === 1) {
-    tableData.value = tableData.value.map((item) => ({
+    allTableData.value = allTableData.value.map((item) => ({
       ...item,
       Status1: 0,
     }));
   } else {
-    tableData.value = tableData.value.map((item) => ({
+    allTableData.value = allTableData.value.map((item) => ({
       ...item,
       Status2: 0,
     }));
@@ -200,7 +233,11 @@ async function saveChanges() {
   }
   saving.value = true;
   try {
-    await updateGameCountriesStateApi(buildPayloadCountries());
+    // 对齐旧站：在状态接口返回体上覆盖 Countries / CountriesAllow / Option
+    await updateGameCountriesStateApi({
+      ...stateSnapshot.value,
+      ...buildPayloadCountries(),
+    });
     message.success('区域屏蔽设置已保存');
     await loadData();
   } finally {
@@ -292,9 +329,7 @@ onMounted(() => {
         :pagination="false"
         :row-key="(row: CountryRow) => row.Id"
         :row-selection="{
-          onChange: (keys) => {
-            selectedRowKeys = keys as number[];
-          },
+          onChange: handleSelectionChange,
           selectedRowKeys,
         }"
         :scroll="{ y: 560 }"

@@ -2,6 +2,20 @@ import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import { trimSpace } from '#/utils/string';
 
+function normalizeListResult(
+  result: CloudListResult<Record<string, unknown>> | null | undefined,
+): CloudListResult<Record<string, unknown>> {
+  return {
+    Items: result?.Items || [],
+    Pagination: result?.Pagination || {
+      CurrPage: 1,
+      MaxCount: 0,
+      MaxPageCount: 1,
+      PageSize: 20,
+    },
+  };
+}
+
 /**
  * 分页查询 IP/设备白名单列表。
  *
@@ -9,11 +23,11 @@ import { trimSpace } from '#/utils/string';
  * @returns 白名单 Items 与 Pagination
  * @see views/operationalManage/whiteList/components/white-list-panel.vue
  */
-export function fetchWhiteListApi(query: Record<string, unknown>) {
-  return requestClient.get<CloudListResult<Record<string, unknown>>>(
-    '/backend/whitelist/list',
-    { params: trimSpace(query) },
-  );
+export async function fetchWhiteListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<
+    CloudListResult<Record<string, unknown>>
+  >('/backend/whitelist/list', { params: trimSpace(query) });
+  return normalizeListResult(result);
 }
 
 /**
@@ -23,10 +37,22 @@ export function fetchWhiteListApi(query: Record<string, unknown>) {
  * @returns 关联用户 Items 与 Pagination
  * @see views/operationalManage/whiteList/components/white-list-panel.vue
  */
-export function fetchWhiteListUsersApi(query: Record<string, unknown>) {
-  return requestClient.get<CloudListResult<Record<string, unknown>>>(
-    '/backend/whitelist/listuser',
-    { params: query },
+export async function fetchWhiteListUsersApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<
+    CloudListResult<Record<string, unknown>>
+  >('/backend/whitelist/listuser', { params: trimSpace(query) });
+  return normalizeListResult(result);
+}
+
+/**
+ * 查询 IP / 使用者数量统计。
+ *
+ * @returns IpList、UserList
+ * @see views/operationalManage/whiteList/index.vue
+ */
+export function fetchWhiteListStatsApi() {
+  return requestClient.get<{ IpList?: number; UserList?: number }>(
+    '/backend/whitelist/ipuserlist',
   );
 }
 
@@ -86,9 +112,9 @@ export function createWhiteListUserApi(data: Record<string, unknown>) {
 }
 
 /**
- * 编辑白名单关联用户。
+ * 编辑白名单关联用户（含状态开关）。
  *
- * @param data 用户记录表单数据（含 Id）
+ * @param data 用户记录表单数据（含 Id、Status）
  * @returns 接口响应
  * @see views/operationalManage/whiteList/components/white-list-panel.vue
  */

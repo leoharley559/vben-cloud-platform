@@ -215,7 +215,7 @@ function buildIssueQuery(page: { currentPage: number; pageSize: number }) {
   return {
     IssueEndTime: issueEnd ? issueEnd.endOf('day').unix() : '',
     IssueStartTime: issueBegin ? issueBegin.startOf('day').unix() : '',
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     Page: page.currentPage,
     PageSize: page.pageSize,
     RegEndTime: regEnd ? regEnd.endOf('day').unix() : '',

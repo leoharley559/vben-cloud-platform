@@ -19,7 +19,9 @@ const config: OperationListConfig = {
       minWidth: 160,
     },
   ],
-  dateFieldKeys: { begin: 'BeginTime', end: 'EndTime' },
+  // 对齐旧站：领取时间 ClaimBeginTime/ClaimEndTime；getBeforeDateStr(1)≈今天
+  dateFieldKeys: { begin: 'ClaimBeginTime', end: 'ClaimEndTime' },
+  datePreset: 'today',
   fetchApi: fetchPromoGiftRecordApi,
   filters: ['login', 'date'],
 };

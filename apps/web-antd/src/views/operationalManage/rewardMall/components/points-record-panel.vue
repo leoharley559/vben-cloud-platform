@@ -27,7 +27,7 @@ import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatActivityType } from '#/utils/bonus-reward';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import {
   PLAYER_STATUS_OPTIONS,
@@ -80,7 +80,8 @@ const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const exportLoading = ref(false);
 const totalCount = ref(0);
 
-const defaultRange = getYesterdayRangeSeconds();
+/** 对齐旧站 pointsRecord：getBeforeDateTimestamp(1,false)～今天 23:59 */
+const defaultRange = getTodayRangeSeconds();
 
 const filterLoginAccount = ref('');
 const filterPlayerStatus = ref<number | string>(-1);
@@ -119,7 +120,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
     BonusTitle: filterBonusTitle.value.trim(),
     BonusType: filterBonusType.value,
     ChannelId: channelIdsParam(),
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     OrderId: filterOrderId.value.trim(),
     PackageId: filterPackageId.value,
     Page: page.currentPage,

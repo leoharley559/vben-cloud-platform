@@ -72,10 +72,11 @@ const pendingDownload = reactive({
 const filterId = ref('');
 const filterPath = ref('');
 const filterStatus = ref<number | string>(-1);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs().subtract(1, 'month').startOf('day'),
-  dayjs().endOf('day'),
-]);
+/** 对齐旧站：当月 1 日 00:00:00 ~ 今日 23:59:59（含时分秒） */
+function defaultDateRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  return [dayjs().startOf('month'), dayjs().endOf('day')];
+}
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(defaultDateRange());
 const autoRefresh = ref(false);
 let refreshTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -90,8 +91,9 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     Auto: autoRefresh.value,
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    // 保留 RangePicker 时分秒，勿强制 startOf/endOf('day')
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     Id: filterId.value.trim(),
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -198,9 +200,14 @@ const gridOptions: VxeTableGridOptions<DownloadRow> = {
       query: async ({ page }) => {
         const result = await fetchDownloadCsvListApi(getQueryParams(page));
         const items = (result.Items || []) as DownloadRow[];
+        const maxCount = result.Pagination?.MaxCount;
         return {
           items,
-          total: Number(result.Pagination?.MaxCount || items.length),
+          total: Number(
+            maxCount === undefined || maxCount === null
+              ? items.length
+              : maxCount,
+          ),
         };
       },
     },
@@ -220,10 +227,7 @@ function resetFilters() {
   filterId.value = '';
   filterPath.value = '';
   filterStatus.value = -1;
-  filterDateRange.value = [
-    dayjs().subtract(1, 'month').startOf('day'),
-    dayjs().endOf('day'),
-  ];
+  filterDateRange.value = defaultDateRange();
   handleSearch();
 }
 

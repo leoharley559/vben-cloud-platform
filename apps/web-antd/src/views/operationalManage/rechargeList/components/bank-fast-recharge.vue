@@ -43,8 +43,9 @@ const { memberTypeOptions, packageOptions } = useOperationOptions();
 
 const canViewTable = computed(() => checkPermission(10269));
 const canConfirm = computed(() => checkPermission(10270));
-const canReject = computed(() => checkPermission(10271));
-const canReview = computed(() => checkPermission(10272));
+/** 对齐旧站 bankCardRecharge：复议 10271 + Status===3；拒绝 10272 + Status===1 */
+const canReview = computed(() => checkPermission(10271));
+const canReject = computed(() => checkPermission(10272));
 const canExport = computed(() => checkPermission(12159));
 
 const defaultRange = getYesterdayRangeSeconds();
@@ -193,7 +194,8 @@ const gridOptions: VxeTableGridOptions<PlayerEasyRechargeItem> = {
         const sortOrder = sort?.order;
         let sortParam = '';
         if (sortField && sortOrder) {
-          sortParam = `${sortField} ${sortOrder === 'asc' ? 'asc' : 'desc'}`;
+          sortParam =
+            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
 
         const result = await fetchEasyRechargeListApi({
@@ -435,7 +437,7 @@ onMounted(() => {
             游戏充值
           </Button>
           <Button
-            v-if="canReview && Number(row.Status) === 1"
+            v-if="canReview && Number(row.Status) === 3"
             size="small"
             type="link"
             @click="openAction(row, 'review')"

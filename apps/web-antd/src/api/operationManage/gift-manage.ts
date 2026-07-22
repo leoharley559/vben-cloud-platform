@@ -23,11 +23,15 @@ export function fetchGiftAuditListApi(query: Record<string, unknown>) {
  * @see views/operationalManage/giftManage/components/gift-deliver-level-panel.vue
  * @see views/operationalManage/giftManage/components/gift-deliver-lucky-panel.vue
  */
-export function fetchGiftDeliverListApi(query: Record<string, unknown>) {
-  return requestClient.get<CloudListResult<Record<string, unknown>>>(
-    '/backend/playergift/deliverlist',
-    { params: trimSpace(query) },
-  );
+export async function fetchGiftDeliverListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<
+    CloudListResult<Record<string, unknown>>
+  >('/backend/playergift/deliverlist', { params: trimSpace(query) });
+  return {
+    ...result,
+    Items: result?.Items || [],
+    Pagination: result?.Pagination,
+  };
 }
 
 /**

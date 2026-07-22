@@ -81,6 +81,16 @@ const dateFormat = computed(() =>
 );
 const pickerMode = computed(() => (reportType.value === 2 ? 'month' : 'date'));
 
+/** 区间报日期列：查询起止，对齐旧站 param.BeginTime~param.EndTime */
+const queryDateLabel = computed(() => {
+  const { beginTime, endTime } = toDateStrings(
+    dateRange.value,
+    dateFormat.value,
+  );
+  if (!beginTime && !endTime) return '';
+  return `${beginTime}~${endTime}`;
+});
+
 const showAgentRadio = computed(() => canViewAgent.value);
 const showChannelRadio = computed(() => canViewChannel.value);
 
@@ -155,11 +165,19 @@ async function loadData() {
         ? fetchChannelReportRawApi
         : fetchChannelReportByChannelRawApi;
     const data = await fetchApi(buildQuery());
-    const rawItems = (data.Items || data.RealTimeItems || []) as ChannelRow[];
+    // 对齐旧站字段：今日/渠道维用 RealTimeItems；历史代理维用 Items
+    const rawItems = (
+      isToday.value || dim.value === 'channel'
+        ? data.RealTimeItems || data.Items || []
+        : data.Items || data.RealTimeItems || []
+    ) as ChannelRow[];
     const rows = calcChannelRows(rawItems, dim.value);
     total.value = data.Pagination?.MaxCount ?? rows.length;
 
-    const totalSource = data.TotalItems || data.TotalRealTimeItems;
+    const totalSource =
+      dim.value === 'channel'
+        ? data.TotalRealTimeItems || data.TotalItems
+        : data.TotalItems || data.TotalRealTimeItems;
     if (!isToday.value && totalSource && Object.keys(totalSource).length > 0) {
       const totalRow = calcChannelRow(
         {
@@ -331,7 +349,11 @@ async function handleExport() {
     const data = await fetchApi(
       buildQuery({ Page: 1, PageSize: 10_000, IsExp: true }),
     );
-    const rawItems = (data.Items || data.RealTimeItems || []) as ChannelRow[];
+    const rawItems = (
+      isToday.value || dim.value === 'channel'
+        ? data.RealTimeItems || data.Items || []
+        : data.Items || data.RealTimeItems || []
+    ) as ChannelRow[];
     const rows = calcChannelRows(rawItems, dim.value);
     const name = `${isToday.value ? '今日' : '历史'}-${dim.value === 'agent' ? '代理数据' : '渠道数据'}`;
     exportRowsToCsv(rows, buildExportColumns(), name);
@@ -517,6 +539,7 @@ onMounted(() => {
             :dim="dim"
             :list="tableData"
             :mode="isToday ? 'today' : 'history'"
+            :query-date-label="queryDateLabel"
             :report-type="reportType"
           />
           <div class="mt-3 flex justify-end">

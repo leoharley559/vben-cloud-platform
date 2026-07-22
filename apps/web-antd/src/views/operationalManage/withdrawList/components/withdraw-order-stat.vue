@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import { fetchWithdrawOrderStatApi } from '#/api/operationManage/withdraw-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 defineOptions({ name: 'WithdrawOrderStat' });
@@ -19,7 +19,8 @@ const { checkPermission } = useCloudPermission();
 
 const canViewTable = computed(() => checkPermission(10_387));
 
-const defaultRange = getYesterdayRangeSeconds();
+// 对齐旧站 orderStat：默认当月（非昨日）
+const defaultRange = getCurrentMonthRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),

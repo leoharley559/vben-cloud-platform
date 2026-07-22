@@ -21,7 +21,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -66,7 +66,8 @@ const { packageOptions } = useOperationOptions();
 
 const canView = computed(() => checkPermission(13337));
 
-const defaultRange = getYesterdayRangeSeconds();
+/** 对齐旧站 adjustList：申请/审批时间默认均为今天 */
+const defaultRange = getTodayRangeSeconds();
 const totalAmount = ref(0);
 const exportLoading = ref(false);
 
@@ -127,7 +128,7 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
     EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
     HandleType: filterHandleType.value,
     IsApprove: false,
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     OrderId: filterOrderId.value.trim(),
     PackageId: filterPackageId.value,
     Page: page?.currentPage ?? 1,

@@ -28,6 +28,7 @@ export type OperationDatePreset =
   | 'dayBeforeYesterday'
   | 'last31ToYesterday'
   | 'last7Days'
+  | 'today'
   | 'yesterday';
 
 export interface OperationListConfig {
@@ -62,6 +63,9 @@ function resolveDefaultRange(
   const today = dayjs().startOf('day');
   const yesterday = today.subtract(1, 'day');
   switch (preset) {
+    case 'today': {
+      return [today, today.endOf('day')];
+    }
     case 'yesterday': {
       return [yesterday, yesterday.endOf('day')];
     }

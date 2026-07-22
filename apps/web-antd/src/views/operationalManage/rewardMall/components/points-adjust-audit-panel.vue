@@ -27,7 +27,7 @@ import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import { REWARD_POINT_ADJUST_AUDIT_PAGE_ID } from '#/utils/security-page-ids';
@@ -63,7 +63,8 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const canViewTable = computed(() => checkPermission(13336));
 
-const defaultRange = getYesterdayRangeSeconds();
+/** 对齐旧站 adjustAudit：getBeforeDateTimestamp(1,false)～今天 23:59 */
+const defaultRange = getTodayRangeSeconds();
 const filterLoginAccount = ref('');
 const filterOrderId = ref('');
 const filterPackageId = ref<number | string>('');
@@ -111,7 +112,7 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
     EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
     HandleType: filterHandleType.value,
     IsApprove: true,
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     OrderId: filterOrderId.value.trim(),
     PackageId: filterPackageId.value,
     Page: page?.currentPage ?? 1,

@@ -55,7 +55,7 @@ const submitting = ref(false);
 const actionId = ref<number | string>();
 const editingId = ref<number | string>();
 const schemeOptions = ref<Array<{ label: string; value: number }>>([
-  { label: '默认返水方案', value: 0 },
+  { label: '产品的返水方案', value: 0 },
 ]);
 const withdrawSchemeOptions = ref<Array<{ label: string; value: number }>>([]);
 const defaultWithdrawSchemeId = ref<number>();
@@ -72,10 +72,11 @@ const form = reactive({
 
 function buildListQuery(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
+  const levelName = canFilter.value ? filterLevelName.value.trim() : '';
   return {
     BeginTime: begin ? begin.startOf('day').unix() : undefined,
     EndTime: end ? end.endOf('day').unix() : undefined,
-    LevelName: canFilter.value ? filterLevelName.value.trim() : undefined,
+    LevelName: levelName || undefined,
     Page: page.currentPage,
     PageSize: page.pageSize,
   };
@@ -94,7 +95,7 @@ const gridOptions: VxeTableGridOptions<LevelRow> = {
       field: 'SchemeName',
       formatter: ({ cellValue, row }) =>
         Number(row.DefaultLevel) === 0 || Number(row.SchemeId) === 0
-          ? '默认返水方案'
+          ? '产品的返水方案'
           : String(cellValue || '-'),
       minWidth: 140,
       title: '返水方案',
@@ -104,7 +105,7 @@ const gridOptions: VxeTableGridOptions<LevelRow> = {
       formatter: ({ cellValue, row }) =>
         Number(row.DefaultLevel) === 0 ||
         Number(row.WithdrawAutoConfigSchemeNameId) === 0
-          ? '默认风控方案'
+          ? '预设风控方案'
           : String(cellValue || '-'),
       minWidth: 140,
       title: '风控方案',
@@ -149,11 +150,11 @@ async function loadSchemes() {
       value: Number(item.Id ?? 0),
     }));
     schemeOptions.value = [
-      { label: '默认返水方案', value: 0 },
+      { label: '产品的返水方案', value: 0 },
       ...options.filter((item) => item.value !== 0),
     ];
   } catch {
-    schemeOptions.value = [{ label: '默认返水方案', value: 0 }];
+    schemeOptions.value = [{ label: '产品的返水方案', value: 0 }];
   }
 }
 

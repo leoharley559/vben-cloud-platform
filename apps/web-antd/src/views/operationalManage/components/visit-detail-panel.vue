@@ -23,7 +23,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import PassPopup from '#/components/security/pass-popup.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import { VISIT_STATISTIC_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
@@ -61,7 +61,11 @@ const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const exportLoading = ref(false);
 const totalCount = ref(0);
 
-const defaultRange = getYesterdayRangeSeconds();
+/**
+ * 对齐旧站 noticeDetail/emailDetail：
+ * getBeforeDateStr(1)～getBeforeDateStr(1,false)（GLOBAL days-1 → 今天）
+ */
+const defaultRange = getTodayRangeSeconds();
 const filterPlayerId = ref('');
 const filterSubGroup = ref<number | string>('');
 const filterAppType = ref<number | string>('');
@@ -96,6 +100,7 @@ const deviceSelectOptions = computed(() => [
 ]);
 
 function buildQuery(page?: { currentPage: number; pageSize: number }) {
+  const fallback = getTodayRangeSeconds();
   const [visitBegin, visitEnd] = filterVisitRange.value || [];
   const leave = filterLeaveRange.value;
   const duration = filterDurationRange.value;
@@ -105,13 +110,14 @@ function buildQuery(page?: { currentPage: number; pageSize: number }) {
     DurationMin: duration?.[0] ? duration[0].format('HH:mm:ss') : '',
     Group: props.group,
     Key: props.titleId,
+    // 对齐旧站 SearchTypeTwo/monthRangeDate：保留 RangePicker 时分秒
     LeaveBeginTime: leave?.[0] ? leave[0].unix() : '',
     LeaveEndTime: leave?.[1] ? leave[1].unix() : '',
     PlayerId:
       filterPlayerId.value.trim() === '' ? '-1' : filterPlayerId.value.trim(),
     SubGroup: filterSubGroup.value,
-    VisitBeginTime: visitBegin ? visitBegin.unix() : defaultRange.BeginTime,
-    VisitEndTime: visitEnd ? visitEnd.unix() : defaultRange.EndTime,
+    VisitBeginTime: visitBegin ? visitBegin.unix() : fallback.BeginTime,
+    VisitEndTime: visitEnd ? visitEnd.unix() : fallback.EndTime,
   };
   if (page) {
     query.Page = page.currentPage;
@@ -209,9 +215,10 @@ function handleReset() {
   filterAppType.value = '';
   filterLeaveRange.value = undefined;
   filterDurationRange.value = undefined;
+  const range = getTodayRangeSeconds();
   filterVisitRange.value = [
-    dayjs.unix(defaultRange.BeginTime),
-    dayjs.unix(defaultRange.EndTime),
+    dayjs.unix(range.BeginTime),
+    dayjs.unix(range.EndTime),
   ];
   handleSearch();
 }

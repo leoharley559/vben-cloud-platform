@@ -47,7 +47,10 @@ import {
   formatBetStatus,
   pickBetAmount,
 } from '#/utils/bet-detail';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import {
+  getLast7DaysToYesterdayRangeSeconds,
+  getYesterdayToTodayRangeSeconds,
+} from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatGameName } from '#/utils/game-config';
 import {
@@ -95,14 +98,12 @@ const { projectConfig } = useProjectConfig();
 const canExport = computed(() => checkPermission(12206));
 const canOpenPlayer = computed(() => checkPermission(12207));
 
-/** 全局：前天→昨天；玩家详情：近 7 天→昨天 */
-const defaultBegin = isPlayerScope.value
-  ? dayjs.unix(getLast7DaysToYesterdayRangeSeconds().BeginTime)
-  : dayjs().subtract(2, 'day').startOf('day');
-const defaultEnd = isPlayerScope.value
-  ? dayjs.unix(getLast7DaysToYesterdayRangeSeconds().EndTime)
-  : dayjs().subtract(1, 'day').endOf('day');
-
+/** 全局：昨天→今天；玩家详情：近 7 天→昨天 */
+const defaultRange = isPlayerScope.value
+  ? getLast7DaysToYesterdayRangeSeconds()
+  : getYesterdayToTodayRangeSeconds();
+const defaultBegin = dayjs.unix(defaultRange.BeginTime);
+const defaultEnd = dayjs.unix(defaultRange.EndTime);
 const exportLoading = ref(false);
 const copyLoading = ref(false);
 const totalCount = ref(0);
@@ -165,12 +166,13 @@ watch(
   },
 );
 
-const packageSelectOptions = computed(() =>
-  packageOptions.value.map((item) => ({
+const packageSelectOptions = computed(() => [
+  { label: '全部', value: '' },
+  ...packageOptions.value.map((item) => ({
     label: item.PackageName,
     value: item.PackageId,
   })),
-);
+]);
 
 const gameGroupOptions = computed(() => {
   const groups = (projectConfig.value?.GameGroups || []) as Array<{
@@ -789,8 +791,6 @@ onMounted(async () => {
           <span class="text-xs text-gray-500">产品</span>
           <Select
             v-model:value="filterPackageId"
-            allow-clear
-            placeholder="全部产品"
             style="width: 150px"
             :options="packageSelectOptions"
           />

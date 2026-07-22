@@ -50,7 +50,26 @@ export const LUCKY_DRAW_BONUS_CATEGORY_OPTIONS = [
 
 export const ACTIVITY_TYPE_LUCKY_DRAW = 10008;
 
-export function formatGiftDateTime(value?: number | string) {
+/** 礼品主题抽奖页活动类型（对齐旧站 useActivityConst 过滤） */
+export const GIFT_LUCKY_ACTIVITY_TYPE_OPTIONS = [
+  { label: '全部', value: -1 },
+  { label: '主题抽奖', value: 10008 },
+  { label: 'N级代理', value: 10018 },
+  { label: '票券', value: 10019 },
+  { label: '积分商城', value: 10021 },
+  { label: '排行榜', value: 10027 },
+];
+
+export function giftListTotal(
+  pagination?: { MaxCount?: number | string | null } | null,
+  itemsLength = 0,
+) {
+  const maxCount = pagination?.MaxCount;
+  if (maxCount === undefined || maxCount === null || maxCount === '') {
+    return itemsLength;
+  }
+  return Number(maxCount);
+}
   if (!value || Number(value) === 0) {
     return '-';
   }

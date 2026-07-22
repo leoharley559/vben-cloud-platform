@@ -136,26 +136,35 @@ function canOperateRow(row: BonusAuditListItem) {
   );
 }
 
+function normalizeLoginAccount() {
+  filterLoginAccount.value = filterLoginAccount.value
+    .toLowerCase()
+    .replaceAll(/\s/g, '');
+}
+
 function getQueryParams() {
   const [applyBegin, applyEnd] = filterApplyDateRange.value || [];
   const [approveBegin, approveEnd] = filterApproveDateRange.value || [];
   return {
     ActivityType: 10009,
-    ApplyBeginTime: applyBegin ? applyBegin.unix() : '',
-    ApplyEndTime: applyEnd ? applyEnd.unix() : '',
-    ApproveBeginTime: approveBegin ? approveBegin.unix() : '',
-    ApproveEndTime: approveEnd ? approveEnd.unix() : '',
+    ApplyBeginTime: applyBegin ? applyBegin.startOf('day').unix() : '',
+    ApplyEndTime: applyEnd ? applyEnd.endOf('day').unix() : '',
+    ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
+    ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
     ApproveStatus: filterApproveStatus.value,
     ChannelIds: filterChannelIds.value,
     IsExp: false,
-    LoginAccount: filterLoginAccount.value,
-    OrderId: filterOrderId.value,
-    PackageName: filterPackageName.value,
-    PageTitle: filterPageTitle.value,
+    LoginAccount: filterLoginAccount.value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/\s/g, ''),
+    OrderId: filterOrderId.value.trim(),
+    PackageName: filterPackageName.value.trim(),
+    PageTitle: filterPageTitle.value.trim(),
     PageType: filterPageType.value,
     PlayerStatus: filterPlayerStatus.value,
     RiskStatus: filterRiskStatus.value,
-    Title: filterTitle.value,
+    Title: filterTitle.value.trim(),
     VipLevel: filterVipLevel.value,
   };
 }
@@ -470,6 +479,7 @@ onMounted(() => {
         allow-clear
         placeholder="游戏账号"
         style="width: 200px"
+        @change="normalizeLoginAccount"
       >
         <template #addonBefore>游戏账号</template>
       </Input>

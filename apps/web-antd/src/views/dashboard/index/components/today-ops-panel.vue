@@ -68,6 +68,10 @@ function rateOf(success: number, total: number) {
   return total ? success / total : 0;
 }
 
+function asRows(value: unknown) {
+  return Array.isArray(value) ? (value as Array<Record<string, unknown>>) : [];
+}
+
 function enrichRechargeRows(
   todayItems: Array<Record<string, unknown>>,
   yesterdayItems: Array<Record<string, unknown>>,
@@ -121,17 +125,79 @@ function enrichRechargeRows(
   });
 }
 
-function enrich15Rows(items: Array<Record<string, unknown>>) {
-  return (items || []).map((row, index) => ({
-    ...row,
-    CurrSuccessRate: rateOf(
-      toNumber(row.SuccessCount),
-      toNumber(row.TotalCount),
-    ),
-    LastSuccessRate: toNumber(row.LastSuccessRate),
-    fakeId: `15-${index}-${row.PayType || row.RechargeId}`,
-    key: `15-${index}-${row.PayType || row.RechargeId}`,
-  }));
+/**
+ * 对齐旧站 todayInfo：按 PayType 合并 Curr15Items ↔ Last15Items，
+ * 子级按 RechargeId 合并 LastChildren，计算 Curr/Last 成功率。
+ */
+function enrich15Rows(
+  currItems: Array<Record<string, unknown>>,
+  lastItems: Array<Record<string, unknown>>,
+) {
+  return asRows(currItems).map((curr, index) => {
+    const last =
+      asRows(lastItems).find(
+        (item) => String(item.PayType) === String(curr.PayType),
+      ) || {};
+    const lastChildren = asRows(last.Children);
+    const children = asRows(curr.Children).map((child, cIdx) => {
+      const lastChild =
+        lastChildren.find(
+          (item) => String(item.RechargeId) === String(child.RechargeId),
+        ) || {};
+      return {
+        ...child,
+        CurrSuccessRate: rateOf(
+          toNumber(child.SuccessCount),
+          toNumber(child.TotalCount),
+        ),
+        LastSuccessRate: rateOf(
+          toNumber(lastChild.SuccessCount),
+          toNumber(lastChild.TotalCount),
+        ),
+        LastSuccessCount: toNumber(lastChild.SuccessCount),
+        LastTotalCount: toNumber(lastChild.TotalCount),
+        children: undefined,
+        fakeId: `15c-${index}-${cIdx}-${child.RechargeId}`,
+        key: `15c-${index}-${cIdx}-${child.RechargeId}`,
+      };
+    });
+
+    return {
+      ...curr,
+      CurrSuccessRate: rateOf(
+        toNumber(curr.SuccessCount),
+        toNumber(curr.TotalCount),
+      ),
+      LastSuccessRate: rateOf(
+        toNumber(last.SuccessCount),
+        toNumber(last.TotalCount),
+      ),
+      LastSuccessCount: toNumber(last.SuccessCount),
+      LastTotalCount: toNumber(last.TotalCount),
+      children: children.length ? children : undefined,
+      fakeId: `15-${index}-${curr.PayType || curr.RechargeId}`,
+      key: `15-${index}-${curr.PayType || curr.RechargeId}`,
+    };
+  });
+}
+
+/** 对齐旧站：按 RiskAuditorId 合并昨日 AvgTime → YesterdayAvgTime */
+function enrichOnlineRows(
+  todayItems: Array<Record<string, unknown>>,
+  yesterdayItems: Array<Record<string, unknown>>,
+) {
+  return asRows(todayItems).map((today, index) => {
+    const yesterday =
+      asRows(yesterdayItems).find(
+        (item) =>
+          String(item.RiskAuditorId) === String(today.RiskAuditorId),
+      ) || {};
+    return {
+      ...today,
+      YesterdayAvgTime: toNumber(yesterday.AvgTime),
+      key: `risk-${today.RiskAuditorId ?? index}`,
+    };
+  });
 }
 
 async function loadData() {
@@ -154,8 +220,8 @@ async function loadData() {
 
     recharged.value = {
       TodayItems: enrichRechargeRows(
-        recharge.TodayItems || [],
-        recharge.YestDayItems || [],
+        asRows(recharge.TodayItems),
+        asRows(recharge.YestDayItems),
       ),
       TodayTotal: todayTotal,
       YestDayTotal: yestTotal,
@@ -173,7 +239,10 @@ async function loadData() {
     );
 
     recharged15.value = {
-      Curr15Items: enrich15Rows(recharge15.Curr15Items || []),
+      Curr15Items: enrich15Rows(
+        asRows(recharge15.Curr15Items),
+        asRows(recharge15.Last15Items),
+      ),
       Curr15Total: curr15Total,
       Last15Total: last15Total,
     };
@@ -182,7 +251,10 @@ async function loadData() {
     const online = (data.OnlineUser || {}) as Record<string, any>;
     onlineUser.value = {
       OnlineCount: toNumber(online.OnlineCount),
-      TodayOnlineUserItems: online.TodayOnlineUserItems || [],
+      TodayOnlineUserItems: enrichOnlineRows(
+        asRows(online.TodayOnlineUserItems),
+        asRows(online.YestDayOnlineUserItems),
+      ),
     };
   } finally {
     loading.value = false;
@@ -254,8 +326,14 @@ const onlineColumns = [
   {
     key: 'avg',
     title: '平均耗时',
-    customRender: ({ record }: { record: Record<string, unknown> }) =>
-      formatSeconds(record.AvgTime),
+    customRender: ({ record }: { record: Record<string, unknown> }) => {
+      const avg = toNumber(record.AvgTime);
+      const yesterday = toNumber(record.YesterdayAvgTime);
+      if (!yesterday) {
+        return formatSeconds(avg);
+      }
+      return `${formatSeconds(avg)} (${formatDeltaPercent(avg, yesterday)})`;
+    },
   },
 ];
 
@@ -300,20 +378,20 @@ onMounted(() => {
       <Card class="shadow-sm" size="small">
         <div class="mb-1">
           <div class="text-2xl font-semibold">
-            {{ formatRatePercent(recharged.TodayTotal.SuccessRate) }}
+            {{ formatRatePercent(toNumber(recharged.TodayTotal.SuccessRate)) }}
             <span
               class="ml-1 text-sm"
               :class="
                 deltaClass(
-                  recharged.TodayTotal.SuccessRate,
-                  recharged.YestDayTotal.SuccessRate,
+                  toNumber(recharged.TodayTotal.SuccessRate),
+                  toNumber(recharged.YestDayTotal.SuccessRate),
                 )
               "
             >
               {{
                 formatDeltaPercent(
-                  recharged.TodayTotal.SuccessRate,
-                  recharged.YestDayTotal.SuccessRate,
+                  toNumber(recharged.TodayTotal.SuccessRate),
+                  toNumber(recharged.YestDayTotal.SuccessRate),
                 )
               }}
             </span>
@@ -333,20 +411,22 @@ onMounted(() => {
       <Card class="shadow-sm" size="small">
         <div class="mb-1">
           <div class="text-2xl font-semibold">
-            {{ formatRatePercent(recharged15.Curr15Total.SuccessRate) }}
+            {{
+              formatRatePercent(toNumber(recharged15.Curr15Total.SuccessRate))
+            }}
             <span
               class="ml-1 text-sm"
               :class="
                 deltaClass(
-                  recharged15.Curr15Total.SuccessRate,
-                  recharged15.Last15Total.SuccessRate,
+                  toNumber(recharged15.Curr15Total.SuccessRate),
+                  toNumber(recharged15.Last15Total.SuccessRate),
                 )
               "
             >
               {{
                 formatDeltaPercent(
-                  recharged15.Curr15Total.SuccessRate,
-                  recharged15.Last15Total.SuccessRate,
+                  toNumber(recharged15.Curr15Total.SuccessRate),
+                  toNumber(recharged15.Last15Total.SuccessRate),
                 )
               }}
             </span>
@@ -395,7 +475,7 @@ onMounted(() => {
           :data-source="onlineUser.TodayOnlineUserItems"
           :pagination="false"
           :scroll="{ y: 360 }"
-          :row-key="(row, index) => String(row.RiskAuditorName || index)"
+          :row-key="(row) => String(row.key || row.RiskAuditorId || row.RiskAuditorName)"
           size="small"
         />
       </Card>

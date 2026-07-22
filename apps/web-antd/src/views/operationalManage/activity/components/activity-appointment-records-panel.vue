@@ -21,26 +21,35 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const canView = checkPermission(11912);
 
+/** 对齐旧站 getBeforeDateStr(1)：默认今天 00:00:00～23:59:59 */
+function defaultDayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  return [dayjs().startOf('day'), dayjs().endOf('day')];
+}
+
 const filterOrderId = ref('');
 const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>();
 const filterWithdrawOrderId = ref('');
-const withdrawTimeRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
-const awardTimeRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
+const withdrawTimeRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>(
+  defaultDayRange(),
+);
+const awardTimeRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>(
+  defaultDayRange(),
+);
 
 function buildQuery(page: { currentPage: number; pageSize: number }) {
   return {
-    LoginAccount: filterLoginAccount.value || '',
+    // 游戏账号对齐旧站强制小写
+    LoginAccount: String(filterLoginAccount.value || '')
+      .trim()
+      .toLowerCase(),
     OrderId: filterOrderId.value || '',
     PackageId: filterPackageId.value || '',
     Page: page.currentPage,
     PageSize: page.pageSize,
     WithdrawOrderId: filterWithdrawOrderId.value || '',
-    ...buildUnixRangeQuery(
-      withdrawTimeRange.value,
-      'WithdrawBeginTime',
-      'WithdrawEndTime',
-    ),
+    // 旧站取款时间字段为 BeginTime/EndTime（非 WithdrawBeginTime）
+    ...buildUnixRangeQuery(withdrawTimeRange.value, 'BeginTime', 'EndTime'),
     ...buildUnixRangeQuery(
       awardTimeRange.value,
       'AwardBeginTime',
@@ -124,6 +133,11 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           allow-clear
           placeholder="游戏账号"
           style="width: 160px"
+          @change="
+            filterLoginAccount = String(filterLoginAccount || '')
+              .trim()
+              .toLowerCase()
+          "
         />
         <Select
           v-model:value="filterPackageId"
@@ -141,12 +155,29 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <DatePicker.RangePicker
           v-model:value="withdrawTimeRange"
           :placeholder="['取款开始', '取款结束']"
+          show-time
         />
         <DatePicker.RangePicker
           v-model:value="awardTimeRange"
           :placeholder="['派奖开始', '派奖结束']"
+          show-time
         />
         <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <Button
+          @click="
+            () => {
+              filterOrderId = '';
+              filterLoginAccount = '';
+              filterPackageId = undefined;
+              filterWithdrawOrderId = '';
+              withdrawTimeRange = defaultDayRange();
+              awardTimeRange = defaultDayRange();
+              gridApi.reload();
+            }
+          "
+        >
+          重置
+        </Button>
       </div>
       <Grid />
     </template>

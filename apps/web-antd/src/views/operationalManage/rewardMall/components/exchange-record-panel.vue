@@ -28,7 +28,7 @@ import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import { formatPlayerStatus } from '#/utils/player-status';
 import { REWARD_EXCHANGE_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
@@ -81,7 +81,8 @@ const productTagOptions = ref<Array<{ label: string; value: number | string }>>(
   [],
 );
 
-const defaultRange = getYesterdayRangeSeconds();
+/** 对齐旧站 exchangeRecord：getBeforeDateTimestamp(1,false)～今天 23:59 */
+const defaultRange = getTodayRangeSeconds();
 
 const filterProductName = ref('');
 const filterProductType = ref<number | string>('');
@@ -132,7 +133,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
       : defaultRange.BeginTime,
     ExchangeTimeEnd: end ? end.endOf('day').unix() : defaultRange.EndTime,
     IsWater: filterIsWater.value,
-    LoginAccount: filterLoginAccount.value.trim(),
+    LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     OrderId: filterOrderId.value.trim(),
     PackageId: filterPackageId.value,
     Page: page.currentPage,

@@ -67,7 +67,8 @@ const queryForm = reactive({
 const form = reactive({
   Amount: undefined as number | undefined,
   HandleDesc: '',
-  Reason: 3 as number,
+  /** 对齐旧站：默认空，提交前必选 */
+  Reason: undefined as number | undefined,
   /** 1=自定义标题 2=活动标题（旧站 redType） */
   RedType: 1 as 1 | 2,
   Title: '',
@@ -184,12 +185,29 @@ function validateWater() {
       message.warning('请输入流水倍数');
       return false;
     }
+    // 对齐旧站：流水倍数仅允许整数
+    if (!Number.isInteger(Number(form.Water))) {
+      message.warning('流水倍数须为整数');
+      return false;
+    }
   }
   if (form.WaterType === 2 && (!form.WaterAmount || form.WaterAmount <= 0)) {
     message.warning('请输入流水金额');
     return false;
   }
   return true;
+}
+
+function parseFailMsg(raw?: string) {
+  if (!raw) {
+    return '-';
+  }
+  try {
+    const parsed = JSON.parse(raw) as { Msg?: string };
+    return parsed?.Msg || raw;
+  } catch {
+    return raw;
+  }
 }
 
 function buildWaterPayload() {
@@ -202,7 +220,9 @@ function buildWaterPayload() {
 }
 
 async function queryPlayer() {
-  if (!queryForm.LoginAccount.trim() || !queryForm.PackageName) {
+  const account = queryForm.LoginAccount.toLowerCase().replace(/\s/g, '');
+  queryForm.LoginAccount = account;
+  if (!account || !queryForm.PackageName) {
     message.warning('请填写游戏账号与产品包');
     return;
   }
@@ -210,7 +230,7 @@ async function queryPlayer() {
   playerReady.value = false;
   try {
     const result = await queryPlayerByAccountApi({
-      LoginAccount: queryForm.LoginAccount.trim(),
+      LoginAccount: account,
       PackageName: queryForm.PackageName,
     });
     const item = result.Items?.[0] as Record<string, unknown> | undefined;
@@ -252,6 +272,10 @@ async function submitGrant() {
   }
   if (!form.Amount || form.Amount <= 0) {
     message.warning('请输入存入金额');
+    return;
+  }
+  if (form.Reason === undefined || form.Reason === null) {
+    message.warning('请选择红利类型');
     return;
   }
   if (form.Amount > 100_000) {
@@ -363,6 +387,10 @@ async function submitBatch() {
     message.warning('请先预览并确认有效玩家');
     return;
   }
+  if (form.Reason === undefined || form.Reason === null) {
+    message.warning('请选择红利类型');
+    return;
+  }
   if (!validateWater()) {
     return;
   }
@@ -388,17 +416,27 @@ async function submitBatch() {
           Mail: '',
           MultiAmount: JSON.stringify(multiAmount),
           PlayerId: '',
-          PlayersId: validRows.map((row) => row.PlayerId).join(','),
+          PlayersId: [...new Set(validRows.map((row) => row.PlayerId))].join(
+            ',',
+          ),
           Reason: form.Reason,
           Title: form.Title,
           ...buildWaterPayload(),
         })) as Record<string, unknown>;
+        const failItems = (
+          (result?.FailItems as Array<{
+            Amount?: number;
+            LoginAccount?: string;
+            Msg?: string;
+          }>) || []
+        ).map((item) => ({
+          ...item,
+          Msg: parseFailMsg(item.Msg),
+        }));
         batchResult.value = {
           Count: Number(result?.Count ?? validRows.length),
-          FailCount: Number(result?.FailCount ?? 0),
-          FailItems: result?.FailItems as BatchRow[] | undefined as
-            | Array<{ Amount?: number; LoginAccount?: string; Msg?: string }>
-            | undefined,
+          FailCount: Number(result?.FailCount ?? failItems.length),
+          FailItems: failItems,
           SuccessCount: Number(result?.SuccessCount ?? validRows.length),
         };
         message.success('批量发放完成');
@@ -514,10 +552,32 @@ void loadRedTitles();
               },
             ]"
           />
-          <div v-if="batchResult" class="mt-3 text-sm text-gray-600">
-            结果：总数 {{ batchResult.Count }} ／ 成功
-            {{ batchResult.SuccessCount }} ／ 失败
-            {{ batchResult.FailCount }}
+          <div v-if="batchResult" class="mt-3 space-y-2 text-sm text-gray-600">
+            <div>
+              结果：总数 {{ batchResult.Count }} ／ 成功
+              {{ batchResult.SuccessCount }} ／ 失败
+              {{ batchResult.FailCount }}
+            </div>
+            <Table
+              v-if="batchResult.FailItems?.length"
+              size="small"
+              :pagination="false"
+              :data-source="batchResult.FailItems"
+              :row-key="
+                (row: { LoginAccount?: string }, index: number) =>
+                  `${row.LoginAccount || 'fail'}-${index}`
+              "
+              :columns="[
+                { title: '账号', dataIndex: 'LoginAccount' },
+                {
+                  title: '金额(元)',
+                  dataIndex: 'Amount',
+                  customRender: ({ text }: { text: number }) =>
+                    formatAmountFromCent(Number(text || 0)),
+                },
+                { title: '失败原因', dataIndex: 'Msg' },
+              ]"
+            />
           </div>
         </div>
       </Tabs.TabPane>
@@ -558,8 +618,10 @@ void loadRedTitles();
       <Form.Item label="存入类型" required>
         <Select
           v-model:value="form.Reason"
+          allow-clear
           class="w-full"
           :options="reasonOptions"
+          placeholder="请选择"
         />
       </Form.Item>
       <Form.Item label="流水要求类型">
@@ -573,7 +635,8 @@ void loadRedTitles();
           v-model:value="form.Water"
           :min="0"
           class="!w-full"
-          :precision="2"
+          :precision="0"
+          placeholder="仅支持整数"
         />
       </Form.Item>
       <Form.Item v-else label="流水金额（元）" required>

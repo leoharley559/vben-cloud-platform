@@ -11,7 +11,7 @@ import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 
 defineOptions({ name: 'LoginSummaryPanel' });
 
@@ -21,7 +21,7 @@ const { projectConfig } = useProjectConfig();
 
 const canViewSummary = computed(() => checkPermission(12222));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const loading = ref(false);
 const filterDataSearchType = ref(0);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([

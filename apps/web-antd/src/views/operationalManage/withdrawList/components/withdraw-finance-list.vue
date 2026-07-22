@@ -50,7 +50,8 @@ defineOptions({ name: 'WithdrawFinanceList' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(10350));
+// 对齐旧站 withdrawListSon：页签 10350，表格权限 10382
+const canViewTable = computed(() => checkPermission(10382));
 const canManualPay = computed(() => checkPermission(10383));
 const canAutoPay = computed(() => checkPermission(10384));
 const canRejectPay = computed(() => checkPermission(10385));
@@ -99,7 +100,8 @@ function getQueryParams() {
     BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
     EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
     HandlerName: filterHandlerName.value,
-    Keyword: filterOrderId.value,
+    // 对齐旧站 withdrawListSon：订单编号走 OrderIds（非 Keyword）
+    OrderIds: filterOrderId.value,
     LoginAccount: filterLoginAccount.value,
     PackageId: filterPackageId.value,
   };
