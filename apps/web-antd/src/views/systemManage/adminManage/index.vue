@@ -19,7 +19,6 @@ import {
   Result,
   Tag,
 } from 'ant-design-vue';
-import dayjs from 'dayjs';
 
 import { getProjectConfigApi } from '#/api';
 import {
@@ -35,6 +34,7 @@ import type { ListSearchParams } from '#/components/global/list-search-bar.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { ADMIN_MANAGE_SECURITY_PAGE_ID } from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
 import {
   parseAdminDetail,
   serializeAdminPayload,
@@ -102,14 +102,6 @@ function formatRoleNames(role?: string) {
   return names.length > 0 ? names.join('，') : role;
 }
 
-function formatDate(value?: string) {
-  if (!value) {
-    return '-';
-  }
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : value;
-}
-
 function statusText(status?: number) {
   return status === 1 ? '启用' : '停用';
 }
@@ -135,7 +127,7 @@ const gridOptions: VxeTableGridOptions<AdminListItem> = {
     },
     {
       field: 'CreateTime',
-      formatter: ({ cellValue }) => formatDate(cellValue),
+      formatter: ({ cellValue }) => formatReportDateTime(cellValue),
       sortable: true,
       title: '创建时间',
       width: 170,
@@ -208,6 +200,9 @@ const gridOptions: VxeTableGridOptions<AdminListItem> = {
             items: result?.Items || [],
             total: result?.Pagination?.MaxCount || 0,
           };
+        } catch {
+          message.error('查询失败');
+          return { items: [], total: 0 };
         } finally {
           searchLoading.value = false;
         }
@@ -248,6 +243,12 @@ function handleResetSearch() {
   listQuery.EndTime = '';
   listQuery.Sort = '';
   listQuery.Status = '';
+  // 同步清空表头 Status 筛选，避免重置后仍按旧 filter 请求
+  try {
+    gridApi.grid?.clearFilter?.();
+  } catch {
+    /* ignore */
+  }
 }
 
 function requestSecureConfirm() {
@@ -285,11 +286,17 @@ async function handleSwitchStatus(row: AdminListItem, status: number) {
     okText: '确认',
     title: `${actionText}确认`,
     onOk: async () => {
-      const detail = await fetchAdminDetailApi(row.Id);
-      pendingForm.value = parseAdminDetail(detail as unknown as AdminFormModel);
-      pendingForm.value.Status = status;
-      pendingMode.value = status === 1 ? 'startUse' : 'endUse';
-      requestSecureConfirm();
+      try {
+        const detail = await fetchAdminDetailApi(row.Id);
+        pendingForm.value = parseAdminDetail(
+          detail as unknown as AdminFormModel,
+        );
+        pendingForm.value.Status = status;
+        pendingMode.value = status === 1 ? 'startUse' : 'endUse';
+        requestSecureConfirm();
+      } catch {
+        message.error(`获取账号详情失败，无法${actionText}`);
+      }
     },
   });
 }
@@ -385,7 +392,7 @@ onMounted(() => {
         </template>
 
         <template #loginType="{ row }">
-          <Tag :color="row.LoginType === 3 ? 'success' : 'default'">
+          <Tag :color="row.LoginType === 3 ? 'success' : 'error'">
             {{ row.LoginType === 3 ? '已绑定' : '未绑定' }}
           </Tag>
         </template>

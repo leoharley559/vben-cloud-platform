@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import { fetchCloudCoinDailyListApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 
 defineOptions({ name: 'CloudCoinDailyPanel' });
 
@@ -28,7 +28,8 @@ interface DailyRow {
 const { checkPermission } = useCloudPermission();
 const canViewTable = computed(() => checkPermission(11430));
 
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+/** 对齐旧站：近 7 个自然日含今天 */
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
@@ -83,16 +84,20 @@ const gridOptions: VxeTableGridOptions<DailyRow> = {
         if (!canViewTable.value) {
           return { items: [], total: 0 };
         }
-        const result = await fetchCloudCoinDailyListApi({
-          ...getQueryParams(),
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-        });
-        const items = (result.Items || []) as unknown as DailyRow[];
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        try {
+          const result = await fetchCloudCoinDailyListApi({
+            ...getQueryParams(),
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+          });
+          const items = (result.Items || []) as unknown as DailyRow[];
+          return {
+            items,
+            total: Number(result.Pagination?.MaxCount || items.length),
+          };
+        } catch {
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -105,7 +110,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  const range = getLast7DaysToYesterdayRangeSeconds();
+  const range = getLast7CalendarDaysRangeSeconds();
   filterDateRange.value = [
     dayjs.unix(range.BeginTime),
     dayjs.unix(range.EndTime),

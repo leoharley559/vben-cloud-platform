@@ -37,6 +37,7 @@ import {
   deltaColor,
   disposeMoneyBuckets,
   num,
+  resolveChartFieldValue,
 } from '../utils';
 
 defineOptions({ name: 'DataComparePanel' });
@@ -293,27 +294,77 @@ async function openChart(row: Record<string, unknown>) {
   chartVisible.value = true;
   chartLoading.value = true;
   try {
-    const begin = filters.beginDate.startOf('month');
-    const end = filters.beginDate.endOf('month');
-    const data = await fetchDataAnalyzeReportApi({
-      ...buildQuery(),
-      BeginTime: begin.format('YYYY-MM-DD'),
-      EndTime: end.format('YYYY-MM-DD'),
-      Field: row.field,
-    });
-    const items = (data?.Items || data?.List || []) as Array<
-      Record<string, unknown>
-    >;
-    chartCategories.value = items.map((item) =>
-      String(item.ReportDay || item.Date || item.Day || ''),
-    );
-    chartSeries.value = [
-      {
-        data: items.map((item) => num(item[String(row.field)] ?? item.Value)),
-        name: String(row.label),
-        type: 'line',
-      },
-    ];
+    const field = String(row.field || '');
+    if (reportType.value === 2) {
+      // 月报：BeginTime/BeforeTime=YYYY-MM，双序列对齐旧站
+      const data = await fetchDataAnalyzeReportApi({
+        ...buildQuery(),
+        BeginTime: filters.beginDate.format('YYYY-MM'),
+        BeforeTime: filters.beforeDate.format('YYYY-MM'),
+        Field: field,
+      });
+      const current = [...((data?.Items || []) as Array<Record<string, unknown>>)]
+        .reverse();
+      const prev = [
+        ...((data?.BeforeDayItems || []) as Array<Record<string, unknown>>),
+      ].reverse();
+      const xSource = prev.length > current.length ? prev : current;
+      chartCategories.value = xSource.map((item) => {
+        const day = String(item.ReportDay || '');
+        const parts = day.split('-');
+        return parts[2] || day;
+      });
+      const extras = (data?.DayReportExtra || []) as Array<
+        Record<string, unknown>
+      >;
+      const beforeExtras = (data?.BeforeDayReportExtra || []) as Array<
+        Record<string, unknown>
+      >;
+      chartSeries.value = [
+        {
+          data: current.map((item, i) =>
+            resolveChartFieldValue(item, field, extras[i]),
+          ),
+          name: filters.beginDate.format('YYYY-MM'),
+          type: 'line',
+        },
+        {
+          data: prev.map((item, i) =>
+            resolveChartFieldValue(item, field, beforeExtras[i]),
+          ),
+          name: filters.beforeDate.format('YYYY-MM'),
+          type: 'line',
+        },
+      ];
+    } else {
+      // 日报：当前统计日所在自然月
+      const begin = filters.beginDate.startOf('month');
+      const end = filters.beginDate.endOf('month');
+      const data = await fetchDataAnalyzeReportApi({
+        ...buildQuery(),
+        BeginTime: begin.format('YYYY-MM-DD'),
+        EndTime: end.format('YYYY-MM-DD'),
+        Field: field,
+      });
+      const items = [
+        ...((data?.Items || data?.List || []) as Array<Record<string, unknown>>),
+      ].reverse();
+      const extras = [
+        ...((data?.DayReportExtra || []) as Array<Record<string, unknown>>),
+      ].reverse();
+      chartCategories.value = items.map((item) =>
+        String(item.ReportDay || item.Date || item.Day || ''),
+      );
+      chartSeries.value = [
+        {
+          data: items.map((item, i) =>
+            resolveChartFieldValue(item, field, extras[i]),
+          ),
+          name: String(row.label),
+          type: 'line',
+        },
+      ];
+    }
   } catch {
     chartCategories.value = [];
     chartSeries.value = [];

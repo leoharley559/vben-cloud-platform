@@ -25,7 +25,7 @@ import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
 import { arrayToCsvParam } from '#/views/dataClose/shared/report-utils';
 
-import { num, percentText } from '../utils';
+import { num, percentText, pickTwoDayItem } from '../utils';
 
 defineOptions({ name: 'PromotionAnalyzePanel' });
 
@@ -39,6 +39,8 @@ const showMode = ref<'data' | 'percent'>('data');
 const today = ref<Row>({});
 const yesterday = ref<Row>({});
 const rawChannelItems = ref<Row[]>([]);
+const sortRegItems = ref<Row[]>([]);
+const sortPayItems = ref<Row[]>([]);
 const countChannel = ref<Row>({});
 const filters = reactive({
   AdminIds: [] as Array<number | string>,
@@ -64,8 +66,9 @@ const summaryItems = computed(() => {
     num(t.SumNewPayMoney) + num(t.SumNewAgentPayMoney) || num(t.newPayMoney);
   const yPayUser =
     num(y.SumNewPayNum) + num(y.SumNewAgentPayNum) || num(y.newPayUser);
-  const newReg = num(t.SumReg || t.newRegUser);
-  const yReg = num(y.SumReg || y.newRegUser);
+  // 对齐旧站：新增用户用 SumNewRegDevice
+  const newReg = num(t.SumNewRegDevice ?? t.newRegUser);
+  const yReg = num(y.SumNewRegDevice ?? y.newRegUser);
   return [
     { title: '新增用户', value: newReg },
     {
@@ -90,9 +93,7 @@ const summaryItems = computed(() => {
     {
       title: '有新增渠道数',
       value:
-        num(countChannel.value.CountRegNum) ||
-        num(t.CountChannelNum) ||
-        rawChannelItems.value.length,
+        num(countChannel.value.CountRegNum) || rawChannelItems.value.length,
     },
   ];
 });
@@ -184,10 +185,12 @@ const channelRows = computed(() => {
 });
 
 const topRegChart = computed(() => {
-  const list = [...rawChannelItems.value]
+  const source =
+    sortRegItems.value.length > 0 ? sortRegItems.value : rawChannelItems.value;
+  const list = [...source]
     .map((item) => ({
       name: String(item.ChannelName || item.ChannelId),
-      value: num(item.Reg || item.SumReg || item.TodayReg),
+      value: num(item.SumReg ?? item.Reg ?? item.TodayReg),
     }))
     .toSorted((a, b) => b.value - a.value)
     .slice(0, 10);
@@ -204,13 +207,15 @@ const topRegChart = computed(() => {
 });
 
 const topPayChart = computed(() => {
-  const list = [...rawChannelItems.value]
+  const source =
+    sortPayItems.value.length > 0 ? sortPayItems.value : rawChannelItems.value;
+  const list = [...source]
     .map((item) => ({
       name: String(item.ChannelName || item.ChannelId),
       value:
-        (num(item.PayMoney) + num(item.AgentPayMoney) ||
-          num(item.TodayPayMoney) ||
-          num(item.SumNewPayMoney)) / 100,
+        (num(item.SumNewPayMoney) ||
+          num(item.PayMoney) + num(item.AgentPayMoney) ||
+          num(item.TodayPayMoney)) / 100,
     }))
     .toSorted((a, b) => b.value - a.value)
     .slice(0, 10);
@@ -244,21 +249,22 @@ async function loadData() {
     const data = (await fetchOperationPromotionAnalyzeApi(
       buildQuery(),
     )) as Row;
-    today.value = (data.TodayBaseItems || data.TodayItems || data) as Row;
-    yesterday.value = (data.YestDayBaseItems ||
-      data.YesterdayBaseItems ||
-      data.YesterdayItems ||
-      {}) as Row;
+    const endKey = filters.endDate.format('YYYY-MM-DD');
+    const beginKey = filters.beginDate.format('YYYY-MM-DD');
+    today.value = pickTwoDayItem(data, endKey);
+    yesterday.value = pickTwoDayItem(data, beginKey);
     rawChannelItems.value = (data.TodayChannelDauTable ||
       data.TodayChannelItems ||
-      data.ChannelItems ||
-      data.Items ||
       []) as Row[];
+    sortRegItems.value = (data.TodayChannelItemsSortReg || []) as Row[];
+    sortPayItems.value = (data.TodayChannelItemsSortPay || []) as Row[];
     countChannel.value = (data.CountChannelNum || {}) as Row;
   } catch {
     today.value = {};
     yesterday.value = {};
     rawChannelItems.value = [];
+    sortRegItems.value = [];
+    sortPayItems.value = [];
     countChannel.value = {};
     message.error('推广分析加载失败');
   } finally {

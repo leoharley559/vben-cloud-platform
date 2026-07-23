@@ -10,7 +10,10 @@ export type ReportDatePreset =
   | 'last7Days'
   | 'last7ToToday'
   | 'previousDayToToday'
+  | 'statTodayToNow'
   | 'statYesterdayToToday'
+  | 'today'
+  | 'todayWholeDay'
   | 'yesterday'
   | 'yesterdayWholeDay';
 
@@ -20,6 +23,11 @@ export function resolveReportRange(
   const today = dayjs().startOf('day');
   const yesterday = today.subtract(1, 'day');
   switch (preset) {
+    case 'today':
+    case 'todayWholeDay': {
+      // 对齐旧站 getBeforeDateTimestamp(1,false)～getBeforeDateTimestamp()：今天全日
+      return [today, today.endOf('day')];
+    }
     case 'yesterday':
     case 'yesterdayWholeDay': {
       return [yesterday, yesterday.endOf('day')];
@@ -31,7 +39,12 @@ export function resolveReportRange(
     case 'previousDayToToday': {
       return [yesterday, today.endOf('day')];
     }
+    case 'statTodayToNow': {
+      // 对齐旧站玩家统计：今天 00:00 → 当前时刻
+      return [today, dayjs()];
+    }
     case 'statYesterdayToToday': {
+      // 历史别名：实际为「昨天全日」，新代码请用 statTodayToNow
       return [yesterday, today.subtract(1, 'second')];
     }
     case 'last7ToToday': {

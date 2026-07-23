@@ -108,27 +108,32 @@ const gridOptions: VxeTableGridOptions<RecordRow> = {
           return { items: [], total: 0 };
         }
         const { BeginTime, EndTime } = toUnixRange(dateRange.value);
-        const result = await fetchGoldSellRecordListApi({
-          BeginTime: BeginTime || '',
-          CreateAdminName: filterCreateAdminName.value,
-          EndTime: EndTime || '',
-          Keyword: '',
-          OrderId: filterOrderId.value,
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-          Sort:
-            sort?.field && sort?.order
-              ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
-              : '',
-          Username: filterUsername.value,
-        });
-        const more = (result.MoreItems || {}) as Record<string, unknown>;
-        sumAddScores.value = Number(more.SumAddScores || 0);
-        const items = (result.Items || []) as unknown as RecordRow[];
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        try {
+          const result = await fetchGoldSellRecordListApi({
+            BeginTime: BeginTime || '',
+            CreateAdminName: filterCreateAdminName.value,
+            EndTime: EndTime || '',
+            Keyword: '',
+            OrderId: filterOrderId.value,
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+            Sort:
+              sort?.field && sort?.order
+                ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
+                : '',
+            Username: filterUsername.value,
+          });
+          const more = (result.MoreItems || {}) as Record<string, unknown>;
+          sumAddScores.value = Number(more.SumAddScores || 0);
+          const items = (result.Items || []) as unknown as RecordRow[];
+          return {
+            items,
+            total: Number(result.Pagination?.MaxCount || items.length),
+          };
+        } catch {
+          sumAddScores.value = 0;
+          return { items: [], total: 0 };
+        }
       },
     },
     autoLoad: false,

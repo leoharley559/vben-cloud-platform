@@ -12,8 +12,8 @@ export type BetMetric =
   | 'betMoney'
   | 'betNum'
   | 'profit'
-  | 'validBet'
-  | 'winGold';
+  | 'profitRatio'
+  | 'validBet';
 
 export interface BetAnalysisRow {
   BetCount?: number;
@@ -75,7 +75,7 @@ function buildOption() {
   }
 
   const lineOnly =
-    props.metric === 'betNum' || props.metric === 'winGold';
+    props.metric === 'betNum' || props.metric === 'profitRatio';
   const series: Record<string, unknown>[] = [];
 
   for (const type of BET_TYPES) {
@@ -85,6 +85,7 @@ function buildOption() {
         data: categories.map((day) => {
           const row = map.get(day);
           if (!row) return 0;
+          // 对齐旧站：投注额柱=人数；盈利柱=投注额；次数/有效投注柱=次数
           if (props.metric === 'betMoney') {
             return Number(row.BetNumberOfPeople || 0);
           }
@@ -109,6 +110,7 @@ function buildOption() {
         if (!row) return 0;
         switch (props.metric) {
           case 'betCount': {
+            // 旧站次数 Tab 折线为派送金币
             return toYuan(row.WinGold);
           }
           case 'betMoney': {
@@ -120,11 +122,11 @@ function buildOption() {
           case 'profit': {
             return toYuan(Number(row.BetGold || 0) - Number(row.WinGold || 0));
           }
+          case 'profitRatio': {
+            return Number(row.ProfitRatio || 0);
+          }
           case 'validBet': {
             return toYuan(row.ValidWater);
-          }
-          case 'winGold': {
-            return toYuan(row.WinGold);
           }
           default: {
             return 0;

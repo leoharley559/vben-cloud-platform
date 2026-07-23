@@ -37,6 +37,7 @@ import {
   durationText,
   num,
   percentText,
+  pickTwoDayItem,
 } from '../utils';
 
 defineOptions({ name: 'OperationDailyPanel' });
@@ -314,16 +315,23 @@ function buildQuery() {
 }
 
 function pickToday(data: Row) {
-  const items = (data.TwoDayBaseItems || data.TodayItems || data) as any;
+  // dayreport 主指标在 TodayItems（对象）；勿回落到整个 respond
+  if (data.TodayItems && typeof data.TodayItems === 'object') {
+    return data.TodayItems as Row;
+  }
+  const items = data.TwoDayBaseItems;
   if (Array.isArray(items)) {
-    const day = filters.beginDate.format('YYYY-MM-DD');
+    const day =
+      reportType.value === 2
+        ? filters.beginDate.format('YYYY-MM')
+        : filters.beginDate.format('YYYY-MM-DD');
     return (
-      items.find((item: Row) => String(item.ReportDay || '').includes(day)) ||
+      items.find((item: Row) => String(item.ReportDay || '') === day) ||
       items[0] ||
       {}
     );
   }
-  return (data.TodayItems || data.TodayBaseItems || data) as Row;
+  return {};
 }
 
 async function loadData() {
@@ -369,6 +377,7 @@ async function loadData() {
     if (canTopup.value) {
       tasks.push(
         fetchOperationIncomeAnalyzeApi({
+          // 对齐旧站 topUpDetails：Begin=统计日，End/Before=对比日
           BeginTime: query.BeginTime,
           EndTime: query.BeforeTime,
           ChannelIds: query.ChannelIds,
@@ -377,7 +386,10 @@ async function loadData() {
           PackageId: query.PackageId,
           ReportType: query.ReportType,
         }).then((data) => {
-          incomeData.value = data as Row;
+          incomeData.value = pickTwoDayItem(
+            data as Row,
+            String(query.BeginTime),
+          );
         }),
       );
     }
@@ -388,6 +400,14 @@ async function loadData() {
       await Promise.all(tasks);
     }
   } catch {
+    todayItems.value = {};
+    beforeItems.value = {};
+    hourItems.value = [];
+    beforeHourItems.value = [];
+    venueItems.value = [];
+    winPlayers.value = [];
+    losePlayers.value = [];
+    incomeData.value = {};
     message.error('运营日报加载失败');
   } finally {
     loading.value = false;

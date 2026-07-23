@@ -134,7 +134,7 @@ const total = ref(0);
 const totalData = ref<Row>({});
 const sort = ref('');
 
-const defaultStatRange = resolveReportRange('statYesterdayToToday');
+const defaultStatRange = resolveReportRange('statTodayToNow');
 
 const filters = reactive({
   LoginAccount: '',
@@ -142,8 +142,8 @@ const filters = reactive({
   Status: [] as Array<number | string>,
   Promoter: '',
   ChannelId: [] as Array<number | string>,
-  PackageId: -1 as number | string,
-  VipLevel: -1 as number | string,
+  PackageId: -1 as number | string | undefined,
+  VipLevel: -1 as number | string | undefined,
   UserSource: [] as Array<number | string>,
   DevicePlatform: [] as Array<number | string>,
   AppUrl: [] as Array<string>,
@@ -277,14 +277,22 @@ function buildQuery(searchType: 'list' | 'total') {
   const reg = rangeUnix(filters.regRange);
   const totalRange = rangeUnix(filters.totalRange);
   const firstPay = rangeUnix(filters.firstPayRange);
+  const packageId =
+    filters.PackageId === undefined || filters.PackageId === null
+      ? -1
+      : filters.PackageId;
+  const vipLevel =
+    filters.VipLevel === undefined || filters.VipLevel === null
+      ? -1
+      : filters.VipLevel;
   const base: Record<string, unknown> = {
-    LoginAccount: filters.LoginAccount.trim() || undefined,
+    LoginAccount: filters.LoginAccount.trim().toLowerCase() || undefined,
     PlayerId: filters.PlayerId.trim() || undefined,
     Status: arrayToCsvParam(filters.Status),
     Promoter: filters.Promoter.trim() || undefined,
     ChannelIds: arrayToCsvParam(filters.ChannelId),
-    PackageId: filters.PackageId,
-    VipLevel: filters.VipLevel,
+    PackageId: packageId,
+    VipLevel: vipLevel,
     UserSource: arrayToCsvParam(filters.UserSource),
     DevicePlatform: arrayToCsvParam(filters.DevicePlatform),
     AppUrl: arrayToCsvParam(filters.AppUrl),
@@ -749,6 +757,9 @@ async function fetchList() {
     const result = await fetchPlayerStatisticsListApi(buildQuery('list'));
     tableData.value = result.Items || [];
     total.value = Number(result.Pagination?.MaxCount || 0);
+  } catch {
+    tableData.value = [];
+    total.value = 0;
   } finally {
     loading.value = false;
   }
@@ -787,7 +798,7 @@ function handleReset() {
   filters.InviteSite = [];
   filters.BindPhone = '';
   filters.regRange = null;
-  filters.totalRange = [...resolveReportRange('statYesterdayToToday')] as [
+  filters.totalRange = [...resolveReportRange('statTodayToNow')] as [
     Dayjs,
     Dayjs,
   ];
@@ -866,6 +877,8 @@ async function handleExport(payload: Record<string, unknown>) {
       return;
     }
     message.error(String(result?.Remark || '导出失败'));
+  } catch {
+    /* requestClient 已提示 */
   } finally {
     exportLoading.value = false;
   }

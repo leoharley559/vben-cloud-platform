@@ -9,7 +9,8 @@ import dayjs from 'dayjs';
 import { fetchCloudCoinStockApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
 
 import CloudCoinBuyModal from './cloud-coin-buy-modal.vue';
 
@@ -33,28 +34,12 @@ const banner = ref({
   Stock: 0,
 });
 
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+/** 对齐旧站 getBeforeDateTimestamp(7,false)～getBeforeDateTimestamp()：近 7 个自然日含今天 */
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
-
-function formatDateTime(value?: number | string) {
-  if (value === undefined || value === null || value === '') {
-    return '-';
-  }
-  const num = Number(value);
-  if (!Number.isNaN(num) && num > 0) {
-    const parsed = String(value).length > 10 ? dayjs(num) : dayjs.unix(num);
-    if (parsed.isValid()) {
-      return parsed.format('YYYY-MM-DD HH:mm:ss');
-    }
-  }
-  const fallback = dayjs(value);
-  return fallback.isValid()
-    ? fallback.format('YYYY-MM-DD HH:mm:ss')
-    : String(value);
-}
 
 function keepTwoDecimal(value?: number | string) {
   const num = Number(value);
@@ -88,7 +73,7 @@ const gridOptions: VxeTableGridOptions<StockRow> = {
   columns: [
     {
       field: 'Date',
-      formatter: ({ row }) => formatDateTime(row.Date ?? row.CreateTime),
+      formatter: ({ row }) => formatReportDateTime(row.Date ?? row.CreateTime),
       minWidth: 170,
       title: '时间',
     },
@@ -110,17 +95,22 @@ const gridOptions: VxeTableGridOptions<StockRow> = {
         if (!canViewTable.value) {
           return { items: [], total: 0 };
         }
-        const result = await fetchCloudCoinStockApi({
-          ...getQueryParams(),
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-        });
-        applyBanner(result);
-        const items = (result.Items || []) as unknown as StockRow[];
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        try {
+          const result = await fetchCloudCoinStockApi({
+            ...getQueryParams(),
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+          });
+          applyBanner(result);
+          const items = (result.Items || []) as unknown as StockRow[];
+          return {
+            items,
+            total: Number(result.Pagination?.MaxCount || items.length),
+          };
+        } catch {
+          banner.value = { Buy: 0, Consume: 0, Stock: 0 };
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -137,6 +127,8 @@ async function loadBannerOnly() {
       PageSize: 1,
     });
     applyBanner(result);
+  } catch {
+    banner.value = { Buy: 0, Consume: 0, Stock: 0 };
   } finally {
     loadingBanner.value = false;
   }
@@ -151,7 +143,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  const range = getLast7DaysToYesterdayRangeSeconds();
+  const range = getLast7CalendarDaysRangeSeconds();
   filterDateRange.value = [
     dayjs.unix(range.BeginTime),
     dayjs.unix(range.EndTime),

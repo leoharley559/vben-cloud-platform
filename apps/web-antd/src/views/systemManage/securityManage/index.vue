@@ -56,6 +56,7 @@ async function loadList() {
   listLoading.value = true;
   try {
     const data = await fetchSecuredListApi();
+    // 接口 respond 直接为数组（与旧站 res.data.Data 一致）
     list.value = Array.isArray(data) ? data : [];
     if (cloudStore.projectConfig) {
       cloudStore.setProjectConfig({
@@ -63,13 +64,19 @@ async function loadList() {
         SecuritySetting: list.value,
       });
     }
+  } catch {
+    list.value = [];
   } finally {
     listLoading.value = false;
   }
 }
 
 async function refreshProjectConfig() {
-  await getProjectConfigApi();
+  try {
+    await getProjectConfigApi();
+  } catch {
+    /* 配置刷新失败仍拉列表，避免开关乐观更新卡住 */
+  }
   await loadList();
 }
 
@@ -77,8 +84,10 @@ async function handleUpdate(data: Record<string, unknown>) {
   listLoading.value = true;
   try {
     await editSecuredStatusApi(data);
-    await refreshProjectConfig();
+  } catch {
+    // 错误由拦截器提示；finally 仍刷新以回滚乐观开关
   } finally {
+    await refreshProjectConfig();
     listLoading.value = false;
   }
 }
@@ -87,8 +96,10 @@ async function handleReset(data: Record<string, unknown>) {
   listLoading.value = true;
   try {
     await resetSecuredStatusApi(data);
-    await refreshProjectConfig();
+  } catch {
+    // 同上
   } finally {
+    await refreshProjectConfig();
     listLoading.value = false;
   }
 }

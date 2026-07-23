@@ -27,7 +27,7 @@ import StatementAgentTree from '#/views/dataClose/shared/statement-agent-tree.vu
 import {
   type AgentNode,
   asNumber,
-  defaultMonthRange,
+  defaultSonMonthRange,
   displayAmount,
   displayCent,
   ensureMonthSpan,
@@ -62,7 +62,7 @@ const adminId = ref<number | string>('');
 const packageId = ref<number | string | undefined>();
 const appUrls = ref<string[]>([]);
 const platformGameTypes = ref<Array<number | string>>([]);
-const monthRange = ref<[Dayjs, Dayjs]>(defaultMonthRange());
+const monthRange = ref<[Dayjs, Dayjs]>(defaultSonMonthRange());
 const detailOpen = ref(false);
 const detailRow = ref<null | StatementRow>(null);
 
@@ -193,6 +193,11 @@ async function loadList() {
       });
     sumPositiveProfit.value = positive;
     totalSum.value = resolveTotalSum(result.MoreItems);
+  } catch {
+    tableData.value = [];
+    totalSum.value = {};
+    sumPositiveProfit.value = 0;
+    agencyList.value = [];
   } finally {
     loading.value = false;
   }
@@ -203,7 +208,7 @@ function reset() {
   packageId.value = undefined;
   appUrls.value = [];
   platformGameTypes.value = [];
-  monthRange.value = defaultMonthRange();
+  monthRange.value = defaultSonMonthRange();
   adminPath.value = [];
   agencyList.value = [];
   inquireId.value = rootAccount.value.Id;
@@ -335,6 +340,11 @@ onMounted(() => {
         <Button v-if="canExport" :disabled="loading" @click="handleExport">
           导出 Excel
         </Button>
+      </template>
+      <template #extra>
+        <div class="text-xs text-muted-foreground">
+          默认近两月，最长约 62 天（两个自然月）
+        </div>
       </template>
     </ReportQueryCard>
 

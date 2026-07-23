@@ -74,6 +74,10 @@ export function toListResult(
   };
 }
 
+/**
+ * 区间留存等接口：`Items` 可能是「单对象矩阵」而非数组。
+ * 对齐旧站 `tableData.push(data.Items)`：把矩阵对象包成一行。
+ */
 export function wrapMatrixAsList(payload: ReportRow | null | undefined) {
   if (!payload || typeof payload !== 'object') {
     return toListResult({ Items: [] });
@@ -81,9 +85,24 @@ export function wrapMatrixAsList(payload: ReportRow | null | undefined) {
   if (Array.isArray(payload.Items)) {
     return toListResult(payload);
   }
+  // respond.Items 为对象矩阵（everydaylogindau）
+  if (payload.Items && typeof payload.Items === 'object') {
+    return toListResult({
+      ...payload,
+      Items: [payload.Items as ReportRow],
+      Pagination: payload.Pagination ?? { MaxCount: 1 },
+    });
+  }
+  // Items 缺失/null：若根对象本身像矩阵（含 CountLogin*），仍包一行
+  if (payload.Items == null && 'CountLogin1' in payload) {
+    return toListResult({
+      Items: [payload],
+      Pagination: { MaxCount: 1 },
+    });
+  }
   return toListResult({
     ...payload,
-    Items: [payload],
-    Pagination: { MaxCount: 1 },
+    Items: [],
+    Pagination: payload.Pagination ?? { MaxCount: 0 },
   });
 }

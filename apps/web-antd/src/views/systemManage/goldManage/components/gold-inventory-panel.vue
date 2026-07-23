@@ -121,11 +121,30 @@ function rowOutGoods(row: InventoryRow) {
   );
 }
 
+function resetBanner() {
+  bannerScoreChange.value = {
+    AvailScores: 0,
+    IncomeScores: 0,
+    OutAgentScores: 0,
+    OutCoinDealerScores: 0,
+  };
+  bannerScoreCount.value = {
+    SelfPayMoney: 0,
+    SelfWithdrawMoney: 0,
+  };
+}
+
 async function loadBanner() {
   if (!canBanner.value) return;
   bannerLoading.value = true;
   try {
-    const result = await fetchGoldInventoryApi({ Page: 1, PageSize: 20 });
+    const result = await fetchGoldInventoryApi({
+      BeginTime: '',
+      EndTime: '',
+      Page: 1,
+      PageSize: 20,
+      Sort: '',
+    });
     const more = (result.MoreItems || {}) as Record<string, unknown>;
     const change = (more.BannerScoreChange || {}) as Record<string, number>;
     const count = (more.BannerScoreCount || {}) as Record<string, number>;
@@ -139,6 +158,8 @@ async function loadBanner() {
       SelfPayMoney: Number(count.SelfPayMoney || 0),
       SelfWithdrawMoney: Number(count.SelfWithdrawMoney || 0),
     };
+  } catch {
+    resetBanner();
   } finally {
     bannerLoading.value = false;
   }
@@ -203,25 +224,35 @@ const gridOptions: VxeTableGridOptions<InventoryRow> = {
           totalData.value = emptyTotalSum();
           return { items: [], total: 0 };
         }
+        // 对齐旧站：明细默认当月；清空日期时回退当月，避免无参窗与当月窗数据不一致
+        if (!dateRange.value?.[0] || !dateRange.value?.[1]) {
+          dateRange.value = [dayjs().startOf('month'), dayjs().endOf('month')];
+        }
         const { BeginTime, EndTime } = toUnixRange(dateRange.value);
-        const result = await fetchGoldInventoryDetailApi({
-          BeginTime,
-          EndTime,
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-          Sort:
-            sort?.field && sort?.order
-              ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
-              : '',
-        });
-        const more = (result.MoreItems || {}) as Record<string, unknown>;
-        const sum = (more.TotalSum || {}) as Partial<TotalSum>;
-        totalData.value = { ...emptyTotalSum(), ...sum };
-        const items = (result.Items || []) as unknown as InventoryRow[];
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        try {
+          const result = await fetchGoldInventoryDetailApi({
+            BeginTime,
+            EndTime,
+            Keyword: '',
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+            Sort:
+              sort?.field && sort?.order
+                ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
+                : '',
+          });
+          const more = (result.MoreItems || {}) as Record<string, unknown>;
+          const sum = (more.TotalSum || {}) as Partial<TotalSum>;
+          totalData.value = { ...emptyTotalSum(), ...sum };
+          const items = (result.Items || []) as unknown as InventoryRow[];
+          return {
+            items,
+            total: Number(result.Pagination?.MaxCount || items.length),
+          };
+        } catch {
+          totalData.value = emptyTotalSum();
+          return { items: [], total: 0 };
+        }
       },
     },
     autoLoad: false,
@@ -297,7 +328,6 @@ onMounted(() => {
       <ReportQueryCard title="库存明细">
         <DatePicker.RangePicker
           v-model:value="dateRange"
-          allow-clear
           class="!w-[280px]"
         />
         <template #actions>

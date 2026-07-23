@@ -2,7 +2,7 @@
 import type { RoleFormModel } from '#/types/system-manage';
 import type { RoleTreeNode } from '#/utils/role-permission-tree';
 
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 
 import {
   Button,
@@ -46,6 +46,8 @@ const visible = ref(false);
 const loading = ref(false);
 const mode = ref<'create' | 'update'>('create');
 const readonly = ref(false);
+/** 对齐旧站：回显勾选时先 check-strictly，避免级联改写已保存节点 */
+const treeCheckStrictly = ref(false);
 
 const formModel = ref<RoleFormModel>({
   Description: '',
@@ -116,6 +118,7 @@ function resetForm() {
   checkedKeys.value = [];
   halfCheckedKeys.value = [];
   readonly.value = false;
+  treeCheckStrictly.value = false;
   closeParamDrawer();
 }
 
@@ -159,8 +162,15 @@ async function open(nextMode: 'create' | 'update', id?: number) {
       ParamIds: parseIdList(detail.ParamIds),
     };
     readonly.value = isSystemBuiltinRole(detail);
+    // 对齐旧站 handleUpdate：先严格勾选再恢复级联
+    treeCheckStrictly.value = true;
     checkedKeys.value = mergeRoleCheckedKeys(detail.MenuIds, detail.SubMenuIds);
     halfCheckedKeys.value = [];
+    await nextTick();
+    treeCheckStrictly.value = false;
+  } catch {
+    message.error('加载角色详情失败');
+    close();
   } finally {
     loading.value = false;
   }
@@ -201,17 +211,17 @@ async function handleOpenDesParams(node: RoleTreeNode, event?: Event) {
 
   paramLoading.value = true;
   paramDrawerOpen.value = true;
+  const roleId = formModel.value.Id || 0;
   try {
-    const roleId = formModel.value.Id || 0;
     const data = (await fetchRoleParamListApi({
       RoleId: roleId,
       SubMenuId: node.Id,
     })) as {
-      ParamsList?: RoleParamItem[];
-      RoleParams?: { Id?: number; Params?: string };
+      ParamsList?: RoleParamItem[] | null;
+      RoleParams?: { Id?: number; Params?: string } | null;
     };
 
-    paramList.value = data?.ParamsList || [];
+    paramList.value = data?.ParamsList ?? [];
     paramTemp.value = {
       Id: data?.RoleParams?.Id || 0,
       Params: parseIdList(data?.RoleParams?.Params),
@@ -219,6 +229,7 @@ async function handleOpenDesParams(node: RoleTreeNode, event?: Event) {
     };
   } catch {
     paramList.value = [];
+    paramTemp.value = { Id: 0, Params: [], RoleId: roleId };
   } finally {
     paramLoading.value = false;
   }
@@ -283,6 +294,7 @@ function handleConfirm() {
       content: error instanceof Error ? error.message : '表单校验失败',
       title: '提示',
     });
+    return Promise.reject(error);
   }
 }
 
@@ -332,6 +344,7 @@ defineExpose({
           <div class="max-h-[420px] overflow-y-auto rounded border p-3">
             <Tree
               :checked-keys="checkedKeys"
+              :check-strictly="treeCheckStrictly"
               :half-checked-keys="halfCheckedKeys"
               checkable
               :field-names="{

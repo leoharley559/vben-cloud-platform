@@ -16,7 +16,8 @@ import dayjs from 'dayjs';
 import { fetchCloudCoinDetailListApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getLast7DaysToYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
 
 defineOptions({ name: 'CloudCoinDetailPanel' });
 
@@ -33,28 +34,12 @@ const { checkPermission } = useCloudPermission();
 const canViewTable = computed(() => checkPermission(11431));
 
 const totalCloudCoin = ref(0);
-const defaultRange = getLast7DaysToYesterdayRangeSeconds();
+/** 对齐旧站：近 7 个自然日含今天 */
+const defaultRange = getLast7CalendarDaysRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
-
-function formatDateTime(value?: number | string) {
-  if (value === undefined || value === null || value === '') {
-    return '-';
-  }
-  const num = Number(value);
-  if (!Number.isNaN(num) && num > 0) {
-    const parsed = String(value).length > 10 ? dayjs(num) : dayjs.unix(num);
-    if (parsed.isValid()) {
-      return parsed.format('YYYY-MM-DD HH:mm:ss');
-    }
-  }
-  const fallback = dayjs(value);
-  return fallback.isValid()
-    ? fallback.format('YYYY-MM-DD HH:mm:ss')
-    : String(value);
-}
 
 /** 对齐旧站 detail.vue typeFilter */
 function typeFilter(consumeType?: number, handleType?: number) {
@@ -91,7 +76,9 @@ function resolveTotalCloudCoin(
 ) {
   const total = result.Total || {};
   const more = (result.MoreItems || {}) as Record<string, unknown>;
-  const fromTotal = Number(total.Total ?? 0);
+  const fromTotal = Number(
+    (total as Record<string, unknown>).Total ?? 0,
+  );
   if (fromTotal) {
     return fromTotal;
   }
@@ -115,7 +102,7 @@ const gridOptions: VxeTableGridOptions<DetailRow> = {
   columns: [
     {
       field: 'CreateTime',
-      formatter: ({ cellValue }) => formatDateTime(cellValue),
+      formatter: ({ cellValue }) => formatReportDateTime(cellValue),
       minWidth: 170,
       title: '时间',
     },
@@ -143,17 +130,22 @@ const gridOptions: VxeTableGridOptions<DetailRow> = {
         if (!canViewTable.value) {
           return { items: [], total: 0 };
         }
-        const result = await fetchCloudCoinDetailListApi({
-          ...getQueryParams(),
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-        });
-        totalCloudCoin.value = resolveTotalCloudCoin(result);
-        const items = (result.Items || []) as unknown as DetailRow[];
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        try {
+          const result = await fetchCloudCoinDetailListApi({
+            ...getQueryParams(),
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+          });
+          totalCloudCoin.value = resolveTotalCloudCoin(result);
+          const items = (result.Items || []) as unknown as DetailRow[];
+          return {
+            items,
+            total: Number(result.Pagination?.MaxCount || items.length),
+          };
+        } catch {
+          totalCloudCoin.value = 0;
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -166,7 +158,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  const range = getLast7DaysToYesterdayRangeSeconds();
+  const range = getLast7CalendarDaysRangeSeconds();
   filterDateRange.value = [
     dayjs.unix(range.BeginTime),
     dayjs.unix(range.EndTime),

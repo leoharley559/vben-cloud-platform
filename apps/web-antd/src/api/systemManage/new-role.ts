@@ -14,9 +14,17 @@ import { trimSpace } from '#/utils/string';
  * @see views/systemManage/newRole/index.vue
  */
 export function fetchRoleListApi(query: RoleListQuery) {
-  return requestClient.get<RoleListResult>('/public/rolenew/list', {
-    params: trimSpace(query),
-  });
+  return requestClient
+    .get<RoleListResult>('/public/rolenew/list', {
+      params: trimSpace(query),
+    })
+    .then((data) => ({
+      Items: data?.Items ?? [],
+      Pagination: {
+        MaxCount:
+          data?.Pagination?.MaxCount ?? data?.Items?.length ?? 0,
+      },
+    }));
 }
 
 /**

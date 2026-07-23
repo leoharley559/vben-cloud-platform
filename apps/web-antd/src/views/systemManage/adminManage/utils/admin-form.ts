@@ -119,11 +119,16 @@ export function serializeAdminPayload(
   form: AdminFormModel,
   mode: 'create' | 'update',
 ) {
+  const { ConfirmPassword: _confirm, ...rest } = form;
   const payload: Record<string, unknown> = {
-    ...form,
-    ConfirmPassword: undefined,
-    CreateRole: form.CreateRole,
-    Role: form.Role,
+    ...rest,
+    // 对齐旧站：Role / CreateRole 以逗号串提交（表单多选为数组）
+    CreateRole: Array.isArray(form.CreateRole)
+      ? form.CreateRole.filter((item) => item !== '' && item != null).join(',')
+      : form.CreateRole,
+    Role: Array.isArray(form.Role)
+      ? form.Role.filter((item) => item !== '' && item != null).join(',')
+      : form.Role,
     SonUserRoleDataField: serializeSonUserRoleDataField(
       form.SonUserRoleDataField,
     ),

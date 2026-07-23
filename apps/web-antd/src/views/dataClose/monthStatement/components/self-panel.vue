@@ -144,6 +144,14 @@ async function loadList() {
       };
     });
     totalSum.value = nextTotal;
+  } catch {
+    tableData.value = [];
+    totalSum.value = {
+      SumProfitLose: 0,
+      SumSelfBetGold: 0,
+      SumSelfValidWater: 0,
+      SumSelfWinGold: 0,
+    };
   } finally {
     loading.value = false;
   }
@@ -256,6 +264,11 @@ onMounted(() => {
         <Button v-if="canExport" :disabled="loading" @click="handleExport">
           导出 Excel
         </Button>
+      </template>
+      <template #extra>
+        <div class="text-xs text-muted-foreground">
+          默认近三月（整月），最长约 180 天
+        </div>
       </template>
     </ReportQueryCard>
 

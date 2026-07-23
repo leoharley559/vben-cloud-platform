@@ -12,6 +12,7 @@ import {
   Result,
   Select,
   Space,
+  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -22,11 +23,14 @@ import {
 } from '#/api/systemManage/logs';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatLogContent } from '#/utils/log-template';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 
 defineOptions({ name: 'SystemLogsManage' });
+
+/** 对齐旧站 SearchTypeTwo limit-number=30 */
+const MAX_RANGE_DAYS = 30;
 
 const { adminInfo, checkPermission } = useCloudPermission();
 
@@ -49,7 +53,7 @@ const logTypeOptions = ref<Array<{ label: string; value: number | string }>>([
 
 const filterCreateAdminId = ref<number | string>('');
 const filterLogTypeId = ref<number | string>('');
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
@@ -73,8 +77,21 @@ function toCloudSort(sort?: { field?: string; order?: string | null }) {
   return sort.order === 'asc' ? sort.field : `-${sort.field}`;
 }
 
+function assertDateSpan() {
+  const [begin, end] = filterDateRange.value || [];
+  if (!begin || !end) {
+    message.warning('请选择时间范围');
+    return false;
+  }
+  if (end.startOf('day').diff(begin.startOf('day'), 'day') > MAX_RANGE_DAYS) {
+    message.warning(`查询时间跨度不能超过 ${MAX_RANGE_DAYS} 天`);
+    return false;
+  }
+  return true;
+}
+
 function getQueryParams() {
-  const fallback = getYesterdayRangeSeconds();
+  const fallback = getTodayRangeSeconds();
   const [begin, end] = filterDateRange.value || [];
   return {
     BeginTime: begin ? begin.startOf('day').unix() : fallback.BeginTime,
@@ -116,23 +133,33 @@ const gridOptions: VxeTableGridOptions<LogListItem> = {
     autoLoad: false,
     ajax: {
       query: async ({ page, sort }) => {
-        const query = getQueryParams();
-        const result = await fetchLogListApi({
-          ...query,
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-          Sort: toCloudSort(sort),
-        });
+        if (!assertDateSpan()) {
+          return { items: [], total: 0 };
+        }
+        try {
+          const query = getQueryParams();
+          const result = await fetchLogListApi({
+            ...query,
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+            Sort: toCloudSort(sort),
+          });
 
-        return {
-          items: result?.Items || [],
-          total: result?.Pagination?.MaxCount || 0,
-        };
+          return {
+            items: result?.Items || [],
+            total: result?.Pagination?.MaxCount || 0,
+          };
+        } catch {
+          return { items: [], total: 0 };
+        }
       },
     },
   },
   rowConfig: {
-    keyField: 'CreateTime',
+    keyField: 'Id',
+  },
+  sortConfig: {
+    remote: true,
   },
   toolbarConfig: {
     refresh: true,
@@ -144,45 +171,53 @@ const [Grid, gridApi] = useVbenVxeGrid({
 });
 
 async function loadFilterOptions() {
-  const [users, types] = await Promise.all([
-    fetchLogUserListApi(),
-    fetchLogTypeOptionsApi(),
-  ]);
+  try {
+    const [users, types] = await Promise.all([
+      fetchLogUserListApi(),
+      fetchLogTypeOptionsApi(),
+    ]);
 
-  userOptions.value = [
-    { label: '全部账号', value: '' },
-    ...(users || []).map((item) => ({
-      label: item.Username,
-      value: item.CreateAdminId,
-    })),
-  ];
+    userOptions.value = [
+      { label: '全部账号', value: '' },
+      ...(users || []).map((item) => ({
+        label: item.Username,
+        value: item.CreateAdminId,
+      })),
+    ];
 
-  logTypeOptions.value = [
-    { label: '全部类型', value: '' },
-    ...(types || []).map((item) => ({
-      label: item.LogType,
-      value: item.LogTypeId,
-    })),
-  ];
+    logTypeOptions.value = [
+      { label: '全部类型', value: '' },
+      ...(types || []).map((item) => ({
+        label: item.LogType,
+        value: item.LogTypeId,
+      })),
+    ];
+  } catch {
+    userOptions.value = [{ label: '全部账号', value: '' }];
+    logTypeOptions.value = [{ label: '全部类型', value: '' }];
+  }
 }
 
 function handleSearch() {
-  gridApi.reload();
+  void gridApi.reload();
 }
 
 function handleReset() {
-  const range = getYesterdayRangeSeconds();
+  const range = getTodayRangeSeconds();
   filterCreateAdminId.value = '';
   filterLogTypeId.value = '';
   filterDateRange.value = [
     dayjs.unix(range.BeginTime),
     dayjs.unix(range.EndTime),
   ];
-  gridApi.reload();
+  void gridApi.reload();
 }
 
 async function handleExport() {
   if (exporting.value) {
+    return;
+  }
+  if (!assertDateSpan()) {
     return;
   }
   exporting.value = true;
@@ -195,6 +230,10 @@ async function handleExport() {
       PageSize: 10_000,
     });
     const rows = (result?.Items || []) as Record<string, unknown>[];
+    if (rows.length < 1) {
+      message.warning('暂无数据可导出');
+      return;
+    }
     await exportReportXlsx(
       rows,
       ['操作时间', '登录IP', '类型', '操作人员', '操作内容'],
@@ -221,12 +260,8 @@ onMounted(async () => {
   if (!canViewList.value) {
     return;
   }
-  try {
-    await loadFilterOptions();
-    gridApi.reload();
-  } catch {
-    // 错误提示由 request 拦截器处理
-  }
+  await loadFilterOptions();
+  void gridApi.reload();
 });
 </script>
 
@@ -242,12 +277,14 @@ onMounted(async () => {
         v-model:value="filterCreateAdminId"
         :options="userOptions"
         placeholder="操作人员"
+        show-search
         style="width: 180px"
       />
       <Select
         v-model:value="filterLogTypeId"
         :options="logTypeOptions"
         placeholder="日志类型"
+        show-search
         style="width: 180px"
       />
       <DatePicker.RangePicker

@@ -124,6 +124,8 @@ async function loadDetail() {
       PositiveProfit: asNumber(total.PositiveProfit),
       PositiveProfitCount: positiveCount,
     };
+  } catch {
+    resetDetail();
   } finally {
     loading.value = false;
   }

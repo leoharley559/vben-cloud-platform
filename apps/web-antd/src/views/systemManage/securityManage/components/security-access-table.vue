@@ -4,7 +4,6 @@ import type { SecuritySettingItem } from '#/types/system-manage';
 import { computed, ref } from 'vue';
 
 import { Button, Space, Switch, Table } from 'ant-design-vue';
-import dayjs from 'dayjs';
 
 import PassPopup from '#/components/security/pass-popup.vue';
 import {
@@ -12,6 +11,7 @@ import {
   isSecurityPathActive,
 } from '#/utils/security-path';
 import { antTableScrollY } from '#/utils/table-height';
+import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
 
 defineOptions({ name: 'SecurityAccessTable' });
 
@@ -51,17 +51,6 @@ const columns = [
     width: 180,
   },
 ];
-
-function formatDateTime(value?: number | string) {
-  if (!value) {
-    return '-';
-  }
-  const num = Number(value);
-  const parsed = String(value).length > 10 ? dayjs(num) : dayjs.unix(num);
-  return parsed.isValid()
-    ? parsed.format('YYYY-MM-DD HH:mm:ss')
-    : String(value);
-}
 
 function openValidation(options: Record<string, unknown> = {}) {
   isResetAction.value = !!options.reset;
@@ -188,7 +177,7 @@ function handlePassConfirm(data: Record<string, unknown>) {
           />
         </template>
         <template v-else-if="column.key === 'HandlerTime'">
-          {{ formatDateTime(record.HandlerTime) }}
+          {{ formatReportDateTime(record.HandlerTime) }}
         </template>
       </template>
     </Table>

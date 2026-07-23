@@ -67,7 +67,7 @@ const filters = reactive({
   PackageId: undefined as number | string | undefined,
   AppUrl: [] as Array<string>,
   ViewBy: 'game' as string,
-  dateRange: [...resolveReportRange('yesterday')] as [Dayjs, Dayjs],
+  dateRange: [...resolveReportRange('today')] as [Dayjs, Dayjs],
 });
 
 const page = reactive({ current: 1, pageSize: 20 });
@@ -129,8 +129,14 @@ function disabledDate(current: Dayjs) {
   return current.isAfter(dayjs().endOf('day'));
 }
 
+function normalizeLoginAccount() {
+  // 对齐旧站 SearchTypeFour：去空格、转小写
+  filters.LoginAccount = filters.LoginAccount.replace(/\s/g, '').toLowerCase();
+}
+
 function validateLoginAccount() {
-  const account = filters.LoginAccount.trim();
+  normalizeLoginAccount();
+  const account = filters.LoginAccount;
   if (!account) return true;
   if (!LOGIN_ACCOUNT_RE.test(account)) {
     message.warning('游戏账号需为 4-20 位字母或数字');
@@ -171,7 +177,7 @@ function buildQuery(isExp = false) {
     EndTime: range?.[1]?.endOf('day').unix(),
     Sort: sort.value || undefined,
     ViewBy: filters.ViewBy,
-    LoginAccount: filters.LoginAccount.trim() || undefined,
+    LoginAccount: filters.LoginAccount || undefined,
   };
 }
 
@@ -289,6 +295,10 @@ async function fetchList() {
     tableData.value = result.Items || [];
     moreItems.value = result.MoreItems || {};
     total.value = Number(result.Pagination?.MaxCount || 0);
+  } catch {
+    tableData.value = [];
+    moreItems.value = {};
+    total.value = 0;
   } finally {
     loading.value = false;
   }
@@ -307,7 +317,7 @@ function handleReset() {
   filters.PackageId = undefined;
   filters.AppUrl = [];
   filters.ViewBy = 'game';
-  filters.dateRange = [...resolveReportRange('yesterday')] as [Dayjs, Dayjs];
+  filters.dateRange = [...resolveReportRange('today')] as [Dayjs, Dayjs];
   sort.value = '';
   handleSearch();
 }
@@ -385,9 +395,7 @@ async function handleExport() {
           row.ChannelName,
           row.Username,
           isTotal ? '-' : formatVenue(row.GameType),
-          isTotal
-            ? formatAmountFromCent(row.SumBetGold)
-            : num(row.SumBetGold) / 100,
+          formatAmountFromCent(row.SumBetGold),
           row.SumBetCount,
           formatAmountFromCent(row.SumValidWater),
           formatAmountFromCent(deliveryGold(row)),
@@ -430,6 +438,7 @@ onMounted(async () => {
         allow-clear
         placeholder="游戏账号"
         style="width: 160px"
+        @blur="normalizeLoginAccount"
         @press-enter="handleSearch"
       />
       <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
@@ -481,7 +490,7 @@ onMounted(async () => {
       </template>
       <template #extra>
         <div class="text-xs text-gray-500">
-          默认昨日，最长 30 天；今天的数据将每小时更新一次
+          默认今天，最长 30 天；今天的数据将每小时更新一次
         </div>
       </template>
     </ReportQueryCard>

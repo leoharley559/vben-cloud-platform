@@ -100,6 +100,8 @@ const gridOptions: VxeTableGridOptions<RoleListItem> = {
             items: result?.Items || [],
             total: result?.Pagination?.MaxCount || 0,
           };
+        } catch {
+          return { items: [], total: 0 };
         } finally {
           searchLoading.value = false;
         }
@@ -191,17 +193,21 @@ async function handleFormSubmit(payload: {
     Name: payload.form.Name.trim(),
   };
 
-  if (payload.mode === 'create') {
-    await createRoleApi(data);
-    message.success('新建成功');
-  } else {
-    await updateRoleApi(data);
-    message.success('编辑成功');
-  }
+  try {
+    if (payload.mode === 'create') {
+      await createRoleApi(data);
+      message.success('新建成功');
+    } else {
+      await updateRoleApi(data);
+      message.success('编辑成功');
+    }
 
-  roleFormModalRef.value?.close();
-  await refreshSessionAfterRoleChange();
-  reloadList();
+    roleFormModalRef.value?.close();
+    await refreshSessionAfterRoleChange();
+    reloadList();
+  } catch {
+    // 错误由请求拦截器提示；保留弹窗便于修改后重试
+  }
 }
 
 onMounted(() => {

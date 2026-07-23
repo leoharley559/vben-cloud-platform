@@ -19,19 +19,19 @@ export type GameStatementResult = ReportListResult & {
 function wrapGameStatement(
   data: {
     IsNegativeWinCount?: boolean;
-    Items?: Record<string, unknown>[];
-    ItemsMoney?: Record<string, unknown>[];
+    Items?: Record<string, unknown>[] | null;
+    ItemsMoney?: Record<string, unknown>[] | null;
     Pagination?: { MaxCount?: number };
     Total?: Record<string, unknown> | number;
     [key: string]: unknown;
   },
   preferMoney = false,
 ): GameStatementResult {
-  const items = preferMoney
-    ? data.ItemsMoney || data.Items
-    : data.Items || data.ItemsMoney;
+  const money = Array.isArray(data.ItemsMoney) ? data.ItemsMoney : undefined;
+  const items = Array.isArray(data.Items) ? data.Items : undefined;
+  const resolved = preferMoney ? money || items : items || money;
   return {
-    ...toListResult(data, items),
+    ...toListResult(data, resolved),
     IsNegativeWinCount: Boolean(data.IsNegativeWinCount),
   };
 }

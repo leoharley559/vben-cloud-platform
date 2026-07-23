@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-/** 默认查询昨天整天（unix 秒，对齐旧系统 logsManage） */
+/** 默认查询昨天整天（unix 秒） */
 export function getYesterdayRangeSeconds() {
   const yesterday = dayjs().subtract(1, 'day');
   return {
@@ -11,7 +11,8 @@ export function getYesterdayRangeSeconds() {
 
 /**
  * 默认查询今天整天（unix 秒）。
- * 对齐旧站 `GLOBAL.getBeforeDateTimestamp(1, false)` ～ `getBeforeDateTimestamp()`。
+ * 对齐旧站 logsManage：`getBeforeDateTimestamp(1, false)` ～ `getBeforeDateTimestamp()`
+ * （内部 days-1 → 今天 00:00:00 ～ 今天 23:59:59）。
  */
 export function getTodayRangeSeconds() {
   return {

@@ -57,9 +57,8 @@ const adminId = ref<number | string>('');
 const appUrls = ref<string[]>([]);
 const dataSearchType = ref<number>(0);
 const platformGameTypes = ref<Array<number | string>>([]);
-const dateRange = ref<[Dayjs, Dayjs]>(
-  resolveReportRange('previousDayToToday'),
-);
+/** 对齐旧站 getBeforeDateStr(1)：今天全日 */
+const dateRange = ref<[Dayjs, Dayjs]>(resolveReportRange('today'));
 const detailOpen = ref(false);
 const detailRow = ref<null | StatementRow>(null);
 
@@ -188,6 +187,11 @@ async function loadList() {
       });
     sumPositiveProfit.value = positive;
     totalSum.value = resolveTotalSum(result.MoreItems);
+  } catch {
+    tableData.value = [];
+    totalSum.value = {};
+    sumPositiveProfit.value = 0;
+    agencyList.value = [];
   } finally {
     loading.value = false;
   }
@@ -198,7 +202,7 @@ function reset() {
   appUrls.value = [];
   dataSearchType.value = 0;
   platformGameTypes.value = [];
-  dateRange.value = resolveReportRange('previousDayToToday');
+  dateRange.value = resolveReportRange('today');
   adminPath.value = [];
   agencyList.value = [];
   inquireId.value = rootAccount.value.Id;
@@ -332,7 +336,7 @@ onMounted(() => {
       </template>
       <template #extra>
         <div class="text-xs text-muted-foreground">
-          默认昨天至今天，最长 7 天
+          默认今天，最长 7 天
         </div>
       </template>
     </ReportQueryCard>

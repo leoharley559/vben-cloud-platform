@@ -14,7 +14,7 @@ const emit = defineEmits<{
   success: [];
 }>();
 
-const { checkPermission } = useCloudPermission();
+const { checkPermission, projectConfig } = useCloudPermission();
 
 const visible = ref(false);
 const saving = ref(false);
@@ -22,7 +22,23 @@ const formModel = reactive({
   Num: '100',
 });
 
-const canBuy = computed(() => checkPermission(11429) || checkPermission(187));
+/** 旧站购买按钮权限 187；列表区 11429 也允许入口 */
+const canBuy = computed(() => checkPermission(187) || checkPermission(11429));
+
+const cloudCoinPrice = computed(() =>
+  Number(
+    (projectConfig.value as { CloudCoinPrice?: number } | undefined)
+      ?.CloudCoinPrice ?? 0,
+  ),
+);
+
+const costCloudCoin = computed(() => {
+  const num = Number(formModel.Num);
+  if (!Number.isFinite(num) || num <= 0) {
+    return 0;
+  }
+  return num * cloudCoinPrice.value;
+});
 
 const quickNums = [200, 500, 1000, 2000];
 
@@ -46,6 +62,8 @@ async function submit() {
     visible.value = false;
     await getUserInfoApi();
     emit('success');
+  } catch {
+    // 错误由拦截器提示
   } finally {
     saving.value = false;
   }
@@ -81,6 +99,9 @@ defineExpose({ open });
             </Button>
           </Space>
         </Form.Item>
+        <div class="text-lg font-medium" style="color: #ff6d00">
+          需要花费：{{ costCloudCoin }}云币
+        </div>
       </Form>
     </Modal>
   </div>

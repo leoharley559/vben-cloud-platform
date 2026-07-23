@@ -28,11 +28,11 @@ const form = reactive({
 function disabledDate(current: Dayjs) {
   if (!current) return false;
   if (form.Type === 'day') {
-    // 日报：不可选今天及未来
+    // 日报：不可选今天及未来（对齐旧站 Date.now()-1天）
     return current.isAfter(dayjs().subtract(1, 'day'), 'day');
   }
-  // 月报：不可选当前月之后（当前月可选）
-  return current.isAfter(dayjs(), 'month');
+  // 月报：当前月及之后不可选（对齐旧站 setMonth(month-1)）
+  return current.isAfter(dayjs().subtract(1, 'month'), 'month');
 }
 
 function onTypeChange() {
@@ -54,6 +54,8 @@ async function handleConfirm() {
     form.Date = '';
     form.Type = 'day';
     visible.value = false;
+  } catch {
+    /* requestClient 已提示 */
   } finally {
     loading.value = false;
   }

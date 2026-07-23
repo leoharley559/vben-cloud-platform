@@ -140,8 +140,14 @@ function disabledDate(current: Dayjs) {
   return current.isAfter(dayjs().endOf('day'));
 }
 
+function normalizeLoginAccount() {
+  // 对齐旧站 keyup：去空格、转小写
+  filters.LoginAccount = filters.LoginAccount.replace(/\s/g, '').toLowerCase();
+}
+
 function validateLoginAccount() {
-  const account = filters.LoginAccount.trim();
+  normalizeLoginAccount();
+  const account = filters.LoginAccount;
   if (!account) return true;
   if (!LOGIN_ACCOUNT_RE.test(account)) {
     message.warning('游戏账号需为 4-20 位字母或数字');
@@ -172,7 +178,7 @@ function buildQuery(excel: 1 | 2) {
     EndTime: range?.[1]?.endOf('day').unix(),
     AdminIds: arrayToCsvParam(filters.AdminIds),
     PackageId: filters.PackageId || undefined,
-    LoginAccount: filters.LoginAccount.trim().toLowerCase() || undefined,
+    LoginAccount: filters.LoginAccount || undefined,
     ChannelIds: arrayToCsvParam(filters.ChannelId),
     Offline: filters.Offline,
     ProfitStatus: filters.ProfitStatus,
@@ -351,6 +357,9 @@ async function fetchList() {
     const result = await fetchPlayerAnalyzeListApi(buildQuery(2));
     tableData.value = result.Items || [];
     total.value = Number(result.Pagination?.MaxCount || 0);
+  } catch {
+    tableData.value = [];
+    total.value = 0;
   } finally {
     loading.value = false;
   }
@@ -427,6 +436,8 @@ async function switchStatus(row: Row, status: number) {
     });
     message.success('修改成功');
     await fetchList();
+  } catch {
+    message.error('状态修改失败');
   } finally {
     loading.value = false;
   }
@@ -464,7 +475,7 @@ async function handleExport() {
       '玩家分析',
       (row) => [
         row.LoginAccount,
-        row.ChannelId,
+        row.ChannelName || row.ChannelId,
         row.PackageName,
         Math.round(Number(row.Profit || 0) / 100),
         Number(row.Recharged || 0),
@@ -479,6 +490,8 @@ async function handleExport() {
         formatReportDateTime(row.LastOfflineTime),
       ],
     );
+  } catch {
+    message.error('导出失败');
   } finally {
     exportLoading.value = false;
   }
@@ -504,6 +517,7 @@ onMounted(() => {
         allow-clear
         placeholder="游戏账号"
         style="width: 180px"
+        @blur="normalizeLoginAccount"
         @press-enter="handleSearch"
       />
       <Select
@@ -613,6 +627,9 @@ onMounted(() => {
                 :player-id="record.PlayerId as number | string"
               />
               <span v-else>{{ record.LoginAccount || '-' }}</span>
+            </template>
+            <template v-else-if="column.key === 'ChannelId'">
+              {{ record.ChannelName || record.ChannelId || '-' }}
             </template>
             <template v-else-if="column.key === 'Status'">
               <Tag

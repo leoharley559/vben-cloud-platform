@@ -47,7 +47,8 @@ const adminIds = ref<Array<number | string>>([]);
 const channelIds = ref<Array<number | string>>([]);
 const appUrls = ref<string[]>([]);
 const venueTypes = ref<Array<number | string>>([]);
-const dateRange = ref<[Dayjs, Dayjs]>(resolveReportRange('dayBeforeYesterday'));
+/** 对齐旧站 getBeforeDateStr(2)：昨天全日 */
+const dateRange = ref<[Dayjs, Dayjs]>(resolveReportRange('yesterday'));
 
 const canList = computed(() => checkPermission(10_499));
 const canExport = computed(() => checkPermission(10_500));
@@ -101,6 +102,9 @@ async function loadList() {
       _rowKey: `${row.ReportDay}-${row.PlatformGameType}-${index}`,
     }));
     totalSum.value = resolveTotalSum(result.MoreItems);
+  } catch {
+    tableData.value = [];
+    totalSum.value = {};
   } finally {
     loading.value = false;
   }
@@ -111,7 +115,7 @@ function reset() {
   channelIds.value = [];
   appUrls.value = [];
   venueTypes.value = [];
-  dateRange.value = resolveReportRange('dayBeforeYesterday');
+  dateRange.value = resolveReportRange('yesterday');
   void loadList();
 }
 
@@ -145,6 +149,9 @@ async function handleExport() {
       row._isTotal ? row.SelfWinGold : displayAmount(row.SelfWinGold),
       row._isTotal ? row.ProfitLose : displayAmount(row.ProfitLose),
     ],
+  );
+  void fetchDayStatementListApi({ ...buildQuery(), IsExp: true }).catch(
+    () => undefined,
   );
 }
 
@@ -184,6 +191,11 @@ onMounted(() => {
         <Button v-if="canExport" :disabled="loading" @click="handleExport">
           导出 Excel
         </Button>
+      </template>
+      <template #extra>
+        <div class="text-xs text-muted-foreground">
+          默认昨天，最长 30 天
+        </div>
       </template>
     </ReportQueryCard>
 

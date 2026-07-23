@@ -65,10 +65,12 @@ const myAccountScores = computed(() => {
 
 const operatorName = computed(() => {
   const admin = adminInfo.value?.Admin as { Username?: string } | undefined;
-  return (
-    admin?.Username ||
-    String(adminInfo.value?.AdminName || adminInfo.value?.Account || '')
-  );
+  if (admin?.Username) return String(admin.Username);
+  const name = adminInfo.value?.AdminName;
+  if (name !== undefined && name !== null && name !== '') {
+    return String(name);
+  }
+  return '';
 });
 
 const dialogTitle = computed(() =>
@@ -127,21 +129,25 @@ const gridOptions: VxeTableGridOptions<SellRow> = {
         if (!canViewTable.value) {
           return { items: [], total: 0 };
         }
-        const result = await fetchGoldSellListApi({
-          Keyword: '',
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-          Sort:
-            sort?.field && sort?.order
-              ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
-              : '',
-          Username: filterUsername.value,
-        });
-        const items = (result.Items || []) as unknown as SellRow[];
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        try {
+          const result = await fetchGoldSellListApi({
+            Keyword: '',
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+            Sort:
+              sort?.field && sort?.order
+                ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
+                : '',
+            Username: filterUsername.value,
+          });
+          const items = (result.Items || []) as unknown as SellRow[];
+          return {
+            items,
+            total: Number(result.Pagination?.MaxCount || items.length),
+          };
+        } catch {
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -180,7 +186,7 @@ function validatePositiveInt(value: string) {
   return /^[1-9]\d*$/.test(value);
 }
 
-async function submitDialog() {
+function submitDialog() {
   const amount =
     dialogMode.value === 'sell'
       ? formModel.AddSellScores
@@ -191,7 +197,8 @@ async function submitDialog() {
         ? '请输入正确的授信金币数量'
         : '请输入正确的追回金币数量',
     );
-    return;
+    // 校验失败时保持弹窗打开（Ant Design Vue @ok 需 reject）
+    return Promise.reject(new Error('invalid amount'));
   }
 
   const payload = {
@@ -202,28 +209,34 @@ async function submitDialog() {
     ...(dialogMode.value === 'takeBack' ? { Note: formModel.Note } : {}),
   };
 
-  Modal.confirm({
-    content:
-      dialogMode.value === 'sell'
-        ? `确认为包网 ${formModel.AgentNum} 授信 ${amount} 金币？`
-        : `确认从包网 ${formModel.AgentNum} 追回 ${amount} 金币？`,
-    onOk: async () => {
-      saving.value = true;
-      try {
-        if (dialogMode.value === 'sell') {
-          await createGoldSellApi(payload);
-          await getUserInfoApi();
-        } else {
-          await createGoldRefundApi(payload);
+  return new Promise<void>((resolve, reject) => {
+    Modal.confirm({
+      content:
+        dialogMode.value === 'sell'
+          ? `确认为包网 ${formModel.AgentNum} 授信 ${amount} 金币？`
+          : `确认从包网 ${formModel.AgentNum} 追回 ${amount} 金币？`,
+      onCancel: () => reject(new Error('cancelled')),
+      onOk: async () => {
+        saving.value = true;
+        try {
+          if (dialogMode.value === 'sell') {
+            await createGoldSellApi(payload);
+            await getUserInfoApi();
+          } else {
+            await createGoldRefundApi(payload);
+          }
+          message.success('操作成功');
+          dialogVisible.value = false;
+          await gridApi.reload();
+          resolve();
+        } catch (error) {
+          reject(error);
+        } finally {
+          saving.value = false;
         }
-        message.success('操作成功');
-        dialogVisible.value = false;
-        await gridApi.reload();
-      } finally {
-        saving.value = false;
-      }
-    },
-    title: '提示',
+      },
+      title: '提示',
+    });
   });
 }
 

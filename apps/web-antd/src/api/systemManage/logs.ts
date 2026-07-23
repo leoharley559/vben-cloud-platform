@@ -15,9 +15,17 @@ import { trimSpace } from '#/utils/string';
  * @see views/systemManage/logsManage/index.vue
  */
 export function fetchLogListApi(query: LogListQuery) {
-  return requestClient.get<LogListResult>('/backend/handlelog/list', {
-    params: trimSpace(query),
-  });
+  return requestClient
+    .get<LogListResult>('/backend/handlelog/list', {
+      params: trimSpace(query),
+    })
+    .then((data) => ({
+      Items: data?.Items ?? [],
+      Pagination: {
+        MaxCount:
+          data?.Pagination?.MaxCount ?? data?.Items?.length ?? 0,
+      },
+    }));
 }
 
 /**
@@ -27,7 +35,9 @@ export function fetchLogListApi(query: LogListQuery) {
  * @see views/systemManage/logsManage/index.vue
  */
 export function fetchLogTypeOptionsApi() {
-  return requestClient.get<LogTypeOption[]>('/backend/handlelog/listlogtypes');
+  return requestClient
+    .get<LogTypeOption[] | null>('/backend/handlelog/listlogtypes')
+    .then((data) => data ?? []);
 }
 
 /**
@@ -37,5 +47,7 @@ export function fetchLogTypeOptionsApi() {
  * @see views/systemManage/logsManage/index.vue
  */
 export function fetchLogUserListApi() {
-  return requestClient.get<LogUserOption[]>('/backend/handlelog/listuser');
+  return requestClient
+    .get<LogUserOption[] | null>('/backend/handlelog/listuser')
+    .then((data) => data ?? []);
 }

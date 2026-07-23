@@ -132,6 +132,8 @@ async function loadDetail() {
       PositiveProfit: fromCent(total.PositiveProfit),
       PositiveProfitCount: positiveCount,
     };
+  } catch {
+    resetDetail();
   } finally {
     loading.value = false;
   }

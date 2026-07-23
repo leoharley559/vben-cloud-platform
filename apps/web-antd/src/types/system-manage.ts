@@ -135,6 +135,7 @@ export interface LogListQuery {
 
 export interface LogListItem {
   CreateTime?: number | string;
+  Id?: number | string;
   Ip?: string;
   LogTemplate?: string;
   LogType?: string;

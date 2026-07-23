@@ -32,7 +32,7 @@ import { arrayToCsvParam, cents } from '#/views/dataClose/shared/report-utils';
 import {
   applyVenueFee,
   buildCommonQuery,
-  defaultYesterdayRange,
+  defaultTodayRange,
   disabledDateBeyond90,
   getGameCategoryName,
   parseMyPlatformGameTypes,
@@ -72,7 +72,7 @@ const gamePlatformType = ref<Array<number | string>>([]);
 const gameType = ref<Array<number | string>>([]);
 const templateId = ref<number | string>('');
 const appUrl = ref<Array<number | string>>([]);
-const dateRange = ref<[Dayjs, Dayjs]>(defaultYesterdayRange());
+const dateRange = ref<[Dayjs, Dayjs]>(defaultTodayRange());
 
 const adminGroupOptions = computed(() =>
   (
@@ -195,6 +195,10 @@ async function loadList() {
     total.value = (data.Total || {}) as GameStatementRow;
     isNegativeWinCount.value = Boolean(data.IsNegativeWinCount);
     formatWithFee((data.Items || []) as GameStatementRow[]);
+  } catch {
+    tableData.value = [];
+    total.value = {};
+    totalCost.value = 0;
   } finally {
     loading.value = false;
   }
@@ -216,7 +220,7 @@ function handleReset() {
   gameType.value = [];
   templateId.value = '';
   appUrl.value = [];
-  dateRange.value = defaultYesterdayRange();
+  dateRange.value = defaultTodayRange();
   venueRates.value = [];
   void loadList();
 }

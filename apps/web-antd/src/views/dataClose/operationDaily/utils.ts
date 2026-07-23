@@ -23,6 +23,94 @@ export function num(value: unknown) {
   return Number(value || 0);
 }
 
+/** 从 TwoDayBaseItems 按 ReportDay 精确匹配一行（收入/推广/充值详情） */
+export function pickTwoDayItem(
+  data: Record<string, unknown> | null | undefined,
+  reportDay: string,
+): Record<string, unknown> {
+  const list = data?.TwoDayBaseItems;
+  if (!Array.isArray(list) || !reportDay) return {};
+  const hit = list.find(
+    (item) =>
+      item &&
+      typeof item === 'object' &&
+      String((item as Record<string, unknown>).ReportDay ?? '') === reportDay,
+  );
+  return hit && typeof hit === 'object'
+    ? (hit as Record<string, unknown>)
+    : {};
+}
+
+/** 数据比较折线：对齐旧站对各 Field 的换算（金额 /100、比率派生） */
+export function resolveChartFieldValue(
+  item: Record<string, unknown>,
+  field: string,
+  extra?: Record<string, unknown>,
+): number {
+  const row = { ...item, ...(extra || {}) };
+  switch (field) {
+    case 'PercentConversion': {
+      const reg = num(row.SumReg);
+      return reg
+        ? Number(((num(row.SumFirstPayNum) / reg) * 100).toFixed(2))
+        : 0;
+    }
+    case 'PerCapita': {
+      const n = num(row.SumFirstPayNum);
+      return n
+        ? Number((num(row.SumFirstPayMoney) / n / 100).toFixed(2))
+        : 0;
+    }
+    case 'SufficientExchange': {
+      const w = num(row.SumWithdrawMoney);
+      const pay = num(row.SumPayMoney) + num(row.SumAgentPayMoney);
+      return w ? Number(((w / (pay || 1)) * 100).toFixed(2)) : 0;
+    }
+    case 'FirmBunko': {
+      return Number(
+        (
+          (num(row.SumTransBetMoney1) - num(row.SumTransWinMoney1)) /
+          100
+        ).toFixed(2),
+      );
+    }
+    case 'Surplus': {
+      const bet = num(row.SumTransBetMoney1);
+      const firm = num(row.SumTransBetMoney1) - num(row.SumTransWinMoney1);
+      return bet ? Number(((firm / bet) * 100).toFixed(2)) : 0;
+    }
+    case 'FullBring': {
+      return Number(
+        (
+          (num(row.SumPayMergerMoney) - num(row.SumWithdrawMoney)) /
+          100
+        ).toFixed(2),
+      );
+    }
+    case 'Income': {
+      const income =
+        num(row.SumTransBetMoney1) -
+        num(row.SumTransWinMoney1) +
+        -Math.abs(num(row.SumAccountChangeSumNum)) -
+        num(row.SumRedSumNum) -
+        num(row.SumBetWaterMoney) -
+        num(row.SumAgentCommissionSumNum);
+      return Number((income / 100).toFixed(2));
+    }
+    case 'GrossMargin': {
+      const income = resolveChartFieldValue(row, 'Income');
+      const bet = num(row.SumTransBetMoney1) / 100;
+      return bet ? Number(((income / bet) * 100).toFixed(2)) : 0;
+    }
+    default: {
+      if ((MONEY_FIELDS as readonly string[]).includes(field)) {
+        return Number((num(row[field]) / 100).toFixed(2));
+      }
+      return num(row[field] ?? row.Value);
+    }
+  }
+}
+
 export function countRate(current: unknown, base: unknown) {
   const a = num(current);
   const b = num(base);

@@ -7,6 +7,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import {
   Button,
   DatePicker,
+  message,
   RadioButton,
   RadioGroup,
   Select,
@@ -190,14 +191,17 @@ async function loadData() {
       fetchOperationDailyReportApi(query),
       fetchOperationDailyWinRankApi(query),
     ]);
-    todayItems.value = (report.TodayBaseItems ||
-      report.TodayItems ||
-      report) as Row;
+    todayItems.value = (report.TodayItems ||
+      report.TodayBaseItems ||
+      {}) as Row;
     hourItems.value = (report.TodayHourItems ||
       report.HourItems ||
       []) as Row[];
     const raw = rank.raw || {};
-    venueItems.value = (raw.TodayGameItems || raw.GameItems || []) as Row[];
+    venueItems.value = (raw.TodayGameTypeItems ||
+      raw.TodayGameItems ||
+      raw.GameItems ||
+      []) as Row[];
     winPlayers.value = (raw.TodayPlayerItemsWin || []) as Row[];
     losePlayers.value = (raw.TodayPlayerItemsLose ||
       raw.TodayPlayerItemsLoss ||
@@ -208,6 +212,7 @@ async function loadData() {
     venueItems.value = [];
     winPlayers.value = [];
     losePlayers.value = [];
+    message.error('游戏分析加载失败');
   } finally {
     loading.value = false;
   }

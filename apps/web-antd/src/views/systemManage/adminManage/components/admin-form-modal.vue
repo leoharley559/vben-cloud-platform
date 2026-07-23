@@ -277,12 +277,12 @@ defineExpose({
           </Form.Item>
           <Form.Item label="渠道权限">
             <ChannelSelect
-              v-model:value="formModel.SonUserRoleDataField.SeeChannelId"
+              v-model="formModel.SonUserRoleDataField.SeeChannelId"
             />
           </Form.Item>
           <Form.Item label="账号权限">
             <AccountSelect
-              v-model:value="formModel.SonUserRoleDataField.SeeAccountId"
+              v-model="formModel.SonUserRoleDataField.SeeAccountId"
             />
           </Form.Item>
           <Form.Item label="日报设备权限">

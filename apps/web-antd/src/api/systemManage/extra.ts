@@ -228,10 +228,12 @@ function toCloudCoinListResult(data: CloudCoinListRespond) {
     (more.Today as CloudCoinListRespond['Today']) ||
     {};
   return {
-    Items: data.Items ?? [],
+    Items: Array.isArray(data.Items) ? data.Items : [],
     MoreItems: data.MoreItems,
     Pagination: {
-      MaxCount: data.Pagination?.MaxCount ?? data.Items?.length ?? 0,
+      MaxCount:
+        data.Pagination?.MaxCount ??
+        (Array.isArray(data.Items) ? data.Items.length : 0),
     },
     Stock: data.Stock ?? more.Stock ?? 0,
     Today: {

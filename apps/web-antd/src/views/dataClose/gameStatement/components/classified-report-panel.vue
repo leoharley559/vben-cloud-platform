@@ -27,7 +27,7 @@ import { arrayToCsvParam, cents } from '#/views/dataClose/shared/report-utils';
 
 import {
   buildCommonQuery,
-  defaultYesterdayRange,
+  defaultTodayRange,
   disabledDateBeyond90,
   getGameCategoryName,
   profitClass,
@@ -58,7 +58,7 @@ const packageId = ref<number | string>('');
 const adminGroupIds = ref<Array<number | string>>([]);
 const gamePlatformType = ref<Array<number | string>>([]);
 const appUrl = ref<Array<number | string>>([]);
-const dateRange = ref<[Dayjs, Dayjs]>(defaultYesterdayRange());
+const dateRange = ref<[Dayjs, Dayjs]>(defaultTodayRange());
 
 const adminGroupOptions = computed(() =>
   (
@@ -134,6 +134,9 @@ async function loadList() {
     const data = await fetchClassifiedReportListApi(query);
     total.value = (data.Total || {}) as GameStatementRow;
     tableData.value = (data.Items || []) as GameStatementRow[];
+  } catch {
+    tableData.value = [];
+    total.value = {};
   } finally {
     loading.value = false;
   }
@@ -148,7 +151,7 @@ function handleReset() {
   adminGroupIds.value = [];
   gamePlatformType.value = [];
   appUrl.value = [];
-  dateRange.value = defaultYesterdayRange();
+  dateRange.value = defaultTodayRange();
   void loadList();
 }
 

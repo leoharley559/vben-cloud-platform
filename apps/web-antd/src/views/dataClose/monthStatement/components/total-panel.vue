@@ -116,6 +116,9 @@ async function loadList() {
       _rowKey: `${row.ReportMonth}-${row.PlatformGameType}-${index}`,
     }));
     totalSum.value = resolveTotalSum(result.MoreItems);
+  } catch {
+    tableData.value = [];
+    totalSum.value = {};
   } finally {
     loading.value = false;
   }
@@ -229,6 +232,11 @@ onMounted(() => {
         <Button v-if="canExport" :disabled="loading" @click="handleExport">
           导出 Excel
         </Button>
+      </template>
+      <template #extra>
+        <div class="text-xs text-muted-foreground">
+          默认近三月（整月），最长约 180 天
+        </div>
       </template>
     </ReportQueryCard>
 

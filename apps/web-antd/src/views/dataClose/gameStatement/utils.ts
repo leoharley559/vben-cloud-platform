@@ -1,16 +1,15 @@
-import type { Dayjs } from 'dayjs';
-
 import type { GameTypeLangGroupItem } from '#/utils/game-config';
 
+import dayjs, { type Dayjs } from 'dayjs';
+
+import { normalizeSearchValue } from '#/utils/everyday-report-format';
 import {
   arrayToCsvParam,
   calcProfit,
   calcProfitRate,
   cents,
-  resolveReportRange,
   toUnixRange,
 } from '#/views/dataClose/shared/report-utils';
-import { normalizeSearchValue } from '#/utils/everyday-report-format';
 
 export type GameStatementTab = 'classified' | 'game' | 'subGame';
 
@@ -31,8 +30,15 @@ export interface GameStatementRow extends Record<string, unknown> {
   SumWin?: number;
 }
 
+/** 对齐旧站 getBeforeDateTimestamp(1,false)～getBeforeDateTimestamp()：今天 00:00～23:59 */
+export function defaultTodayRange(): [Dayjs, Dayjs] {
+  const today = dayjs().startOf('day');
+  return [today, today.endOf('day')];
+}
+
+/** @deprecated 历史命名；实际已对齐旧站「今天」，请优先用 defaultTodayRange */
 export function defaultYesterdayRange(): [Dayjs, Dayjs] {
-  return resolveReportRange('yesterdayWholeDay');
+  return defaultTodayRange();
 }
 
 export function buildCommonQuery(input: {

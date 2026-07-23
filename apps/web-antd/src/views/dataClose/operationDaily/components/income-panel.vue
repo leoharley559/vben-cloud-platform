@@ -24,7 +24,7 @@ import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
 import { arrayToCsvParam } from '#/views/dataClose/shared/report-utils';
 
-import { num, percentText } from '../utils';
+import { num, percentText, pickTwoDayItem } from '../utils';
 
 defineOptions({ name: 'IncomeAnalyzePanel' });
 
@@ -51,18 +51,16 @@ const packageSelectOptions = computed(() => [
   ...packageOptions.value,
 ]);
 
-const today = computed(
-  () =>
-    (raw.value.TodayBaseItems ||
-      raw.value.todayBaseItems ||
-      raw.value) as Row,
+/** 日报：End=当前日 Begin=对比日；月报：Begin=当前月 End=对比月 */
+const today = computed(() =>
+  reportType.value === 2
+    ? pickTwoDayItem(raw.value, filters.beginDate.format('YYYY-MM'))
+    : pickTwoDayItem(raw.value, filters.endDate.format('YYYY-MM-DD')),
 );
-const yesterday = computed(
-  () =>
-    (raw.value.YesterdayBaseItems ||
-      raw.value.YestDayBaseItems ||
-      raw.value.yesterdayBaseItems ||
-      {}) as Row,
+const yesterday = computed(() =>
+  reportType.value === 2
+    ? pickTwoDayItem(raw.value, filters.endDate.format('YYYY-MM'))
+    : pickTwoDayItem(raw.value, filters.beginDate.format('YYYY-MM-DD')),
 );
 
 function deltaPct(cur: unknown, prev: unknown) {
@@ -126,10 +124,24 @@ const summaryItems = computed(() => {
     },
     {
       title: '充值成功率',
-      value: percentText(
-        t.CountOkOrderNum || t.rechargeOkOrderNum,
-        t.CountAllOrderNum || t.rechargeOrderNum,
-      ),
+      value: (() => {
+        const intervals = (raw.value.TodayPayInterval ||
+          raw.value.TodayPayIntervalForSuccessOdd ||
+          []) as Row[];
+        if (Array.isArray(intervals) && intervals.length > 0) {
+          let ok = 0;
+          let all = 0;
+          for (const item of intervals) {
+            ok += num(item.CountOkNum);
+            all += num(item.CountAllNum);
+          }
+          return percentText(ok, all);
+        }
+        return percentText(
+          t.CountOkOrderNum || t.rechargeOkOrderNum,
+          t.CountAllOrderNum || t.rechargeOrderNum,
+        );
+      })(),
     },
   ];
 });

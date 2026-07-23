@@ -8,6 +8,7 @@ import {
   Card,
   DatePicker,
   Input,
+  message,
   RadioButton,
   RadioGroup,
   Result,
@@ -43,13 +44,14 @@ const BET_TYPE_MAP: Record<number, string> = {
   4: '推单',
 };
 
+/** 对齐旧站 betDetails radio：投注额/人数/盈利/次数/有效投注/盈余比例 */
 const METRICS: Array<{ key: BetMetric; label: string }> = [
   { key: 'betMoney', label: '投注额' },
-  { key: 'betCount', label: '次数' },
   { key: 'betNum', label: '人数' },
-  { key: 'winGold', label: '派送' },
-  { key: 'validBet', label: '有效投注' },
   { key: 'profit', label: '盈利' },
+  { key: 'betCount', label: '次数' },
+  { key: 'validBet', label: '有效投注' },
+  { key: 'profitRatio', label: '盈余比例' },
 ];
 
 const { adminInfo, checkPermission, projectConfig } = useCloudPermission();
@@ -109,11 +111,8 @@ const dataSearchType = ref(0);
 const dateRange = ref<[Dayjs, Dayjs]>();
 
 function initDateRange() {
-  // GLOBAL.defaultDate（当月1日）~ 昨天
-  dateRange.value = [
-    dayjs(defaultReportBeginTime()),
-    dayjs().subtract(1, 'day').endOf('day'),
-  ];
+  // 对齐旧站：GLOBAL.defaultDate（当月1日）~ getBeforeDateStr(1,false,false)=今天
+  dateRange.value = [dayjs(defaultReportBeginTime()), dayjs().endOf('day')];
 }
 
 function calcProfitRatio(betGold: number, winGold: number) {
@@ -159,6 +158,10 @@ async function loadList() {
         new Date(String(a.ReportDay || '')).getTime() -
         new Date(String(b.ReportDay || '')).getTime(),
     );
+  } catch {
+    list.value = [];
+    chartRows.value = [];
+    message.error('查询失败');
   } finally {
     loading.value = false;
   }
@@ -178,32 +181,40 @@ function handleReset() {
 }
 
 async function handleExport() {
-  await exportReportXlsx(
-    list.value,
-    [
-      '日期',
-      '投注入口',
-      '投注人数',
-      '投注次数',
-      '投注金币',
-      '实际派送金币',
-      '有效投注',
-      '盈利金额',
-      '盈余比例',
-    ],
-    '投注行为报表',
-    (row) => [
-      row.ReportDay,
-      BET_TYPE_MAP[Number(row.BetType)] || row.BetType,
-      row.BetNumberOfPeople,
-      row.BetCount,
-      formatAmountFromCent(Number(row.BetGold || 0)),
-      formatAmountFromCent(Number(row.WinGold || 0)),
-      formatAmountFromCent(Number(row.ValidWater || 0)),
-      row.Profit,
-      `${row.ProfitRatio}%`,
-    ],
-  );
+  if (!list.value.length) {
+    message.warning('暂无数据可导出');
+    return;
+  }
+  try {
+    await exportReportXlsx(
+      list.value,
+      [
+        '日期',
+        '投注入口',
+        '投注人数',
+        '投注次数',
+        '投注金币',
+        '实际派送金币',
+        '有效投注',
+        '盈利金额',
+        '盈余比例',
+      ],
+      '投注行为报表',
+      (row) => [
+        row.ReportDay,
+        BET_TYPE_MAP[Number(row.BetType)] || row.BetType,
+        row.BetNumberOfPeople,
+        row.BetCount,
+        formatAmountFromCent(Number(row.BetGold || 0)),
+        formatAmountFromCent(Number(row.WinGold || 0)),
+        formatAmountFromCent(Number(row.ValidWater || 0)),
+        row.Profit,
+        `${row.ProfitRatio}%`,
+      ],
+    );
+  } catch {
+    message.error('导出失败');
+  }
 }
 
 const columns = [
