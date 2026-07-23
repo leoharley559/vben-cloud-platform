@@ -68,6 +68,8 @@ defineOptions({ name: 'ChannelFormModal' });
 
 const props = defineProps<{
   channelId?: ChannelId;
+  /** 创建时写入的渠道类型；网赚代理渠道固定传 2 */
+  channelType?: number;
   dataFlag?: 0 | 1;
   initialPackageId?: ChannelId;
   open: boolean;
@@ -332,6 +334,9 @@ function createDefaults(): ChannelFormPayload {
     AndroidAppPkgType: 2,
     BackgroundId: '',
     ChannelName: '',
+    ...(props.channelType === undefined
+      ? {}
+      : { ChannelType: props.channelType }),
     CnnzCode: '',
     CustomApkName: '',
     DefaultTagSelected: 1,
@@ -868,6 +873,9 @@ function buildPayload(): ChannelFormPayload {
     ),
     PackPlatformType: 'uniapp2',
     ...(props.dataFlag === undefined ? {} : { DataFlag: props.dataFlag }),
+    ...(props.channelType === undefined
+      ? {}
+      : { ChannelType: props.channelType }),
   };
   if (payload.PushType === 2) payload.DefaultTagSelected = 2;
   if (isEdit.value) {

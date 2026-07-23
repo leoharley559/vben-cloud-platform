@@ -301,10 +301,21 @@ async function load() {
     totalCount.value = normalized.totalCount;
     selectedKeys.value = [];
     selectedRows.value = [];
+  } catch {
+    rows.value = [];
+    total.value = {};
+    totalCount.value = 0;
   } finally {
     loading.value = false;
   }
 }
+
+/** 单层发放：当前月尚未结束结算，与旧站一致禁用一键发放 */
+const batchDisabled = computed(
+  () =>
+    !isMultiMode.value &&
+    (month.value?.format('YYYY-MM') || '') === currentMonth(),
+);
 
 function reset() {
   Object.assign(query, {
@@ -387,12 +398,24 @@ function openGrant(row?: Record<string, any>) {
         IsTeam: isTeam.value ? 1 : 2,
       };
       try {
-        await (row ? sendCommissionApi({ ...common, Id: row.Id }) : oneKeySendCommissionApi({
-            ...common,
-            Ids: selected.map((item) => item.Id).join(','),
-          }));
+        const result = await (row
+          ? sendCommissionApi({ ...common, Id: row.Id })
+          : oneKeySendCommissionApi({
+              ...common,
+              Ids: selected.map((item) => item.Id).join(','),
+            }));
+        // 后端对未结束周期可能仍返回 status=200 + Unchecked 字符串
+        if (
+          typeof result === 'string' &&
+          String(result).toLowerCase().includes('unchecked')
+        ) {
+          message.warning('当前结算周期未结束，无法发放');
+          return;
+        }
         message.success('发放成功');
         await load();
+      } catch {
+        message.error('发放失败，请稍后重试');
       } finally {
         grantSaving.value = false;
       }
@@ -428,6 +451,8 @@ async function submitAdjust() {
     message.success('佣金调整成功');
     adjustOpen.value = false;
     await load();
+  } catch {
+    message.error('调整失败，请稍后重试');
   } finally {
     adjustSaving.value = false;
   }
@@ -444,6 +469,10 @@ async function openDetail(row: Record<string, any>) {
       : await fetchPersonalDetailApi({ Id: row.Id, IsMulti: isMulti.value });
     detailRows.value = normalizeRows(result).map((item) => ({
       ...item,
+      // 对齐旧站：无 ApiFeeTotal 时用 输赢*费率 估算
+      ApiFeeTotal:
+        item.ApiFeeTotal ??
+        Math.floor((Number(item.SumWinLoseGold || 0) * Number(item.Fee || 0)) / 100),
       GameName:
         gameConfig.value.platformGameType[String(item.GameType ?? '')] ||
         item.GameType ||
@@ -459,6 +488,9 @@ async function openDetail(row: Record<string, any>) {
       detailTotal.SumWinLoseGold = detailRows.value.reduce((sum, item) => sum + Number(item.SumWinLoseGold || 0), 0);
       detailTotal.ApiFeeTotal = detailRows.value.reduce((sum, item) => sum + Number(item.ApiFeeTotal || 0), 0);
     }
+  } catch {
+    detailRows.value = [];
+    message.error('明细加载失败');
   } finally {
     detailLoading.value = false;
   }
@@ -472,26 +504,55 @@ function openRates(rate: unknown) {
 async function loadTeamChildren(row: Record<string, any>) {
   const key = String(row.Id);
   if (teamChildren[key]) return;
-  const result = await fetchTeamListApi({
-    ReportMonth: row.ReportMonth,
-    TeamLeaderId: row.AdminId,
-  });
-  teamChildren[key] = normalizeList(result).items;
+  try {
+    const result = await fetchTeamListApi({
+      ReportMonth: row.ReportMonth,
+      TeamLeaderId: row.AdminId,
+    });
+    teamChildren[key] = normalizeList(result).items;
+  } catch {
+    teamChildren[key] = [];
+  }
 }
 
 async function exportExcel() {
   exporting.value = true;
   try {
     const api = props.context === 'grant' ? fetchSendCommListApi : fetchPersonalCommListApi;
-    const result = await api(queryPayload({ IsExp: isTeam.value, Page: 1, PageSize: Math.max(totalCount.value, 1) }));
-    const data = normalizeList(result).items;
+    const result = await api(
+      queryPayload({
+        IsExp: isTeam.value,
+        Page: 1,
+        PageSize: Math.max(totalCount.value, 1),
+      }),
+    );
+    const normalized = normalizeList(result);
+    const data = normalized.items;
     if (data.length === 0) {
       message.warning('暂无可导出的数据');
       return;
     }
+    // 团队导出：IsExp 后嵌套 List 需展平（主线/支线），对齐旧站
+    const flatRows: Array<Record<string, any>> = [];
+    data.forEach((row, index) => {
+      flatRows.push({ ...row, __exportIndex: String(index + 1) });
+      const children = Array.isArray(row.List) ? row.List : [];
+      children.forEach((child: Record<string, any>, childIndex: number) => {
+        flatRows.push({
+          ...child,
+          __exportIndex: childIndex === 0 ? '主线' : `支线${childIndex}`,
+        });
+      });
+    });
+
+    const prevTotal = total.value;
+    if (Object.keys(normalized.total || {}).length > 0) {
+      total.value = normalized.total;
+    }
+
     const XLSX = await import('xlsx');
-    const exportRows = data.map((row, index) => {
-      const output: Record<string, any> = { 序号: index + 1 };
+    const exportRows = flatRows.map((row) => {
+      const output: Record<string, any> = { 序号: row.__exportIndex };
       for (const column of allColumns.value) {
         const title = String(column.title || '');
         if (!title || column.key === 'actions') continue;
@@ -500,11 +561,23 @@ async function exportExcel() {
       }
       return output;
     });
+
+    const summaryRow: Record<string, any> = { 序号: '合计' };
+    for (const column of allColumns.value) {
+      const title = String(column.title || '');
+      if (!title || column.key === 'actions') continue;
+      summaryRow[title] = displayTotalCell(columnKey(column));
+    }
+    exportRows.push(summaryRow);
+    total.value = prevTotal;
+
     const sheet = XLSX.utils.json_to_sheet(exportRows);
     const book = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(book, sheet, '佣金数据');
     const name = `${props.context === 'grant' ? '发放佣金' : '佣金记录'}_${variantName.value}_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`;
     XLSX.writeFile(book, name);
+  } catch {
+    message.error('导出失败，请稍后重试');
   } finally {
     exporting.value = false;
   }
@@ -754,7 +827,14 @@ onMounted(async () => {
     <Card size="small">
       <div class="ledger-actions">
         <Space>
-          <Button v-if="canBatch" type="primary" @click="openGrant()">一键发放</Button>
+          <Button
+            v-if="canBatch"
+            type="primary"
+            :disabled="batchDisabled"
+            @click="openGrant()"
+          >
+            一键发放
+          </Button>
           <Button v-if="canExport" :loading="exporting" @click="exportExcel">导出</Button>
         </Space>
         <span>共 {{ totalCount }} 条</span>

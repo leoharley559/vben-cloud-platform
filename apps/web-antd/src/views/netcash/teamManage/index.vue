@@ -40,7 +40,7 @@ defineOptions({ name: 'TeamManage' });
 type Row = Record<string, unknown>;
 type Option = { label: string; raw?: Row; value: number | string };
 
-const { checkPermission, checkPermissionByKey } = useCloudPermission();
+const { checkPermission } = useCloudPermission();
 const canEnterManage = computed(() => checkPermission(11_487));
 const canViewList = computed(() => checkPermission(11_488));
 const canTransfer = computed(() => checkPermission(11_490));
@@ -50,9 +50,8 @@ const canDissolve = computed(() => checkPermission(11_493));
 const canRemoveDeputy = computed(() => checkPermission(11_494));
 const canAddDeputy = computed(() => checkPermission(11_495));
 const canViewRecord = computed(() => checkPermission(11_496));
-const canViewRecordList = computed(
-  () => checkPermission(11_497) && checkPermissionByKey('serviceWorkTime'),
-);
+/** 操作记录列表数据权：旧站 getList 用 11497；勿再绑 serviceWorkTime(11821，客服工时误挂) */
+const canViewRecordList = computed(() => checkPermission(11_497));
 const canViewPage = computed(() => canEnterManage.value || canViewRecord.value);
 const activeTab = ref('manage');
 
@@ -62,8 +61,10 @@ const teamTotal = ref(0);
 const teamQuery = reactive({
   BeginTime: dayjs().subtract(1, 'month').startOf('day').unix(),
   EndTime: dayjs().endOf('day').unix(),
+  Keyword: '',
   Page: 1,
   PageSize: 20,
+  Sort: '',
   SubUserName: '',
   TeamName: '',
   Type: -1,
@@ -96,7 +97,12 @@ async function loadTeams() {
   try {
     const result = await fetchTeamListApi(teamQuery);
     teamRows.value = result?.Items || [];
-    teamTotal.value = Number(result?.Pagination?.MaxCount || teamRows.value.length);
+    teamTotal.value = Number(
+      result?.Pagination?.MaxCount || teamRows.value.length,
+    );
+  } catch {
+    teamRows.value = [];
+    teamTotal.value = 0;
   } finally {
     teamLoading.value = false;
   }
@@ -106,7 +112,15 @@ function searchTeams() {
   loadTeams();
 }
 function resetTeams() {
-  Object.assign(teamQuery, { Page: 1, SubUserName: '', TeamName: '', Type: -1, Username: '' });
+  Object.assign(teamQuery, {
+    Keyword: '',
+    Page: 1,
+    Sort: '',
+    SubUserName: '',
+    TeamName: '',
+    Type: -1,
+    Username: '',
+  });
   teamDateRange.value = [dayjs().subtract(1, 'month'), dayjs()];
   loadTeams();
 }
@@ -117,17 +131,20 @@ let searchTimer: ReturnType<typeof setTimeout> | undefined;
 async function searchPrincipals(keyword = '') {
   principalLoading.value = true;
   try {
+    // 对齐旧站：首屏仅 IsTeamSearch；远程搜索带 Username（无强制分页上限）
     const result = await fetchTeamPrincipalListApi({
       IsTeamSearch: 1,
+      ...(keyword ? { Username: keyword } : {}),
       Page: 1,
-      PageSize: 100,
-      Username: keyword,
+      PageSize: 9999,
     });
     principalOptions.value = (result?.Items || []).map((item) => ({
       label: `${item.Username || item.AdminId}${item.Name ? ` / ${item.Name}` : ''}`,
       raw: item,
       value: item.AdminId as number | string,
     }));
+  } catch {
+    principalOptions.value = [];
   } finally {
     principalLoading.value = false;
   }
@@ -150,7 +167,14 @@ const teamForm = reactive({
 });
 function openCreateModal() {
   isCreate.value = true;
-  Object.assign(teamForm, { AdminId: undefined, Id: '', MainUsername: '', Remark: '', TeamName: '', Type: 1 });
+  Object.assign(teamForm, {
+    AdminId: undefined,
+    Id: '',
+    MainUsername: '',
+    Remark: '',
+    TeamName: '',
+    Type: 1,
+  });
   teamModalOpen.value = true;
   searchPrincipals();
 }
@@ -167,7 +191,8 @@ function openEditModal(row: Row) {
   teamModalOpen.value = true;
 }
 async function submitTeam() {
-  if (isCreate.value && !teamForm.AdminId) return void message.warning('请选择主线账号');
+  if (isCreate.value && !teamForm.AdminId)
+    return void message.warning('请选择主线账号');
   if (!teamForm.TeamName.trim()) return void message.warning('请输入团队名称');
   teamSubmitting.value = true;
   try {
@@ -189,20 +214,27 @@ async function submitTeam() {
     message.success('操作成功');
     teamModalOpen.value = false;
     loadTeams();
+  } catch {
+    // 全局拦截已提示
   } finally {
     teamSubmitting.value = false;
   }
 }
 function dissolve(row: Row) {
-  if (Number(row.Deputys ?? 0) > 0) return void message.warning('请先移除副线后再解散团队');
+  if (Number(row.Deputys ?? 0) > 0)
+    return void message.warning('请先移除副线后再解散团队');
   Modal.confirm({
     content: `确认解散团队「${row.TeamName || ''}」？`,
     okType: 'danger',
     title: '解散团队',
     onOk: async () => {
-      await dissolveTeamApi(row.Id as number | string);
-      message.success('解散成功');
-      loadTeams();
+      try {
+        await dissolveTeamApi(row.Id as number | string);
+        message.success('解散成功');
+        loadTeams();
+      } catch {
+        // 全局拦截已提示
+      }
     },
   });
 }
@@ -216,21 +248,34 @@ const deputyForm = reactive({
   TeamName: '',
 });
 function openAddDeputy(row: Row) {
-  Object.assign(deputyForm, { AdminId: undefined, Name: '', TeamId: row.Id, TeamName: row.TeamName });
+  Object.assign(deputyForm, {
+    AdminId: undefined,
+    Name: '',
+    TeamId: row.Id,
+    TeamName: row.TeamName,
+  });
   deputyModalOpen.value = true;
   searchPrincipals();
 }
 function selectDeputy(adminId: number | string) {
-  deputyForm.Name = String(principalOptions.value.find((item) => String(item.value) === String(adminId))?.raw?.Name || '');
+  deputyForm.Name = String(
+    principalOptions.value.find((item) => String(item.value) === String(adminId))
+      ?.raw?.Name || '',
+  );
 }
 async function submitDeputy() {
   if (!deputyForm.AdminId) return void message.warning('请选择副线账号');
   deputySubmitting.value = true;
   try {
-    await addTeamDeputyApi({ AdminId: deputyForm.AdminId, TeamId: deputyForm.TeamId });
+    await addTeamDeputyApi({
+      AdminId: deputyForm.AdminId,
+      TeamId: deputyForm.TeamId,
+    });
     message.success('添加成功');
     deputyModalOpen.value = false;
     loadTeams();
+  } catch {
+    // 全局拦截已提示
   } finally {
     deputySubmitting.value = false;
   }
@@ -248,13 +293,20 @@ const detailColumns = [
   { key: 'actions', title: '操作', width: 100 },
 ];
 async function openDetail(row: Row) {
-  if (Number(row.Deputys ?? 0) <= 0) return void message.warning('该团队暂无副线');
+  if (Number(row.Deputys ?? 0) <= 0)
+    return void message.warning('该团队暂无副线');
   detailTeam.value = row;
   detailOpen.value = true;
   detailLoading.value = true;
   try {
-    const result = await fetchTeamDeputyListApi({ Page: 1, PageSize: 1000, TeamId: row.Id });
+    const result = await fetchTeamDeputyListApi({
+      Page: 1,
+      PageSize: 1000,
+      TeamId: row.Id,
+    });
     detailRows.value = result?.Items || [];
+  } catch {
+    detailRows.value = [];
   } finally {
     detailLoading.value = false;
   }
@@ -265,11 +317,17 @@ function removeDeputy(row: Row) {
     okType: 'danger',
     title: '移除副线',
     onOk: async () => {
-      await removeTeamDeputyApi(row.AdminId as number | string);
-      message.success('移除成功');
-      detailRows.value = detailRows.value.filter((item) => String(item.AdminId) !== String(row.AdminId));
-      if (!detailRows.value.length) detailOpen.value = false;
-      loadTeams();
+      try {
+        await removeTeamDeputyApi(row.AdminId as number | string);
+        message.success('移除成功');
+        detailRows.value = detailRows.value.filter(
+          (item) => String(item.AdminId) !== String(row.AdminId),
+        );
+        if (!detailRows.value.length) detailOpen.value = false;
+        loadTeams();
+      } catch {
+        // 全局拦截已提示
+      }
     },
   });
 }
@@ -298,20 +356,36 @@ const transferTeamOptions = computed<Option[]>(() =>
 );
 async function openTransfer() {
   Object.assign(transferForm, {
-    AdminId: undefined, FromTeamId: '', FromTeamName: '', MainUsername: '',
-    Members: '', Name: '', ToMainUsername: '', ToTeamId: undefined,
+    AdminId: undefined,
+    FromTeamId: '',
+    FromTeamName: '',
+    MainUsername: '',
+    Members: '',
+    Name: '',
+    ToMainUsername: '',
+    ToTeamId: undefined,
   });
   transferOpen.value = true;
-  const result = await fetchTeamDeputyListApi({ Page: 1, PageSize: 100_000, TeamId: '' });
-  deputyOptions.value = (result?.Items || []).map((item) => ({
-    label: `${item.Username || item.AdminId} / ${item.TeamName || ''}`,
-    raw: item,
-    value: item.AdminId as number | string,
-  }));
+  try {
+    const result = await fetchTeamDeputyListApi({
+      Page: 1,
+      PageSize: 100_000,
+      TeamId: '',
+    });
+    deputyOptions.value = (result?.Items || []).map((item) => ({
+      label: `${item.Username || item.AdminId} / ${item.TeamName || ''}`,
+      raw: item,
+      value: item.AdminId as number | string,
+    }));
+  } catch {
+    deputyOptions.value = [];
+  }
   if (!teamRows.value.length) await loadTeams();
 }
 function selectTransferDeputy(adminId: number | string) {
-  const row = deputyOptions.value.find((item) => String(item.value) === String(adminId))?.raw;
+  const row = deputyOptions.value.find(
+    (item) => String(item.value) === String(adminId),
+  )?.raw;
   if (!row) return;
   Object.assign(transferForm, {
     FromTeamId: row.TeamId,
@@ -325,11 +399,13 @@ function selectTransferDeputy(adminId: number | string) {
 }
 function selectTransferTeam(teamId: number | string) {
   transferForm.ToMainUsername = String(
-    transferTeamOptions.value.find((item) => String(item.value) === String(teamId))?.raw?.Username || '',
+    transferTeamOptions.value.find((item) => String(item.value) === String(teamId))
+      ?.raw?.Username || '',
   );
 }
 async function submitTransfer() {
-  if (!transferForm.AdminId || !transferForm.ToTeamId) return void message.warning('请选择副线和转入团队');
+  if (!transferForm.AdminId || !transferForm.ToTeamId)
+    return void message.warning('请选择副线和转入团队');
   transferSubmitting.value = true;
   try {
     await moveTeamDeputyApi({
@@ -340,6 +416,8 @@ async function submitTransfer() {
     message.success('转移成功');
     transferOpen.value = false;
     loadTeams();
+  } catch {
+    // 全局拦截已提示
   } finally {
     transferSubmitting.value = false;
   }
@@ -355,11 +433,15 @@ const recordQuery = reactive({
   Operate: 0,
   Page: 1,
   PageSize: 20,
+  Sort: '',
   SubName: '',
   TeamName: '',
   Username: '',
 });
-const recordDates = ref<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(1, 'month'), dayjs()]);
+const recordDates = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+  dayjs().subtract(1, 'month'),
+  dayjs(),
+]);
 const recordColumns = [
   { dataIndex: 'TeamName', key: 'TeamName', title: '团队名称' },
   { dataIndex: 'Username', key: 'Username', title: '主线账号' },
@@ -373,7 +455,10 @@ function recordContent(row: Row) {
   if (!row.LogTemplate || !row.Params) return String(row.Note || '');
   let params: Row = {};
   try {
-    params = typeof row.Params === 'string' ? JSON.parse(row.Params) : (row.Params as Row);
+    params =
+      typeof row.Params === 'string'
+        ? JSON.parse(row.Params)
+        : (row.Params as Row);
   } catch {
     return String(row.Note || '');
   }
@@ -393,8 +478,13 @@ async function loadRecords() {
   try {
     const result = await fetchTeamRecordListApi(recordQuery);
     recordRows.value = result?.Items || [];
-    recordTotal.value = Number(result?.Pagination?.MaxCount || recordRows.value.length);
+    recordTotal.value = Number(
+      result?.Pagination?.MaxCount || recordRows.value.length,
+    );
     recordLoaded.value = true;
+  } catch {
+    recordRows.value = [];
+    recordTotal.value = 0;
   } finally {
     recordLoading.value = false;
   }
@@ -403,7 +493,14 @@ function onTabChange(key: string | number) {
   if (key === 'record' && !recordLoaded.value) loadRecords();
 }
 function resetRecords() {
-  Object.assign(recordQuery, { Operate: 0, Page: 1, SubName: '', TeamName: '', Username: '' });
+  Object.assign(recordQuery, {
+    Operate: 0,
+    Page: 1,
+    Sort: '',
+    SubName: '',
+    TeamName: '',
+    Username: '',
+  });
   recordDates.value = [dayjs().subtract(1, 'month'), dayjs()];
   loadRecords();
 }
@@ -424,7 +521,7 @@ onMounted(() => {
     <Card>
       <Tabs v-model:active-key="activeTab" size="small" @change="onTabChange">
         <Tabs.TabPane v-if="canEnterManage" key="manage" tab="团队列表">
-          <div v-if="canViewRecordList" class="mb-4 flex flex-wrap items-center gap-2">
+          <div class="mb-4 flex flex-wrap items-center gap-2">
             <Input v-model:value="teamQuery.TeamName" allow-clear placeholder="团队名称" style="width: 170px" />
             <Input v-model:value="teamQuery.Username" allow-clear placeholder="主线账号" style="width: 170px" />
             <Input v-model:value="teamQuery.SubUserName" allow-clear placeholder="副线账号" style="width: 170px" />
@@ -468,6 +565,12 @@ onMounted(() => {
               </template>
             </template>
           </Table>
+          <Result
+            v-else
+            status="403"
+            sub-title="无团队列表查看权限（11488）"
+            title="403"
+          />
           <Pagination
             v-if="canViewList && teamTotal"
             v-model:current="teamQuery.Page"
@@ -480,51 +583,53 @@ onMounted(() => {
         </Tabs.TabPane>
 
         <Tabs.TabPane v-if="canViewRecord" key="record" tab="操作记录">
-          <div class="mb-4 flex flex-wrap items-center gap-2">
-            <Input v-model:value="recordQuery.TeamName" allow-clear placeholder="团队名称" style="width: 170px" />
-            <Input v-model:value="recordQuery.Username" allow-clear placeholder="主线账号" style="width: 170px" />
-            <Input v-model:value="recordQuery.SubName" allow-clear placeholder="副线账号" style="width: 170px" />
-            <Select
-              v-model:value="recordQuery.Operate"
-              :options="[
-                { label: '全部操作', value: 0 }, { label: '新增团队', value: 1 },
-                { label: '添加副线', value: 2 }, { label: '移除副线', value: 3 },
-                { label: '转移副线', value: 4 }, { label: '编辑团队', value: 5 },
-                { label: '解散团队', value: 6 },
-              ]"
-              style="width: 130px"
+          <template v-if="canViewRecordList">
+            <div class="mb-4 flex flex-wrap items-center gap-2">
+              <Input v-model:value="recordQuery.TeamName" allow-clear placeholder="团队名称" style="width: 170px" />
+              <Input v-model:value="recordQuery.Username" allow-clear placeholder="主线账号" style="width: 170px" />
+              <Input v-model:value="recordQuery.SubName" allow-clear placeholder="副线账号" style="width: 170px" />
+              <Select
+                v-model:value="recordQuery.Operate"
+                :options="[
+                  { label: '全部操作', value: 0 }, { label: '新增团队', value: 1 },
+                  { label: '添加副线', value: 2 }, { label: '移除副线', value: 3 },
+                  { label: '转移副线', value: 4 }, { label: '编辑团队', value: 5 },
+                  { label: '解散团队', value: 6 },
+                ]"
+                style="width: 130px"
+              />
+              <DatePicker.RangePicker v-model:value="recordDates" />
+              <Button type="primary" @click="recordQuery.Page = 1; loadRecords()">查询</Button>
+              <Button @click="resetRecords">重置</Button>
+            </div>
+            <Table
+              :columns="recordColumns"
+              :data-source="recordRows"
+              :loading="recordLoading"
+              :pagination="false"
+              row-key="Id"
+              :scroll="{ x: 1100 }"
+              size="small"
+            >
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.key === 'Note'">{{ recordContent(record) }}</template>
+                <template v-else-if="column.key === 'CreateTime'">{{ formatNetcashDateTime(record.CreateTime) }}</template>
+              </template>
+            </Table>
+            <Pagination
+              v-if="recordTotal"
+              v-model:current="recordQuery.Page"
+              v-model:page-size="recordQuery.PageSize"
+              class="mt-4 text-right"
+              :show-size-changer="true"
+              :total="recordTotal"
+              @change="loadRecords"
             />
-            <DatePicker.RangePicker v-model:value="recordDates" />
-            <Button type="primary" @click="recordQuery.Page = 1; loadRecords()">查询</Button>
-            <Button @click="resetRecords">重置</Button>
-          </div>
-          <Table
-            :columns="recordColumns"
-            :data-source="recordRows"
-            :loading="recordLoading"
-            :pagination="false"
-            row-key="Id"
-            :scroll="{ x: 1100 }"
-            size="small"
-          >
-            <template #bodyCell="{ column, record }">
-              <template v-if="column.key === 'Note'">{{ recordContent(record) }}</template>
-              <template v-else-if="column.key === 'CreateTime'">{{ formatNetcashDateTime(record.CreateTime) }}</template>
-            </template>
-          </Table>
-          <Pagination
-            v-if="canViewRecordList && recordTotal"
-            v-model:current="recordQuery.Page"
-            v-model:page-size="recordQuery.PageSize"
-            class="mt-4 text-right"
-            :show-size-changer="true"
-            :total="recordTotal"
-            @change="loadRecords"
-          />
+          </template>
           <Result
-            v-if="!canViewRecordList"
+            v-else
             status="403"
-            sub-title="无团队操作记录数据权限"
+            sub-title="无团队操作记录数据权限（11497）"
             title="403"
           />
         </Tabs.TabPane>

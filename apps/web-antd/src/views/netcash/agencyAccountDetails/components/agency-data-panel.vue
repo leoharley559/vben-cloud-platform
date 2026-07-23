@@ -36,7 +36,7 @@ function routeTime(value: unknown, fallback: Dayjs) {
 }
 
 const dateRange = ref<[Dayjs, Dayjs]>([
-  routeTime(route.query.CountBeginTime, dayjs().subtract(7, 'day').startOf('day')),
+  routeTime(route.query.CountBeginTime, dayjs().startOf('day')),
   routeTime(route.query.CountEndTime, dayjs().endOf('day')),
 ]);
 
@@ -98,6 +98,14 @@ async function load() {
     agentPager.total = Number(
       agentResult.Pagination?.MaxCount ?? agents.value.length,
     );
+  } catch {
+    personal.value = [];
+    members.value = [];
+    agents.value = [];
+    memberTotal.value = {};
+    agentTotal.value = {};
+    memberPager.total = 0;
+    agentPager.total = 0;
   } finally {
     loading.value = false;
   }
@@ -180,7 +188,7 @@ watch(
     dateRange.value = [
       routeTime(
         route.query.CountBeginTime,
-        dayjs().subtract(7, 'day').startOf('day'),
+        dayjs().startOf('day'),
       ),
       routeTime(route.query.CountEndTime, dayjs().endOf('day')),
     ];
@@ -199,7 +207,7 @@ watch(
       <Button
         @click="
           dateRange = [
-            dayjs().subtract(7, 'day').startOf('day'),
+            dayjs().startOf('day'),
             dayjs().endOf('day'),
           ];
           load();

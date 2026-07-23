@@ -33,6 +33,7 @@ import {
   exportRows,
   rangeParams,
   type Row,
+  unwrapCreditLimitItem,
 } from './shared';
 
 const { checkPermission } = useCloudPermission();
@@ -85,10 +86,12 @@ function buildQuery(page = query.Page, pageSize = query.PageSize) {
     AgentAccount: query.AgentAccount,
     BeginCreditRange:
       query.BeginCreditRange === undefined
-        ? ''
+        ? 0
         : Math.round(query.BeginCreditRange * 100),
     EndCreditRange:
-      query.EndCreditRange === undefined ? '' : Math.round(query.EndCreditRange * 100),
+      query.EndCreditRange === undefined
+        ? 0
+        : Math.round(query.EndCreditRange * 100),
     Page: page,
     PageSize: pageSize,
     ...rangeParams(
@@ -107,6 +110,11 @@ async function load() {
     total.value = Number(result.Pagination?.MaxCount || 0);
     summary.TotalCredit = Number(result.Total?.TotalCredit || 0);
     summary.CreditDue = Number(result.Total?.CreditDue || 0);
+  } catch {
+    rows.value = [];
+    total.value = 0;
+    summary.TotalCredit = 0;
+    summary.CreditDue = 0;
   } finally {
     loading.value = false;
   }
@@ -139,6 +147,8 @@ async function handleExport() {
     if (!(await exportRows('代理额度管理', exportColumns, result.Items || []))) {
       message.info('暂无可导出数据');
     }
+  } catch {
+    message.error('导出失败，请稍后重试');
   } finally {
     exporting.value = false;
   }
@@ -200,6 +210,8 @@ async function submitAdjust() {
     message.success('提交成功');
     adjustOpen.value = false;
     await load();
+  } catch {
+    message.error('提交失败，请稍后重试');
   } finally {
     adjustSubmitting.value = false;
   }
@@ -216,12 +228,15 @@ const limitForm = reactive({
 async function openTransferLimit() {
   loading.value = true;
   try {
-    const result = await getAgentCreditLimitApi({ Page: 1, PageSize: 1 });
-    const item = (result.Items || result) as Row;
+    // 对齐旧站：无分页参数
+    const result = await getAgentCreditLimitApi({});
+    const item = unwrapCreditLimitItem(result);
     limitForm.MinTransferAmount = Number(item.MinTransferAmount || 0) / 100;
     limitForm.MaxTransferAmount = Number(item.MaxTransferAmount || 0) / 100;
     limitForm.DailyTransferAmount = Number(item.DailyTransferAmount || 0) / 100;
     limitOpen.value = true;
+  } catch {
+    message.error('无法读取转账限额');
   } finally {
     loading.value = false;
   }
@@ -247,6 +262,8 @@ async function submitTransferLimit() {
     message.success('设置成功');
     limitOpen.value = false;
     await load();
+  } catch {
+    message.error('设置失败，请稍后重试');
   } finally {
     limitSubmitting.value = false;
   }

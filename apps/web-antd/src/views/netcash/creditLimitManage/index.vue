@@ -20,11 +20,11 @@ const { checkPermission } = useCloudPermission();
 const tabs = computed(() =>
   [
     { component: CreditLimitAdjust, inner: 11_752, key: 'quota', outer: 11_744, tab: '额度调整' },
-    { component: PendingAdjustment, inner: 11_755, key: 'pending', outer: 11_746, tab: '待处理' },
-    { component: DebtRecords, inner: 11_758, key: 'debt', outer: 12_570, tab: '债务' },
-    { component: NetCashLog, inner: 11_759, key: 'log', outer: 11_748, tab: '账变' },
-    { component: AdjustRecords, inner: 11_758, key: 'record', outer: 11_747, tab: '记录' },
+    { component: PendingAdjustment, inner: 11_755, key: 'pending', outer: 11_746, tab: '审核列表' },
+    { component: AdjustRecords, inner: 11_758, key: 'record', outer: 11_747, tab: '调整记录' },
+    { component: NetCashLog, inner: 11_759, key: 'log', outer: 11_748, tab: '账变记录' },
     { component: PermissionSettings, inner: 11_784, key: 'permission', outer: 11_749, tab: '权限设置' },
+    { component: DebtRecords, inner: 11_758, key: 'debt', outer: 12_570, tab: '代充欠款日志' },
   ].filter((item) => checkPermission(item.outer)),
 );
 const activeTab = ref('');

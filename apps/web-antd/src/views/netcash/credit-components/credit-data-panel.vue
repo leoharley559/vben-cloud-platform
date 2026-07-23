@@ -80,15 +80,30 @@ function normalizeSelectValue(value: unknown) {
   return Array.isArray(value) ? value.join(',') : value;
 }
 
+function isEmptyFilterValue(value: unknown) {
+  return (
+    value === '' ||
+    value === undefined ||
+    value === null ||
+    (Array.isArray(value) && value.length === 0)
+  );
+}
+
 function buildQuery(page: { currentPage: number; pageSize: number }) {
+  const baseQuery = props.config.baseQuery || {};
   const query: Record<string, unknown> = {
     Page: page.currentPage,
     PageSize: page.pageSize,
-    ...(props.config.baseQuery || {}),
+    ...baseQuery,
   };
   for (const filter of props.config.filters || []) {
     if (filter.field && filter.type !== 'dateRange') {
-      query[filter.field] = normalizeSelectValue(filterValues[filter.field]);
+      const value = normalizeSelectValue(filterValues[filter.field]);
+      // 空筛选项不覆盖 baseQuery 固定参数（如 Status/WalletType）
+      if (isEmptyFilterValue(value) && filter.field in baseQuery) {
+        continue;
+      }
+      query[filter.field] = value;
     }
     if (filter.fields) {
       const range = rangeValues[filter.label];
@@ -150,14 +165,19 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = (await props.config.fetchApi(buildQuery(page))) || {};
-        const items = Array.isArray(result.Items) ? result.Items : [];
-        totalData.value =
-          result.Total && typeof result.Total === 'object' ? result.Total : {};
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount ?? items.length),
-        };
+        try {
+          const result = (await props.config.fetchApi(buildQuery(page))) || {};
+          const items = Array.isArray(result.Items) ? result.Items : [];
+          totalData.value =
+            result.Total && typeof result.Total === 'object' ? result.Total : {};
+          return {
+            items,
+            total: Number(result.Pagination?.MaxCount ?? items.length),
+          };
+        } catch {
+          totalData.value = {};
+          return { items: [], total: 0 };
+        }
       },
     },
   },

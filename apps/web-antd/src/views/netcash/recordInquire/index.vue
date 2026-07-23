@@ -131,11 +131,9 @@ const tabs = computed(() =>
           { field: 'Amount', formatter: cash, title: '调整金额' },
           {
             field: 'HandleType',
-            formatter: (value: unknown) =>
-              ({
-                recordInquireDeposit: '存入',
-                withdrawOut: '提出',
-              })[String(value)] || String(value ?? '-'),
+            // 接口不返回 HandleType，与旧站一致：按 Amount 正负推导存入/提出
+            formatter: (_value: unknown, row: Record<string, unknown>) =>
+              Number(row.Amount || 0) > 0 ? '存入' : '提出',
             title: '调整类型',
           },
         ],
@@ -411,9 +409,7 @@ const tabs = computed(() =>
       outer: 11_735,
       tab: '账变记录',
     },
-  ].filter(
-    (item) => checkPermission(item.outer) && checkPermission(item.inner),
-  ),
+  ].filter((item) => checkPermission(item.outer)),
 );
 const active = ref('');
 
@@ -440,8 +436,14 @@ onMounted(() => {
           :tab="item.tab"
         >
           <RecordQueryPanel
-            v-if="active === item.key"
+            v-if="active === item.key && checkPermission(item.inner)"
             :config="item.config as RecordQueryPanelConfig"
+          />
+          <Result
+            v-else-if="active === item.key"
+            status="403"
+            :sub-title="`无${item.tab}查看权限（${item.inner}）`"
+            title="403"
           />
         </Tabs.TabPane>
       </Tabs>

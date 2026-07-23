@@ -75,8 +75,9 @@ const form = reactive({
   Password: '',
   Remark: '',
   SendCommissionType: 1,
-  SettlementType: 1,
-  Type: 1,
+  // 对齐旧站：新增默认特殊代理 + 月结
+  SettlementType: 3,
+  Type: 2,
   Username: '',
 });
 
@@ -96,8 +97,8 @@ function resetForm() {
   form.CommissionRateDiff = undefined;
   form.ApiFeeTemplateId = undefined;
   form.AlgorithmTemplateId = undefined;
-  form.Type = 1;
-  form.SettlementType = 1;
+  form.Type = 2;
+  form.SettlementType = 3;
   form.SendCommissionType = 1;
   form.Remark = '';
 }
@@ -130,9 +131,10 @@ function fillFromRow(row: AgencyListItem) {
     | number
     | string
     | undefined;
-  form.Remark = String(row.Remark || '');
-  form.Type = Number(row.Type) || 1;
-  form.SettlementType = Number(row.SettlementType) || 1;
+  // 列表备注字段为 RemarkOnDeactivation；提交仍走 Remark（对齐旧站）
+  form.Remark = String(row.RemarkOnDeactivation || row.Remark || '');
+  form.Type = Number(row.Type) || 2;
+  form.SettlementType = Number(row.SettlementType) || 3;
   form.SendCommissionType = Number(row.SendCommissionType) || 1;
 }
 
@@ -302,6 +304,8 @@ async function handleSubmit() {
     }
     closeModal();
     emit('success');
+  } catch {
+    // 全局拦截已提示
   } finally {
     submitting.value = false;
   }

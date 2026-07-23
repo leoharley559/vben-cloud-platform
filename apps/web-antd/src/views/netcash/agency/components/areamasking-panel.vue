@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Card, Spin, Switch, message } from 'ant-design-vue';
+import { Button, Card, Result, Spin, Switch, message } from 'ant-design-vue';
 
 import {
   fetchCountriesConfigListApi,
@@ -19,7 +19,9 @@ interface CountryItem {
 }
 
 const { checkPermission } = useCloudPermission();
-const canEdit = computed(() => checkPermission(11573));
+/** 对齐旧站：Tab 入口 11571，面板查看 11572，编辑 11573 */
+const canView = computed(() => checkPermission(11_572));
+const canEdit = computed(() => checkPermission(11_573));
 const loading = ref(false);
 const saving = ref(false);
 const configurationList = ref<CountryItem[]>([]);
@@ -76,6 +78,10 @@ async function loadData() {
       .map((item) => Number(item))
       .filter((item) => !Number.isNaN(item));
     originalIds.value = [...selectedIds.value].sort((a, b) => a - b).join(',');
+  } catch {
+    configurationList.value = [];
+    selectedIds.value = [];
+    originalIds.value = '';
   } finally {
     loading.value = false;
   }
@@ -93,18 +99,28 @@ async function saveChanges() {
     });
     originalIds.value = selectedIds.value.join(',');
     message.success('区域屏蔽设置已保存');
+  } catch {
+    // 全局拦截已提示
   } finally {
     saving.value = false;
   }
 }
 
 onMounted(() => {
-  loadData();
+  if (canView.value) {
+    loadData();
+  }
 });
 </script>
 
 <template>
-  <Spin :spinning="loading">
+  <Result
+    v-if="!canView"
+    status="403"
+    sub-title="无区域屏蔽查看权限（11572）"
+    title="403"
+  />
+  <Spin v-else :spinning="loading">
     <div class="mb-4 flex items-center justify-between">
       <div class="text-sm text-gray-500">
         推广地区屏蔽（保存后约 5 分钟生效，不会踢线）
@@ -118,6 +134,10 @@ onMounted(() => {
       >
         保存并提交
       </Button>
+    </div>
+
+    <div v-if="!loading && !continents.length" class="py-8 text-center text-gray-400">
+      暂无国家/地区配置数据
     </div>
 
     <div class="grid gap-4">

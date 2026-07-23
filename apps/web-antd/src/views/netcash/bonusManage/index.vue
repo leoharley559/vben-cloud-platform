@@ -202,12 +202,16 @@ async function submitSingleProvide() {
           });
           message.success('发放成功');
           resetProvide();
+        } catch {
+          // requestClient 已提示业务错误（如 10196）
         } finally {
           provideSubmitting.value = false;
         }
       },
       title: '确认发放',
     });
+  } catch {
+    // queryadminid 失败（如 10000）由 requestClient 提示
   } finally {
     provideQuerying.value = false;
   }
@@ -293,6 +297,8 @@ async function validateBatchFile() {
       };
     });
     batchPreviewOpen.value = true;
+  } catch {
+    batchPreview.value = [];
   } finally {
     provideQuerying.value = false;
   }
@@ -354,6 +360,8 @@ function submitBatchProvide() {
         batchResultOpen.value = true;
         message.success('批量发放处理完成');
         resetProvide();
+      } catch {
+        // requestClient 已提示业务错误
       } finally {
         provideSubmitting.value = false;
       }
@@ -421,6 +429,11 @@ async function loadAudit() {
     auditRows.value = result.Items || [];
     auditTotal.value = Number(result.Pagination?.MaxCount || 0);
     auditTotalAmount.value = Number(result.Total?.Total || 0);
+    selectedAuditRows.value = [];
+  } catch {
+    auditRows.value = [];
+    auditTotal.value = 0;
+    auditTotalAmount.value = 0;
     selectedAuditRows.value = [];
   } finally {
     auditLoading.value = false;
@@ -554,6 +567,8 @@ async function submitAuditAction() {
     message.success('操作成功');
     auditModalOpen.value = false;
     await loadAudit();
+  } catch {
+    // requestClient 已提示业务错误
   } finally {
     auditSubmitting.value = false;
   }
@@ -591,8 +606,8 @@ function historyQuery(isExport = false) {
     BeginTime: applyBegin.startOf('day').unix(),
     EndTime: applyEnd.endOf('day').unix(),
     IsExp: isExport,
-    Page: historyPage.value,
-    PageSize: historyPageSize.value,
+    Page: isExport ? 1 : historyPage.value,
+    PageSize: isExport ? 9999 : historyPageSize.value,
   };
 }
 
@@ -604,6 +619,11 @@ async function loadHistory() {
     historyTotal.value = Number(result.Pagination?.MaxCount || 0);
     historyTotalAmount.value = Number(result.Total?.Total || 0);
     historyTotalRealAmount.value = Number(result.Total?.TotalReal || 0);
+  } catch {
+    historyRows.value = [];
+    historyTotal.value = 0;
+    historyTotalAmount.value = 0;
+    historyTotalRealAmount.value = 0;
   } finally {
     historyLoading.value = false;
   }
@@ -672,6 +692,8 @@ async function exportHistory() {
       ],
       `红利历史记录_${dayjs().format('YYYYMMDDHHmmss')}.xlsx`,
     );
+  } catch {
+    message.error('导出失败');
   } finally {
     historyExporting.value = false;
   }
@@ -771,7 +793,7 @@ watch(
                 >
                   重新验证
                 </Button>
-                <span v-if="validBatchRows.length" class="text-green-600">
+                <span v-if="batchUsed && validBatchRows.length" class="text-green-600">
                   已使用 {{ validBatchRows.length }} 条有效数据
                 </span>
               </Space>

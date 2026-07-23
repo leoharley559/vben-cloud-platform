@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   DatePicker,
+  Empty,
   Select,
   Space,
   Statistic,
@@ -43,8 +44,14 @@ const month = ref<Dayjs | undefined>(dayjs().subtract(1, 'month'));
 const bonusType = ref<number | string>('');
 const approve = ref<number | string>('');
 const transferType = ref<number | string>('');
-const dateRange = ref<[Dayjs, Dayjs]>([
+/** 帐变记录默认近 7 天（旧站 transactionLog 同样带时间窗） */
+const logDateRange = ref<[Dayjs, Dayjs]>([
   dayjs().subtract(7, 'day').startOf('day'),
+  dayjs().endOf('day'),
+]);
+/** 对齐旧站 bonusInfo：默认今天 */
+const bonusDateRange = ref<[Dayjs, Dayjs]>([
+  dayjs().startOf('day'),
   dayjs().endOf('day'),
 ]);
 
@@ -70,42 +77,54 @@ const transferOptions = computed(() => {
 });
 
 const tabs = computed(() => {
+  // 对齐旧站：外层按钮权限控制 Tab 可见；内容区各自再校验内层权限
   if (isCommission.value) {
     return [
       {
+        contentPerm: 11_773,
         key: 'account',
         label: '代理账户信息',
-        visible: checkPermission(11_769) && checkPermission(11_773),
+        visible: checkPermission(11_769),
       },
       {
+        contentPerm: 11_774,
         key: 'commission',
         label: '佣金信息',
-        visible: checkPermission(11_770) && checkPermission(11_774),
+        visible: checkPermission(11_770),
       },
       {
+        contentPerm: 11_776,
         key: 'bonus',
         label: '红利信息',
-        visible: checkPermission(11_771) && checkPermission(11_776),
+        visible: checkPermission(11_771),
       },
       {
+        contentPerm: 11_778,
         key: 'log',
         label: '帐变记录',
-        visible: checkPermission(11_772) && checkPermission(11_778),
+        visible: checkPermission(11_772),
       },
     ].filter((item) => item.visible);
   }
   return [
     {
+      contentPerm: 11_780,
       key: 'account',
       label: '代理账户信息',
-      visible: checkPermission(11_740) && checkPermission(11_780),
+      visible: checkPermission(11_740),
     },
     {
+      contentPerm: 11_782,
       key: 'log',
       label: '帐变记录',
-      visible: checkPermission(11_741) && checkPermission(11_782),
+      visible: checkPermission(11_741),
     },
   ].filter((item) => item.visible);
+});
+
+const canActiveContent = computed(() => {
+  const tab = tabs.value.find((item) => item.key === activeTab.value);
+  return tab ? checkPermission(tab.contentPerm) : false;
 });
 
 const commissionColumns = [
@@ -207,22 +226,26 @@ function query(isExp = false) {
   if (activeTab.value === 'bonus') {
     return {
       ...base,
-      ApplyEndTime: dateRange.value[1].endOf('day').unix(),
-      ApplyStartTime: dateRange.value[0].startOf('day').unix(),
+      ApplyEndTime: bonusDateRange.value[1].endOf('day').unix(),
+      ApplyStartTime: bonusDateRange.value[0].startOf('day').unix(),
       Approve: approve.value,
       BonusType: bonusType.value,
     };
   }
   return {
     ...base,
-    TransferEndTime: dateRange.value[1].endOf('day').unix(),
-    TransferStartTime: dateRange.value[0].startOf('day').unix(),
+    TransferEndTime: logDateRange.value[1].endOf('day').unix(),
+    TransferStartTime: logDateRange.value[0].startOf('day').unix(),
     TransferType: transferType.value,
     WalletType: isCommission.value ? 1 : 2,
   };
 }
 
 async function loadAccount(showMessage = false) {
+  if (!canActiveContent.value) {
+    balance.value = 0;
+    return;
+  }
   loading.value = true;
   try {
     const result = await fetchAgentWalletBalanceApi(props.adminId);
@@ -233,6 +256,8 @@ async function loadAccount(showMessage = false) {
       const { message } = await import('ant-design-vue');
       message.success('余额已刷新');
     }
+  } catch {
+    balance.value = 0;
   } finally {
     loading.value = false;
   }
@@ -253,12 +278,21 @@ async function load() {
     await loadAccount();
     return;
   }
+  if (!canActiveContent.value) {
+    rows.value = [];
+    pager.total = 0;
+    return;
+  }
   loading.value = true;
   try {
     const result = await fetchRows();
     rows.value = result.Items || [];
     totalData.value = result.Total || {};
     pager.total = Number(result.Pagination?.MaxCount ?? rows.value.length);
+  } catch {
+    rows.value = [];
+    totalData.value = {};
+    pager.total = 0;
   } finally {
     loading.value = false;
   }
@@ -348,7 +382,7 @@ async function exportRows() {
     );
     XLSX.writeFile(
       book,
-      `${isCommission.value ? '佣金钱包' : '信用钱包'}_${activeTab.value}_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`,
+      `${isCommission.value ? '佣金钱包' : '代存钱包'}_${activeTab.value}_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`,
     );
   } finally {
     exporting.value = false;
@@ -361,7 +395,8 @@ function resetFilters() {
   bonusType.value = '';
   approve.value = '';
   transferType.value = '';
-  dateRange.value = [
+  bonusDateRange.value = [dayjs().startOf('day'), dayjs().endOf('day')];
+  logDateRange.value = [
     dayjs().subtract(7, 'day').startOf('day'),
     dayjs().endOf('day'),
   ];
@@ -396,10 +431,14 @@ onMounted(load);
   </Tabs>
 
   <Card v-if="activeTab === 'account'" :loading="loading" size="small">
-    <Space direction="vertical">
+    <Empty
+      v-if="!canActiveContent"
+      description="无账户信息查看权限"
+    />
+    <Space v-else direction="vertical">
       <Statistic
         :precision="2"
-        :title="isCommission ? '佣金账户余额（元）' : '信用钱包余额（元）'"
+        :title="isCommission ? '佣金账户余额（元）' : '代存钱包余额（元）'"
         :value="balance / 100"
       />
       <Button type="primary" @click="loadAccount(true)">刷新余额</Button>
@@ -407,6 +446,11 @@ onMounted(load);
   </Card>
 
   <div v-else class="space-y-3">
+    <Empty
+      v-if="!canActiveContent"
+      :description="`无${activeTab === 'commission' ? '佣金' : activeTab === 'bonus' ? '红利' : '帐变'}查看权限`"
+    />
+    <template v-else>
     <Space wrap>
       <DatePicker
         v-if="activeTab === 'commission'"
@@ -433,18 +477,16 @@ onMounted(load);
           ]"
           style="width: 150px"
         />
+        <DatePicker.RangePicker v-model:value="bonusDateRange" show-time />
       </template>
-      <Select
-        v-else
-        v-model:value="transferType"
-        :options="transferOptions"
-        style="width: 180px"
-      />
-      <DatePicker.RangePicker
-        v-if="activeTab !== 'commission'"
-        v-model:value="dateRange"
-        show-time
-      />
+      <template v-else>
+        <Select
+          v-model:value="transferType"
+          :options="transferOptions"
+          style="width: 180px"
+        />
+        <DatePicker.RangePicker v-model:value="logDateRange" show-time />
+      </template>
       <Button type="primary" @click="load">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button
@@ -504,5 +546,6 @@ onMounted(load);
         </Table.Summary>
       </template>
     </Table>
+    </template>
   </div>
 </template>

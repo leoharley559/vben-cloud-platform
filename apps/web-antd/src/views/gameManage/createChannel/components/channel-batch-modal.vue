@@ -46,6 +46,8 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 defineOptions({ name: 'ChannelBatchModal' });
 
 const props = defineProps<{
+  /** 批量配置权限 ID；游戏渠道默认 12322，网赚渠道传 12352/12509 */
+  batchPermission?: number;
   dataFlag?: 0 | 1;
   open: boolean;
   rows: ChannelRow[];
@@ -117,7 +119,9 @@ const ACTION_FIELDS: Record<ActionType, Array<keyof FormState>> = {
 };
 
 const { adminInfo, checkPermission, projectConfig } = useCloudPermission();
-const canBatchEdit = computed(() => checkPermission(12_322));
+const canBatchEdit = computed(() =>
+  checkPermission(props.batchPermission ?? 12_322),
+);
 const actionType = ref<ActionType>(1);
 const loading = ref(false);
 const saving = ref(false);
@@ -170,7 +174,9 @@ const packageName = computed(() => {
   );
 });
 const blockedReason = computed(() => {
-  if (!canBatchEdit.value) return '缺少批量配置权限（12322）。';
+  if (!canBatchEdit.value) {
+    return `缺少批量配置权限（${props.batchPermission ?? 12_322}）。`;
+  }
   if (props.rows.length === 0) return '请先选择需要批量配置的渠道。';
   if (hasPackingRows.value) return '打包中的渠道不能选择或进行批量配置。';
   if (hasMissingDatabaseIds.value)

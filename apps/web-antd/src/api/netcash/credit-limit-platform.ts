@@ -30,7 +30,10 @@ function normalizeList<T>(
  * @returns 平台信用额度详情 PlatformCreditInfo
  * @see views/netcash/creditLimitPlatformManage/index.vue
  */
-export function getPlatformAgentCreditLimitApi(query: NetcashListQuery) {
+export function getPlatformAgentCreditLimitApi(
+  query: Partial<NetcashListQuery> | Record<string, unknown> = {},
+) {
+  // 旧站申请页无分页参；respond.Items 为单对象（非数组）
   return requestClient.get<PlatformCreditInfo>(
     '/backend/agentcreditlimit/getagentcreditlimit',
     { params: trimSpace(query) },

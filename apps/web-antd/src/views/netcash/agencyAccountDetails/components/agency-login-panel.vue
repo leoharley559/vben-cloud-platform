@@ -82,6 +82,9 @@ async function load(key: PanelKey) {
         : await fetchLoginInfoListApi(query);
     rows[key] = result.Items || [];
     pager.total = Number(result.Pagination?.MaxCount ?? rows[key].length);
+  } catch {
+    rows[key] = [];
+    pagers[key].total = 0;
   } finally {
     loading[key] = false;
   }

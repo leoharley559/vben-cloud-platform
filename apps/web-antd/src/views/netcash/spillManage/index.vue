@@ -46,7 +46,8 @@ const canViewPage = computed(() => checkPermission(10168));
 const canAudit = computed(() => checkPermission(10169));
 
 const LOGIN_ACCOUNT_RE = /^[a-zA-Z0-9]{4,20}$/;
-const defaultBegin = dayjs().subtract(30, 'day').startOf('day');
+// 对齐旧站 SearchTypeTwo / listQuery：当月 1 日 00:00 ～ 今日结束
+const defaultBegin = dayjs().startOf('month');
 const defaultEnd = dayjs().endOf('day');
 
 const filterLoginAccount = ref('');
@@ -74,16 +75,22 @@ function normalizeLoginAccount(value: string) {
 
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
+  const status =
+    filterStatus.value === undefined ||
+    filterStatus.value === null ||
+    filterStatus.value === ''
+      ? 0
+      : filterStatus.value;
   return {
     Account: filterAccount.value.trim(),
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value),
-    PackageId: filterPackageId.value,
+    PackageId: filterPackageId.value ?? '',
     Page: page.currentPage,
     PageSize: page.pageSize,
     PlayerId: '',
-    Status: filterStatus.value,
-    TimeBegin: begin ? begin.unix() : defaultBegin.unix(),
-    TimeEnd: end ? end.unix() : defaultEnd.unix(),
+    Status: status,
+    TimeBegin: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
+    TimeEnd: end ? end.endOf('day').unix() : defaultEnd.unix(),
     VipLevel: filterVipLevel.value ?? -1,
   };
 }
@@ -103,6 +110,7 @@ async function resetQuery() {
   filterLoginAccount.value = '';
   filterAccount.value = '';
   filterPackageId.value = '';
+  // 对齐旧站重置：Status 置空后再按全部语义请求（getQueryParams 会归一为 0）
   filterStatus.value = '';
   filterVipLevel.value = -1;
   filterDateRange.value = [defaultBegin, defaultEnd];
@@ -175,13 +183,21 @@ const gridOptions: VxeTableGridOptions<SpillManageItem> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchSpillManageListApi(getQueryParams(page));
-        const items = result.Items;
-        applyTotal.value = result.Total;
-        return {
-          items,
-          total: result.Total,
-        };
+        try {
+          const result = await fetchSpillManageListApi(getQueryParams(page));
+          const items = result.Items || [];
+          // 旧站分页/申请数量均取 respond.Total
+          applyTotal.value = Number(result.Total || 0);
+          return {
+            items,
+            total: Number(
+              result.Total || result.Pagination?.MaxCount || items.length,
+            ),
+          };
+        } catch {
+          applyTotal.value = 0;
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -216,6 +232,8 @@ async function submitAudit() {
     auditOpen.value = false;
     message.success('操作成功');
     await gridApi.reload();
+  } catch {
+    // 全局拦截已提示；非法 JSON 等异常避免误关弹窗后假成功
   } finally {
     auditSubmitting.value = false;
   }
@@ -276,12 +294,7 @@ onMounted(() => {
           :options="[{ label: '全部 VIP', value: -1 }, ...Array.from({ length: 11 }, (_, value) => ({ label: `VIP${value}`, value }))]"
           placeholder="VIP等级"
         />
-        <DatePicker.RangePicker
-          v-model:value="filterDateRange"
-          :show-time="{
-            defaultValue: [dayjs().startOf('day'), dayjs().endOf('day')],
-          }"
-        />
+        <DatePicker.RangePicker v-model:value="filterDateRange" />
         <Button type="primary" @click="search">查询</Button>
         <Button @click="resetQuery">重置</Button>
       </div>

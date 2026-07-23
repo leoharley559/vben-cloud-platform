@@ -60,11 +60,14 @@ const query = reactive<RecordQueryBaseQuery>({
 });
 
 const kind = computed<QueryKind>(() => props.config.kind || 'standard');
-const initialDays = () => (kind.value === 'standard' ? 7 : 1);
-const defaultRange = (): [dayjs.Dayjs, dayjs.Dayjs] => [
-  dayjs().subtract(initialDays(), 'day').startOf('day'),
-  dayjs().subtract(1, 'day').endOf('day'),
-];
+/** 与旧站 listQuery 对齐：标准 Tab 近 7 日～今日；红利/账变 昨日～今日 */
+const defaultRange = (): [dayjs.Dayjs, dayjs.Dayjs] => {
+  const end = dayjs().endOf('day');
+  if (kind.value === 'standard') {
+    return [dayjs().subtract(7, 'day').startOf('day'), end];
+  }
+  return [dayjs().subtract(1, 'day').startOf('day'), end];
+};
 const primaryRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>(
   defaultRange(),
 );
@@ -211,15 +214,24 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await props.config.fetchApi(build(page));
-        rows.value = result.Items;
-        total.value = Number(
-          result.Pagination.MaxCount || rows.value.length || 0,
-        );
-        for (const item of props.config.summaryItems || []) {
-          summaries[item.field] = Number(result.Total[item.field] || 0);
+        try {
+          const result = await props.config.fetchApi(build(page));
+          rows.value = result.Items;
+          total.value = Number(
+            result.Pagination.MaxCount || rows.value.length || 0,
+          );
+          for (const item of props.config.summaryItems || []) {
+            summaries[item.field] = Number(result.Total?.[item.field] || 0);
+          }
+          return { items: rows.value, total: total.value };
+        } catch {
+          rows.value = [];
+          total.value = 0;
+          for (const item of props.config.summaryItems || []) {
+            summaries[item.field] = 0;
+          }
+          return { items: [], total: 0 };
         }
-        return { items: rows.value, total: total.value };
       },
     },
   },
@@ -229,26 +241,31 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 function validateRange() {
   const begin = primaryRange.value?.[0];
   const end = primaryRange.value?.[1];
-  if (!begin || !end) return true;
-  if (
-    kind.value === 'standard' &&
-    end.isAfter(dayjs().subtract(1, 'day').endOf('day'))
-  ) {
-    message.warning('日期只能查询今天以前的数据');
+  if (!begin || !end) {
+    message.warning('请选择日期范围');
     return false;
   }
-  if (
-    kind.value === 'standard' &&
-    end.diff(begin, 'day', true) > 7
-  ) {
-    message.warning('查询日期范围不能超过 7 天');
+  if (end.isBefore(begin)) {
+    message.warning('结束时间不能早于开始时间');
     return false;
+  }
+  // 标准 Tab：对齐旧站 SearchTypeTwo limit-number=7；允许查到今日（对齐 listQuery EndTime）
+  if (kind.value === 'standard') {
+    if (begin.isAfter(dayjs(), 'day') || end.isAfter(dayjs(), 'day')) {
+      message.warning('不能查询未来日期');
+      return false;
+    }
+    if (end.startOf('day').diff(begin.startOf('day'), 'day') > 7) {
+      message.warning('查询日期范围不能超过 7 天');
+      return false;
+    }
   }
   return true;
 }
 
 function disableStandardDate(date: dayjs.Dayjs) {
-  return kind.value === 'standard' && !date.isBefore(dayjs(), 'day');
+  // 标准 Tab 禁止选未来；红利/账变不限制（旧站红利 SearchTypeTwo 亦无 beforeToday）
+  return kind.value === 'standard' && date.isAfter(dayjs(), 'day');
 }
 
 function search() {
@@ -278,10 +295,11 @@ function reset() {
   });
   primaryRange.value = defaultRange();
   finishRange.value = undefined;
-  void gridApi.query();
+  search();
 }
 
 async function exportExcel() {
+  if (!validateRange()) return;
   if (rows.value.length === 0) {
     message.info('暂无可导出的数据');
     return;
@@ -317,7 +335,7 @@ async function exportExcel() {
             field === (item.columnField || item.field.replace(/^Total/, '')),
         );
         summaryRow[column?.title || item.title] = money(
-          result.Total[item.field],
+          result.Total?.[item.field],
         );
       }
       data.push(summaryRow);
@@ -326,12 +344,16 @@ async function exportExcel() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, props.config.title.slice(0, 31));
     XLSX.writeFile(wb, `${props.config.title}.xlsx`);
+  } catch {
+    message.error('导出失败，请稍后重试');
   } finally {
     exporting.value = false;
   }
 }
 
-onMounted(() => gridApi.reload());
+onMounted(() => {
+  if (validateRange()) void gridApi.reload();
+});
 </script>
 
 <template>

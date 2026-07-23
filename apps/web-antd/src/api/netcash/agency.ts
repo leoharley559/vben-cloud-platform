@@ -41,6 +41,7 @@ export async function fetchAgencyListApi(query: AgencyListQuery) {
  */
 export function switchAgencyStatusApi(data: {
   AdminId: number | string;
+  Name?: string;
   RemarkOnDeactivation: string;
   Status: number;
 }) {
@@ -57,14 +58,19 @@ export function switchAgencyStatusApi(data: {
  * 代理注册申请列表（「代理管理」页注册审核 Tab）。
  *
  * @param query 查询参数（审核状态、时间、分页等）
- * @returns 注册申请 Items 及 Pagination
+ * @returns 注册申请 Items 及 Pagination；空 Items 时返回 `[]`
  * @see views/netcash/agency/components/register-list.vue
  */
-export function fetchAgencyRegisterListApi(query: AgencyRegisterListQuery) {
-  return requestClient.get<CloudListResult<AgencyRegisterItem>>(
+export async function fetchAgencyRegisterListApi(query: AgencyRegisterListQuery) {
+  const result = await requestClient.get<CloudListResult<AgencyRegisterItem> | null>(
     '/backend/agentnetcashregister/list',
     { params: trimSpace(query) },
   );
+  return {
+    ...(result || {}),
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    Pagination: result?.Pagination || {},
+  };
 }
 
 /**
@@ -96,13 +102,21 @@ export function switchAgencyAutoAuditApi(data: { Enable: number | string }) {
  * 国家/地区配置列表（区域屏蔽面板数据源）。
  *
  * @param query 查询参数（分页等）
- * @returns 国家配置 Items 及 Pagination
+ * @returns 国家配置 Items 及 Pagination；空 Items 时返回 `[]`
  * @see views/netcash/agency/components/areamasking-panel.vue
  */
-export function fetchCountriesConfigListApi(query: Record<string, unknown>) {
-  return requestClient.get<NetcashListResult>('/backend/countriesconfig/list', {
-    params: query,
-  });
+export async function fetchCountriesConfigListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<NetcashListResult | null>(
+    '/backend/countriesconfig/list',
+    {
+      params: query,
+    },
+  );
+  return {
+    ...(result || {}),
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    Pagination: result?.Pagination || {},
+  };
 }
 
 /**
@@ -133,16 +147,21 @@ export function updateGameCountriesApi(data: Record<string, unknown>) {
  * 开发者名称列表（「代理管理」页开发者 Tab）。
  *
  * @param query 查询参数（名称、分页等）
- * @returns 开发者名称 Items 及 Pagination
+ * @returns 开发者名称 Items 及 Pagination；空 Items 时返回 `[]`
  * @see views/netcash/agency/components/developer-list.vue
  */
-export function fetchDeveloperNamesListApi(query: NetcashListQuery) {
-  return requestClient.get<NetcashListResult>(
+export async function fetchDeveloperNamesListApi(query: NetcashListQuery) {
+  const result = await requestClient.get<NetcashListResult | null>(
     '/backend/agentnetcashdevelopername/list',
     {
       params: trimSpace(query),
     },
   );
+  return {
+    ...(result || {}),
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    Pagination: result?.Pagination || {},
+  };
 }
 
 /**
@@ -184,13 +203,21 @@ export function deleteDeveloperNameApi(data: { Id: number | string }) {
  * 可选代理负责人列表（新建/编辑代理时选择上级或负责人）。
  *
  * @param query 查询参数（账号、状态等）
- * @returns 代理账号 Items 及 Pagination
+ * @returns 代理账号 Items 及 Pagination；空 Items 时返回 `[]`
  * @see views/netcash/agency/components/agency-form-modal.vue
  */
-export function fetchAgencyPrincipalListApi(query: Record<string, unknown>) {
-  return requestClient.get<NetcashListResult>('/backend/agentnetcash/list', {
-    params: trimSpace(query),
-  });
+export async function fetchAgencyPrincipalListApi(query: Record<string, unknown>) {
+  const result = await requestClient.get<NetcashListResult | null>(
+    '/backend/agentnetcash/list',
+    {
+      params: trimSpace(query),
+    },
+  );
+  return {
+    ...(result || {}),
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+    Pagination: result?.Pagination || {},
+  };
 }
 
 /**

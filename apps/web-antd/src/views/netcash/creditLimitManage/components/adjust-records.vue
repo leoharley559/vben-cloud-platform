@@ -80,6 +80,10 @@ async function load() {
     rows.value = result.Items || [];
     total.value = Number(result.Pagination?.MaxCount || 0);
     totalAmount.value = Number(result.Total?.TotalAdjustAmount || 0);
+  } catch {
+    rows.value = [];
+    total.value = 0;
+    totalAmount.value = 0;
   } finally {
     loading.value = false;
   }

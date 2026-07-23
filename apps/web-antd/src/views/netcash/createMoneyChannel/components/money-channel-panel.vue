@@ -53,23 +53,25 @@ const permission = computed(() =>
         batch: 12_509,
         create: 12_493,
         edit: 12_495,
+        h5: 12_504,
         hierarchy: 12_494,
         invitation: 12_508,
         list: 12_492,
         loading: 12_510,
         name: 12_500,
-        preview: 12_504,
+        promote: 12_313,
       }
     : {
         batch: 12_352,
         create: 12_335,
         edit: 12_338,
+        h5: 12_347,
         hierarchy: 12_336,
         invitation: 12_351,
         list: 12_334,
         loading: 12_366,
         name: 12_343,
-        preview: 12_313,
+        promote: 12_313,
       },
 );
 const can = (key: keyof typeof permission.value) =>
@@ -93,6 +95,10 @@ const selectedPromoterId = ref<'' | ChannelId>('');
 const rows = ref<ChannelRow[]>([]);
 const parents = ref<ChannelAdminOption[]>([]);
 const subordinates = ref<ChannelRow[]>([]);
+/** 测试渠道：面包屑仅根账号时禁止创建（对齐旧站 AdminTitleList.length === 1） */
+const createDisabled = computed(
+  () => Boolean(props.isTest) && parents.value.length <= 1,
+);
 const hierarchyLoading = ref(false);
 const mutatingId = ref<ChannelId>();
 const formOpen = ref(false);
@@ -268,35 +274,40 @@ const gridOptions: VxeTableGridOptions<ChannelRow> = {
     autoLoad: can('list'),
     ajax: {
       query: async ({ page, sort }) => {
-        const query: ChannelListQuery = {
-          ChannelId: filters.ChannelId.trim(),
-          ChannelName: filters.ChannelName.trim(),
-          ChannelType: 2,
-          DataSearchType: dataFlag.value,
-          IsHidden: filters.IsHidden,
-          IsHiddenAgent: filters.IsHiddenAgent,
-          InvitationCode: filters.InvitationCode.trim(),
-          NetCashDomain: filters.NetCashDomain.trim(),
-          NetCashH5Domain: filters.NetCashH5Domain.trim(),
-          PackStatus: filters.PackStatus,
-          Page: page.currentPage,
-          PageSize: page.pageSize,
-          PromoterAdminId: selectedPromoterId.value,
-          PushType: filters.PushType,
-          Sort:
-            sort?.field && sort?.order
-              ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
-              : filters.Sort,
-        };
-        const result = await fetchMoneyChannelListApi(query);
-        rows.value = result.Items;
-        if (result.MoreItems.Parents.length > 0)
-          parents.value = result.MoreItems.Parents;
-        schedulePoll(rows.value);
-        return {
-          items: rows.value,
-          total: Number(result.Pagination?.MaxCount ?? rows.value.length),
-        };
+        try {
+          const query: ChannelListQuery = {
+            ChannelId: filters.ChannelId.trim(),
+            ChannelName: filters.ChannelName.trim(),
+            ChannelType: 2,
+            DataSearchType: dataFlag.value,
+            IsHidden: filters.IsHidden,
+            IsHiddenAgent: filters.IsHiddenAgent,
+            InvitationCode: filters.InvitationCode.trim(),
+            NetCashDomain: filters.NetCashDomain.trim(),
+            NetCashH5Domain: filters.NetCashH5Domain.trim(),
+            PackStatus: filters.PackStatus,
+            Page: page.currentPage,
+            PageSize: page.pageSize,
+            PromoterAdminId: selectedPromoterId.value,
+            PushType: filters.PushType,
+            Sort:
+              sort?.field && sort?.order
+                ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
+                : filters.Sort,
+          };
+          const result = await fetchMoneyChannelListApi(query);
+          rows.value = result.Items;
+          if (result.MoreItems.Parents.length > 0)
+            parents.value = result.MoreItems.Parents;
+          schedulePoll(rows.value);
+          return {
+            items: rows.value,
+            total: Number(result.Pagination?.MaxCount ?? rows.value.length),
+          };
+        } catch {
+          rows.value = [];
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -312,7 +323,7 @@ async function reloadFirstPage() {
 }
 
 async function loadHierarchy(adminId: '' | ChannelId = selectedPromoterId.value) {
-  if (!can('hierarchy')) return;
+  if (!can('hierarchy')) return undefined;
   hierarchyLoading.value = true;
   try {
     const result = await fetchChannelHierarchyApi({
@@ -326,22 +337,90 @@ async function loadHierarchy(adminId: '' | ChannelId = selectedPromoterId.value)
       NetCashH5Domain: filters.NetCashH5Domain.trim(),
       PromoterAdminName: filters.PromoterAdminName.trim(),
       PromoterAdminUserName: filters.PromoterAdminUserName.trim(),
-      PushType: filters.PushType,
+      // 旧站层级请求清空 PushType
+      PushType: '',
     });
-    subordinates.value = result.ItemsSon ?? [];
+    const sons = result.ItemsSon ?? [];
+    // 启用代理时过滤停用下级（Status=2）
+    subordinates.value =
+      filters.IsHiddenAgent === 2
+        ? sons
+        : sons.filter((item) => Number(item.Status) !== 2);
     parents.value =
       result.Parents?.length > 0
         ? result.Parents
-        : (result.ItemsAdmin
+        : result.ItemsAdmin
           ? [result.ItemsAdmin]
-          : []);
+          : [];
+    return result;
+  } catch {
+    subordinates.value = [];
+    return undefined;
   } finally {
     hierarchyLoading.value = false;
   }
 }
 
+function isHttpUrl(value: string) {
+  return /^https?:\/\/.+/i.test(value.trim());
+}
+
+function promoterMatches(
+  item: ChannelAdminOption | ChannelRow,
+  username: string,
+  name: string,
+) {
+  const record = item as Record<string, unknown>;
+  const itemUsername = String(
+    item.Username || record.PromoterAdminUserName || '',
+  )
+    .trim()
+    .toLowerCase();
+  const itemName = String(item.Name || record.PromoterAdminName || '')
+    .trim()
+    .toLowerCase();
+  return (
+    (!username || itemUsername === username) && (!name || itemName === name)
+  );
+}
+
+function resolveSearchedPromoter(
+  result: Awaited<ReturnType<typeof loadHierarchy>>,
+) {
+  if (!result) return undefined;
+  const username = filters.PromoterAdminUserName.trim().toLowerCase();
+  const name = filters.PromoterAdminName.trim().toLowerCase();
+  const candidates: Array<ChannelAdminOption | ChannelRow> = [
+    ...result.ItemsSon,
+    ...(result.ItemsAdmin ? [result.ItemsAdmin] : []),
+    [...(result.Parents || [])].reverse(),
+  ];
+  return (
+    candidates.find((item) => promoterMatches(item, username, name)) ??
+    result.ItemsSon[0] ??
+    result.ItemsAdmin ??
+    result.Parents?.at(-1)
+  );
+}
+
 async function search() {
-  await loadHierarchy();
+  if (filters.NetCashDomain && !isHttpUrl(filters.NetCashDomain)) {
+    message.warning('专属 APP 域名需包含 http:// 或 https://');
+    return;
+  }
+  if (filters.NetCashH5Domain && !isHttpUrl(filters.NetCashH5Domain)) {
+    message.warning('专属 H5 域名需包含 http:// 或 https://');
+    return;
+  }
+  const hasPromoterFilter = Boolean(
+    filters.PromoterAdminUserName.trim() || filters.PromoterAdminName.trim(),
+  );
+  if (can('hierarchy')) {
+    const hierarchy = await loadHierarchy();
+    if (hasPromoterFilter) {
+      selectedPromoterId.value = resolveSearchedPromoter(hierarchy)?.Id ?? '';
+    }
+  }
   await reloadFirstPage();
 }
 
@@ -371,12 +450,33 @@ async function selectPromoter(
 ) {
   if (row.Id == null) return;
   selectedPromoterId.value = row.Id;
-  if (index !== undefined) parents.value = parents.value.slice(0, index + 1);
+  if (index !== undefined) {
+    parents.value = parents.value.slice(0, index + 1);
+  } else {
+    // 点击下级：追加面包屑（对齐旧站 AdminTitleList.push）
+    const exists = parents.value.some(
+      (item) => String(item.Id) === String(row.Id),
+    );
+    if (!exists) {
+      parents.value = [
+        ...parents.value,
+        {
+          Id: row.Id,
+          Name: row.Name,
+          Username: (row as ChannelAdminOption).Username,
+        },
+      ];
+    }
+  }
   await loadHierarchy(row.Id);
   await reloadFirstPage();
 }
 
 function createChannel() {
+  if (createDisabled.value) {
+    message.warning('测试渠道请先选择下级代理后再创建');
+    return;
+  }
   formChannelId.value = undefined;
   formPromoterId.value = selectedPromoterId.value || undefined;
   formOpen.value = true;
@@ -559,7 +659,12 @@ onBeforeUnmount(() => {
         <Button v-if="can('batch') && can('list')" @click="openBatch">
           批量设置
         </Button>
-        <Button v-if="can('create')" type="primary" @click="createChannel">
+        <Button
+          v-if="can('create')"
+          :disabled="createDisabled"
+          type="primary"
+          @click="createChannel"
+        >
           创建渠道
         </Button>
       </Space>
@@ -675,7 +780,7 @@ onBeforeUnmount(() => {
       <template #links="{ row }">
         <Space :size="2">
           <Button
-            v-if="channelUrl(row)"
+            v-if="can('promote') && channelUrl(row)"
             size="small"
             type="link"
             @click="preview(row, false)"
@@ -683,7 +788,7 @@ onBeforeUnmount(() => {
             推广
           </Button>
           <Button
-            v-if="can('preview') && channelUrl(row, true)"
+            v-if="can('h5') && channelUrl(row, true)"
             size="small"
             type="link"
             @click="preview(row, true)"
@@ -724,6 +829,7 @@ onBeforeUnmount(() => {
     <ChannelFormModal
       v-model:open="formOpen"
       :channel-id="formChannelId"
+      :channel-type="2"
       :data-flag="dataFlag"
       :promoter-admin-id="formPromoterId"
       @created="gridApi.reload()"
@@ -731,6 +837,7 @@ onBeforeUnmount(() => {
     />
     <ChannelBatchModal
       v-model:open="batchOpen"
+      :batch-permission="permission.batch"
       :data-flag="dataFlag"
       :rows="batchRows"
       @success="gridApi.reload()"

@@ -26,6 +26,7 @@ import {
   editAgentMobileApi,
   fetchAgentMoneyModifyRecordApi,
   fetchAgentNetcashDetailApi,
+  fetchAgentRemarkListApi,
 } from '#/api/netcash/agency-account-details';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -61,6 +62,7 @@ const canCreditWallet = computed(() => checkPermission(11_740));
 const canFinance = computed(() => checkPermission(11_254));
 const canEditMobile = computed(() => checkPermission(11_258));
 const canEditMoney = computed(() => checkPermission(11_501));
+const canRemark = computed(() => checkPermission(12_023));
 const canViewPage = computed(
   () =>
     Boolean(adminId.value) &&
@@ -77,6 +79,7 @@ const canViewPage = computed(
 const loading = ref(false);
 const detail = ref<Record<string, unknown>>({});
 const moneyRecords = ref<Record<string, unknown>[]>([]);
+const remarks = ref<Record<string, unknown>[]>([]);
 const activeTab = ref('overview');
 
 const displayMobile = computed(() =>
@@ -132,6 +135,14 @@ async function loadDetail() {
       const records = await fetchAgentMoneyModifyRecordApi(adminId.value);
       moneyRecords.value = records.Items || [];
     }
+    if (canRemark.value) {
+      const remarkResult = await fetchAgentRemarkListApi(adminId.value);
+      remarks.value = remarkResult.Items || [];
+    }
+  } catch {
+    detail.value = {};
+    moneyRecords.value = [];
+    remarks.value = [];
   } finally {
     loading.value = false;
   }
@@ -202,6 +213,8 @@ async function submitPhoneModal() {
     message.success('手机号已更新');
     phoneModalOpen.value = false;
     await loadDetail();
+  } catch {
+    /* requestClient 已提示 */
   } finally {
     phoneSubmitting.value = false;
   }
@@ -253,6 +266,8 @@ async function submitMoneyModal() {
     message.success('佣金余额已更新');
     moneyModalOpen.value = false;
     await loadDetail();
+  } catch {
+    /* requestClient 已提示 */
   } finally {
     moneySubmitting.value = false;
   }
@@ -265,6 +280,7 @@ onMounted(() => {
 watch(adminId, () => {
   detail.value = {};
   moneyRecords.value = [];
+  remarks.value = [];
   void loadDetail();
 });
 </script>
@@ -421,6 +437,33 @@ watch(adminId, () => {
               </span>
               <span class="text-sm text-gray-500">无基础资料查看权限</span>
             </Space>
+            <div v-if="canRemark" class="remark-block">
+              <div class="remark-title">备注</div>
+              <Table
+                bordered
+                :columns="[
+                  { dataIndex: 'CreateTime', key: 'CreateTime', title: '日期' },
+                  { dataIndex: 'Remark', key: 'Remark', title: '备注内容' },
+                  { dataIndex: 'Type', key: 'Type', title: '操作类型' },
+                  {
+                    dataIndex: 'CreateAdminAccount',
+                    key: 'CreateAdminAccount',
+                    title: '操作人',
+                  },
+                ]"
+                :data-source="remarks"
+                :pagination="false"
+                :row-key="(row, index) => String(row.Id || index)"
+                size="small"
+                :scroll="{ y: 220 }"
+              >
+                <template #bodyCell="{ column, record }">
+                  <template v-if="column.key === 'CreateTime'">
+                    {{ formatNetcashDateTime(record.CreateTime) }}
+                  </template>
+                </template>
+              </Table>
+            </div>
           </Spin>
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canFinance" key="finance" tab="财务账户">
@@ -455,7 +498,7 @@ watch(adminId, () => {
             wallet="commission"
           />
         </Tabs.TabPane>
-        <Tabs.TabPane v-if="canCreditWallet" key="credit" tab="信用钱包">
+        <Tabs.TabPane v-if="canCreditWallet" key="credit" tab="代存钱包">
           <AgencyWalletPanel
             v-if="activeTab === 'credit'"
             :admin-id="adminId"
@@ -575,3 +618,13 @@ watch(adminId, () => {
     title="403"
   />
 </template>
+
+<style scoped>
+.remark-block {
+  margin-top: 16px;
+}
+.remark-title {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+</style>

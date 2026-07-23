@@ -35,6 +35,7 @@ import {
   type Row,
   transferTypeMap,
   transferTypeOptions,
+  unwrapCreditLimitItem,
 } from './shared';
 
 const { checkPermission } = useCloudPermission();
@@ -100,15 +101,23 @@ async function load() {
     total.value = Number(result.Pagination?.MaxCount || 0);
     totalAmount.value = Number(result.Total?.TotalAdjustAmount || 0);
     selectedKeys.value = [];
+  } catch {
+    rows.value = [];
+    total.value = 0;
+    totalAmount.value = 0;
   } finally {
     loading.value = false;
   }
 }
 
 async function loadPlatformCredit() {
-  const result = await getAgentCreditLimitApi({ Page: 1, PageSize: 1 });
-  const item = (result.Items || result) as Row;
-  platformCredit.value = Number(item.Credit || 0);
+  try {
+    const result = await getAgentCreditLimitApi({});
+    const item = unwrapCreditLimitItem(result);
+    platformCredit.value = Number(item.Credit || 0);
+  } catch {
+    platformCredit.value = 0;
+  }
 }
 
 function search() {
@@ -165,6 +174,8 @@ async function submitReview() {
     message.success('审核成功');
     reviewOpen.value = false;
     await Promise.all([load(), loadPlatformCredit()]);
+  } catch {
+    message.error('审核失败，请稍后重试');
   } finally {
     reviewSubmitting.value = false;
   }

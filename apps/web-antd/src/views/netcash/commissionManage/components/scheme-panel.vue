@@ -227,6 +227,9 @@ async function loadTemplates(selectLast = false) {
       ? templateList.value.length - 1
       : Math.min(activeIndex.value, templateList.value.length - 1);
     await loadRows();
+  } catch {
+    templateList.value = [];
+    rows.value = [];
   } finally {
     loading.value = false;
   }
@@ -279,6 +282,9 @@ async function loadRows() {
         rows.value = normalizedRows;
       }
     }
+  } catch {
+    rows.value = [];
+    if (props.mode === 'multi') multiConfig.value = {};
   } finally {
     loading.value = false;
   }

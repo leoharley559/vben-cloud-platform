@@ -52,9 +52,16 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchDeveloperNamesListApi(queryParams(page));
-        const items = result?.Items || [];
-        return { items, total: Number(result?.Pagination?.MaxCount || items.length) };
+        try {
+          const result = await fetchDeveloperNamesListApi(queryParams(page));
+          const items = result?.Items || [];
+          return {
+            items,
+            total: Number(result?.Pagination?.MaxCount || items.length),
+          };
+        } catch {
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -89,6 +96,8 @@ async function submit() {
     message.success('操作成功');
     modalOpen.value = false;
     gridApi.reload();
+  } catch {
+    // 全局拦截已提示
   } finally {
     submitting.value = false;
   }
@@ -99,9 +108,13 @@ function remove(row: Record<string, unknown>) {
     okType: 'danger',
     title: '删除发展人',
     onOk: async () => {
-      await deleteDeveloperNameApi({ Id: row.Id as number | string });
-      message.success('删除成功');
-      gridApi.reload();
+      try {
+        await deleteDeveloperNameApi({ Id: row.Id as number | string });
+        message.success('删除成功');
+        gridApi.reload();
+      } catch {
+        // 全局拦截已提示
+      }
     },
   });
 }

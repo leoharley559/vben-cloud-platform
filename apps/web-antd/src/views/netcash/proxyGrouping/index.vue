@@ -25,6 +25,7 @@ import {
   Table,
   Tree,
 } from 'ant-design-vue';
+import dayjs from 'dayjs';
 
 import {
   addAgentGroupApi,
@@ -96,6 +97,26 @@ const query = reactive({
   Username: '',
 });
 const dateRange = ref<[Dayjs, Dayjs]>();
+const rangeSelecting = ref<Dayjs>();
+
+/** 对齐旧站 SearchTypeFour limit-number=30 */
+function disabledDate(current: Dayjs) {
+  if (!rangeSelecting.value) return false;
+  const min = rangeSelecting.value.subtract(30, 'day');
+  const max = rangeSelecting.value.add(30, 'day');
+  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
+}
+
+function onCalendarChange(
+  dates: [Dayjs, Dayjs] | [string, string] | null,
+) {
+  const first = dates?.[0];
+  rangeSelecting.value = first
+    ? dayjs.isDayjs(first)
+      ? first
+      : dayjs(first)
+    : undefined;
+}
 
 const columns = computed(() => [
   { key: 'index', title: '序号', width: 70 },
@@ -195,6 +216,10 @@ async function loadGroups(expandAll = false) {
       selectedKeys.value = [0];
       query.Group = 0;
     }
+  } catch {
+    groups.value = [unassignedGroup()];
+    selectedKeys.value = [0];
+    query.Group = 0;
   } finally {
     treeLoading.value = false;
   }
@@ -204,7 +229,7 @@ async function loadMembers() {
   tableLoading.value = true;
   try {
     const result = await fetchProxyGroupingListApi({ ...query });
-    const items = result.Items;
+    const items = Array.isArray(result.Items) ? result.Items : [];
     rows.value = items.map((item) => ({
       ...item,
       grouping: groupNameFor(item.Group ?? query.Group),
@@ -223,6 +248,11 @@ async function loadMembers() {
       query.Group = firstGroup;
       selectedKeys.value = [firstGroup];
     }
+  } catch {
+    rows.value = [];
+    total.value = 0;
+    selectedRowKeys.value = [];
+    selectedRows.value = [];
   } finally {
     tableLoading.value = false;
   }
@@ -326,6 +356,8 @@ async function submitGroupDialog() {
     query.Page = 1;
     await loadGroups();
     await loadMembers();
+  } catch {
+    // requestClient 已提示业务错误
   } finally {
     groupSubmitting.value = false;
   }
@@ -342,13 +374,17 @@ function deleteGroup() {
     okType: 'danger',
     title: '删除分组',
     onOk: async () => {
-      await deleteProxyGroupingApi(selectedGroup.value.Id);
-      message.success('分组删除成功');
-      selectedKeys.value = [0];
-      query.Group = 0;
-      query.Page = 1;
-      await loadGroups();
-      await loadMembers();
+      try {
+        await deleteProxyGroupingApi(selectedGroup.value.Id);
+        message.success('分组删除成功');
+        selectedKeys.value = [0];
+        query.Group = 0;
+        query.Page = 1;
+        await loadGroups();
+        await loadMembers();
+      } catch {
+        // requestClient 已提示业务错误
+      }
     },
   });
 }
@@ -372,8 +408,12 @@ async function moveGroup(group: ProxyGroupItem, direction: -1 | 1) {
   const currentSort = Number(current.Sort);
   current.Sort = Number(target.Sort);
   target.Sort = currentSort;
-  await sortProxyGroupingApi([current, target]);
-  await loadGroups();
+  try {
+    await sortProxyGroupingApi([current, target]);
+    await loadGroups();
+  } catch {
+    // requestClient 已提示业务错误
+  }
 }
 
 function canMove(group: ProxyGroupItem, direction: -1 | 1) {
@@ -418,8 +458,12 @@ const handleTreeDrop: NonNullable<TreeProps['onDrop']> = async (info) => {
   const dragSort = Number(dragCopy.Sort);
   dragCopy.Sort = Number(dropCopy.Sort);
   dropCopy.Sort = dragSort;
-  await sortProxyGroupingApi([dragCopy, dropCopy]);
-  await loadGroups();
+  try {
+    await sortProxyGroupingApi([dragCopy, dropCopy]);
+    await loadGroups();
+  } catch {
+    // requestClient 已提示业务错误
+  }
 };
 
 const transferOpen = ref(false);
@@ -470,6 +514,8 @@ async function submitTransfer() {
     message.success('成员转移成功');
     transferOpen.value = false;
     await loadMembers();
+  } catch {
+    // requestClient 已提示业务错误
   } finally {
     transferSubmitting.value = false;
   }
@@ -480,6 +526,7 @@ async function exportExcel() {
   try {
     const result = await fetchProxyGroupingListApi({
       ...query,
+      CurrPage: 1,
       IsExp: true,
       Page: 1,
       PageSize: 9999,
@@ -489,7 +536,7 @@ async function exportExcel() {
       return;
     }
     const XLSX = await import('xlsx');
-    const rows = result.Items.map((item, index) => ({
+    const exportRows = result.Items.map((item, index) => ({
       代理名称: item.Name || '',
       代理账号: item.Username || '',
       入组时间: formatNetcashDateTime(item.GroupCreateTime),
@@ -497,7 +544,7 @@ async function exportExcel() {
       发展人编码: item.DeveloperName || '',
       序号: index + 1,
     }));
-    const sheet = XLSX.utils.json_to_sheet(rows, {
+    const sheet = XLSX.utils.json_to_sheet(exportRows, {
       header: [
         '序号',
         '分组名称',
@@ -514,6 +561,8 @@ async function exportExcel() {
       '_',
     );
     XLSX.writeFile(workbook, `${safeName}成员.xlsx`);
+  } catch {
+    message.error('导出失败');
   } finally {
     exporting.value = false;
   }
@@ -601,7 +650,11 @@ onMounted(async () => {
             style="width: 180px"
             @press-enter="search"
           />
-          <DatePicker.RangePicker v-model:value="dateRange" />
+          <DatePicker.RangePicker
+            v-model:value="dateRange"
+            :disabled-date="disabledDate"
+            @calendar-change="onCalendarChange"
+          />
           <Button type="primary" @click="search">查询</Button>
           <Button @click="resetSearch">重置</Button>
           <Button
@@ -621,6 +674,7 @@ onMounted(async () => {
               v-if="
                 canAddChild &&
                 Number(selectedGroup.Id) !== 0 &&
+                Number(selectedGroup.Level) !== 0 &&
                 Number(selectedGroup.Level) !== 4
               "
               @click="openGroupDialog('child')"

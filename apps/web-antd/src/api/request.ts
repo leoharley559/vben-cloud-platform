@@ -238,6 +238,11 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
         return Promise.reject(response.data);
       }
 
+      // 代客额度无账户/无权限：旧站静默 reject，由业务页提示并禁用操作
+      if (status === 10_505) {
+        return Promise.reject(response.data);
+      }
+
       const errorMsg =
         mapErrorMessage(status, response.data.message) ||
         response.data.message ||

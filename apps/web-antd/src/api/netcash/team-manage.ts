@@ -43,7 +43,7 @@ export async function fetchTeamListApi(query: NetcashListQuery) {
 export async function fetchTeamRecordListApi(query: NetcashListQuery) {
   const result = await requestClient.get<NetcashListResult | null>(
     '/backend/agentnetcashteam/record',
-    { params: query },
+    { params: trimSpace(query) },
   );
   return normalizeList(result);
 }

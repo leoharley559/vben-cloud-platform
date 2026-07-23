@@ -148,12 +148,17 @@ function options(items: PromotionConfItem[]) {
 }
 
 async function loadOptions() {
-  const [themeResult, sizeResult] = await Promise.all([
-    fetchPromotionConfAllApi(2),
-    fetchPromotionConfAllApi(1),
-  ]);
-  themes.value = Array.isArray(themeResult?.Items) ? themeResult.Items : [];
-  sizes.value = Array.isArray(sizeResult?.Items) ? sizeResult.Items : [];
+  try {
+    const [themeResult, sizeResult] = await Promise.all([
+      fetchPromotionConfAllApi(2),
+      fetchPromotionConfAllApi(1),
+    ]);
+    themes.value = Array.isArray(themeResult?.Items) ? themeResult.Items : [];
+    sizes.value = Array.isArray(sizeResult?.Items) ? sizeResult.Items : [];
+  } catch {
+    themes.value = [];
+    sizes.value = [];
+  }
 }
 
 async function loadList() {
@@ -162,6 +167,9 @@ async function loadList() {
     const result = await fetchExtensionMaterialListApi({ ...query });
     rows.value = Array.isArray(result?.Items) ? result.Items : [];
     total.value = Number(result?.Pagination?.MaxCount ?? rows.value.length ?? 0);
+  } catch {
+    rows.value = [];
+    total.value = 0;
   } finally {
     loading.value = false;
   }
@@ -366,6 +374,26 @@ function validateForm() {
   return '';
 }
 
+function buildCreatePayload(): PromotionMaterialPayload {
+  const payload: PromotionMaterialPayload = {
+    ImagePath: uploads.value.join(','),
+    LangGroupId: form.LangGroupId,
+    PackageId: form.PackageId,
+    Status: form.Status ?? 1,
+  };
+  if (form.createTheme === '2') {
+    payload.NewTheme = String(form.NewTheme || '').trim();
+  } else {
+    payload.ThemeId = form.ThemeId;
+  }
+  if (form.createSize === '2' && expectedSize.value) {
+    payload.NewSize = `${expectedSize.value[0]}*${expectedSize.value[1]}`;
+  } else {
+    payload.SizeId = form.SizeId;
+  }
+  return payload;
+}
+
 async function save() {
   const error = validateForm();
   if (error) {
@@ -385,21 +413,13 @@ async function save() {
         ThemeId: form.ThemeId,
       });
     } else {
-      const payload: PromotionMaterialPayload = {
-        ...form,
-        ImagePath: uploads.value.join(','),
-      };
-      if (payload.createTheme === '2') {
-        payload.NewTheme = payload.NewTheme?.trim();
-      }
-      if (payload.createSize === '2' && expectedSize.value) {
-        payload.NewSize = `${expectedSize.value[0]}*${expectedSize.value[1]}`;
-      }
-      await createPromotionMaterialApi(payload);
+      await createPromotionMaterialApi(buildCreatePayload());
     }
     message.success(editing.value ? '编辑成功' : '新增成功');
     modalOpen.value = false;
     await Promise.all([loadOptions(), loadList()]);
+  } catch {
+    /* requestClient 已提示 */
   } finally {
     saving.value = false;
   }
@@ -411,9 +431,13 @@ function confirmDelete(item: ExtensionMaterialItem) {
     content: '删除后不可恢复，确定删除该素材吗？',
     okType: 'danger',
     onOk: async () => {
-      await deletePromotionMaterialApi(item.Id!);
-      message.success('删除成功');
-      await loadList();
+      try {
+        await deletePromotionMaterialApi(item.Id!);
+        message.success('删除成功');
+        await loadList();
+      } catch {
+        /* requestClient 已提示 */
+      }
     },
     title: '删除素材',
   });
@@ -434,6 +458,8 @@ async function toggleStatus(item: ExtensionMaterialItem, checked: boolean) {
     });
     item.Status = checked ? 1 : 0;
     message.success(checked ? '素材已启用' : '素材已停用');
+  } catch {
+    /* 受控 Switch，失败时保持原 Status */
   } finally {
     statusSavingId.value = undefined;
   }
@@ -508,7 +534,6 @@ onMounted(async () => {
           :options="[
             { label: '创建时间倒序', value: '-CreateTime' },
             { label: '创建时间正序', value: 'CreateTime' },
-            { label: '排序值正序', value: 'Sort' },
           ]"
         />
         <Space wrap>

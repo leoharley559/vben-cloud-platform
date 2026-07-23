@@ -55,6 +55,7 @@ import {
 import { isSameAcctActionRestricted } from '#/utils/security-restriction';
 
 import CreditDataPanel from '../credit-components/credit-data-panel.vue';
+import { unwrapCreditLimitItem } from '../creditLimitManage/components/shared';
 
 defineOptions({ name: 'DkCreditManage' });
 
@@ -69,6 +70,8 @@ const canDeduct = computed(() => checkPermission(11_896));
 const canBatch = computed(() => checkPermission(11_897));
 const canApprove = computed(() => checkPermission(11_894));
 const canReject = computed(() => checkPermission(11_895));
+/** 旧站 disableActionButton：getagentdkaccountlimit 返回 10505 时禁用上下分/申请 */
+const disableDkActions = ref(false);
 
 const playerStatusMap: Record<number, string> = {
   0: '正常',
@@ -94,22 +97,6 @@ function changeType(row: Record<string, unknown>) {
     return Number(row.AdjustAmount) < 0 ? '上分' : '下分';
   }
   return '未知';
-}
-
-function withMillisecondRange(
-  query: Record<string, unknown>,
-  fields: Array<[string, string]>,
-) {
-  const normalized = { ...query };
-  for (const [beginField, endField] of fields) {
-    if (normalized[beginField]) {
-      normalized[beginField] = Number(normalized[beginField]) * 1000;
-    }
-    if (normalized[endField]) {
-      normalized[endField] = Number(normalized[endField]) * 1000;
-    }
-  }
-  return normalized;
 }
 
 const playerConfig: CreditPanelConfig = {
@@ -164,7 +151,8 @@ const playerConfig: CreditPanelConfig = {
       type: 'select',
     },
   ],
-  showActions: canTopup.value || canDeduct.value,
+  // 操作列常驻；按钮权限在模板内判断（避免 setup 时 .value 固化）
+  showActions: true,
   summaries: [{ amount: true, field: 'SumGold', label: '主钱包合计' }],
 };
 
@@ -185,7 +173,7 @@ const pendingConfig: CreditPanelConfig = {
     { field: 'AgentAccount', label: '系统账号' },
     { field: 'AgentNickName', label: '账号昵称' },
   ],
-  showActions: canApprove.value || canReject.value,
+  showActions: true,
   summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '申请额度合计' }],
 };
 
@@ -228,10 +216,8 @@ const rechargeConfig: CreditPanelConfig = {
     },
   ],
   exportFileName: checkPermission(11_905) ? '充值下分记录' : undefined,
-  fetchApi: (query) =>
-    fetchDkCreditRecordApi(
-      withMillisecondRange(query, [['BeginTime', 'EndTime']]) as never,
-    ),
+  // 旧站 rangeDate2 传 unix 秒，勿再 *1000
+  fetchApi: (query) => fetchDkCreditRecordApi(query as never),
   filters: [
     { field: 'AccountName', label: '操作人' },
     { field: 'PlayerAccount', label: '会员账号' },
@@ -275,7 +261,7 @@ const accountConfig: CreditPanelConfig = {
     { field: 'AgentAccount', label: '系统账号' },
     { field: 'AgentNickName', label: '账号昵称' },
   ],
-  showActions: checkPermission(11_891) || checkPermission(11_898),
+  showActions: true,
   summaries: [
     { amount: true, field: 'TotalCredit', label: '可用额度合计' },
     {
@@ -287,7 +273,8 @@ const accountConfig: CreditPanelConfig = {
 };
 
 const adjustRecordConfig: CreditPanelConfig = {
-  baseQuery: { AgentType: 3, Status: '-1', WalletType: 3 },
+  // Status 空串=全部；旧站 -1 实测恒空（同平台额度 API-080）
+  baseQuery: { AgentType: 3, Status: '', WalletType: 3 },
   columns: [
     { field: 'TransferType', formatter: (_value, row) => changeType(row), title: '变更类型' },
     { field: 'AgentAccount', title: '系统账号' },
@@ -304,10 +291,7 @@ const adjustRecordConfig: CreditPanelConfig = {
     },
   ],
   exportFileName: checkPermission(11_902) ? '代客额度调整记录' : undefined,
-  fetchApi: (query) =>
-    getDkCreditLimitApplyRecordListApi(
-      withMillisecondRange(query, [['BeginFinishTime', 'EndFinishTime']]) as never,
-    ),
+  fetchApi: (query) => getDkCreditLimitApplyRecordListApi(query as never),
   filters: [
     { field: 'AgentAccount', label: '系统账号' },
     { field: 'AgentNickName', label: '账号昵称' },
@@ -322,10 +306,11 @@ const adjustRecordConfig: CreditPanelConfig = {
       type: 'select',
     },
     {
+      defaultValue: '',
       field: 'Status',
       label: '审核结果',
       options: [
-        { label: '全部', value: '-1' },
+        { label: '全部', value: '' },
         { label: '通过', value: 2 },
         { label: '拒绝', value: 3 },
       ],
@@ -353,12 +338,7 @@ const logConfig: CreditPanelConfig = {
     { field: 'ReviewNote', minWidth: 180, title: '备注' },
   ],
   exportFileName: checkPermission(11_903) ? '代客额度帐变记录' : undefined,
-  fetchApi: (query) =>
-    getDkNetCashLogListApi(
-      withMillisecondRange(query, [
-        ['TransferStartTime', 'TransferEndTime'],
-      ]) as never,
-    ),
+  fetchApi: (query) => getDkNetCashLogListApi(query as never),
   filters: [
     { field: 'AdminAccount', label: '系统账号' },
     { field: 'AgentNickName', label: '账号昵称' },
@@ -397,27 +377,46 @@ const canViewPage = computed(() => tabs.value.length > 0);
 
 const creditInfo = reactive({ AppliableAmount: 0, Credit: 0, TotalCreditLimit: 0 });
 const platformCredit = ref(0);
-async function loadCreditInfo() {
-  const result = await getAgentDkAccountLimitApi();
-  const item = (result?.Items || result || {}) as Record<string, unknown>;
-  creditInfo.Credit = Number(item.Credit || 0);
-  creditInfo.AppliableAmount = Number(item.AppliableAmount || 0);
-  creditInfo.TotalCreditLimit = Number(item.TotalCreditLimit || 0);
+async function loadCreditInfo(showDeniedTip = false) {
+  try {
+    const result = await getAgentDkAccountLimitApi();
+    const item = unwrapCreditLimitItem(result);
+    creditInfo.Credit = Number(item.Credit || 0);
+    creditInfo.AppliableAmount = Number(item.AppliableAmount || 0);
+    creditInfo.TotalCreditLimit = Number(item.TotalCreditLimit || 0);
+    disableDkActions.value = false;
+  } catch (error) {
+    creditInfo.Credit = 0;
+    creditInfo.AppliableAmount = 0;
+    creditInfo.TotalCreditLimit = 0;
+    disableDkActions.value = true;
+    if (showDeniedTip || Number((error as { status?: number })?.status) === 10_505) {
+      message.warning('您没有充值权限，请联系管理员');
+    }
+  }
 }
 async function loadPlatformCredit() {
-  const result = await getAgentCreditLimitApi({ Page: 1, PageSize: 1 });
-  const item = (result?.Items || result || {}) as Record<string, unknown>;
-  platformCredit.value = Number(item.Dkcredit || 0);
+  try {
+    const result = await getAgentCreditLimitApi({} as never);
+    const item = unwrapCreditLimitItem(result);
+    platformCredit.value = Number(item.Dkcredit || 0);
+  } catch {
+    platformCredit.value = 0;
+  }
 }
 
 const applyOpen = ref(false);
 const applySubmitting = ref(false);
 const applyForm = reactive({ AdjustAmount: undefined as number | undefined, ApplyNote: '' });
 function openApply() {
+  if (disableDkActions.value) {
+    message.warning('您没有充值权限，请联系管理员');
+    return;
+  }
   applyForm.AdjustAmount = undefined;
   applyForm.ApplyNote = '';
   applyOpen.value = true;
-  void loadCreditInfo();
+  void loadCreditInfo(true);
 }
 async function submitApply() {
   const max = creditInfo.AppliableAmount / 100;
@@ -442,6 +441,8 @@ async function submitApply() {
     message.success('申请成功');
     applyOpen.value = false;
     await loadCreditInfo();
+  } catch {
+    // 请求层已提示
   } finally {
     applySubmitting.value = false;
   }
@@ -462,6 +463,10 @@ const adjustForm = reactive({
   mode: 'topup' as 'deduct' | 'topup',
 });
 function openTopup(row: Record<string, unknown>) {
+  if (disableDkActions.value) {
+    message.warning('您没有充值权限，请联系管理员');
+    return;
+  }
   Object.assign(adjustForm, {
     Amount: undefined,
     AvailableDeductAmount: 0,
@@ -477,31 +482,39 @@ function openTopup(row: Record<string, unknown>) {
   adjustOpen.value = true;
 }
 async function openDeduct(row: Record<string, unknown>) {
-  const result = await getPlayerAvailableDeductCreditApi({
-    PlayerId: String(row.PlayerId),
-  });
-  const item = (result?.Items || result || {}) as Record<string, unknown>;
-  const available = Math.min(
-    Number(item.AvailableDeductAmount || 0),
-    Number(item.Gold || 0),
-  );
-  if (available <= 0) {
-    message.warning('无可下分额度');
+  if (disableDkActions.value) {
+    message.warning('您没有充值权限，请联系管理员');
     return;
   }
-  Object.assign(adjustForm, {
-    Amount: undefined,
-    AvailableDeductAmount: available / 100,
-    Gold: Number(item.Gold || 0) / 100,
-    PayPassword: '',
-    PlayerId: Number(item.PlayerId || row.PlayerId),
-    PlayerWallet: 0,
-    ReferenceAccount: String(item.LoginAccount || row.LoginAccount || ''),
-    Remarks: '',
-    WithdrawWaterMultiply: undefined,
-    mode: 'deduct',
-  });
-  adjustOpen.value = true;
+  try {
+    const result = await getPlayerAvailableDeductCreditApi({
+      PlayerId: String(row.PlayerId),
+    });
+    const item = unwrapCreditLimitItem(result);
+    const available = Math.min(
+      Number(item.AvailableDeductAmount || 0),
+      Number(item.Gold || 0),
+    );
+    if (available <= 0) {
+      message.warning('无可下分额度');
+      return;
+    }
+    Object.assign(adjustForm, {
+      Amount: undefined,
+      AvailableDeductAmount: available / 100,
+      Gold: Number(item.Gold || 0) / 100,
+      PayPassword: '',
+      PlayerId: Number(item.PlayerId || row.PlayerId),
+      PlayerWallet: 0,
+      ReferenceAccount: String(item.LoginAccount || row.LoginAccount || ''),
+      Remarks: '',
+      WithdrawWaterMultiply: undefined,
+      mode: 'deduct',
+    });
+    adjustOpen.value = true;
+  } catch {
+    // 请求层已提示
+  }
 }
 async function submitAdjust() {
   if (!adjustForm.Amount || adjustForm.Amount <= 0) {
@@ -551,6 +564,8 @@ async function submitAdjust() {
     adjustOpen.value = false;
     panelRefs.player?.reload();
     await loadCreditInfo();
+  } catch {
+    // 请求层已提示
   } finally {
     adjustSubmitting.value = false;
   }
@@ -583,6 +598,10 @@ const batchStats = computed(() => {
   };
 });
 function openBatch() {
+  if (disableDkActions.value) {
+    message.warning('您没有充值权限，请联系管理员');
+    return;
+  }
   batchRows.value = [];
   batchPassword.value = '';
   batchSelectedKeys.value = [];
@@ -678,6 +697,8 @@ async function submitBatch() {
     message.success('批量充值成功');
     batchOpen.value = false;
     await loadCreditInfo();
+  } catch {
+    // 请求层已提示
   } finally {
     batchSubmitting.value = false;
   }
@@ -709,7 +730,10 @@ async function submitReview() {
     message.success('审核成功');
     reviewOpen.value = false;
     panelRefs.pending?.reload();
+    panelRefs.record?.reload();
     await loadPlatformCredit();
+  } catch {
+    // 请求层已提示
   } finally {
     reviewSubmitting.value = false;
   }
@@ -739,6 +763,8 @@ async function loadAccountOptions() {
       nickname: String(item.Value2 || ''),
       value: item.Label,
     }));
+  } catch {
+    accountOptions.value = [];
   } finally {
     accountOptionsLoading.value = false;
   }
@@ -812,18 +838,22 @@ async function submitAccount() {
     message.success('操作成功');
     accountOpen.value = false;
     panelRefs.account?.reload();
+  } catch {
+    // 请求层已提示
   } finally {
     accountSubmitting.value = false;
   }
 }
 
+function handleTabChange(key: number | string) {
+  const tabKey = String(key);
+  if (tabKey === 'player') void loadCreditInfo(true);
+  if (tabKey === 'pending') void loadPlatformCredit();
+}
+
 onMounted(() => {
   activeTab.value = tabs.value[0]?.key || 'player';
-  void Promise.allSettled([
-    loadAccountOptions(),
-    loadCreditInfo(),
-    loadPlatformCredit(),
-  ]);
+  handleTabChange(activeTab.value);
 });
 </script>
 
@@ -832,10 +862,15 @@ onMounted(() => {
     v-if="canViewPage"
     auto-content-height
     description="完整迁移会员查询、额度申请审核、单笔/批量上下分、账号与账变记录"
-    title="代客充值"
+    title="代客额度管理"
   >
     <Card>
-      <Tabs v-model:active-key="activeTab" size="small" type="line">
+      <Tabs
+        v-model:active-key="activeTab"
+        size="small"
+        type="line"
+        @change="handleTabChange"
+      >
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <Result
             v-if="!checkPermission(item.inner)"
@@ -853,11 +888,22 @@ onMounted(() => {
                 <Tag color="blue">
                   代客可用额度：{{ formatAmountFromCent(creditInfo.Credit) }}
                 </Tag>
-                <Button @click="loadCreditInfo">刷新额度</Button>
-                <Button v-if="canApply" type="primary" @click="openApply">
+                <Button @click="loadCreditInfo(true)">刷新额度</Button>
+                <Button
+                  v-if="canApply"
+                  :disabled="disableDkActions"
+                  type="primary"
+                  @click="openApply"
+                >
                   申请额度
                 </Button>
-                <Button v-if="canBatch" @click="openBatch">批量充值</Button>
+                <Button
+                  v-if="canBatch"
+                  :disabled="disableDkActions"
+                  @click="openBatch"
+                >
+                  批量充值
+                </Button>
               </template>
               <template v-else-if="item.key === 'pending'">
                 <Tag color="blue">
@@ -875,10 +921,23 @@ onMounted(() => {
             </template>
             <template #actions="{ row }">
               <Space v-if="item.key === 'player'" :size="0">
-                <Button v-if="canTopup" size="small" type="link" @click="openTopup(row)">
+                <Button
+                  v-if="canTopup"
+                  :disabled="disableDkActions"
+                  size="small"
+                  type="link"
+                  @click="openTopup(row)"
+                >
                   上分
                 </Button>
-                <Button v-if="canDeduct" danger size="small" type="link" @click="openDeduct(row)">
+                <Button
+                  v-if="canDeduct"
+                  :disabled="disableDkActions"
+                  danger
+                  size="small"
+                  type="link"
+                  @click="openDeduct(row)"
+                >
                   下分
                 </Button>
               </Space>

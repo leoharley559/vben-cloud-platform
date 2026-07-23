@@ -34,7 +34,12 @@ export const REGISTER_STATUS_MAP: Record<number, string> = {
 };
 
 export function formatNetcashDateTime(value?: number | string) {
-  if (value === undefined || value === null || value === '') {
+  if (
+    value === undefined ||
+    value === null ||
+    value === '' ||
+    Number(value) === 0
+  ) {
     return '-';
   }
   const numeric = Number(value);

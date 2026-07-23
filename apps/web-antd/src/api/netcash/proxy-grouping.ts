@@ -10,7 +10,7 @@ import { requestClient } from '#/api/request';
 function normalizeList<T>(result: NetcashListResult<T> | null | undefined) {
   return {
     ...result,
-    Items: result?.Items ?? [],
+    Items: Array.isArray(result?.Items) ? result.Items : [],
     Pagination: result?.Pagination ?? {},
   };
 }

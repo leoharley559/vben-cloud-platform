@@ -67,11 +67,21 @@ const gridOptions: VxeTableGridOptions<AgencyRegisterItem> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchAgencyRegisterListApi(getQueryParams(page));
-        const items = result?.Items || [];
-        const enable = Number((result as Record<string, unknown>)?.Config && ((result as Record<string, unknown>).Config as Record<string, unknown>).Enable);
-        if (enable) autoAudit.value = enable === 1;
-        return { items, total: Number(result?.Pagination?.MaxCount || items.length) };
+        try {
+          const result = await fetchAgencyRegisterListApi(getQueryParams(page));
+          const items = result?.Items || [];
+          const config = (result as Record<string, unknown>)?.Config as
+            | Record<string, unknown>
+            | undefined;
+          const enable = Number(config?.Enable);
+          if (enable) autoAudit.value = enable === 1;
+          return {
+            items,
+            total: Number(result?.Pagination?.MaxCount || items.length),
+          };
+        } catch {
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -92,10 +102,14 @@ function audit(rows: AgencyRegisterItem[], status: 2 | 3) {
     content: `确认${action}所选注册申请？`,
     title: `${action}审核`,
     onOk: async () => {
-      await approveAgencyRegisterApi({ Approve: status, Ids: ids });
-      message.success('操作成功');
-      selectedRows.value = [];
-      gridApi.reload();
+      try {
+        await approveAgencyRegisterApi({ Approve: status, Ids: ids });
+        message.success('操作成功');
+        selectedRows.value = [];
+        gridApi.reload();
+      } catch {
+        // 全局拦截已提示
+      }
     },
   });
 }

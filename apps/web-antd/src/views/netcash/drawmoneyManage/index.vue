@@ -59,8 +59,14 @@ const detailOpen=ref(false), detailTitle=ref(''), detailRows=ref<Record<string,u
 const autoOpen=ref(false), autoRules=ref<Record<string,any>[]>([]), autoSetting=reactive<Record<string,any>>({Id:'',Status:0,RealNameBlockStatus:0,ValidCode:''}), autoRemoveIds=ref<Array<number|string>>([]);
 const autoTotal=ref(0);
 function withdrawalParams(page:any, exp=false) {
-  return { ...withdrawQuery, AccountType:withdrawQuery.AccountType.join(','), AmountMin:Number(withdrawQuery.AmountMin||0)*100, AmountMax:Number(withdrawQuery.AmountMax||0)*100,
-    BeginTime:withdrawRange.value[0].unix(),EndTime:withdrawRange.value[1].unix(),Page:exp?1:page.currentPage,PageSize:exp?99999:page.pageSize,IsExp:exp,Auto:autoRefreshStatus.value===1 };
+  return { ...withdrawQuery, AccountType:Array.isArray(withdrawQuery.AccountType)?withdrawQuery.AccountType.join(','):'', AmountMin:Number(withdrawQuery.AmountMin||0)*100, AmountMax:Number(withdrawQuery.AmountMax||0)*100,
+    BeginTime:withdrawRange.value?.[0]?.unix()||'',EndTime:withdrawRange.value?.[1]?.unix()||'',Page:exp?1:page.currentPage,PageSize:exp?99999:page.pageSize,IsExp:exp,Auto:autoRefreshStatus.value===1,WithdrawStatus:withdrawQuery.WithdrawStatus??'' };
+}
+function assertWithdrawDateSpan(){
+  const start=withdrawRange.value?.[0], end=withdrawRange.value?.[1];
+  if(!start||!end){message.warning('请选择时间范围');return false;}
+  if(end.diff(start,'day')>30){message.warning('查询时间跨度不能超过 30 天');return false;}
+  return true;
 }
 const withdrawGridOptions:VxeTableGridOptions<Record<string,unknown>>={
   columns:[
@@ -74,46 +80,62 @@ const withdrawGridOptions:VxeTableGridOptions<Record<string,unknown>>={
     {field:'HandlerInf',title:'操作说明',minWidth:160},{field:'HandlerName',title:'操作人员',minWidth:110},{field:'Remark',title:'备注',minWidth:150},
     {field:'IsFirstWithdraw',title:'是否首提',minWidth:90,formatter:({cellValue})=>Number(cellValue)===1?'是':'否'},
     {field:'ProcessingTime',title:'处理时长',minWidth:110,formatter:({cellValue})=>formatDuration(cellValue)},{field:'actions',title:'操作',fixed:'right',minWidth:300,slots:{default:'actions'}},
-  ],checkboxConfig:{checkMethod:({row})=>Number(row.Status)===1},height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{const r=await fetchDrawmoneyListApi(withdrawalParams(page));Object.keys(withdrawTotal).forEach((key)=>delete withdrawTotal[key]);Object.assign(withdrawTotal,r.Total||{});withdrawCount.value=Number(r.Pagination?.MaxCount||0);return{items:r.Items||[],total:withdrawCount.value}}}}
-};
+  ],checkboxConfig:{checkMethod:({row})=>Number(row.Status)===1},height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{
+    if(!assertWithdrawDateSpan())return{items:[],total:0};
+    try{
+      const r=await fetchDrawmoneyListApi(withdrawalParams(page));
+      Object.keys(withdrawTotal).forEach((key)=>delete withdrawTotal[key]);
+      Object.assign(withdrawTotal,r.Total||{});
+      withdrawCount.value=Number(r.Pagination?.MaxCount||0);
+      return{items:r.Items||[],total:withdrawCount.value};
+    }catch{
+      Object.keys(withdrawTotal).forEach((key)=>delete withdrawTotal[key]);
+      withdrawCount.value=0;
+      return{items:[],total:0};
+    }
+  }}}};
 const [WithdrawGrid,withdrawGridApi]=useVbenVxeGrid({gridOptions:withdrawGridOptions,gridEvents:{checkboxAll:({records}:any)=>selected.value=records,checkboxChange:({records}:any)=>selected.value=records}});
 function openAction(kind:typeof actionKind.value,row:Record<string,unknown>){actionKind.value=kind;actionRow.value=row;Object.assign(actionForm,{RefundScore:1,HandlerInf:'',RefuseTitle:'',Remark:row.Remark||'',WithdrawAccountId:''});actionOpen.value=true;}
 async function submitAction(){
-  let data:Record<string,unknown>={Id:actionRow.value.Id};
-  if(actionKind.value==='manual') await drawmoneyRequest.manualConfirm({...data,Handle:3});
-  else if(actionKind.value==='agree'){
-    if(!actionForm.WithdrawAccountId)return void message.warning('请选择出款通道');
-    await drawmoneyRequest.manualAgree({...data,WithdrawAccountId:actionForm.WithdrawAccountId});
-  } else if(actionKind.value==='refuse'){
-    if(!actionForm.RefuseTitle)return void message.warning('请选择或输入拒绝原因');
-    data={...data,RefundScore:1,RefuseTitle:actionForm.RefuseTitle,RefuseEmailBody:actionForm.HandlerInf,HandlerInf:actionForm.RefuseTitle,Remark:actionForm.Remark};
-    await drawmoneyRequest.manualRefuse(data);
-  } else await drawmoneyRequest.addRemark({Id:actionRow.value.Id,Remark:actionForm.Remark});
-  actionOpen.value=false;message.success('操作成功');withdrawGridApi.reload();
+  try{
+    let data:Record<string,unknown>={Id:actionRow.value.Id};
+    if(actionKind.value==='manual') await drawmoneyRequest.manualConfirm({...data,Handle:3});
+    else if(actionKind.value==='agree'){
+      if(!actionForm.WithdrawAccountId)return void message.warning('请选择出款通道');
+      await drawmoneyRequest.manualAgree({...data,WithdrawAccountId:actionForm.WithdrawAccountId});
+    } else if(actionKind.value==='refuse'){
+      if(!actionForm.RefuseTitle)return void message.warning('请选择或输入拒绝原因');
+      data={...data,RefundScore:actionForm.RefundScore||1,RefuseTitle:actionForm.RefuseTitle,RefuseEmailBody:actionForm.HandlerInf,HandlerInf:actionForm.RefuseTitle,Remark:actionForm.Remark};
+      await drawmoneyRequest.manualRefuse(data);
+    } else await drawmoneyRequest.addRemark({Id:actionRow.value.Id,Remark:actionForm.Remark});
+    actionOpen.value=false;message.success('操作成功');withdrawGridApi.reload();
+  }catch{/* 全局拦截已提示 */}
 }
-async function start(row:Record<string,unknown>){Modal.confirm({title:'开始处理',content:`确定开始处理「${row.ApplyName||row.ApplyAccount||''}」的提款申请？`,onOk:async()=>{await orderOperateApi({Id:row.Id,Status:2,Money:row.ApplyAmount,Desc:''});message.success('操作成功');withdrawGridApi.reload();}});}
-async function prepareAgree(row:Record<string,unknown>){const r=await drawmoneyRequest.withdrawChannels({Ids:row.Id,Handle:1,Type:row.AccountType});withdrawChannels.value=r.Items||[];openAction('agree',row);}
-async function viewLogs(row:Record<string,unknown>,remarks=false){const r=remarks?await drawmoneyRequest.listRemarks({Id:row.Id}):await drawmoneyRequest.withdrawLogs({OrderId:row.OrderId});detailRows.value=r.Items||[];detailTitle.value=remarks?'备注记录':'出款记录';detailOpen.value=true;}
-async function transition(row:Record<string,unknown>){await drawmoneyRequest.transitionPending({Id:row.Id});message.success('已转待处理');withdrawGridApi.reload();}
-async function checkWithdraw(row:Record<string,unknown>){Modal.confirm({title:'提现查询',content:'确定要发送提现查询吗？',onOk:async()=>{await drawmoneyRequest.check(row.OrderId as string);message.success('查询请求已发送');}});}
-async function batchManual(){if(!selected.value.length)return;Modal.confirm({title:'批量人工出款',content:'确认将所选订单批量转为人工出款？',onOk:async()=>{await drawmoneyRequest.batchManual({Ids:selected.value.map(x=>x.Id).join(',')});message.success('批量操作成功');withdrawGridApi.reload();}});}
-async function batchRefuse(){if(!selected.value.length)return;Modal.confirm({title:'批量拒绝出款',content:'确认拒绝所选订单并退币？',onOk:async()=>{await drawmoneyRequest.batchRefuse({Ids:selected.value.map(x=>x.Id).join(','),RefundScore:1});message.success('批量操作成功');withdrawGridApi.reload();}});}
-async function loadAutoRefresh(){const result=await drawmoneyRequest.autoRefresh({Key:'agentwithdraw'});autoRefreshStatus.value=result==='open'?1:2;resetAutoTimer();}
-function resetAutoTimer(){if(autoRefreshTimer)clearInterval(autoRefreshTimer);autoRefreshTimer=autoRefreshStatus.value===1?setInterval(()=>withdrawGridApi.reload(),15000):undefined;}
-async function toggleAutoRefresh(checked:boolean){await drawmoneyRequest.saveAutoRefresh({Key:'agentwithdraw',Status:checked?'open':'close'});autoRefreshStatus.value=checked?1:2;resetAutoTimer();message.success('切换成功');}
+async function start(row:Record<string,unknown>){Modal.confirm({title:'开始处理',content:`确定开始处理「${row.ApplyName||row.ApplyAccount||''}」的提款申请？`,onOk:async()=>{try{await orderOperateApi({Id:row.Id,Status:2,Money:row.ApplyAmount,Desc:''});message.success('操作成功');withdrawGridApi.reload();}catch{/* */}}});}
+async function prepareAgree(row:Record<string,unknown>){try{const r=await drawmoneyRequest.withdrawChannels({Ids:row.Id,Handle:1,Type:row.AccountType});withdrawChannels.value=r.Items||[];openAction('agree',row);}catch{withdrawChannels.value=[];}}
+async function viewLogs(row:Record<string,unknown>,remarks=false){try{const r=remarks?await drawmoneyRequest.listRemarks({Id:row.Id}):await drawmoneyRequest.withdrawLogs({OrderId:row.OrderId});detailRows.value=r.Items||[];detailTitle.value=remarks?'备注记录':'出款记录';detailOpen.value=true;}catch{detailRows.value=[];}}
+async function transition(row:Record<string,unknown>){try{await drawmoneyRequest.transitionPending({Id:row.Id});message.success('已转待处理');withdrawGridApi.reload();}catch{/* */}}
+async function checkWithdraw(row:Record<string,unknown>){Modal.confirm({title:'提现查询',content:'确定要发送提现查询吗？',onOk:async()=>{try{await drawmoneyRequest.check(row.OrderId as string);message.success('查询请求已发送');}catch{/* */}}});}
+async function batchManual(){if(!selected.value.length)return;Modal.confirm({title:'批量人工出款',content:'确认将所选订单批量转为人工出款？',onOk:async()=>{try{await drawmoneyRequest.batchManual({Ids:selected.value.map(x=>x.Id).join(',')});message.success('批量操作成功');withdrawGridApi.reload();}catch{/* */}}});}
+async function batchRefuse(){if(!selected.value.length)return;Modal.confirm({title:'批量拒绝出款',content:'确认拒绝所选订单并退币？',onOk:async()=>{try{await drawmoneyRequest.batchRefuse({Ids:selected.value.map(x=>x.Id).join(','),RefundScore:1});message.success('批量操作成功');withdrawGridApi.reload();}catch{/* */}}});}
+async function loadAutoRefresh(){try{const result=await drawmoneyRequest.autoRefresh({Key:'agentwithdraw'});autoRefreshStatus.value=result==='open'?1:2;resetAutoTimer();}catch{autoRefreshStatus.value=2;}}
+function resetAutoTimer(){if(autoRefreshTimer)clearInterval(autoRefreshTimer);autoRefreshTimer=autoRefreshStatus.value===1?setInterval(()=>{const start=withdrawRange.value?.[0],end=withdrawRange.value?.[1];if(start&&end&&end.diff(start,'day')<=30)withdrawGridApi.reload();},15000):undefined;}
+async function toggleAutoRefresh(checked:boolean){try{await drawmoneyRequest.saveAutoRefresh({Key:'agentwithdraw',Status:checked?'open':'close'});autoRefreshStatus.value=checked?1:2;resetAutoTimer();message.success('切换成功');}catch{/* */}}
 function resetWithdraw(){Object.assign(withdrawQuery,{Applicant:'',OrderId:'',HandlerName:'',ShowName:'',AccountType:[],WithdrawAccount:'',SelectTimeType:1,AmountType:1,AmountMin:undefined,AmountMax:undefined,PayName:'',WithdrawStatus:''});withdrawRange.value=[dayjs().subtract(1,'day').startOf('day'),dayjs().endOf('day')];withdrawGridApi.reload();}
 function filterPending(){withdrawQuery.WithdrawStatus='1,5,6';withdrawGridApi.reload();}
-function exportWithdraw(){if(withdrawCount.value<1)return void message.warning('暂无可导出数据');exportPass.value?.validate(73);}
-async function submitExport(security:Record<string,unknown>){const {Page:_,PageSize:__,...query}=withdrawalParams({currentPage:1,pageSize:20});const result=await exportDrawmoneyListApi({...query,...security});if(result?.Id&&Number(result.Status)===0){Modal.confirm({title:'提示',content:'导出任务已建立，是否前往下载管理？',onOk:()=>router.push('/operationalManage/downloadCsvManage')});}else message.error(result?.Remark||'建立导出任务失败');}
+function exportWithdraw(){if(withdrawCount.value<1)return void message.warning('暂无可导出数据');if(!assertWithdrawDateSpan())return;exportPass.value?.validate(73);}
+async function submitExport(security:Record<string,unknown>){try{const {Page:_,PageSize:__,...query}=withdrawalParams({currentPage:1,pageSize:20});const result=await exportDrawmoneyListApi({...query,...security});if(result?.Id&&Number(result.Status)===0){Modal.confirm({title:'提示',content:'导出任务已建立，是否前往下载管理？',onOk:()=>router.push('/operationalManage/downloadCsvManage')});}else message.error(result?.Remark||'建立导出任务失败');}catch{/* */}}
 async function openAuto(){
-  const r:any=await drawmoneyRequest.autoSettings({Page:1,PageSize:999});
-  const item=(r.Item||{}) as Record<string,any>;
-  Object.assign(autoSetting,{Id:item.Id||'',Status:Number(item.AutoWithdrawStatus||0),RealNameBlockStatus:Number(item.RealNameBlockStatus||0),ValidCode:''});
-  autoTotal.value=Number((r.Total as Record<string,unknown> | undefined)?.TotalAutoWithdrawalAmount||0);
-  const accounts=(await drawmoneyRequest.channelAccounts({Page:1,PageSize:999})).Items||[];
-  withdrawChannels.value=accounts.filter((x)=>Number(x.Switch)===1);
-  autoRules.value=(Array.isArray(r.Rules)?r.Rules:[]).map((x:any)=>({...x,PayType:Number(x.PayType||0),AutoWithdrawAmountMin:Number(x.AutoWithdrawAmountMin||0)/100,AutoWithdrawAmountMax:Number(x.AutoWithdrawAmountMax||0)/100,AutoWithdrawalAmount:Number(x.AutoWithdrawalAmount||0)/100,AgentWithdrawAccount:String(x.AgentWithdrawAccount||'')}));
-  autoRemoveIds.value=[];autoOpen.value=true;
+  try{
+    const r:any=await drawmoneyRequest.autoSettings({Page:1,PageSize:999});
+    const item=(r.Item||{}) as Record<string,any>;
+    Object.assign(autoSetting,{Id:item.Id||'',Status:Number(item.AutoWithdrawStatus||0),RealNameBlockStatus:Number(item.RealNameBlockStatus||0),ValidCode:''});
+    autoTotal.value=Number((r.Total as Record<string,unknown> | undefined)?.TotalAutoWithdrawalAmount||0);
+    const accounts=(await drawmoneyRequest.channelAccounts({Page:1,PageSize:999})).Items||[];
+    withdrawChannels.value=accounts.filter((x)=>Number(x.Switch)===1);
+    autoRules.value=(Array.isArray(r.Rules)?r.Rules:[]).map((x:any)=>({...x,PayType:Number(x.PayType||0),AutoWithdrawAmountMin:Number(x.AutoWithdrawAmountMin||0)/100,AutoWithdrawAmountMax:Number(x.AutoWithdrawAmountMax||0)/100,AutoWithdrawalAmount:Number(x.AutoWithdrawalAmount||0)/100,AgentWithdrawAccount:String(x.AgentWithdrawAccount||'')}));
+    autoRemoveIds.value=[];autoOpen.value=true;
+  }catch{message.warning('加载自动出款设置失败');}
 }
 function addAutoRule(){autoRules.value.push({PayType:1,AutoWithdrawAmountMin:1,AutoWithdrawAmountMax:1,AgentWithdrawAccount:'',AutoWithdrawalAmount:0});}
 function removeAutoRule(row:Record<string,any>){if(row.Id)autoRemoveIds.value.push(row.Id);autoRules.value.splice(autoRules.value.indexOf(row),1);}
@@ -123,22 +145,24 @@ async function saveAuto(){
   if(duplicate)return void message.warning('自动出款档位不可重复');
   const invalid=autoRules.value.some((x)=>!x.PayType||Number(x.AutoWithdrawAmountMin)<=0||Number(x.AutoWithdrawAmountMax)<Number(x.AutoWithdrawAmountMin));
   if(invalid)return void message.warning('请正确填写通道类型及金额范围');
-  const rules=autoRules.value.map((x)=>({...x,PayType:String(x.PayType||''),AgentWithdrawAccount:String(x.AgentWithdrawAccount||''),AutoWithdrawAmountMin:Number(x.AutoWithdrawAmountMin)*100,AutoWithdrawAmountMax:Number(x.AutoWithdrawAmountMax)*100,AutoWithdrawalAmount:Number(x.AutoWithdrawalAmount||0)*100}));
-  await drawmoneyRequest.saveAutoSettings({Id:autoSetting.Id,Status:autoSetting.Status,RealNameBlockStatus:autoSetting.RealNameBlockStatus,ValidCode:autoSetting.ValidCode,Rules:JSON.stringify(rules),RemoveIds:autoRemoveIds.value.join(',')});
-  autoOpen.value=false;message.success('自动出款设置已保存');
+  try{
+    const rules=autoRules.value.map((x)=>({...x,PayType:String(x.PayType||''),AgentWithdrawAccount:String(x.AgentWithdrawAccount||''),AutoWithdrawAmountMin:Number(x.AutoWithdrawAmountMin)*100,AutoWithdrawAmountMax:Number(x.AutoWithdrawAmountMax)*100,AutoWithdrawalAmount:Number(x.AutoWithdrawalAmount||0)*100}));
+    await drawmoneyRequest.saveAutoSettings({Id:autoSetting.Id,Status:autoSetting.Status,RealNameBlockStatus:autoSetting.RealNameBlockStatus,ValidCode:autoSetting.ValidCode,Rules:JSON.stringify(rules),RemoveIds:autoRemoveIds.value.join(',')});
+    autoOpen.value=false;message.success('自动出款设置已保存');
+  }catch{/* */}
 }
 
 // 黑名单
 const blackKeyword=ref(''), blackOpen=ref(false), blackEditing=ref(false), blackForm=reactive({Id:'',Account:'',Desc:'',CreateAccount:''});
-const blackGridOptions:VxeTableGridOptions<Record<string,unknown>>={columns:[{type:'seq',title:'序号',width:60},{field:'CreateTime',title:'日期',formatter:({cellValue})=>dt(cellValue),minWidth:160},{field:'BlackAccount',title:'代理账号',minWidth:140},{field:'Desc',title:'备注',minWidth:180},{field:'CreateAccount',title:'创建人',minWidth:120},{field:'actions',title:'操作',slots:{default:'actions'},width:150}],height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{const r=await fetchDrawmoneyBlacklistApi({Keyword:blackKeyword.value,Page:page.currentPage,PageSize:page.pageSize});return{items:r?.Items||[],total:Number(r?.Pagination?.MaxCount||0)}}}}};
+const blackGridOptions:VxeTableGridOptions<Record<string,unknown>>={columns:[{type:'seq',title:'序号',width:60},{field:'CreateTime',title:'日期',formatter:({cellValue})=>dt(cellValue),minWidth:160},{field:'BlackAccount',title:'代理账号',minWidth:140},{field:'Desc',title:'备注',minWidth:180},{field:'CreateAccount',title:'创建人',minWidth:120},{field:'actions',title:'操作',slots:{default:'actions'},width:150}],height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{try{const r=await fetchDrawmoneyBlacklistApi({Keyword:blackKeyword.value,Page:page.currentPage,PageSize:page.pageSize});return{items:r?.Items||[],total:Number(r?.Pagination?.MaxCount||0)};}catch{return{items:[],total:0};}}}}};
 const [BlackGrid,blackGridApi]=useVbenVxeGrid({gridOptions:blackGridOptions});
 function editBlack(row?:Record<string,unknown>){blackEditing.value=!!row;Object.assign(blackForm,{Id:row?.Id||'',Account:row?.BlackAccount||'',Desc:row?.Desc||'',CreateAccount:row?.CreateAccount||''});blackOpen.value=true;}
-async function saveBlack(){if(!blackForm.Account)return void message.warning('代理账号必填');const data={Id:blackForm.Id,Account:blackForm.Account,Desc:blackForm.Desc};if(blackEditing.value)await editDrawmoneyBlackApi(data);else await addDrawmoneyBlackApi(data);blackOpen.value=false;message.success('保存成功');blackGridApi.reload();}
-async function removeBlack(row:Record<string,unknown>){Modal.confirm({title:'删除黑名单',content:`确认删除「${row.BlackAccount}」？`,onOk:async()=>{await deleteDrawmoneyAccountApi(row.Id as string);message.success('删除成功');blackGridApi.reload();}});}
+async function saveBlack(){if(!blackForm.Account)return void message.warning('代理账号必填');try{const data={Id:blackForm.Id,Account:blackForm.Account,Desc:blackForm.Desc};if(blackEditing.value)await editDrawmoneyBlackApi(data);else await addDrawmoneyBlackApi(data);blackOpen.value=false;message.success('保存成功');blackGridApi.reload();}catch{/* */}}
+async function removeBlack(row:Record<string,unknown>){Modal.confirm({title:'删除黑名单',content:`确认删除「${row.BlackAccount}」？`,onOk:async()=>{try{await deleteDrawmoneyAccountApi(row.Id as string);message.success('删除成功');blackGridApi.reload();}catch{/* */}}});}
 
 // 出款类型与通道策略
 const types=ref<Record<string,unknown>[]>([]), channelType=ref<number|string>(''), channelFormOpen=ref(false), channelForm=reactive<Record<string,any>>({});
-async function loadTypes(){types.value=(await fetchDrawingsChannelSettingListApi()).sort((a,b)=>Number(a.Sort||0)-Number(b.Sort||0));if(!channelType.value)channelType.value=String(types.value[0]?.WithdrawType||'');channelGridApi.reload();}
+async function loadTypes(){try{types.value=(await fetchDrawingsChannelSettingListApi()).sort((a,b)=>Number(a.Sort||0)-Number(b.Sort||0));if(!channelType.value)channelType.value=String(types.value[0]?.WithdrawType||'');channelGridApi.reload();}catch{types.value=[];}}
 const channelGridOptions:VxeTableGridOptions<Record<string,unknown>>={columns:[
   {field:'Switch',title:'启用',width:80,slots:{default:'switch'}},{field:'ScriptStatus',title:'脚本状态',minWidth:100,formatter:({row})=>Number(row.HandleType)===2?(row.ScriptStatus?'在线':'离线'):'--'},{field:'ScriptMode',title:'脚本模式',minWidth:100,formatter:({cellValue})=>Number(cellValue)===1?'自动':'手动'},
   {field:'Switch',title:'通道状态',minWidth:100,formatter:({row})=>Number(row.HandleType)===1?(Number(row.Switch)===1?'生效':'未生效'):(Number(row.Switch)===1&&Number(row.Money)!==0&&row.ScriptStatus?'生效':'未生效')},{field:'AccountType',title:'通道类型',minWidth:110,formatter:({cellValue})=>payType[Number(cellValue)]||String(cellValue??'-')},
@@ -147,17 +171,17 @@ const channelGridOptions:VxeTableGridOptions<Record<string,unknown>>={columns:[
   {field:'MinOrderMoney',title:'单笔下限',formatter:({cellValue})=>money(cellValue),minWidth:100},{field:'MaxOrderMoney',title:'单笔上限',formatter:({cellValue})=>money(cellValue),minWidth:100},
   {field:'SupportBank',title:'支持银行',minWidth:120},{field:'Round',title:'权重',minWidth:80},{field:'Description',title:'说明',minWidth:160},{field:'DailyAccTimes',title:'日累计调用次数',minWidth:120},{field:'DailyAccAmount',title:'日累计出款金额',formatter:({cellValue})=>money(cellValue),minWidth:130},
   {field:'actions',title:'操作',fixed:'right',width:230,slots:{default:'actions'}},
-],height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{const r=await drawmoneyRequest.channelAccounts({AccountType:channelType.value,Page:page.currentPage,PageSize:page.pageSize});const items=r.Items||[],statuses=items.length?await drawmoneyRequest.channelStatus(items.map(x=>x.Id).join(',')):[];statuses.forEach((s)=>{const row=items.find((x)=>String(x.Id)===String(s.Id));if(row)row.ScriptStatus=s.Status;});return{items,total:Number(r.Pagination?.MaxCount||0)}}}}};
+],height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{try{const r=await drawmoneyRequest.channelAccounts({AccountType:channelType.value,Page:page.currentPage,PageSize:page.pageSize});const items=r.Items||[],statuses=items.length?await drawmoneyRequest.channelStatus(items.map(x=>x.Id).join(',')):[];statuses.forEach((s)=>{const row=items.find((x)=>String(x.Id)===String(s.Id));if(row)row.ScriptStatus=s.Status;});return{items,total:Number(r.Pagination?.MaxCount||0)};}catch{return{items:[],total:0};}}}}};
 const [ChannelGrid,channelGridApi]=useVbenVxeGrid({gridOptions:channelGridOptions});
-async function toggleChannel(row:Record<string,unknown>,checked:boolean){await drawmoneyRequest.channelSwitch({Id:row.Id,Switch:checked?1:2});message.success('切换成功');channelGridApi.reload();}
+async function toggleChannel(row:Record<string,unknown>,checked:boolean){try{await drawmoneyRequest.channelSwitch({Id:row.Id,Switch:checked?1:2});message.success('切换成功');channelGridApi.reload();}catch{/* */}}
 function editChannel(row:Record<string,unknown>){Object.assign(channelForm,row,{kind:'account',Money:Number(row.Money||0)===99999999999?undefined:Number(row.Money||0)/100,MinOrderMoney:Number(row.MinOrderMoney||0)/100,MaxOrderMoney:Number(row.MaxOrderMoney||0)/100});channelFormOpen.value=true;}
-async function saveChannel(){if(checkPermission(12738))await drawmoneyRequest.channelLimit({Id:channelForm.Id,Money:channelForm.Money===undefined?99999999999:Number(channelForm.Money||0)*100});if(checkPermission(12737))await drawmoneyRequest.channelRound({Id:channelForm.Id,Round:channelForm.Round,ScriptMode:channelForm.ScriptMode});channelFormOpen.value=false;message.success('保存成功');channelGridApi.reload();}
-async function toggleType(item:Record<string,unknown>,checked:boolean){await drawmoneyRequest.typeSwitch({Id:item.Id,WithdrawType:item.WithdrawType,IsOpen:checked});message.success('切换成功');await loadTypes();}
-async function moveType(index:number,offset:number){const target=index+offset;if(target<0||target>=types.value.length)return;const copy=[...types.value];[copy[index],copy[target]]=[copy[target]!,copy[index]!];types.value=copy;await drawmoneyRequest.exchangeTypes({Ids:copy.map((x)=>x.Id).join(',')});message.success('排序已保存');await loadTypes();}
+async function saveChannel(){try{if(checkPermission(12738))await drawmoneyRequest.channelLimit({Id:channelForm.Id,Money:channelForm.Money===undefined?99999999999:Number(channelForm.Money||0)*100});if(checkPermission(12737))await drawmoneyRequest.channelRound({Id:channelForm.Id,Round:channelForm.Round,ScriptMode:channelForm.ScriptMode});channelFormOpen.value=false;message.success('保存成功');channelGridApi.reload();}catch{/* */}}
+async function toggleType(item:Record<string,unknown>,checked:boolean){try{await drawmoneyRequest.typeSwitch({Id:item.Id,WithdrawType:item.WithdrawType,IsOpen:checked});message.success('切换成功');await loadTypes();}catch{/* */}}
+async function moveType(index:number,offset:number){const target=index+offset;if(target<0||target>=types.value.length)return;const copy=[...types.value];[copy[index],copy[target]]=[copy[target]!,copy[index]!];types.value=copy;try{await drawmoneyRequest.exchangeTypes({Ids:copy.map((x)=>x.Id).join(',')});message.success('排序已保存');await loadTypes();}catch{await loadTypes();}}
 function editType(item:Record<string,unknown>){Object.assign(channelForm,item,{kind:'type',DailyWithdrawLimit:Number(item.DailyWithdrawLimit||0)/100});channelFormOpen.value=true;}
-async function saveChannelForm(){if(channelForm.kind==='type'){if(Number(channelForm.WithdrawMin)<=0||Number(channelForm.WithdrawMax)<Number(channelForm.WithdrawMin))return void message.warning('请填写正确的提款范围');await drawmoneyRequest.typeLimit({...channelForm,DailyWithdrawLimit:Number(channelForm.DailyWithdrawLimit||0)*100});channelFormOpen.value=false;message.success('保存成功');await loadTypes();}else await saveChannel();}
-async function refreshBalance(row:Record<string,unknown>){await drawmoneyRequest.updateBalance({Ids:row.Id});message.success('余额已刷新');channelGridApi.reload();}
-async function offShelf(row:Record<string,unknown>){if(!row.ThirdWithdrawId)return;await drawmoneyRequest.channelShelf({Id:row.ThirdWithdrawId,OnShelf:2});message.success('已下架');channelGridApi.reload();}
+async function saveChannelForm(){if(channelForm.kind==='type'){if(Number(channelForm.WithdrawMin)<=0||Number(channelForm.WithdrawMax)<Number(channelForm.WithdrawMin))return void message.warning('请填写正确的提款范围');try{await drawmoneyRequest.typeLimit({...channelForm,DailyWithdrawLimit:Number(channelForm.DailyWithdrawLimit||0)*100});channelFormOpen.value=false;message.success('保存成功');await loadTypes();}catch{/* */}}else await saveChannel();}
+async function refreshBalance(row:Record<string,unknown>){try{await drawmoneyRequest.updateBalance({Ids:row.Id});message.success('余额已刷新');channelGridApi.reload();}catch{/* */}}
+async function offShelf(row:Record<string,unknown>){if(!row.ThirdWithdrawId)return;try{await drawmoneyRequest.channelShelf({Id:row.ThirdWithdrawId,OnShelf:2});message.success('已下架');channelGridApi.reload();}catch{/* */}}
 
 // 第三方支付通道
 const thirdName=ref(''), thirdStatus=ref<number|string>(''), thirdFormOpen=ref(false), thirdSecretOpen=ref(false), thirdForm=reactive<Record<string,any>>({}), secretFields=ref<Array<{description:string;name:string}>>([]);
@@ -169,13 +193,13 @@ const thirdGridOptions:VxeTableGridOptions<Record<string,unknown>>={columns:[
   {field:'SupportBank',title:'支持银行',minWidth:160},{field:'AisleBalance',title:'通道余额',formatter:({cellValue})=>money(cellValue),minWidth:110},
   {field:'TotalAmount',title:'累计金额',formatter:({cellValue})=>money(cellValue),minWidth:110},{field:'TotalCount',title:'累计订单',minWidth:100},{field:'Description',title:'备注',minWidth:140},
   {field:'OnShelf',title:'上架状态',slots:{default:'shelf'},width:100},{field:'actions',title:'操作',slots:{default:'actions'},fixed:'right',width:160},
-],height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{const r=await drawmoneyRequest.thirdList({ShowName:thirdName.value,OnShelf:thirdStatus.value,Page:page.currentPage,PageSize:page.pageSize});return{items:r.Items||[],total:Number(r.Pagination?.MaxCount||0)}}}}};
+],height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{try{const r=await drawmoneyRequest.thirdList({ShowName:thirdName.value,OnShelf:thirdStatus.value,Page:page.currentPage,PageSize:page.pageSize});return{items:r.Items||[],total:Number(r.Pagination?.MaxCount||0)};}catch{return{items:[],total:0};}}}}};
 const [ThirdGrid,thirdGridApi]=useVbenVxeGrid({gridOptions:thirdGridOptions});
 function editThird(row:Record<string,unknown>){Object.assign(thirdForm,row,{Id:row.ThirdWithdrawId||row.Id,WithdrawId:row.ThirdWithdrawId?row.Id:undefined,fromStrategy:!!row.ThirdWithdrawId,CustomRate:Number(row.CustomRate||0)/10000,MinDayMoney:Number(row.MinDayMoney||0)/100,MaxDayMoney:Number(row.MaxDayMoney||0)/100,MinOrderMoney:Number(row.MinOrderMoney||0)/100,MaxOrderMoney:Number(row.MaxOrderMoney||0)/100,SupportBank:row.SupportBank?String(row.SupportBank).split(','):(projectConfig.value?.BankList||[]).map((b:any)=>b.BankCode)});thirdFormOpen.value=true;}
-async function saveThird(){if(Number(thirdForm.MaxDayMoney)<Number(thirdForm.MinDayMoney)||Number(thirdForm.MaxOrderMoney)<Number(thirdForm.MinOrderMoney))return void message.warning('最大金额不能小于最小金额');const d={Id:thirdForm.Id,WithdrawId:thirdForm.WithdrawId,Description:thirdForm.Description,RateType:thirdForm.RateType,Rate:thirdForm.Rate,CustomRate:Number(thirdForm.CustomRate||0)*10000,PerMulti:thirdForm.PerMulti,MinDayMoney:Number(thirdForm.MinDayMoney||0)*100,MaxDayMoney:Number(thirdForm.MaxDayMoney||0)*100,MinOrderMoney:Number(thirdForm.MinOrderMoney||0)*100,MaxOrderMoney:Number(thirdForm.MaxOrderMoney||0)*100,SupportBank:Array.isArray(thirdForm.SupportBank)?thirdForm.SupportBank.join(','):thirdForm.SupportBank};await drawmoneyRequest.channelEdit(d);if(thirdForm.fromStrategy)await drawmoneyRequest.channelShelf({Id:thirdForm.Id,OnShelf:1});thirdFormOpen.value=false;message.success('保存成功');thirdForm.fromStrategy?channelGridApi.reload():thirdGridApi.reload();}
-async function shelf(row:Record<string,unknown>,checked:boolean){if(checked){if(!row.AgentParams)return void message.warning('请先设置通道密钥');try{if(Object.values(JSON.parse(String(row.AgentParams))).some((v)=>!v))return void message.warning('请完整填写通道密钥');}catch{return void message.warning('通道密钥格式错误');}}await drawmoneyRequest.channelShelf({Id:row.Id,OnShelf:checked?1:2});message.success('切换成功');thirdGridApi.reload();}
+async function saveThird(){if(Number(thirdForm.MaxDayMoney)<Number(thirdForm.MinDayMoney)||Number(thirdForm.MaxOrderMoney)<Number(thirdForm.MinOrderMoney))return void message.warning('最大金额不能小于最小金额');try{const d={Id:thirdForm.Id,WithdrawId:thirdForm.WithdrawId,Description:thirdForm.Description,RateType:thirdForm.RateType,Rate:thirdForm.Rate,CustomRate:Number(thirdForm.CustomRate||0)*10000,PerMulti:thirdForm.PerMulti,MinDayMoney:Number(thirdForm.MinDayMoney||0)*100,MaxDayMoney:Number(thirdForm.MaxDayMoney||0)*100,MinOrderMoney:Number(thirdForm.MinOrderMoney||0)*100,MaxOrderMoney:Number(thirdForm.MaxOrderMoney||0)*100,SupportBank:Array.isArray(thirdForm.SupportBank)?thirdForm.SupportBank.join(','):thirdForm.SupportBank};await drawmoneyRequest.channelEdit(d);if(thirdForm.fromStrategy)await drawmoneyRequest.channelShelf({Id:thirdForm.Id,OnShelf:1});thirdFormOpen.value=false;message.success('保存成功');thirdForm.fromStrategy?channelGridApi.reload():thirdGridApi.reload();}catch{/* */}}
+async function shelf(row:Record<string,unknown>,checked:boolean){if(checked){if(!row.AgentParams)return void message.warning('请先设置通道密钥');try{if(Object.values(JSON.parse(String(row.AgentParams))).some((v)=>!v))return void message.warning('请完整填写通道密钥');}catch{return void message.warning('通道密钥格式错误');}}try{await drawmoneyRequest.channelShelf({Id:row.Id,OnShelf:checked?1:2});message.success('切换成功');thirdGridApi.reload();}catch{/* */}}
 function editSecret(row:Record<string,unknown>){let params:Record<string,unknown>={};try{params=row.AgentParams?JSON.parse(String(row.AgentParams)):{};}catch{}Object.assign(thirdForm,row,{Paramss:params});try{secretFields.value=JSON.parse(String(row.Params||'[]'));}catch{secretFields.value=[]}thirdSecretOpen.value=true;}
-async function saveSecret(){await drawmoneyRequest.thirdEditParams({Id:thirdForm.Id,Params:JSON.stringify(thirdForm.Paramss)});thirdSecretOpen.value=false;message.success('密钥保存成功');thirdGridApi.reload();}
+async function saveSecret(){try{await drawmoneyRequest.thirdEditParams({Id:thirdForm.Id,Params:JSON.stringify(thirdForm.Paramss)});thirdSecretOpen.value=false;message.success('密钥保存成功');thirdGridApi.reload();}catch{/* */}}
 
 onMounted(()=>{active.value=tabs.value[0]?.key||'';if(active.value==='channel')loadTypes();if(checkPermission(12749))loadAutoRefresh();});
 onUnmounted(()=>{if(autoRefreshTimer)clearInterval(autoRefreshTimer);});
@@ -238,14 +262,15 @@ onUnmounted(()=>{if(autoRefreshTimer)clearInterval(autoRefreshTimer);});
           </ChannelGrid>
         </template>
         <Result v-else-if="tab.key === 'channel'" status="403" sub-title="无提款通道管理查看权限" title="403" />
-        <template v-else-if="checkPermission(10987)">
+        <template v-else-if="tab.key === 'third' && checkPermission(10987)">
           <Space class="mb-3"><Input v-model:value="thirdName" placeholder="第三方名称" /><Select v-model:value="thirdStatus" allow-clear placeholder="上架状态" :options="[{label:'上架',value:1},{label:'下架',value:2}]" style="width:130px" /><Button type="primary" @click="thirdGridApi.reload()">查询</Button><Button @click="()=>{thirdName = '';thirdStatus = '';thirdGridApi.reload()}">重置</Button></Space>
           <ThirdGrid>
             <template #shelf="{row}"><Switch :checked="Number(row.OnShelf) === 1" :disabled="!checkPermission(11023)" @change="(v)=>shelf(row,!!v)" /></template>
             <template #actions="{row}"><Button v-if="checkPermission(10988) && Number(row.OnShelf) !== 1" type="link" @click="editThird(row)">通道设置</Button><Button v-if="checkPermission(10990)" :disabled="Number(row.OnShelf) === 1" type="link" @click="editSecret(row)">密钥管理</Button></template>
           </ThirdGrid>
         </template>
-        <Result v-else status="403" sub-title="无第三方支付通道查看权限" title="403" />
+        <Result v-else-if="tab.key === 'third'" status="403" sub-title="无第三方支付通道查看权限" title="403" />
+        <Result v-else status="403" sub-title="无访问权限" title="403" />
       </Tabs.TabPane>
     </Tabs>
 </Card>

@@ -32,10 +32,8 @@ const rows = ref<DataRow[]>([]);
 const applicant = ref('');
 const status = ref<number[]>([]);
 const orderId = ref('');
-const dateRange = ref<[Dayjs, Dayjs]>([
-  dayjs().subtract(7, 'day').startOf('day'),
-  dayjs().endOf('day'),
-]);
+/** 对齐旧站：默认不传时间，查全部；用户选择后再带 BeginTime/EndTime */
+const dateRange = ref<[Dayjs, Dayjs] | undefined>();
 const pager = reactive({ current: 1, pageSize: 20, total: 0 });
 const totalAmount = ref(0);
 
@@ -91,17 +89,24 @@ function payTypeText(row: DataRow) {
 }
 
 function query(isExp = false) {
-  return {
+  const params: Record<string, unknown> = {
     AgentId: props.adminId,
     Applicant: applicant.value,
-    BeginTime: dateRange.value[0].startOf('day').unix(),
-    EndTime: dateRange.value[1].endOf('day').unix(),
+    BeginTime: '',
+    EndTime: '',
     IsExp: isExp,
     OrderId: orderId.value.trim(),
     Page: pager.current,
     PageSize: pager.pageSize,
-    WithdrawStatus: status.value.join(','),
   };
+  if (dateRange.value?.length === 2) {
+    params.BeginTime = dateRange.value[0].startOf('day').unix();
+    params.EndTime = dateRange.value[1].endOf('day').unix();
+  }
+  if (status.value.length > 0) {
+    params.WithdrawStatus = status.value.join(',');
+  }
+  return params;
 }
 
 async function load() {
@@ -112,12 +117,18 @@ async function load() {
       const detail = await fetchAgentNetcashDetailApi(props.adminId);
       applicant.value = String(detail.Username || '');
     }
-    const result = await fetchWithdrawAgentListApi(query());
+    const result = await fetchWithdrawAgentListApi(
+      query() as Parameters<typeof fetchWithdrawAgentListApi>[0],
+    );
     rows.value = result.Items || [];
     pager.total = Number(result.Pagination?.MaxCount ?? rows.value.length);
     totalAmount.value = Number(
       result.Total?.ApplyAmount || result.Total?.TotalApplyAmount || 0,
     );
+  } catch {
+    rows.value = [];
+    pager.total = 0;
+    totalAmount.value = 0;
   } finally {
     loading.value = false;
   }
@@ -127,17 +138,16 @@ function reset() {
   status.value = [];
   orderId.value = '';
   pager.current = 1;
-  dateRange.value = [
-    dayjs().subtract(7, 'day').startOf('day'),
-    dayjs().endOf('day'),
-  ];
+  dateRange.value = undefined;
   void load();
 }
 
 async function exportAll() {
   exporting.value = true;
   try {
-    const result = await fetchWithdrawAgentListApi(query(true));
+    const result = await fetchWithdrawAgentListApi(
+      query(true) as Parameters<typeof fetchWithdrawAgentListApi>[0],
+    );
     const data = (result.Items || []).map((row) => ({
       状态: statusText(row),
       申请时间: formatNetcashDateTime(row.CreateTime as number | string),

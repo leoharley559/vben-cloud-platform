@@ -95,22 +95,26 @@ function firstSetting(type: number) {
 }
 
 async function loadSettings(type = activeType.value) {
-  const result = await getAgentPermissionsApi({
-    LimitType: type,
-    Page: 1,
-    PageSize: 100,
-  });
-  settings[type] = (result.Items || []).map((item) => ({
-    ...item,
-    ...(type === 3
-      ? {
-          DailyDepositAmount: Number(item.DailyDepositAmount || 0) / 100,
-          MaxDepositAmount: Number(item.MaxDepositAmount || 0) / 100,
-          MinDepositAmount: Number(item.MinDepositAmount || 0) / 100,
-          editing: false,
-        }
-      : {}),
-  }));
+  try {
+    const result = await getAgentPermissionsApi({
+      LimitType: type,
+      Page: 1,
+      PageSize: 100,
+    });
+    settings[type] = (result.Items || []).map((item) => ({
+      ...item,
+      ...(type === 3
+        ? {
+            DailyDepositAmount: Number(item.DailyDepositAmount || 0) / 100,
+            MaxDepositAmount: Number(item.MaxDepositAmount || 0) / 100,
+            MinDepositAmount: Number(item.MinDepositAmount || 0) / 100,
+            editing: false,
+          }
+        : {}),
+    }));
+  } catch {
+    settings[type] = [];
+  }
 }
 
 function buildQuery(page = query.Page, pageSize = query.PageSize) {
@@ -131,6 +135,9 @@ async function loadRestrictions() {
     rows.value = result.Items || [];
     total.value = Number(result.Pagination?.MaxCount || 0);
     selectedKeys.value = [];
+  } catch {
+    rows.value = [];
+    total.value = 0;
   } finally {
     loading.value = false;
   }
@@ -157,14 +164,19 @@ function reset() {
 }
 
 async function updateToggle(target: 'normal' | 'official', value: boolean) {
-  await updateAgentPermissionsApi({
-    Hash: createRequestHash(),
-    IsActive: value ? 1 : 0,
-    LimitType: activeType.value,
-    Type: target,
-  });
-  message.success('设置成功');
-  await loadSettings();
+  try {
+    await updateAgentPermissionsApi({
+      Hash: createRequestHash(),
+      IsActive: value ? 1 : 0,
+      LimitType: activeType.value,
+      Type: target,
+    });
+    message.success('设置成功');
+    await loadSettings();
+  } catch {
+    message.error('设置失败');
+    await loadSettings();
+  }
 }
 
 async function updateWater() {
@@ -173,14 +185,19 @@ async function updateWater() {
     message.warning('提款流水倍数必须为大于 0 的整数');
     return;
   }
-  await updateAgentPermissionsApi({
-    Hash: createRequestHash(),
-    LimitType: 2,
-    Type: 'water',
-    WithdrawWaterMultiply: value,
-  });
-  message.success('设置成功');
-  await loadSettings(2);
+  try {
+    await updateAgentPermissionsApi({
+      Hash: createRequestHash(),
+      LimitType: 2,
+      Type: 'water',
+      WithdrawWaterMultiply: value,
+    });
+    message.success('设置成功');
+    await loadSettings(2);
+  } catch {
+    message.error('设置失败');
+    await loadSettings(2);
+  }
 }
 
 function beginDepositEdit(row: Row) {
@@ -205,18 +222,23 @@ async function saveDeposit(row: Row) {
     message.warning('请检查单笔代存范围与每日代存额度');
     return;
   }
-  await updateAgentPermissionsApi({
-    AccountType: row.AccountType,
-    DailyDepositAmount: Math.round(daily * 100),
-    Hash: createRequestHash(),
-    IsActive: Number(row.Status || 0),
-    LimitType: 3,
-    MaxDepositAmount: Math.round(max * 100),
-    MinDepositAmount: Math.round(min * 100),
-    Type: 'deposit',
-  });
-  message.success('保存成功');
-  await loadSettings(3);
+  try {
+    await updateAgentPermissionsApi({
+      AccountType: row.AccountType,
+      DailyDepositAmount: Math.round(daily * 100),
+      Hash: createRequestHash(),
+      IsActive: Number(row.Status || 0),
+      LimitType: 3,
+      MaxDepositAmount: Math.round(max * 100),
+      MinDepositAmount: Math.round(min * 100),
+      Type: 'deposit',
+    });
+    message.success('保存成功');
+    await loadSettings(3);
+  } catch {
+    message.error('保存失败');
+    await loadSettings(3);
+  }
 }
 
 const addOpen = ref(false);
@@ -268,6 +290,8 @@ async function submitAdd() {
     message.success('添加成功');
     addOpen.value = false;
     await loadRestrictions();
+  } catch {
+    message.error('添加失败');
   } finally {
     addSubmitting.value = false;
   }
@@ -275,13 +299,18 @@ async function submitAdd() {
 
 async function removeRows(ids: Array<number | string>) {
   if (ids.length === 0) return;
-  await removeAgentRestrictionApi({
-    Hash: createRequestHash(),
-    Ids: ids.join(','),
-    LimitType: activeType.value,
-  });
-  message.success('移除成功');
-  await loadRestrictions();
+  try {
+    await removeAgentRestrictionApi({
+      Hash: createRequestHash(),
+      Ids: ids.join(','),
+      LimitType: activeType.value,
+    });
+    message.success('移除成功');
+    await loadRestrictions();
+  } catch {
+    message.error('移除失败');
+    await loadRestrictions();
+  }
 }
 
 async function handleExport() {
@@ -306,6 +335,8 @@ async function handleExport() {
     if (!(await exportRows(`${tabs[activeType.value - 1]?.label}代理限制`, exportColumns, result.Items || []))) {
       message.info('暂无可导出数据');
     }
+  } catch {
+    message.error('导出失败，请稍后重试');
   } finally {
     exporting.value = false;
   }

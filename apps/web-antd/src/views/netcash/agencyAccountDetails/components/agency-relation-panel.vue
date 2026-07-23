@@ -18,7 +18,8 @@ type RelationType = 'device' | 'ip';
 type RowData = Record<string, unknown>;
 
 const mode = ref<'detail' | 'summary'>('summary');
-const createTime = ref(dayjs().subtract(1, 'day').startOf('day').unix());
+/** 对齐旧站：默认今天 00:00（unix 秒）；「全部」用 1949-10-01 */
+const createTime = ref(dayjs().startOf('day').unix());
 const loading = reactive({ device: false, ip: false });
 const rows = reactive<Record<RelationType, RowData[]>>({ device: [], ip: [] });
 const pagers = reactive({
@@ -33,12 +34,12 @@ const canIp = computed(() =>
   checkPermission(mode.value === 'summary' ? 11_269 : 11_270),
 );
 const dateOptions = [
-  { label: '全部', value: dayjs('1949-10-01').unix() },
+  { label: '全部', value: dayjs('1949-10-01').startOf('day').unix() },
   { label: '今天', value: dayjs().startOf('day').unix() },
-  { label: '近 1 个月', value: dayjs().subtract(30, 'day').unix() },
-  { label: '近 3 个月', value: dayjs().subtract(90, 'day').unix() },
-  { label: '近半年', value: dayjs().subtract(180, 'day').unix() },
-  { label: '近 1 年', value: dayjs().subtract(365, 'day').unix() },
+  { label: '近 1 个月', value: dayjs().subtract(30, 'day').startOf('day').unix() },
+  { label: '近 3 个月', value: dayjs().subtract(90, 'day').startOf('day').unix() },
+  { label: '近半年', value: dayjs().subtract(180, 'day').startOf('day').unix() },
+  { label: '近 1 年', value: dayjs().subtract(365, 'day').startOf('day').unix() },
 ];
 
 const summaryColumns = {
@@ -105,6 +106,9 @@ async function load(type: RelationType) {
     });
     rows[type] = result.Items || [];
     pager.total = Number(result.Pagination?.MaxCount ?? rows[type].length);
+  } catch {
+    rows[type] = [];
+    pagers[type].total = 0;
   } finally {
     loading[type] = false;
   }
@@ -116,7 +120,7 @@ function loadAll() {
 }
 
 function reset() {
-  createTime.value = dayjs().subtract(1, 'day').startOf('day').unix();
+  createTime.value = dayjs().startOf('day').unix();
   pagers.device.current = 1;
   pagers.ip.current = 1;
   loadAll();

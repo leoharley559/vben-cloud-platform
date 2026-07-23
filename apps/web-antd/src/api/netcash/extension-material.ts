@@ -10,6 +10,15 @@ import type {
 
 import { requestClient } from '#/api/request';
 
+function normalizeListResult<T>(
+  result: NetcashListResult<T> | null | undefined,
+): NetcashListResult<T> {
+  return {
+    ...(result ?? {}),
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+  };
+}
+
 /**
  * 推广素材列表（「推广素材」页素材 Tab 主表格）。
  *
@@ -25,7 +34,7 @@ export function fetchExtensionMaterialListApi(
       '/backend/promotionmaterials/list',
       { params: query },
     )
-    .then((result) => result ?? { Items: [] });
+    .then(normalizeListResult);
 }
 
 /**
@@ -41,15 +50,15 @@ export function fetchPromotionConfListApi(query: NetcashListQuery) {
       '/backend/promotionconf/list',
       { params: query },
     )
-    .then((result) => result ?? { Items: [] });
+    .then(normalizeListResult);
 }
 
 /**
  * 推广配置全量列表（下拉/表单选项，不分页）。
  *
- * @param type 配置类型：`1` 主题；`2` 尺寸
+ * @param type 配置类型：`1` 尺寸；`2` 主题
  * @returns 该类型全部配置项 Items
- * @see views/netcash/extensionMaterial/components/theme-size-panel.vue
+ * @see views/netcash/extensionMaterial/components/material-list.vue
  */
 export function fetchPromotionConfAllApi(type: 1 | 2) {
   return requestClient
@@ -57,7 +66,7 @@ export function fetchPromotionConfAllApi(type: 1 | 2) {
       '/backend/promotionconf/listall',
       { params: { Type: type } },
     )
-    .then((result) => result ?? { Items: [] });
+    .then(normalizeListResult);
 }
 
 /**

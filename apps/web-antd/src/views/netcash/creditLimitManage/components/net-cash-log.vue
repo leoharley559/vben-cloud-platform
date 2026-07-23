@@ -76,6 +76,12 @@ async function load() {
     summary.TotalAfterAdjustAmount = Number(
       result.Total?.TotalAfterAdjustAmount || 0,
     );
+  } catch {
+    rows.value = [];
+    total.value = 0;
+    summary.TotalAdjustAmount = 0;
+    summary.TotalBeforeAdjustAmount = 0;
+    summary.TotalAfterAdjustAmount = 0;
   } finally {
     loading.value = false;
   }

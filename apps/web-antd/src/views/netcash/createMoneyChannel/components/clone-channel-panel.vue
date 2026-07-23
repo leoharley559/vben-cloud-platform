@@ -106,12 +106,17 @@ const gridOptions: VxeTableGridOptions<CloneChannelPlanItem> = {
     autoLoad: false,
     ajax: {
       query: async () => {
-        const result = await fetchCloneChannelPlanListApi({
-          ChannelId: filters.ChannelId.join(','),
-          PackageId: filters.PackageId.join(','),
-        });
-        rows.value = result.Items;
-        return { items: rows.value, total: rows.value.length };
+        try {
+          const result = await fetchCloneChannelPlanListApi({
+            ChannelId: filters.ChannelId.join(','),
+            PackageId: filters.PackageId.join(','),
+          });
+          rows.value = result.Items;
+          return { items: rows.value, total: rows.value.length };
+        } catch {
+          rows.value = [];
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -159,6 +164,8 @@ async function submit() {
     message.success(editId.value == null ? '方案已新增' : '方案已编辑');
     modalOpen.value = false;
     await gridApi.reload();
+  } catch {
+    // 请求层已提示
   } finally {
     saving.value = false;
   }
@@ -169,31 +176,40 @@ function remove(row: CloneChannelPlanItem) {
     content: `确认删除克隆方案“${row.Name || row.Id}”？`,
     okButtonProps: { danger: true },
     onOk: async () => {
-      await deleteCloneChannelPlanApi(row.Id!);
-      message.success('方案已删除');
-      await gridApi.reload();
+      try {
+        await deleteCloneChannelPlanApi(row.Id!);
+        message.success('方案已删除');
+        await gridApi.reload();
+      } catch {
+        // 请求层已提示
+      }
     },
     title: '删除克隆方案',
   });
 }
 
 async function initialize() {
-  const [packageList, channelList] = await Promise.all([
-    fetchChannelPackageOptionsApi(),
-    fetchAvailableMoneyChannelsApi({
-      ChannelType: '2',
-      DataSearchType: 0,
-      Hidden: 1,
-      ParentChannel: true,
-      Status: 1,
-    }),
-  ]);
-  packages.value = packageList ?? [];
-  channels.value = channelList.Item ?? [];
-  filters.PackageId = packages.value
-    .map((item) => packageId(item))
-    .filter((id): id is ChannelId => id != null);
-  await gridApi.query();
+  try {
+    const [packageList, channelList] = await Promise.all([
+      fetchChannelPackageOptionsApi(),
+      fetchAvailableMoneyChannelsApi({
+        ChannelType: '2',
+        DataSearchType: 0,
+        Hidden: 1,
+        ParentChannel: true,
+        Status: 1,
+      }),
+    ]);
+    packages.value = Array.isArray(packageList) ? packageList : [];
+    channels.value = channelList.Item ?? [];
+    filters.PackageId = packages.value
+      .map((item) => packageId(item))
+      .filter((id): id is ChannelId => id != null);
+    await gridApi.query();
+  } catch {
+    packages.value = [];
+    channels.value = [];
+  }
 }
 
 onMounted(() => void initialize());

@@ -75,6 +75,9 @@ async function load() {
     const result = await fetchJuniorMemberListApi(query());
     rows.value = mapRows(result.Items || []);
     activeTotal.value = Number(result.Total?.ActiveCount || 0);
+  } catch {
+    rows.value = [];
+    activeTotal.value = 0;
   } finally {
     loading.value = false;
   }
@@ -105,6 +108,8 @@ async function exportRows() {
       book,
       `${props.activeOnly ? '活跃人数' : '下级会员'}_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`,
     );
+  } catch {
+    // 全局拦截已提示
   } finally {
     exporting.value = false;
   }

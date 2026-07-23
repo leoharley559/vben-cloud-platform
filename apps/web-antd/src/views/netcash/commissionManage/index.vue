@@ -93,9 +93,14 @@ const subTabs = [
 const grantSubTabs = computed(() =>
   subTabs.filter((item) => checkPermission(item.permission)),
 );
+/** 记录子 Tab：个人/多层单费率 → 11479；团队/多层多费率 → 11480（对齐旧站） */
 const recordSubTabs = computed(() =>
   subTabs.filter((item) =>
-    checkPermission(item.variant === 'personal' ? 11_479 : 11_480),
+    checkPermission(
+      item.variant === 'personal' || item.variant === 'multi-single'
+        ? 11_479
+        : 11_480,
+    ),
   ),
 );
 

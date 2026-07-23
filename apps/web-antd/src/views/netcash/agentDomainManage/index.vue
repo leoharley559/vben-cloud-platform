@@ -30,6 +30,7 @@ import {
   fetchAssignableDomainsApi,
   updateAgentDomainApi,
 } from '#/api/netcash/agent-domain';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 defineOptions({ name: 'AgentDomainManage' });
@@ -39,13 +40,13 @@ const canViewPage = computed(() => checkPermission(10_550));
 const canExport = computed(() => checkPermission(10_551));
 const canMutate = computed(() => checkPermission(10_555));
 const filters = reactive({
-  AdminStatus: '',
-  ChannelId: '',
+  AdminStatus: '' as number | string,
+  ChannelId: '' as number | string,
   NetCashDomain: '',
   NetCashH5Domain: '',
   Sort: '',
-  Status: '',
-  Type: '',
+  Status: '' as number | string,
+  Type: '' as number | string,
   Username: '',
 });
 const rows = ref<AgentDomainRow[]>([]);
@@ -78,6 +79,30 @@ function dateTime(value: unknown) {
   return parsed.isValid()
     ? parsed.format('YYYY-MM-DD HH:mm:ss')
     : String(value);
+}
+
+function agentTypeText(value: unknown) {
+  const type = Number(value);
+  if (type === 1) return '普通';
+  if (type === 2) return '正式';
+  return '-';
+}
+
+function statusText(value: unknown) {
+  const status = Number(value);
+  if (status === 1) return '启用';
+  if (status === 2) return '停用';
+  return '-';
+}
+
+/** 对齐旧站 showDomain：裸域名统一补 https://www. */
+function domainUrl(item: ChannelDomainOption | string) {
+  const raw = String(
+    typeof item === 'string' ? item : item.Domain || '',
+  ).replaceAll(/\s+/g, '');
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return `https://www.${raw}`;
 }
 
 const columns: VxeTableGridOptions<AgentDomainRow>['columns'] = [
@@ -143,9 +168,15 @@ function buildQuery(page?: { currentPage: number; pageSize: number }) {
   const currentPage = page?.currentPage ?? 1;
   const pageSize = page?.pageSize ?? 20;
   return {
-    ...filters,
+    AdminStatus: filters.AdminStatus,
+    ChannelId: filters.ChannelId ?? '',
+    NetCashDomain: filters.NetCashDomain.trim(),
+    NetCashH5Domain: filters.NetCashH5Domain.trim(),
     Page: currentPage,
     PageSize: pageSize,
+    Status: filters.Status,
+    Type: filters.Type,
+    Username: filters.Username.trim(),
   };
 }
 
@@ -158,25 +189,31 @@ const gridOptions: VxeTableGridOptions<AgentDomainRow> = {
     pageSizes: [10, 20, 50, 100],
   },
   proxyConfig: {
-    autoLoad: canViewPage.value,
+    autoLoad: checkPermission(10_550),
     ajax: {
       query: async ({ page, sort }) => {
-        const result = await fetchAgentDomainListApi({
-          ...buildQuery(page),
-          Sort:
-            sort?.field && sort?.order
-              ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
-              : filters.Sort,
-        });
-        rows.value = result.Items;
-        return {
-          items: rows.value,
-          total: Number(result.Pagination?.MaxCount ?? rows.value.length),
-        };
+        try {
+          const result = await fetchAgentDomainListApi({
+            ...buildQuery(page),
+            Sort:
+              sort?.field && sort?.order
+                ? `${sort.order === 'desc' ? '-' : ''}${sort.field}`
+                : filters.Sort,
+          });
+          rows.value = result.Items;
+          return {
+            items: rows.value,
+            total: Number(result.Pagination?.MaxCount ?? rows.value.length),
+          };
+        } catch {
+          rows.value = [];
+          return { items: [], total: 0 };
+        }
       },
     },
   },
-  rowConfig: { keyField: 'Id' },
+  // 列表 Id 恒为 null，用渠道号作行键
+  rowConfig: { keyField: 'ChannelId' },
 };
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
@@ -199,27 +236,25 @@ function resetFilters() {
   void reloadFirstPage();
 }
 
-function domainUrl(item: ChannelDomainOption) {
-  const raw = String(item.Domain || '').replaceAll(/\s+/g, '');
-  if (!raw) return '';
-  if (/^https?:\/\//i.test(raw)) return raw;
-  return `https://www.${raw}`;
-}
-
 async function loadDependencies(adminId?: number | string) {
-  const domainResult = await fetchAssignableDomainsApi({
-    AdminId: adminId,
-    InUsed: 1,
-    IsAll: 1,
-    OnlyUnused: true,
-    PageSize: 100_000_000,
-  });
-  appDomains.value = domainResult.Items.filter(
-    (item) => Number(item.Type) === 4 && Number(item.InUsed) === 1,
-  );
-  h5Domains.value = domainResult.Items.filter(
-    (item) => Number(item.Type) === 7 && Number(item.InUsed) === 1,
-  );
+  try {
+    const domainResult = await fetchAssignableDomainsApi({
+      AdminId: adminId,
+      InUsed: 1,
+      IsAll: 1,
+      OnlyUnused: true,
+      PageSize: 100_000_000,
+    });
+    appDomains.value = domainResult.Items.filter(
+      (item) => Number(item.Type) === 4 && Number(item.InUsed) === 1,
+    );
+    h5Domains.value = domainResult.Items.filter(
+      (item) => Number(item.Type) === 7 && Number(item.InUsed) === 1,
+    );
+  } catch {
+    appDomains.value = [];
+    h5Domains.value = [];
+  }
 }
 
 async function openEdit(row: AgentDomainRow) {
@@ -234,7 +269,7 @@ async function openEdit(row: AgentDomainRow) {
   ) {
     appDomains.value.unshift({
       Domain: row.NetCashDomain,
-      Id: `current-app-${row.Id}`,
+      Id: `current-app-${row.ChannelId || row.AdminId}`,
       InUsed: 1,
       Type: 4,
     });
@@ -245,10 +280,13 @@ async function openEdit(row: AgentDomainRow) {
   ) {
     h5Domains.value.unshift({
       Domain: row.NetCashH5Domain,
-      Id: `current-h5-${row.Id}`,
+      Id: `current-h5-${row.ChannelId || row.AdminId}`,
       InUsed: 1,
       Type: 7,
     });
+  }
+  if (appDomains.value.length === 0 && h5Domains.value.length === 0) {
+    message.warning('暂无可用的专属 APP/H5 域名（Type=4/7），请先在域名管理中配置');
   }
   formRef.value?.clearValidate();
 }
@@ -261,6 +299,8 @@ async function submit() {
     message.success('编辑成功');
     modalOpen.value = false;
     await gridApi.reload();
+  } catch {
+    // 请求层已提示
   } finally {
     saving.value = false;
   }
@@ -277,7 +317,7 @@ async function exportExcel() {
       return void message.info('当前条件下没有可导出的数据');
     const data = result.Items.map((row) => ({
       代理名称: row.Name,
-      代理类型: Number(row.Type) === 1 ? '普通' : '正式',
+      代理类型: agentTypeText(row.Type),
       代理账号: row.Username,
       专属APP域名: row.NetCashDomain,
       专属H5域名: row.NetCashH5Domain,
@@ -285,13 +325,15 @@ async function exportExcel() {
       操作人: row.HandlerName,
       操作时间: dateTime(row.HandlerTime),
       渠道ID: row.ChannelId,
-      渠道状态: Number(row.Status) === 1 ? '启用' : '停用',
-      账号状态: Number(row.AdminStatus) === 1 ? '启用' : '停用',
+      渠道状态: statusText(row.Status),
+      账号状态: statusText(row.AdminStatus),
     }));
     const sheet = XLSX.utils.json_to_sheet(data);
     const book = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(book, sheet, '渠道域名');
     XLSX.writeFile(book, '渠道域名列表.xlsx');
+  } catch {
+    // 请求层已提示
   } finally {
     exporting.value = false;
   }
@@ -311,8 +353,8 @@ async function exportExcel() {
           <Input
             v-model:value="filters.Username"
             allow-clear
-            placeholder="代理账号"
-            style="width: 160px"
+            placeholder="代理账号（精确匹配）"
+            style="width: 180px"
             @press-enter="reloadFirstPage"
           />
           <Select
@@ -320,12 +362,10 @@ async function exportExcel() {
             :options="typeOptions"
             style="width: 125px"
           />
-          <Input
-            v-model:value="filters.ChannelId"
-            allow-clear
-            placeholder="渠道 ID"
-            style="width: 130px"
-            @press-enter="reloadFirstPage"
+          <ChannelSelect
+            v-model="filters.ChannelId"
+            :multiple="false"
+            style="width: 220px"
           />
           <Input
             v-model:value="filters.NetCashDomain"
@@ -369,19 +409,31 @@ async function exportExcel() {
 
       <Grid>
         <template #adminStatus="{ row }">
-          <Tag :color="Number(row.AdminStatus) === 1 ? 'green' : 'red'">
-            {{ Number(row.AdminStatus) === 1 ? '启用' : '停用' }}
+          <Tag
+            v-if="Number(row.AdminStatus) === 1 || Number(row.AdminStatus) === 2"
+            :color="Number(row.AdminStatus) === 1 ? 'green' : 'red'"
+          >
+            {{ statusText(row.AdminStatus) }}
           </Tag>
+          <span v-else>-</span>
         </template>
         <template #agentType="{ row }">
-          <Tag :color="Number(row.Type) === 2 ? 'green' : 'blue'">
-            {{ Number(row.Type) === 2 ? '正式' : '普通' }}
+          <Tag
+            v-if="Number(row.Type) === 1 || Number(row.Type) === 2"
+            :color="Number(row.Type) === 2 ? 'green' : 'blue'"
+          >
+            {{ agentTypeText(row.Type) }}
           </Tag>
+          <span v-else>-</span>
         </template>
         <template #channelStatus="{ row }">
-          <Tag :color="Number(row.Status) === 1 ? 'green' : 'red'">
-            {{ Number(row.Status) === 1 ? '启用' : '停用' }}
+          <Tag
+            v-if="Number(row.Status) === 1 || Number(row.Status) === 2"
+            :color="Number(row.Status) === 1 ? 'green' : 'red'"
+          >
+            {{ statusText(row.Status) }}
           </Tag>
+          <span v-else>-</span>
         </template>
         <template #actions="{ row }">
           <Space v-if="canMutate" :size="2">
@@ -397,7 +449,7 @@ async function exportExcel() {
       :confirm-loading="saving"
       :mask-closable="false"
       :open="modalOpen"
-      title="编辑域名绑定"
+      title="编辑域名配置"
       width="660px"
       @cancel="modalOpen = false"
       @ok="submit"
@@ -427,12 +479,13 @@ async function exportExcel() {
           <Select
             v-model:value="form.NetCashDomain"
             allow-clear
-            :options="
-              appDomains.map((item) => ({
+            :options="[
+              { label: '不设置', value: '' },
+              ...appDomains.map((item) => ({
                 label: domainUrl(item),
                 value: domainUrl(item),
-              }))
-            "
+              })),
+            ]"
             placeholder="请选择专属 APP 域名"
             show-search
           />
@@ -441,12 +494,13 @@ async function exportExcel() {
           <Select
             v-model:value="form.NetCashH5Domain"
             allow-clear
-            :options="
-              h5Domains.map((item) => ({
+            :options="[
+              { label: '不设置', value: '' },
+              ...h5Domains.map((item) => ({
                 label: domainUrl(item),
                 value: domainUrl(item),
-              }))
-            "
+              })),
+            ]"
             placeholder="请选择专属 H5 域名"
             show-search
           />

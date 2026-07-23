@@ -81,8 +81,8 @@ const filterMainUsername = ref('');
 const filterParentAdminId = ref('');
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 const statisticsRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs().subtract(1, 'day').startOf('day'),
-  dayjs().subtract(1, 'day').endOf('day'),
+  dayjs().startOf('day'),
+  dayjs().endOf('day'),
 ]);
 const drillPath = ref<Array<{ id: number | string; username: string }>>([]);
 const totalData = ref<Record<string, number>>({});
@@ -106,7 +106,8 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
     RegistIP: filterRegistIP.value,
     Status: filterStatus.value || '',
     TeamName: filterTeamName.value,
-    Type: filterType.value || '',
+    // 旧站空筛选项默认传 1,2,3（普通/特殊/测试），避免仅靠空串依赖后端兜底
+    Type: filterType.value ? String(filterType.value) : '1,2,3',
     Username: filterUsername.value,
     WithdrawAccName: filterWithdrawAccName.value,
     WithdrawAccNum: filterWithdrawAccNum.value,
@@ -221,13 +222,18 @@ const gridOptions: VxeTableGridOptions<AgencyListItem> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {
-        const result = await fetchAgencyListApi(getQueryParams(page));
-        const items = result.Items || [];
-        totalData.value = (result.Total || {}) as Record<string, number>;
-        return {
-          items,
-          total: Number(result.Pagination?.MaxCount || items.length),
-        };
+        try {
+          const result = await fetchAgencyListApi(getQueryParams(page));
+          const items = result.Items || [];
+          totalData.value = (result.Total || {}) as Record<string, number>;
+          return {
+            items,
+            total: Number(result.Pagination?.MaxCount || items.length),
+          };
+        } catch {
+          totalData.value = {};
+          return { items: [], total: 0 };
+        }
       },
     },
   },
@@ -253,8 +259,8 @@ function resetFilters() {
   filterParentAdminId.value = '';
   filterDateRange.value = undefined;
   statisticsRange.value = [
-    dayjs().subtract(1, 'day').startOf('day'),
-    dayjs().subtract(1, 'day').endOf('day'),
+    dayjs().startOf('day'),
+    dayjs().endOf('day'),
   ];
   drillPath.value = [];
   gridApi.reload();
@@ -320,12 +326,15 @@ async function submitStatus() {
   try {
     await switchAgencyStatusApi({
       AdminId: adminId,
+      Name: String(row.Username || row.Name || ''),
       RemarkOnDeactivation: statusRemark.value.trim(),
       Status: Number(row.Status) === 1 ? 2 : 1,
     });
     message.success('操作成功');
     statusModalOpen.value = false;
     gridApi.reload();
+  } catch {
+    // 全局拦截已提示；避免未捕获异常
   } finally {
     statusSubmitting.value = false;
   }
@@ -401,6 +410,8 @@ async function exportAgencyList() {
     const book = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(data), '代理列表');
     XLSX.writeFile(book, `代理列表_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+  } catch {
+    // 全局拦截已提示
   } finally {
     exportLoading.value = false;
   }
@@ -456,6 +467,7 @@ onMounted(() => {
         :options="[
           { label: '普通代理', value: 1 },
           { label: '特殊代理', value: 2 },
+          { label: '测试代理', value: 3 },
         ]"
         placeholder="代理类型"
         style="width: 130px"

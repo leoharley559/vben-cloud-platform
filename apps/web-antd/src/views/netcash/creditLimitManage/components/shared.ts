@@ -41,6 +41,19 @@ export function date(value: unknown) {
   return formatNetcashDateTime(value as string);
 }
 
+/** getagentcreditlimit 的 respond.Items 是对象而非数组，兼容两种形态 */
+export function unwrapCreditLimitItem(result: unknown): Row {
+  const body = (result ?? {}) as Row;
+  const items = body.Items ?? body.Data ?? body;
+  if (items && typeof items === 'object' && !Array.isArray(items)) {
+    return items as Row;
+  }
+  if (Array.isArray(items) && items[0]) {
+    return items[0] as Row;
+  }
+  return {};
+}
+
 export function rangeParams(
   range: DateRange,
   beginField: string,

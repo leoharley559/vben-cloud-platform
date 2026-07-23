@@ -68,6 +68,14 @@ async function load(type: 1 | 2) {
       sizeRows.value = items;
       sizeTotal.value = total;
     }
+  } catch {
+    if (isTheme) {
+      themeRows.value = [];
+      themeTotal.value = 0;
+    } else {
+      sizeRows.value = [];
+      sizeTotal.value = 0;
+    }
   } finally {
     loading.value = false;
   }
@@ -93,10 +101,14 @@ async function save() {
   }
   saving.value = true;
   try {
-    await (editing.value && form.Id !== undefined ? updatePromotionConfApi({ Id: form.Id, Value: value }) : createPromotionConfApi({ Type: form.Type, Value: value }));
+    await (editing.value && form.Id !== undefined
+      ? updatePromotionConfApi({ Id: form.Id, Value: value })
+      : createPromotionConfApi({ Type: form.Type, Value: value }));
     modalOpen.value = false;
     message.success(editing.value ? '编辑成功' : '新增成功');
     await load(form.Type);
+  } catch {
+    /* requestClient 已提示 */
   } finally {
     saving.value = false;
   }
@@ -108,9 +120,13 @@ function remove(type: 1 | 2, row: PromotionConfItem) {
     content: `删除后可能影响已关联素材，确定删除“${row.Value || ''}”吗？`,
     okType: 'danger',
     onOk: async () => {
-      await deletePromotionConfApi(row.Id!);
-      message.success('删除成功');
-      await load(type);
+      try {
+        await deletePromotionConfApi(row.Id!);
+        message.success('删除成功');
+        await load(type);
+      } catch {
+        /* requestClient 已提示 */
+      }
     },
     title: `删除${type === 2 ? '主题' : '尺寸'}`,
   });

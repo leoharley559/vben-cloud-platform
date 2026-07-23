@@ -44,6 +44,7 @@ import {
 import { isSameAcctActionRestricted } from '#/utils/security-restriction';
 
 import CreditDataPanel from '../credit-components/credit-data-panel.vue';
+import { unwrapCreditLimitItem } from '../creditLimitManage/components/shared';
 
 defineOptions({ name: 'CreditLimitPlatformManage' });
 
@@ -113,7 +114,8 @@ const pendingConfig: CreditPanelConfig = {
   summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '申请金额合计' }],
 };
 const recordConfig: CreditPanelConfig = {
-  baseQuery: { AgentType: 1, Status: '-1' },
+  // Status 空串=全部（含待审）；旧站把 全部 映射成 -1，后端 -1 实测恒空
+  baseQuery: { AgentType: 1, Status: '' },
   columns: [
     ...commonColumns,
     { field: 'FinishAccount', title: '审核人' },
@@ -125,7 +127,6 @@ const recordConfig: CreditPanelConfig = {
       title: '状态',
     },
   ],
-  exportFileName: '平台额度调整记录',
   fetchApi: (query) =>
     getPlatformCreditLimitApplyRecordListApi(
       query as PlatformCreditApplyRecordQuery,
@@ -133,10 +134,11 @@ const recordConfig: CreditPanelConfig = {
   filters: [
     ...commonFilters,
     {
+      defaultValue: '',
       field: 'Status',
       label: '状态',
       options: [
-        { label: '全部', value: '-1' },
+        { label: '全部', value: '' },
         { label: '待审核', value: 1 },
         { label: '通过', value: 2 },
         { label: '拒绝', value: 3 },
@@ -166,11 +168,19 @@ const logConfig: CreditPanelConfig = {
     { field: 'AdjustAmountAft', formatter: amount, title: '调整后额度（元）' },
     { field: 'ReviewNote', minWidth: 180, title: '备注' },
   ],
-  exportFileName: '平台额度帐变记录',
   fetchApi: (query) =>
     getPlatformNetCashLogListApi(query as PlatformNetCashLogQuery),
   filters: [
-    commonFilters[0]!,
+    {
+      ...commonFilters[0]!,
+      // 旧站帐变默认/重置 WalletType=0；筛选项空串不覆盖 baseQuery
+      defaultValue: 0,
+      options: [
+        { label: '全部', value: 0 },
+        { label: '代存', value: 2 },
+        { label: '代客', value: 3 },
+      ],
+    },
     commonFilters[1]!,
     {
       fields: ['TransferStartTime', 'TransferEndTime'],
@@ -206,10 +216,16 @@ const canViewPage = computed(() => tabs.value.length > 0);
 
 const creditInfo = reactive({ Credit: 0, Dkcredit: 0 });
 async function loadCreditInfo() {
-  const result = await getPlatformAgentCreditLimitApi({ Page: 1, PageSize: 1 });
-  const item = result?.Items || result || {};
-  creditInfo.Credit = Number(item.Credit || 0);
-  creditInfo.Dkcredit = Number(item.Dkcredit || 0);
+  try {
+    // 旧站 getAgentCreditLimit() 无分页参；respond.Items 为对象
+    const result = await getPlatformAgentCreditLimitApi({});
+    const item = unwrapCreditLimitItem(result);
+    creditInfo.Credit = Number(item.Credit || 0);
+    creditInfo.Dkcredit = Number(item.Dkcredit || 0);
+  } catch {
+    creditInfo.Credit = 0;
+    creditInfo.Dkcredit = 0;
+  }
 }
 
 const applyForm = reactive<{
@@ -250,6 +266,8 @@ function submitApply() {
         message.success('申请成功');
         resetApplyForm();
         await loadCreditInfo();
+      } catch {
+        // 请求层已提示；保留表单便于重试
       } finally {
         applySubmitting.value = false;
       }
@@ -282,7 +300,10 @@ async function submitReview() {
     message.success('审核成功');
     reviewOpen.value = false;
     panelRefs.pending?.reload();
+    panelRefs.record?.reload();
     await loadCreditInfo();
+  } catch {
+    // 请求层已提示
   } finally {
     reviewSubmitting.value = false;
   }
@@ -293,7 +314,8 @@ function canReviewRow(row: Record<string, unknown>) {
 
 onMounted(() => {
   activeTab.value = tabs.value[0]?.key || 'apply';
-  if (checkPermission(11_792) || checkPermission(11_795)) void loadCreditInfo();
+  // 旧站仅申请页拉取额度概览
+  if (checkPermission(11_792)) void loadCreditInfo();
 });
 </script>
 
