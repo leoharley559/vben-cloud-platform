@@ -20,6 +20,7 @@ import {
   logoutApi,
 } from '#/api';
 import { $t } from '#/locales';
+import { generateAccessRoutes } from '#/router/generate-access-routes';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import {
   removeAuthToken,
@@ -36,6 +37,35 @@ export const useAuthStore = defineStore('auth', () => {
   const loginLoading = ref(false);
   const twoFactorLoading = ref(false);
 
+  async function fetchUserInfo() {
+    const userInfo = await getUserInfoApi();
+    userStore.setUserInfo(userInfo);
+    return userInfo;
+  }
+
+  /**
+   * 对齐旧站 permission.js：
+   * `Promise.all([fnGetProjectConfig, GetUserInfo])` 后再 GenerateRoutes
+   */
+  async function initSession() {
+    const [, userInfo] = await Promise.all([
+      getProjectConfigApi(),
+      fetchUserInfo(),
+    ]);
+    const accessCodes = await getAccessCodesApi();
+    accessStore.setAccessCodes(accessCodes);
+    return userInfo;
+  }
+
+  /** 对齐旧站 GenerateRoutes + addRoutes */
+  async function generateAccessRoutesAction() {
+    return generateAccessRoutes(router);
+  }
+
+  /**
+   * 对齐旧站 loginWeb handleLoginSuccess：
+   * GetUserInfo → fnGetProjectConfig → GenerateRoutes → push 首页
+   */
   async function completeLogin(
     accessToken: string,
     onSuccess?: () => Promise<void> | void,
@@ -43,11 +73,11 @@ export const useAuthStore = defineStore('auth', () => {
     accessStore.setAccessToken(accessToken);
     setCloudToken(accessToken);
 
-    await getProjectConfigApi();
-    const userInfo = await fetchUserInfo();
-    const accessCodes = await getAccessCodesApi();
-    userStore.setUserInfo(userInfo);
-    accessStore.setAccessCodes(accessCodes);
+    // 登录后重置，避免沿用上一次会话的菜单标记
+    accessStore.setIsAccessChecked(false);
+
+    const userInfo = await initSession();
+    await generateAccessRoutesAction();
 
     if (accessStore.loginExpired) {
       accessStore.setLoginExpired(false);
@@ -161,17 +191,6 @@ export const useAuthStore = defineStore('auth', () => {
     });
   }
 
-  async function fetchUserInfo() {
-    const userInfo = await getUserInfoApi();
-    userStore.setUserInfo(userInfo);
-    return userInfo;
-  }
-
-  async function initSession() {
-    await getProjectConfigApi();
-    return fetchUserInfo();
-  }
-
   function $reset() {
     loginLoading.value = false;
     twoFactorLoading.value = false;
@@ -183,6 +202,7 @@ export const useAuthStore = defineStore('auth', () => {
     authLoginBy2FA,
     completeLogin,
     fetchUserInfo,
+    generateAccessRoutes: generateAccessRoutesAction,
     initSession,
     loginLoading,
     logout,

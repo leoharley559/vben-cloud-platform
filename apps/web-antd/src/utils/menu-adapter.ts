@@ -78,7 +78,6 @@ function shouldAppendMenu(
 
   const conditionalMenus = new Set([
     'cloneChannel',
-    'dayReport',
     'dropDeploy',
     'everydayData',
     'gameManage',
@@ -98,7 +97,6 @@ function shouldAppendMenu(
     case 'cloneChannel': {
       return !!isOneTui;
     }
-    case 'dayReport':
     case 'everydayData': {
       return hasAnyHaveFunction(roleDataField, ['1', '2']);
     }
@@ -195,10 +193,13 @@ function buildRouteTree(
 
     const routeNode: BuiltRouteNode = {
       children: [],
-      hidden: child.IsShow === '1',
+      // 对齐旧站 permission.js：hidden = IsShow == '1'（宽松比较）
+      // eslint-disable-next-line eqeqeq -- 对齐旧站 IsShow / KeepAlive 宽松比较
+      hidden: child.IsShow == '1',
       icon: resolveMenuIcon(child.Name, child.Router),
       id: child.Id,
-      keepAlive: child.KeepAlive === '1',
+      // eslint-disable-next-line eqeqeq -- 对齐旧站 KeepAlive 宽松比较
+      keepAlive: child.KeepAlive == '1',
       name: child.Name,
       parentId: child.ParentId,
       path: child.Router,
@@ -264,6 +265,7 @@ function toVbenRoute(
 
 /**
  * 将 cloudPlatform 扁平 Nav 转为 Vben backend 菜单结构
+ * 对齐旧站 GenerateRoutes：剔除无子菜单的一级菜单
  */
 export function convertNavToVbenRoutes(
   navItems: CloudNavItem[],
@@ -271,15 +273,15 @@ export function convertNavToVbenRoutes(
 ): RouteRecordStringComponent[] {
   const parentMap = buildParentMap(navItems);
   const topLevelRoutes = buildRouteTree(-1, parentMap, projectConfig).filter(
-    (item) => item.children.length > 0 || !!item.path,
+    (item) => item.children.length !== 0,
   );
 
   return topLevelRoutes.map((route) => toVbenRoute(route, true));
 }
 
 /**
- * 登录后默认首页：优先工作台（前端路由，保证可打开）
+ * 登录后默认首页：数据总览（前端路由，保证可打开）
  */
 export function resolveHomePathFromNav(_navItems: CloudNavItem[]) {
-  return '/workspace';
+  return '/dashboard/index';
 }

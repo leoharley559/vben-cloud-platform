@@ -1,37 +1,20 @@
 import type { RouteRecordRaw } from 'vue-router';
 
-import { $t } from '#/locales';
-
+/**
+ * 数据总览：登录默认首页。
+ * hideInMenu：不占左侧「概览」菜单；业务入口由后端 Nav 提供。
+ */
 const routes: RouteRecordRaw[] = [
   {
     meta: {
+      affixTab: true,
+      hideInMenu: true,
       icon: 'lucide:layout-dashboard',
-      order: -1,
-      title: $t('page.dashboard.title'),
+      title: '数据总览',
     },
-    name: 'Dashboard',
-    path: '/dashboard',
-    children: [
-      {
-        name: 'Analytics',
-        path: '/analytics',
-        component: () => import('#/views/dashboard/analytics/index.vue'),
-        meta: {
-          affixTab: true,
-          icon: 'lucide:area-chart',
-          title: $t('page.dashboard.analytics'),
-        },
-      },
-      {
-        name: 'Workspace',
-        path: '/workspace',
-        component: () => import('#/views/dashboard/workspace/index.vue'),
-        meta: {
-          icon: 'carbon:workspace',
-          title: $t('page.dashboard.workspace'),
-        },
-      },
-    ],
+    name: 'DashboardIndex',
+    path: '/dashboard/index',
+    component: () => import('#/views/dashboard/index/index.vue'),
   },
 ];
 

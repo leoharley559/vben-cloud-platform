@@ -39,8 +39,8 @@ function mapCloudUserToUserInfo(data: CloudUserData): UserInfo {
   return {
     avatar: '',
     desc: displayName,
-    // 迁移期固定落到工作台，避免跳进尚未迁移的业务页
-    homePath: '/workspace',
+    // 登录后进入数据总览
+    homePath: '/dashboard/index',
     realName: displayName,
     roles: (data.Role || []).map((role) => String(role.Name || role.Id || '')),
     token: data.Token,

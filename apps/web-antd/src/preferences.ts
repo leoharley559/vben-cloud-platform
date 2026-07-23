@@ -17,9 +17,9 @@ interface WebAntdPreferencesExtension {
  */
 export const overridesPreferences = defineOverridesPreferences({
   app: {
-    // mixed：前端工作台 + 后端 Nav 菜单并存（迁移期）
+    // mixed：前端路由 + 后端 Nav 菜单并存（迁移期）
     accessMode: 'mixed',
-    defaultHomePath: '/workspace',
+    defaultHomePath: '/dashboard/index',
     enableRefreshToken: false,
     // 迁移期固定简体中文，菜单文案来自 cloudPlatform zh-CN
     locale: 'zh-CN',

@@ -269,7 +269,7 @@ async function openAssistSession(link: string) {
     // 对齐旧站：替换当前会话 Token，并新开页进入协助账号后台
     // HelpLink Cookie 保留（旧站不主动清除）
     await authStore.completeLogin(token, async () => {
-      const homePath = preferences.app.defaultHomePath || '/workspace';
+      const homePath = preferences.app.defaultHomePath || '/dashboard/index';
       const routeUrl = router.resolve({ path: homePath });
       window.open(routeUrl.href, '_blank');
       message.success('协助登录成功，已打开新窗口');
