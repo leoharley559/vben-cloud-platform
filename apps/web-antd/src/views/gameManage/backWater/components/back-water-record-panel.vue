@@ -15,7 +15,6 @@ import {
   Radio,
   Select,
   Space,
-  Statistic,
   Table,
   Tag,
 } from 'ant-design-vue';
@@ -23,6 +22,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   exportBackWaterRecordApi,
@@ -131,6 +131,45 @@ const canExport = computed(() =>
     ? canSummaryExport.value
     : canDetailExport.value,
 );
+
+const summaryItems = computed(() => {
+  const items: Array<{
+    label: string;
+    value: number | string;
+    valueClass?: string;
+  }> = [];
+  if (activeType.value === 'summary') {
+    items.push(
+      {
+        label: '已发返水总计',
+        value: formatAmountFromCent(totals.sent),
+      },
+      {
+        label: '待发返水总计',
+        value: formatAmountFromCent(totals.unsent),
+      },
+    );
+  }
+  if (activeType.value === 'detail') {
+    items.push({
+      label: '流水总计',
+      value: formatAmountFromCent(totals.turnover),
+    });
+  }
+  items.push({
+    label: '返水金额总计',
+    value: formatAmountFromCent(totals.backWater),
+  });
+  return items;
+});
+
+const detailSummaryItems = computed(() => [
+  { label: '游戏账号', value: detailAccount.value },
+  {
+    label: '返水总计',
+    value: formatAmountFromCent(detailSum.value),
+  },
+]);
 
 const packageSelectOptions = computed(() =>
   packageOptions.value.map((item) => ({
@@ -540,12 +579,18 @@ onMounted(async () => {
           v-model:value="filters.OrderId"
           allow-clear
           placeholder="订单号"
-        />
+          style="width: 220px"
+        >
+          <template #addonBefore>订单号</template>
+        </Input>
         <Input
           v-model:value="filters.LoginAccount"
           allow-clear
           placeholder="游戏账号"
-        />
+          style="width: 220px"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
         <Select v-model:value="filters.VipLevel" :options="vipOptions" />
         <Select
           v-model:value="filters.LevelId"
@@ -557,7 +602,10 @@ onMounted(async () => {
           v-model:value="filters.AdminName"
           allow-clear
           placeholder="代理账号"
-        />
+          style="width: 220px"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
         <Select
           v-model:value="filters.PackId"
           :options="packageSelectOptions"
@@ -627,27 +675,7 @@ onMounted(async () => {
       </Space>
     </div>
 
-    <div class="summary-cards">
-      <Statistic
-        v-if="activeType === 'summary'"
-        title="已发返水总计"
-        :value="formatAmountFromCent(totals.sent)"
-      />
-      <Statistic
-        v-if="activeType === 'summary'"
-        title="待发返水总计"
-        :value="formatAmountFromCent(totals.unsent)"
-      />
-      <Statistic
-        v-if="activeType === 'detail'"
-        title="流水总计"
-        :value="formatAmountFromCent(totals.turnover)"
-      />
-      <Statistic
-        title="返水金额总计"
-        :value="formatAmountFromCent(totals.backWater)"
-      />
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <div class="data-grid">
       <Grid>
@@ -695,13 +723,7 @@ onMounted(async () => {
       title="返水明细"
       width="950px"
     >
-      <div class="mb-3 flex gap-8">
-        <Statistic title="游戏账号" :value="detailAccount" />
-        <Statistic
-          title="返水总计"
-          :value="formatAmountFromCent(detailSum)"
-        />
-      </div>
+      <SummaryCards :items="detailSummaryItems" />
       <Table
         :data-source="orderDetails"
         :loading="detailsLoading"
@@ -786,15 +808,6 @@ onMounted(async () => {
   flex: 1;
   grid-template-columns: repeat(4, minmax(170px, 1fr));
   gap: 12px;
-}
-
-.summary-cards {
-  display: flex;
-  gap: 36px;
-  padding: 14px 18px;
-  margin-bottom: 14px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
 }
 
 .data-grid {

@@ -918,16 +918,20 @@ onMounted(() => {
         v-model:value="filters.LoginAccount"
         allow-clear
         placeholder="玩家账号"
-        style="width: 160px"
+        style="width: 220px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>玩家账号</template>
+      </Input>
       <Input
         v-model:value="filters.PlayerId"
         allow-clear
         placeholder="玩家Id"
-        style="width: 140px"
+        style="width: 220px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>玩家ID</template>
+      </Input>
       <Select
         v-model:value="filters.Status"
         allow-clear
@@ -941,9 +945,11 @@ onMounted(() => {
         v-model:value="filters.Promoter"
         allow-clear
         placeholder="代理账号"
-        style="width: 140px"
+        style="width: 220px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>代理账号</template>
+      </Input>
       <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
       <Select
         v-model:value="filters.PackageId"
@@ -1007,9 +1013,11 @@ onMounted(() => {
         v-model:value="filters.BindPhone"
         allow-clear
         placeholder="会员手机号"
-        style="width: 150px"
+        style="width: 220px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>会员手机号</template>
+      </Input>
       <DatePicker.RangePicker
         v-model:value="filters.regRange"
         show-time

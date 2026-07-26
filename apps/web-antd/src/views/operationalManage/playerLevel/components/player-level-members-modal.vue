@@ -178,25 +178,31 @@ watch(open, (visible) => {
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 160px"
+        style="width: 220px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Input
         v-if="canFilter"
         v-model:value="filterPlayerIdsStr"
         allow-clear
         placeholder="玩家ID（逗号分隔）"
-        style="width: 180px"
+        style="width: 260px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>玩家ID</template>
+      </Input>
       <Input
         v-if="canFilter"
         v-model:value="filterChannelIds"
         allow-clear
         placeholder="渠道号"
-        style="width: 140px"
+        style="width: 210px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>渠道号</template>
+      </Input>
       <Select
         v-model:value="filterPackageId"
         style="width: 160px"

@@ -247,14 +247,15 @@ onMounted(() => {
   <OpsListPanel>
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">游戏账号</span>
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
           placeholder="请输入"
-          style="width: 180px"
+          style="width: 260px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">产品名称</span>
@@ -265,14 +266,15 @@ onMounted(() => {
         />
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">玩家ID</span>
         <Input
           v-model:value="filterPlayerId"
           allow-clear
           placeholder="请输入"
-          style="width: 140px"
+          style="width: 210px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>玩家ID</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">渠道号</span>
@@ -292,14 +294,15 @@ onMounted(() => {
         />
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">登录IP</span>
         <Input
           v-model:value="filterIp"
           allow-clear
           placeholder="请输入"
-          style="width: 160px"
+          style="width: 230px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>登录IP</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">登录时间</span>

@@ -6,6 +6,7 @@ import { Page } from '@vben/common-ui';
 import { Card, Result, Tabs } from 'ant-design-vue';
 
 import { fetchWhiteListStatsApi } from '#/api/operationManage/white-list';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import WhiteListPanel from './components/white-list-panel.vue';
@@ -42,6 +43,11 @@ const pendingWhiteUsername = ref('');
 const stats = ref({ IpList: 0, UserList: 0 });
 const canIpStats = computed(() => checkPermission(10_214));
 const canUserStats = computed(() => checkPermission(10_215));
+
+const summaryItems = computed(() => [
+  ...(canIpStats.value ? [{ label: 'IP总计', value: stats.value.IpList }] : []),
+  ...(canUserStats.value ? [{ label: '使用者', value: stats.value.UserList }] : []),
+]);
 
 async function loadStats() {
   try {
@@ -86,13 +92,7 @@ watch(activeTab, (key) => {
     title="白名单"
   >
     <Card>
-      <div
-        v-if="canIpStats || canUserStats"
-        class="mb-4 flex flex-wrap gap-6 text-sm text-gray-600"
-      >
-        <span v-if="canIpStats">IP总计：{{ stats.IpList }}</span>
-        <span v-if="canUserStats">使用者：{{ stats.UserList }}</span>
-      </div>
+      <SummaryCards :items="summaryItems" />
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <WhiteListPanel

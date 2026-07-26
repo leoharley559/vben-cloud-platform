@@ -186,14 +186,15 @@ onMounted(() => {
   <OpsListPanel v-if="canViewTable">
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">类别名称</span>
         <Input
           v-model:value="filterName"
           allow-clear
           placeholder="请输入"
-          style="width: 200px"
+          style="width: 260px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>类别名称</template>
+        </Input>
       </div>
       <Space>
         <Button type="primary" @click="handleSearch">查询</Button>

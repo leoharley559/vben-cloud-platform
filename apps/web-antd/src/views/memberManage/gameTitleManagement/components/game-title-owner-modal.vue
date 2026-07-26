@@ -399,8 +399,10 @@ watch(
           v-model:value="filterAccount"
           allow-clear
           placeholder="游戏账号"
-          style="width: 200px"
-        />
+          style="width: 240px"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
         <Select
           v-model:value="filterPackageId"
           allow-clear

@@ -640,16 +640,20 @@ onMounted(async () => {
             v-model:value="query.Username"
             allow-clear
             placeholder="代理账号"
-            style="width: 180px"
+            style="width: 220px"
             @press-enter="search"
-          />
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
           <Input
             v-model:value="query.DeveloperName"
             allow-clear
             placeholder="发展人编码"
-            style="width: 180px"
+            style="width: 240px"
             @press-enter="search"
-          />
+          >
+            <template #addonBefore>发展人编码</template>
+          </Input>
           <DatePicker.RangePicker
             v-model:value="dateRange"
             :disabled-date="disabledDate"

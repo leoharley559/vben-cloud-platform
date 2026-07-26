@@ -49,8 +49,17 @@ const amountFields = [
   { dataIndex: 'SumWinMoney', title: '派奖金额' },
   { dataIndex: 'SumRedGold', title: '红利' },
   { dataIndex: 'SumBackWaterMoney', title: '返水' },
-  { dataIndex: 'SumCompanyRevenue', title: '盈亏' },
+  /** 盈亏：SumWinMoney 的相反数 */
+  { dataIndex: 'SumProfit', title: '盈亏' },
 ];
+
+/** 金额列取值；盈亏取派奖金额相反数 */
+function amountValue(row: Row, dataIndex: string) {
+  if (dataIndex === 'SumProfit') {
+    return -Number(row.SumWinMoney || 0);
+  }
+  return Number(row[dataIndex] || 0);
+}
 
 function columns(kind: 'agent' | 'member' | 'personal') {
   return [
@@ -155,7 +164,7 @@ const combinedTotal = computed(() => {
   for (const { dataIndex } of amountFields) {
     let total = 0;
     for (const row of combinedRows.value) {
-      total += Number(row[dataIndex] || 0);
+      total += amountValue(row, dataIndex);
     }
     result[dataIndex] = total;
   }
@@ -202,48 +211,38 @@ watch(
 
 <template>
   <div class="space-y-5">
-    <Space wrap>
-      <DatePicker.RangePicker v-model:value="dateRange" />
-      <Button type="primary" @click="load">查询</Button>
-      <Button
-        @click="
+    <div>
+      <Space wrap>
+        <DatePicker.RangePicker v-model:value="dateRange" />
+        <Button type="primary" @click="load">查询</Button>
+        <Button @click="
           dateRange = [
             dayjs().startOf('day'),
             dayjs().endOf('day'),
           ];
-          load();
-        "
-      >
-        重置
-      </Button>
-      <Button @click="exportData">导出当前数据</Button>
-    </Space>
-
+        load();
+        ">
+          重置
+        </Button>
+        <Button @click="exportData">导出当前数据</Button>
+      </Space>
+    </div>
     <section>
-      <h3 class="mb-2 font-medium">代理自身</h3>
-      <Table
-        bordered
-        :columns="columns('personal')"
-        :data-source="personal"
-        :loading="loading"
-        :pagination="false"
-        row-key="AdminId"
-        :scroll="{ x: 1200 }"
-        size="small"
-      >
+      <Table bordered :columns="columns('personal')" :data-source="personal" :loading="loading" :pagination="false"
+        row-key="AdminId" :scroll="{ x: 1200 }" size="small">
         <template #bodyCell="{ column, record }">
           <template v-if="amountFields.some((item) => item.dataIndex === column.key)">
             <span
               :class="
-                column.key === 'SumCompanyRevenue' &&
-                Number(record[String(column.key)]) < 0
+                column.key === 'SumProfit' &&
+                amountValue(record, String(column.key)) < 0
                   ? 'text-red-500'
                   : ''
               "
             >
               {{
                 formatAmountFromCent(
-                  Number(record[String(column.key)] || 0),
+                  amountValue(record, String(column.key)),
                 )
               }}
             </span>
@@ -254,19 +253,12 @@ watch(
 
     <section>
       <h3 class="mb-2 font-medium">团队合计</h3>
-      <Table
-        bordered
-        :columns="columns('agent')"
-        :data-source="combinedRows"
-        :pagination="false"
-        row-key="Username"
-        :scroll="{ x: 1200 }"
-        size="small"
-      >
+      <Table bordered :columns="columns('agent')" :data-source="combinedRows" :pagination="false" row-key="Username"
+        :scroll="{ x: 1200 }" size="small">
         <template #bodyCell="{ column, record }">
           <template v-if="amountFields.some((item) => item.dataIndex === column.key)">
             {{
-              formatAmountFromCent(Number(record[String(column.key)] || 0))
+              formatAmountFromCent(amountValue(record, String(column.key)))
             }}
           </template>
         </template>
@@ -274,11 +266,7 @@ watch(
           <Table.Summary fixed>
             <Table.Summary.Row>
               <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
-              <Table.Summary.Cell
-                v-for="(item, index) in amountFields"
-                :key="item.dataIndex"
-                :index="index + 1"
-              >
+              <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
                 {{ formatAmountFromCent(Number(combinedTotal[item.dataIndex] || 0)) }}
               </Table.Summary.Cell>
             </Table.Summary.Row>
@@ -289,33 +277,20 @@ watch(
 
     <section>
       <h3 class="mb-2 font-medium">直属会员</h3>
-      <Table
-        bordered
-        :columns="columns('member')"
-        :data-source="members"
-        :loading="loading"
-        :pagination="{
-          current: memberPager.current,
-          pageSize: memberPager.pageSize,
-          total: memberPager.total,
-          showSizeChanger: true,
-        }"
-        :row-key="(row) => String(row.PlayerId || row.LoginAccount)"
-        :scroll="{ x: 1200 }"
-        size="small"
-        @change="(page) => changePage('member', page.current || 1, page.pageSize || 20)"
-      >
+      <Table bordered :columns="columns('member')" :data-source="members" :loading="loading" :pagination="{
+        current: memberPager.current,
+        pageSize: memberPager.pageSize,
+        total: memberPager.total,
+        showSizeChanger: true,
+      }" :row-key="(row) => String(row.PlayerId || row.LoginAccount)" :scroll="{ x: 1200 }" size="small"
+        @change="(page) => changePage('member', page.current || 1, page.pageSize || 20)">
         <template #bodyCell="{ column, record }">
-          <Button
-            v-if="column.key === 'account'"
-            type="link"
-            @click="drillPlayer(record)"
-          >
+          <Button v-if="column.key === 'account'" type="link" @click="drillPlayer(record)">
             {{ record.LoginAccount || '-' }}
           </Button>
           <template v-else-if="amountFields.some((item) => item.dataIndex === column.key)">
             {{
-              formatAmountFromCent(Number(record[String(column.key)] || 0))
+              formatAmountFromCent(amountValue(record, String(column.key)))
             }}
           </template>
         </template>
@@ -323,14 +298,10 @@ watch(
           <Table.Summary fixed>
             <Table.Summary.Row>
               <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
-              <Table.Summary.Cell
-                v-for="(item, index) in amountFields"
-                :key="item.dataIndex"
-                :index="index + 1"
-              >
+              <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
                 {{
                   formatAmountFromCent(
-                    Number(memberTotal[item.dataIndex] || 0),
+                    amountValue(memberTotal, item.dataIndex),
                   )
                 }}
               </Table.Summary.Cell>
@@ -342,36 +313,23 @@ watch(
 
     <section>
       <h3 class="mb-2 font-medium">直属代理</h3>
-      <Table
-        bordered
-        :columns="columns('agent')"
-        :data-source="agents"
-        :loading="loading"
-        :pagination="{
-          current: agentPager.current,
-          pageSize: agentPager.pageSize,
-          total: agentPager.total,
-          showSizeChanger: true,
-        }"
-        :row-key="(row) => String(row.AdminId || row.Username)"
-        :scroll="{ x: 1200 }"
-        size="small"
-        @change="(page) => changePage('agent', page.current || 1, page.pageSize || 20)"
-      >
+      <Table bordered :columns="columns('agent')" :data-source="agents" :loading="loading" :pagination="{
+        current: agentPager.current,
+        pageSize: agentPager.pageSize,
+        total: agentPager.total,
+        showSizeChanger: true,
+      }" :row-key="(row) => String(row.AdminId || row.Username)" :scroll="{ x: 1200 }" size="small"
+        @change="(page) => changePage('agent', page.current || 1, page.pageSize || 20)">
         <template #bodyCell="{ column, record }">
-          <AgencyAccountLink
-            v-if="column.key === 'account'"
-            :admin-id="record.AdminId as number | string | undefined"
+          <AgencyAccountLink v-if="column.key === 'account'" :admin-id="record.AdminId as number | string | undefined"
             :query="{
               Name: String(record.Username || ''),
               CountBeginTime: dateRange[0].startOf('day').unix(),
               CountEndTime: dateRange[1].endOf('day').unix(),
-            }"
-            :username="record.Username"
-          />
+            }" :username="record.Username" />
           <template v-else-if="amountFields.some((item) => item.dataIndex === column.key)">
             {{
-              formatAmountFromCent(Number(record[String(column.key)] || 0))
+              formatAmountFromCent(amountValue(record, String(column.key)))
             }}
           </template>
         </template>
@@ -379,14 +337,10 @@ watch(
           <Table.Summary fixed>
             <Table.Summary.Row>
               <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
-              <Table.Summary.Cell
-                v-for="(item, index) in amountFields"
-                :key="item.dataIndex"
-                :index="index + 1"
-              >
+              <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
                 {{
                   formatAmountFromCent(
-                    Number(agentTotal[item.dataIndex] || 0),
+                    amountValue(agentTotal, item.dataIndex),
                   )
                 }}
               </Table.Summary.Cell>

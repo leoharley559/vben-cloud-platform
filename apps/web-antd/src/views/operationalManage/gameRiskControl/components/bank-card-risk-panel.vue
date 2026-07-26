@@ -336,14 +336,18 @@ onMounted(() => {
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Input
         v-model:value="filterKeyword"
         allow-clear
         placeholder="卡号关键字"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>卡号关键字</template>
+      </Input>
       <Select
         v-model:value="filterSourceType"
         :options="sourceTypeOptions"

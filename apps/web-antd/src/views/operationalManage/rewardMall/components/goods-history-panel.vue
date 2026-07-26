@@ -183,8 +183,10 @@ function openDetails(row: GoodsRow) {
         v-model:value="filterName"
         allow-clear
         placeholder="商品名称"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>商品名称</template>
+      </Input>
       <Select
         v-model:value="filterType"
         allow-clear

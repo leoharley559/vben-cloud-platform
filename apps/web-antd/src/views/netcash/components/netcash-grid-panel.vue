@@ -8,6 +8,7 @@ import { Button, DatePicker, Input, Select } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -58,6 +59,18 @@ const summaryValue = ref(0);
 const enabledFilters = computed(
   () => new Set(props.config.filters || ['agent', 'login', 'package', 'date']),
 );
+
+const summaryItems = computed(() => {
+  if (!props.config.summaryTitle) return [];
+  return [
+    {
+      label: props.config.summaryTitle,
+      value: props.config.amountSummary
+        ? formatAmountFromCent(summaryValue.value)
+        : summaryValue.value,
+    },
+  ];
+});
 
 const packageOptions = computed(() =>
   (projectConfig.value?.RealPackageIdNameMap || []).map((item) => ({
@@ -194,29 +207,37 @@ defineExpose({
         v-model:value="filterUsername"
         allow-clear
         placeholder="代理账号"
-        style="width: 180px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Input
         v-if="enabledFilters.has('agent')"
         v-model:value="filterAgentAccount"
         allow-clear
         placeholder="代理账号"
-        style="width: 180px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Input
         v-if="enabledFilters.has('login')"
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 180px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Input
         v-if="enabledFilters.has('team')"
         v-model:value="filterTeamName"
         allow-clear
         placeholder="团队名称"
-        style="width: 180px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>团队名称</template>
+      </Input>
       <Select
         v-if="enabledFilters.has('package')"
         v-model:value="filterPackageId"
@@ -240,12 +261,7 @@ defineExpose({
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
 
-    <div v-if="config.summaryTitle" class="mb-3 text-sm text-gray-600">
-      {{ config.summaryTitle }}：
-      {{
-        config.amountSummary ? formatAmountFromCent(summaryValue) : summaryValue
-      }}
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template v-if="config.showActions" #actions="{ row }">

@@ -13,7 +13,6 @@ import {
   Radio,
   Select,
   Space,
-  Statistic,
   Table,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -23,6 +22,7 @@ import {
   fetchRegisterOtpDailyApi,
   fetchRegisterOtpDetailApi,
 } from '#/api/gameManage/message-manage';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -72,6 +72,21 @@ const detailFilters = reactive({
   RegisterType: [] as string[],
 });
 const detailTotalData = reactive<Record<string, unknown>>({});
+
+const detailSummaryItems = computed(() => [
+  {
+    label: 'OTP 申请总次数',
+    value: Number(detailTotalData.SumRegisterTotal || 0),
+  },
+  {
+    label: 'OTP 报错总次数',
+    value: Number(detailTotalData.SumRegisterErrorTotal || 0),
+  },
+  {
+    label: '超时总次数',
+    value: Number(detailTotalData.SumRegisterTimeoutTotal || 0),
+  },
+]);
 
 const packageOptions = computed(() => [
   { label: '全部产品', value: '' },
@@ -403,7 +418,10 @@ void loadReport();
             v-model:value="reportFilters.ChannelIds"
             allow-clear
             placeholder="渠道号"
-          />
+            style="width: 220px"
+          >
+            <template #addonBefore>渠道号</template>
+          </Input>
           <DatePicker.RangePicker v-model:value="reportRange" />
         </div>
         <Space>
@@ -535,12 +553,18 @@ void loadReport();
             v-model:value="detailFilters.ChannelIds"
             allow-clear
             placeholder="渠道号"
-          />
+            style="width: 220px"
+          >
+            <template #addonBefore>渠道号</template>
+          </Input>
           <Input
             v-model:value="detailFilters.PhoneNum"
             allow-clear
             placeholder="手机号"
-          />
+            style="width: 210px"
+          >
+            <template #addonBefore>手机号</template>
+          </Input>
           <Select
             v-model:value="detailFilters.RegisterType"
             mode="multiple"
@@ -563,20 +587,7 @@ void loadReport();
           <Button @click="exportDetail">导出 CSV</Button>
         </Space>
       </div>
-      <div class="detail-totals">
-        <Statistic
-          title="OTP 申请总次数"
-          :value="Number(detailTotalData.SumRegisterTotal || 0)"
-        />
-        <Statistic
-          title="OTP 报错总次数"
-          :value="Number(detailTotalData.SumRegisterErrorTotal || 0)"
-        />
-        <Statistic
-          title="超时总次数"
-          :value="Number(detailTotalData.SumRegisterTimeoutTotal || 0)"
-        />
-      </div>
+      <SummaryCards :items="detailSummaryItems" />
       <div class="data-grid">
         <DetailGrid />
       </div>
@@ -622,16 +633,6 @@ void loadReport();
   align-items: center;
   justify-content: space-between;
   margin-top: 18px;
-}
-
-.detail-totals {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 220px));
-  gap: 14px;
-  padding: 14px 18px;
-  margin-bottom: 14px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
 }
 
 .data-grid {

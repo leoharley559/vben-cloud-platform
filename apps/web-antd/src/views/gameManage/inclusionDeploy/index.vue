@@ -612,7 +612,9 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
             placeholder="产品名称"
             style="width: 240px"
             @press-enter="handleSearch"
-          />
+          >
+            <template #addonBefore>产品名称</template>
+          </Input>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
           <span v-if="canViewList" class="text-sm text-gray-500">

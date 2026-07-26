@@ -20,6 +20,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -72,6 +73,13 @@ const canView = computed(() => checkPermission(13337));
 const defaultRange = getTodayRangeSeconds();
 const totalAmount = ref(0);
 const exportLoading = ref(false);
+
+const summaryItems = computed(() => [
+  {
+    label: '调整合计（积分）',
+    value: totalAmount.value,
+  },
+]);
 
 const filterOrderId = ref('');
 const filterLoginAccount = ref('');
@@ -354,14 +362,18 @@ onMounted(() => {
         v-model:value="filterOrderId"
         allow-clear
         placeholder="订单编号"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>订单编号</template>
+      </Input>
       <Input
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 150px"
-      />
+        style="width: 230px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Select
         v-model:value="filterPackageId"
         allow-clear
@@ -380,8 +392,10 @@ onMounted(() => {
         v-model:value="filterAdminUserName"
         allow-clear
         placeholder="代理账号"
-        style="width: 150px"
-      />
+        style="width: 230px"
+      >
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Select
         v-model:value="filterDone"
         allow-clear
@@ -413,14 +427,18 @@ onMounted(() => {
         v-model:value="filterApplyName"
         allow-clear
         placeholder="申请账号"
-        style="width: 140px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>申请账号</template>
+      </Input>
       <Input
         v-model:value="filterApproveName"
         allow-clear
         placeholder="审核账号"
-        style="width: 140px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>审核账号</template>
+      </Input>
       <div class="flex items-center gap-1">
         <span class="text-xs text-gray-500">创建时间</span>
         <DatePicker.RangePicker v-model:value="filterCreateRange" />
@@ -438,9 +456,7 @@ onMounted(() => {
       </Button>
     </div>
 
-    <div class="mb-2 text-sm text-gray-600">
-      调整合计（积分）：{{ totalAmount }}
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #adminUserName="{ row }">

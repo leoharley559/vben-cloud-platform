@@ -23,6 +23,7 @@ import {
 } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -60,6 +61,19 @@ const rejectRow = ref<BonusAuditListItem | null>(null);
 const exportLoading = ref(false);
 const totalAmount = ref(0);
 const totalRealAmount = ref(0);
+
+const summaryItems = computed(() => [
+  {
+    label: '申请金额总计',
+    value: formatAmountFromCent(totalAmount.value),
+    valueClass: 'font-medium text-gray-900',
+  },
+  {
+    label: '实发金额总计',
+    value: formatAmountFromCent(totalRealAmount.value),
+    valueClass: 'font-medium text-gray-900',
+  },
+]);
 
 const filterOrderId = ref('');
 const filterLoginAccount = ref('');
@@ -440,17 +454,7 @@ onMounted(() => {
       </Button>
     </div>
 
-    <div class="mb-3 text-sm text-gray-600">
-      申请金额总计：
-      <span class="font-medium text-gray-900">
-        {{ formatAmountFromCent(totalAmount) }}
-      </span>
-      <span class="mx-2">|</span>
-      实发金额总计：
-      <span class="font-medium text-gray-900">
-        {{ formatAmountFromCent(totalRealAmount) }}
-      </span>
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <div
       v-if="canBatchApprove || canBatchReject"

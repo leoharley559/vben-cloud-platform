@@ -32,6 +32,7 @@ import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -187,6 +188,14 @@ const totalData = ref<{
 const totalCount = ref(0);
 const tableRows = ref<PlayerListItem[]>([]);
 const exportLoading = ref(false);
+
+const summaryItems = computed(() => [
+  {
+    label: '场馆钱包总金额',
+    value: formatAmountFromCent(totalData.value.SumWalletBalance),
+  },
+  { label: '中心钱包总金额', value: formatAmountFromCent(totalData.value.SumGold) },
+]);
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const levelFilterOptions = ref<
   Array<{ label: string; value: number | string }>
@@ -836,106 +845,118 @@ onMounted(async () => {
             </Space.Compact>
           </div>
           <div v-if="canFilterPassword" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">同密码查重</span>
             <Input
               v-model:value="filterPlayerPassword"
               allow-clear
               placeholder="密码"
-              style="width: 140px"
-            />
+              style="width: 240px"
+            >
+              <template #addonBefore>同密码查重</template>
+            </Input>
           </div>
           <div v-if="canFilterPhone" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">手机号</span>
             <Input
               v-model:value="filterPhoneNo"
               allow-clear
-              style="width: 140px"
-            />
+              style="width: 210px"
+            >
+              <template #addonBefore>手机号</template>
+            </Input>
           </div>
           <div v-if="canFilterEmail" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">邮箱</span>
             <Input
               v-model:value="filterEmail"
               allow-clear
-              style="width: 160px"
-            />
+              style="width: 210px"
+            >
+              <template #addonBefore>邮箱</template>
+            </Input>
           </div>
           <div v-if="canFilterPromoter" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">推广账号</span>
             <Input
               v-model:value="filterPromoter"
               allow-clear
-              style="width: 140px"
-            />
+              style="width: 220px"
+            >
+              <template #addonBefore>推广账号</template>
+            </Input>
           </div>
           <div v-if="canFilterPlayerIds" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">玩家ID</span>
             <Input
               v-model:value="filterPlayerIdsStr"
               allow-clear
               placeholder="逗号分隔"
-              style="width: 160px"
-            />
+              style="width: 230px"
+            >
+              <template #addonBefore>玩家ID</template>
+            </Input>
           </div>
           <div v-if="canFilterChannel" class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">渠道</span>
             <ChannelSelect v-model="filterChannelIds" style="width: 200px" />
           </div>
           <div v-if="canFilterInviter" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">上级账号</span>
             <Input
               v-model:value="filterInviterLoginAccount"
               allow-clear
-              style="width: 140px"
-            />
+              style="width: 220px"
+            >
+              <template #addonBefore>上级账号</template>
+            </Input>
           </div>
           <div v-if="canFilterRegIp" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">注册IP</span>
             <Input
               v-model:value="filterRegIp"
               allow-clear
-              style="width: 140px"
-            />
+              style="width: 210px"
+            >
+              <template #addonBefore>注册IP</template>
+            </Input>
           </div>
           <div v-if="canFilterLastIp" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">最后登录IP</span>
             <Input
               v-model:value="filterLastIp"
               allow-clear
-              style="width: 140px"
-            />
+              style="width: 240px"
+            >
+              <template #addonBefore>最后登录IP</template>
+            </Input>
           </div>
           <div v-if="canFilterDeviceId" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">设备号</span>
             <Input
               v-model:value="filterDeviceId"
               allow-clear
-              style="width: 160px"
-            />
+              style="width: 230px"
+            >
+              <template #addonBefore>设备号</template>
+            </Input>
           </div>
           <div v-if="canFilterLastDevice" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">最后登录设备</span>
             <Input
               v-model:value="filterLastDevice"
               allow-clear
-              style="width: 160px"
-            />
+              style="width: 260px"
+            >
+              <template #addonBefore>最后登录设备</template>
+            </Input>
           </div>
           <div v-if="canFilterRealName" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">真实姓名</span>
             <Input
               v-model:value="filterRealName"
               allow-clear
-              style="width: 120px"
-            />
+              style="width: 200px"
+            >
+              <template #addonBefore>真实姓名</template>
+            </Input>
           </div>
           <div v-if="canFilterBank" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">银行卡</span>
             <Input
               v-model:value="filterBank"
               allow-clear
-              style="width: 160px"
-            />
+              style="width: 230px"
+            >
+              <template #addonBefore>银行卡</template>
+            </Input>
           </div>
           <div v-if="canFilterPackage" class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">所属产品</span>
@@ -990,12 +1011,13 @@ onMounted(async () => {
             />
           </div>
           <div v-if="canFilterTag" class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">标签</span>
             <Input
               v-model:value="filterTagName"
               allow-clear
-              style="width: 120px"
-            />
+              style="width: 200px"
+            >
+              <template #addonBefore>标签</template>
+            </Input>
           </div>
           <div v-if="canFilterRegDate" class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">注册时间</span>
@@ -1056,18 +1078,7 @@ onMounted(async () => {
         </template>
 
         <template #summary>
-          <div>
-            <div class="text-xs text-gray-500">场馆钱包总金额</div>
-            <div class="text-lg font-medium">
-              {{ formatAmountFromCent(totalData.SumWalletBalance) }}
-            </div>
-          </div>
-          <div>
-            <div class="text-xs text-gray-500">中心钱包总金额</div>
-            <div class="text-lg font-medium">
-              {{ formatAmountFromCent(totalData.SumGold) }}
-            </div>
-          </div>
+          <SummaryCards :items="summaryItems" />
           <Tag v-if="filterFiltersJson" color="processing">已启用高级搜索</Tag>
         </template>
 

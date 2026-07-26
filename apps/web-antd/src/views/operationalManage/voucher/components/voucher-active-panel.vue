@@ -305,8 +305,10 @@ function handleOffshelf(row: VoucherRow) {
           v-model:value="filterId"
           allow-clear
           placeholder="票券ID"
-          style="width: 120px"
-        />
+          style="width: 200px"
+        >
+          <template #addonBefore>票券ID</template>
+        </Input>
         <Select
           v-model:value="filterType"
           allow-clear
@@ -318,8 +320,10 @@ function handleOffshelf(row: VoucherRow) {
           v-model:value="filterName"
           allow-clear
           placeholder="票券名称"
-          style="width: 160px"
-        />
+          style="width: 240px"
+        >
+          <template #addonBefore>票券名称</template>
+        </Input>
         <DatePicker.RangePicker v-model:value="filterDateRange" />
         <Space>
           <Button type="primary" @click="handleSearch">查询</Button>

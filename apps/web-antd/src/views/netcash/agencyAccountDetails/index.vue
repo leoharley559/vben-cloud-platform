@@ -1,5 +1,13 @@
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import {
+  computed,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
@@ -32,6 +40,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   AGENCY_ACCOUNT_TYPE_MAP,
+  AGENCY_REMARK_TYPE_MAP,
   AGENCY_STATUS_MAP,
   AGENCY_TYPE_MAP,
   formatNetcashDateTime,
@@ -124,27 +133,38 @@ const canShowMoneyEdit = computed(
   () => canEditMoney.value && Number(detail.value.Type) !== 3,
 );
 
+/** 防止切页/缓存失活后异步回写触发 DOM 更新冲突 */
+let loadSeq = 0;
+
 async function loadDetail() {
   if (!adminId.value || !canOverview.value) {
     return;
   }
+  const seq = ++loadSeq;
   loading.value = true;
   try {
-    detail.value = await fetchAgentNetcashDetailApi(adminId.value);
+    const nextDetail = await fetchAgentNetcashDetailApi(adminId.value);
+    if (seq !== loadSeq) return;
+    detail.value = nextDetail;
     if (canBasics.value) {
       const records = await fetchAgentMoneyModifyRecordApi(adminId.value);
+      if (seq !== loadSeq) return;
       moneyRecords.value = records.Items || [];
     }
     if (canRemark.value) {
       const remarkResult = await fetchAgentRemarkListApi(adminId.value);
+      if (seq !== loadSeq) return;
       remarks.value = remarkResult.Items || [];
     }
   } catch {
+    if (seq !== loadSeq) return;
     detail.value = {};
     moneyRecords.value = [];
     remarks.value = [];
   } finally {
-    loading.value = false;
+    if (seq === loadSeq) {
+      loading.value = false;
+    }
   }
 }
 
@@ -278,22 +298,44 @@ onMounted(() => {
   loadDetail();
 });
 watch(adminId, () => {
+  invalidatePendingLoads();
   detail.value = {};
   moneyRecords.value = [];
   remarks.value = [];
   void loadDetail();
 });
+
+function invalidatePendingLoads() {
+  loadSeq += 1;
+  phoneModalOpen.value = false;
+  moneyModalOpen.value = false;
+  moneyHistoryOpen.value = false;
+  rateOpen.value = false;
+}
+
+onDeactivated(() => {
+  invalidatePendingLoads();
+});
+onBeforeUnmount(() => {
+  invalidatePendingLoads();
+});
 </script>
 
 <template>
-  <Page
-    v-if="canViewPage"
-    auto-content-height
-    :description="`代理网赚 · 代理详情 ${detail.Username || agencyName}`"
-    :title="`代理账号详情-${agencyName}`"
-  >
-    <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+  <div class="h-full">
+    <Page
+      v-if="canViewPage"
+      auto-content-height
+      :description="`代理网赚 · 代理详情 ${detail.Username || agencyName}`"
+      :title="`代理账号详情-${agencyName}`"
+    >
+      <Card>
+        <Tabs
+          v-model:active-key="activeTab"
+          destroy-inactive-tab-pane
+          type="line"
+          size="small"
+        >
         <Tabs.TabPane v-if="canAgentData" key="data" tab="代理数据">
           <AgencyDataPanel v-if="activeTab === 'data'" :admin-id="adminId" />
         </Tabs.TabPane>
@@ -461,6 +503,13 @@ watch(adminId, () => {
                   <template v-if="column.key === 'CreateTime'">
                     {{ formatNetcashDateTime(record.CreateTime) }}
                   </template>
+                  <template v-else-if="column.key === 'Type'">
+                    {{
+                      AGENCY_REMARK_TYPE_MAP[Number(record.Type)] ||
+                      record.Type ||
+                      '-'
+                    }}
+                  </template>
                 </template>
               </Table>
             </div>
@@ -511,6 +560,7 @@ watch(adminId, () => {
     <Modal
       v-model:open="phoneModalOpen"
       :confirm-loading="phoneSubmitting"
+      destroy-on-close
       title="编辑手机号"
       @ok="submitPhoneModal"
     >
@@ -534,6 +584,7 @@ watch(adminId, () => {
     <Modal
       v-model:open="moneyModalOpen"
       :confirm-loading="moneySubmitting"
+      destroy-on-close
       title="调整佣金余额"
       @ok="submitMoneyModal"
     >
@@ -551,6 +602,7 @@ watch(adminId, () => {
 
     <Modal
       v-model:open="moneyHistoryOpen"
+      destroy-on-close
       :footer="null"
       title="佣金余额调整记录"
       width="760px"
@@ -585,6 +637,7 @@ watch(adminId, () => {
 
     <Modal
       v-model:open="rateOpen"
+      destroy-on-close
       :footer="null"
       title="场馆佣金比例"
       width="640px"
@@ -617,6 +670,7 @@ watch(adminId, () => {
     sub-title="无代理详情查看权限或缺少代理 ID"
     title="403"
   />
+  </div>
 </template>
 
 <style scoped>

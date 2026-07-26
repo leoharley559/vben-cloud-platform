@@ -355,9 +355,11 @@ async function exportExcel() {
             v-model:value="filters.Username"
             allow-clear
             placeholder="代理账号（精确匹配）"
-            style="width: 180px"
+            style="width: 240px"
             @press-enter="reloadFirstPage"
-          />
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
           <Select
             v-model:value="filters.Type"
             :options="typeOptions"
@@ -372,16 +374,20 @@ async function exportExcel() {
             v-model:value="filters.NetCashDomain"
             allow-clear
             placeholder="专属 APP 域名"
-            style="width: 200px"
+            style="width: 260px"
             @press-enter="reloadFirstPage"
-          />
+          >
+            <template #addonBefore>专属 APP 域名</template>
+          </Input>
           <Input
             v-model:value="filters.NetCashH5Domain"
             allow-clear
             placeholder="专属 H5 域名"
-            style="width: 200px"
+            style="width: 260px"
             @press-enter="reloadFirstPage"
-          />
+          >
+            <template #addonBefore>专属 H5 域名</template>
+          </Input>
           <Select
             v-model:value="filters.AdminStatus"
             :options="statusOptions"

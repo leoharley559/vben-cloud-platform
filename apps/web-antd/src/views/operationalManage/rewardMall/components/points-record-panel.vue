@@ -315,8 +315,10 @@ onMounted(() => {
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="玩家账号"
-        style="width: 150px"
-      />
+        style="width: 230px"
+      >
+        <template #addonBefore>玩家账号</template>
+      </Input>
       <Select
         v-model:value="filterPlayerStatus"
         allow-clear
@@ -328,20 +330,26 @@ onMounted(() => {
         v-model:value="filterOrderId"
         allow-clear
         placeholder="订单号"
-        style="width: 160px"
-      />
+        style="width: 230px"
+      >
+        <template #addonBefore>订单号</template>
+      </Input>
       <Input
         v-model:value="filterBonusTitle"
         allow-clear
         placeholder="红利标题"
-        style="width: 140px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>红利标题</template>
+      </Input>
       <Input
         v-model:value="filterUsername"
         allow-clear
         placeholder="代理账号"
-        style="width: 140px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Select
         v-model:value="filterBonusType"
         allow-clear

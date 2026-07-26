@@ -15,13 +15,13 @@ import {
   Input,
   message,
   Result,
-  Statistic,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchTeamQueryListApi } from '#/api/promotion/team-query';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   formatCommissionRate,
@@ -226,6 +226,27 @@ const gridOptions: VxeTableGridOptions<TeamQueryItem> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
+const summaryItems = computed(() => [
+  { label: '注册人数总计', value: summary.value.reg },
+  { label: '充值人数总计', value: summary.value.pay },
+  {
+    label: '充值金额总计',
+    value: formatTeamQueryMoney(summary.value.payMoney),
+  },
+  {
+    label: '流水金额总计',
+    value: formatTeamQueryMoney(summary.value.betMoney),
+  },
+  {
+    label: '预计税收总计',
+    value: formatTeamQueryMoney(summary.value.taxMoney),
+  },
+  {
+    label: '预计收入总计',
+    value: formatTeamQueryMoney(summary.value.incomeMoney),
+  },
+]);
+
 function handleSearch() {
   resetBreadcrumb();
   gridApi.reload();
@@ -314,38 +335,7 @@ onMounted(() => {
         </Breadcrumb>
       </div>
 
-      <div class="summary-grid">
-        <div class="summary-item">
-          <Statistic title="注册人数总计" :value="summary.reg" />
-        </div>
-        <div class="summary-item">
-          <Statistic title="充值人数总计" :value="summary.pay" />
-        </div>
-        <div class="summary-item">
-          <Statistic
-            title="充值金额总计"
-            :value="formatTeamQueryMoney(summary.payMoney)"
-          />
-        </div>
-        <div class="summary-item">
-          <Statistic
-            title="流水金额总计"
-            :value="formatTeamQueryMoney(summary.betMoney)"
-          />
-        </div>
-        <div class="summary-item">
-          <Statistic
-            title="预计税收总计"
-            :value="formatTeamQueryMoney(summary.taxMoney)"
-          />
-        </div>
-        <div class="summary-item">
-          <Statistic
-            title="预计收入总计"
-            :value="formatTeamQueryMoney(summary.incomeMoney)"
-          />
-        </div>
-      </div>
+      <SummaryCards :items="summaryItems" />
 
       <div class="mb-3 text-base font-medium">下级列表</div>
       <Alert
@@ -393,22 +383,4 @@ onMounted(() => {
   border-radius: 8px;
 }
 
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.summary-item {
-  padding: 14px;
-  background: hsl(var(--muted) / 25%);
-  border-radius: 8px;
-}
-
-@media (max-width: 1200px) {
-  .summary-grid {
-    grid-template-columns: repeat(2, minmax(150px, 1fr));
-  }
-}
 </style>

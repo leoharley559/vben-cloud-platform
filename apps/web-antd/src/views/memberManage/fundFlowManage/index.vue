@@ -20,6 +20,7 @@ import dayjs from 'dayjs';
 import { fetchFundFlowListApi } from '#/api/memberManage/fund-flow';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
@@ -52,6 +53,10 @@ const canOpenPlayer = computed(() => checkPermission(12209));
 const defaultRange = getLast7CalendarDaysRangeSeconds();
 const summary = ref({ SumAddGold: 0 });
 const hasQueried = ref(false);
+
+const summaryItems = computed(() => [
+  { label: '账变总金额', value: formatAmountFromCent(summary.value.SumAddGold) },
+]);
 
 const filterLogId = ref('');
 const filterLoginAccount = ref('');
@@ -267,24 +272,26 @@ onMounted(async () => {
       <OpsListPanel>
         <template #filters>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">订单号</span>
             <Input
               v-model:value="filterLogId"
               allow-clear
               placeholder="请输入"
-              style="width: 200px"
+              style="width: 260px"
               @press-enter="handleSearch"
-            />
+            >
+              <template #addonBefore>订单号</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">游戏账号</span>
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
               placeholder="请输入"
-              style="width: 180px"
+              style="width: 260px"
               @press-enter="handleSearch"
-            />
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">所属产品</span>
@@ -329,12 +336,7 @@ onMounted(async () => {
         </template>
 
         <template #summary>
-          <div class="text-sm text-gray-600 dark:text-gray-300">
-            账变总金额：
-            <span class="font-medium text-gray-900 dark:text-gray-100">
-              {{ formatAmountFromCent(summary.SumAddGold) }}
-            </span>
-          </div>
+          <SummaryCards :items="summaryItems" />
         </template>
 
         <Grid>

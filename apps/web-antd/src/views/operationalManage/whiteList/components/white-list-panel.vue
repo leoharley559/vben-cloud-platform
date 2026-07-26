@@ -488,35 +488,38 @@ onMounted(() => {
     <div class="mb-4 flex flex-wrap items-end gap-2">
       <template v-if="isIp">
         <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">IP地址</span>
           <Input
             v-model:value="filterWhiteIp"
             allow-clear
             placeholder="请输入 IP"
-            style="width: 180px"
+            style="width: 250px"
             @press-enter="handleSearch"
-          />
+          >
+            <template #addonBefore>IP地址</template>
+          </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">使用者</span>
           <Input
             v-model:value="filterWhiteUsername"
             allow-clear
             placeholder="请输入使用者"
-            style="width: 180px"
+            style="width: 250px"
             @press-enter="handleSearch"
-          />
+          >
+            <template #addonBefore>使用者</template>
+          </Input>
         </div>
       </template>
       <div v-else class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">使用者</span>
         <Input
           v-model:value="filterUserName"
           allow-clear
           placeholder="请输入使用者名称"
-          style="width: 200px"
+          style="width: 260px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>使用者</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">状态</span>

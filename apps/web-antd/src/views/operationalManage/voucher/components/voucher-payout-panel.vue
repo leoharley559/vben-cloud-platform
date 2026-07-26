@@ -455,8 +455,10 @@ async function handleIssueExport(payload: Record<string, unknown>) {
             v-model:value="filterLoginAccount"
             allow-clear
             placeholder="游戏账号"
-            style="width: 140px"
-          />
+            style="width: 220px"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
           <Select
             v-model:value="filterVipLevel"
             class="w-28"

@@ -201,14 +201,18 @@ function handleOffshelf(row: OngoingActivityRow) {
           v-model:value="filterId"
           allow-clear
           placeholder="活动ID"
-          style="width: 140px"
-        />
+          style="width: 210px"
+        >
+          <template #addonBefore>活动ID</template>
+        </Input>
         <Input
           v-model:value="filterName"
           allow-clear
           placeholder="活动名称"
-          style="width: 180px"
-        />
+          style="width: 260px"
+        >
+          <template #addonBefore>活动名称</template>
+        </Input>
         <Select
           v-model:value="filterType"
           allow-clear

@@ -31,6 +31,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -257,6 +258,16 @@ const betTotalText = computed(() =>
 const winLossTotalText = computed(() =>
   formatAmountFromCent(summary.value.SumWinGold - summary.value.SumBetGold),
 );
+
+const summaryItems = computed(() => [
+  { label: '下注总计', value: betTotalText.value },
+  {
+    label: '有效投注',
+    value: formatAmountFromCent(summary.value.SumValidWater),
+  },
+  { label: '返奖总计', value: formatAmountFromCent(summary.value.SumWinGold) },
+  { label: '输赢总计', value: winLossTotalText.value },
+]);
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -842,20 +853,22 @@ onMounted(async () => {
           />
         </div>
         <div v-if="!isPlayerScope" class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">代理账号</span>
           <Input
             v-model:value="filterUsername"
             allow-clear
-            style="width: 140px"
-          />
+            style="width: 220px"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">注单流水号</span>
           <Input
             v-model:value="filterTransactionId"
             allow-clear
-            style="width: 170px"
-          />
+            style="width: 260px"
+          >
+            <template #addonBefore>注单流水号</template>
+          </Input>
         </div>
         <div class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">状态</span>
@@ -868,12 +881,13 @@ onMounted(async () => {
           />
         </div>
         <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">牌局编号</span>
           <Input
             v-model:value="filterRoundId"
             allow-clear
-            style="width: 140px"
-          />
+            style="width: 220px"
+          >
+            <template #addonBefore>牌局编号</template>
+          </Input>
         </div>
         <div class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">下注金额</span>
@@ -931,12 +945,13 @@ onMounted(async () => {
           />
         </div>
         <div v-if="!isPlayerScope" class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">玩家标签</span>
           <Input
             v-model:value="filterTagName"
             allow-clear
-            style="width: 140px"
-          />
+            style="width: 220px"
+          >
+            <template #addonBefore>玩家标签</template>
+          </Input>
         </div>
         <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">站点类型</span>
@@ -1006,28 +1021,7 @@ onMounted(async () => {
       </template>
 
       <template #summary>
-        <div class="text-sm text-gray-600 dark:text-gray-300">
-          下注总计：
-          <span class="font-medium text-gray-900 dark:text-gray-100">
-            {{ betTotalText }}
-          </span>
-        </div>
-        <div class="text-sm text-gray-600 dark:text-gray-300">
-          有效投注：
-          <span class="font-medium">
-            {{ formatAmountFromCent(summary.SumValidWater) }}
-          </span>
-        </div>
-        <div class="text-sm text-gray-600 dark:text-gray-300">
-          返奖总计：
-          <span class="font-medium">
-            {{ formatAmountFromCent(summary.SumWinGold) }}
-          </span>
-        </div>
-        <div class="text-sm text-gray-600 dark:text-gray-300">
-          输赢总计：
-          <span class="font-medium">{{ winLossTotalText }}</span>
-        </div>
+        <SummaryCards :items="summaryItems" />
       </template>
 
       <Grid>

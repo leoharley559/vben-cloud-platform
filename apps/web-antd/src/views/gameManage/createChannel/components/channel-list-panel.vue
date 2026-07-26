@@ -570,30 +570,38 @@ onBeforeUnmount(() => {
           v-model:value="filters.ChannelId"
           allow-clear
           placeholder="渠道号"
-          style="width: 150px"
+          style="width: 210px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>渠道号</template>
+        </Input>
         <Input
           v-model:value="filters.ChannelName"
           allow-clear
           placeholder="渠道名称"
-          style="width: 170px"
+          style="width: 230px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>渠道名称</template>
+        </Input>
         <Input
           v-model:value="filters.PromoterAdminUserName"
           allow-clear
           placeholder="推广账号"
-          style="width: 170px"
+          style="width: 230px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>推广账号</template>
+        </Input>
         <Input
           v-model:value="filters.PromoterAdminName"
           allow-clear
           placeholder="推广名称"
-          style="width: 170px"
+          style="width: 230px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>推广名称</template>
+        </Input>
         <Select
           v-if="canVisibilityFilter"
           v-model:value="filters.IsHidden"

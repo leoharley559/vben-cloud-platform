@@ -13,13 +13,13 @@ import {
   Result,
   Select,
   Spin,
-  Statistic,
   Table,
   Tooltip,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchTeamDailyListApi } from '#/api/promotion/team-daily';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatTeamQueryMoney } from '#/utils/promotion';
@@ -88,13 +88,6 @@ const teamAccountOptions = computed(() => {
     .filter((item) => item.value !== undefined && item.value !== null);
 });
 
-const commissionRate = computed(() => {
-  const info = projectConfig.value?.AccountTeamInfo as
-    | undefined
-    | { CommissionRate?: number };
-  return Number(info?.CommissionRate || 0) / 10;
-});
-
 function money(value?: number) {
   return formatTeamQueryMoney(value);
 }
@@ -113,11 +106,10 @@ function income(
   );
 }
 
-function summaryItems(
+function buildDailyMetrics(
   data: TeamDailySummary,
   historical = false,
 ): Array<{
-  help?: string;
   label: string;
   money: boolean;
   value?: number;
@@ -136,7 +128,6 @@ function summaryItems(
     { label: '自营税收', money: true, value: value('SelfGameTax') },
     {
       label: isProfitMode.value ? '自营利润收入' : '自营收入',
-      help: historical ? undefined : `当前分成比例 ${commissionRate.value}%`,
       money: true,
       value: income(data, 'self', historical),
     },
@@ -152,9 +143,17 @@ function summaryItems(
   ];
 }
 
-const todayItems = computed(() => summaryItems(todayData.value));
-const historyItems = computed(() =>
-  summaryItems(historySummary.value, true),
+const todaySummaryItems = computed(() =>
+  buildDailyMetrics(todayData.value).map((item) => ({
+    label: item.label,
+    value: item.money ? money(Number(item.value || 0)) : (item.value ?? 0),
+  })),
+);
+const historySummaryItems = computed(() =>
+  buildDailyMetrics(historySummary.value, true).map((item) => ({
+    label: item.label,
+    value: item.money ? money(Number(item.value || 0)) : (item.value ?? 0),
+  })),
 );
 
 function getQueryParams() {
@@ -280,20 +279,7 @@ onMounted(() => {
     <div v-if="canViewToday || canViewHistory">
       <section v-if="canViewToday" class="daily-section">
         <div class="section-title">今日数据</div>
-        <div class="statistics-grid">
-          <div v-for="item in todayItems" :key="item.label" class="stat-card">
-            <Statistic
-              :value="item.money ? money(Number(item.value || 0)) : item.value"
-            >
-              <template #title>
-                {{ item.label }}
-                <Tooltip v-if="item.help" :title="item.help">
-                  <span class="info-dot">?</span>
-                </Tooltip>
-              </template>
-            </Statistic>
-          </div>
-        </div>
+        <SummaryCards :items="todaySummaryItems" />
       </section>
 
       <section v-if="canViewHistory" class="daily-section">
@@ -322,14 +308,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="statistics-grid history-statistics">
-          <div v-for="item in historyItems" :key="item.label" class="stat-card">
-            <Statistic
-              :title="item.label"
-              :value="item.money ? money(Number(item.value || 0)) : item.value"
-            />
-          </div>
-        </div>
+        <SummaryCards :items="historySummaryItems" />
 
         <Table
           v-if="rows.length > 0"
@@ -399,22 +378,6 @@ onMounted(() => {
   color: #cf1322;
 }
 
-.statistics-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(150px, 1fr));
-  gap: 12px;
-}
-
-.history-statistics {
-  margin: 16px 0;
-}
-
-.stat-card {
-  padding: 14px;
-  background: hsl(var(--muted) / 25%);
-  border-radius: 8px;
-}
-
 .info-dot {
   display: inline-flex;
   align-items: center;
@@ -427,11 +390,5 @@ onMounted(() => {
   cursor: help;
   background: #8c8c8c;
   border-radius: 50%;
-}
-
-@media (max-width: 1100px) {
-  .statistics-grid {
-    grid-template-columns: repeat(2, minmax(150px, 1fr));
-  }
 }
 </style>

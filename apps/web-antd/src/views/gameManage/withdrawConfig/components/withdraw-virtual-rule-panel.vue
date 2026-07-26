@@ -587,12 +587,18 @@ onMounted(loadMain);
         v-model:value="whitelistQuery.Account"
         allow-clear
         placeholder="游戏账号"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Input
         v-model:value="whitelistQuery.ChannelId"
         allow-clear
         placeholder="渠道号"
-      />
+        style="width: 210px"
+      >
+        <template #addonBefore>渠道号</template>
+      </Input>
       <Select
         v-model:value="whitelistQuery.PackageId"
         :options="productOptions"

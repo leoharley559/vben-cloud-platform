@@ -14,7 +14,7 @@ defineOptions({ name: 'OpsListPanel' });
     >
       <slot name="filters" />
     </div>
-    <div v-if="$slots.summary" class="mb-2 flex flex-wrap items-center gap-4">
+    <div v-if="$slots.summary">
       <slot name="summary" />
     </div>
     <div>

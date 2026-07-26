@@ -3,11 +3,12 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Card, DatePicker, Space, Statistic } from 'ant-design-vue';
+import { Button, DatePicker, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchCloudCoinStockApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
@@ -27,7 +28,6 @@ interface StockRow {
 const { checkPermission } = useCloudPermission();
 
 const canViewTable = computed(() => checkPermission(11429));
-const loadingBanner = ref(false);
 const banner = ref({
   Buy: 0,
   Consume: 0,
@@ -118,8 +118,13 @@ const gridOptions: VxeTableGridOptions<StockRow> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
+const bannerSummaryItems = computed(() => [
+  { label: '云币库存', value: keepTwoDecimal(banner.value.Stock) },
+  { label: '今日入库', value: keepTwoDecimal(banner.value.Buy) },
+  { label: '今日消耗', value: keepTwoDecimal(banner.value.Consume) },
+]);
+
 async function loadBannerOnly() {
-  loadingBanner.value = true;
   try {
     const result = await fetchCloudCoinStockApi({
       ...getQueryParams(),
@@ -129,8 +134,6 @@ async function loadBannerOnly() {
     applyBanner(result);
   } catch {
     banner.value = { Buy: 0, Consume: 0, Stock: 0 };
-  } finally {
-    loadingBanner.value = false;
   }
 }
 
@@ -167,32 +170,7 @@ onMounted(() => {
 <template>
   <div class="space-y-4">
     <div class="flex flex-wrap items-start justify-between gap-3">
-      <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
-        <Card size="small">
-          <Statistic
-            :loading="loadingBanner"
-            :precision="2"
-            :value="banner.Stock"
-            title="云币库存"
-          />
-        </Card>
-        <Card size="small">
-          <Statistic
-            :loading="loadingBanner"
-            :precision="2"
-            :value="banner.Buy"
-            title="今日入库"
-          />
-        </Card>
-        <Card size="small">
-          <Statistic
-            :loading="loadingBanner"
-            :precision="2"
-            :value="banner.Consume"
-            title="今日消耗"
-          />
-        </Card>
-      </div>
+      <SummaryCards :items="bannerSummaryItems" />
       <CloudCoinBuyModal @success="handleBuySuccess" />
     </div>
 

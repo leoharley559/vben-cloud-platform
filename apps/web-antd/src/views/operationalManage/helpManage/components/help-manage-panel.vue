@@ -254,14 +254,15 @@ function handleClose(row: HelpRow) {
   <OpsListPanel>
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">协助账号</span>
         <Input
           v-model:value="filterHelperAccount"
           allow-clear
           placeholder="请输入协助账号"
-          style="width: 200px"
+          style="width: 260px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>协助账号</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">状态</span>

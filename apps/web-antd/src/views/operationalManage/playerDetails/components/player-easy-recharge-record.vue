@@ -4,20 +4,13 @@ import type { PlayerEasyRechargeItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import {
-  Button,
-  DatePicker,
-  Input,
-  Select,
-  Space,
-  Statistic,
-  Tag,
-} from 'ant-design-vue';
+import { Button, DatePicker, Input, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchEasyRechargeListApi } from '#/api/operationManage/easy-recharge';
 import EasyRechargeVoucherCell from '#/components/easy-recharge/easy-recharge-voucher-cell.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -174,6 +167,13 @@ const gridOptions: VxeTableGridOptions<PlayerEasyRechargeItem> = {
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 const loading = computed(() => gridApi.grid?.loading ?? false);
 
+const summaryItems = computed(() => [
+  {
+    label: '充值总额',
+    value: formatAmountFromCent(totalAmount.value),
+  },
+]);
+
 watch(
   () => props.playerId,
   () => props.playerId && gridApi.reload(),
@@ -221,11 +221,7 @@ onMounted(() => props.playerId && gridApi.reload());
       </Space>
     </div>
 
-    <Statistic
-      class="mb-4"
-      title="充值总额"
-      :value="formatAmountFromCent(totalAmount)"
-    />
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #status="{ row }">

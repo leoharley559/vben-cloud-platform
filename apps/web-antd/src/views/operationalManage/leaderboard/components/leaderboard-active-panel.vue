@@ -313,8 +313,10 @@ function statusLabel(status?: number) {
           v-model:value="filterId"
           allow-clear
           placeholder="活动ID"
-          style="width: 140px"
-        />
+          style="width: 210px"
+        >
+          <template #addonBefore>活动ID</template>
+        </Input>
         <Select
           v-model:value="filterActivityType"
           allow-clear

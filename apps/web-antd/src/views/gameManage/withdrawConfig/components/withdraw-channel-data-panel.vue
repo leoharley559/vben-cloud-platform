@@ -212,16 +212,15 @@ onMounted(() => {
   <div v-if="canView" class="flex flex-col gap-3">
     <Card size="small" title="查询条件">
       <Space wrap>
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">账户</span>
-          <Input
-            v-model:value="account"
-            allow-clear
-            placeholder="请输入账户"
-            style="width: 220px"
-            @press-enter="handleSearch"
-          />
-        </div>
+        <Input
+          v-model:value="account"
+          allow-clear
+          placeholder="请输入账户"
+          style="width: 220px"
+          @press-enter="handleSearch"
+        >
+          <template #addonBefore>账户</template>
+        </Input>
         <div class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">日期</span>
           <DatePicker.RangePicker

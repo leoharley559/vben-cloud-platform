@@ -216,8 +216,10 @@ onMounted(() => {
         v-model:value="filterTradeOrderId"
         allow-clear
         placeholder="买家订单号"
-        style="width: 200px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>买家订单号</template>
+      </Input>
       <DatePicker.RangePicker v-model:value="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询

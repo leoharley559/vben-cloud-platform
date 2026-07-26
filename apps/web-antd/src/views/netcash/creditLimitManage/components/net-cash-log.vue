@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
@@ -12,6 +12,7 @@ import {
 } from 'ant-design-vue';
 
 import { getNetCashLogListApi } from '#/api/netcash/credit-limit';
+import SummaryCards from '#/components/global/summary-cards.vue';
 
 import {
   accountTypeMap,
@@ -49,6 +50,12 @@ const columns = [
   { dataIndex: 'AdjustAmountAft', key: 'AdjustAmountAft', title: '变更后额度（元）' },
   { dataIndex: 'ReviewNote', key: 'ReviewNote', title: '备注' },
 ];
+
+const summaryItems = computed(() => [
+  { label: '变更金额合计', value: amount(summary.TotalAdjustAmount) },
+  { label: '变更前额度合计', value: amount(summary.TotalBeforeAdjustAmount) },
+  { label: '变更后额度合计', value: amount(summary.TotalAfterAdjustAmount) },
+]);
 
 function buildQuery() {
   return {
@@ -104,17 +111,15 @@ onMounted(load);
 <template>
   <div>
     <Space class="mb-4" wrap>
-      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" />
+      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="代理类型" style="width: 150px" />
       <DatePicker.RangePicker v-model:value="transferRange" />
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
     </Space>
-    <div class="mb-3 flex flex-wrap gap-8 rounded bg-gray-50 px-4 py-3 text-sm">
-      <span>变更金额合计：{{ amount(summary.TotalAdjustAmount) }}</span>
-      <span>变更前额度合计：{{ amount(summary.TotalBeforeAdjustAmount) }}</span>
-      <span>变更后额度合计：{{ amount(summary.TotalAfterAdjustAmount) }}</span>
-    </div>
+    <SummaryCards :items="summaryItems" />
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1250 }" size="small">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>

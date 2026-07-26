@@ -604,8 +604,10 @@ onMounted(() => {
           v-model:value="specialFilter"
           allow-clear
           placeholder="游戏账号"
-          style="width: 200px"
-        />
+          style="width: 230px"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
         <Button type="primary" @click="loadSpecialPlayers">查询</Button>
         <Button type="primary" @click="openAddModal">添加玩家</Button>
       </div>

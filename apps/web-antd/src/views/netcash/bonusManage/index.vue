@@ -40,6 +40,7 @@ import {
   queryBonusAdminIdApi,
 } from '#/api/netcash/bonus-manage';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
@@ -411,6 +412,14 @@ const auditTotal = ref(0);
 const auditTotalAmount = ref(0);
 const selectedAuditRows = ref<BonusManageItem[]>([]);
 
+const auditSummaryItems = computed(() => [
+  {
+    label: '申请金额汇总',
+    value: formatAmountFromCent(auditTotalAmount.value),
+    valueClass: 'text-red-500',
+  },
+]);
+
 function auditQuery() {
   const [begin, end] = auditRange.value || todayRange();
   return {
@@ -597,6 +606,19 @@ const historyPageSize = ref(20);
 const historyTotal = ref(0);
 const historyTotalAmount = ref(0);
 const historyTotalRealAmount = ref(0);
+
+const historySummaryItems = computed(() => [
+  {
+    label: '申请金额汇总',
+    value: formatAmountFromCent(historyTotalAmount.value),
+    valueClass: 'text-red-500',
+  },
+  {
+    label: '支付金额汇总',
+    value: formatAmountFromCent(historyTotalRealAmount.value),
+    valueClass: 'text-red-500',
+  },
+]);
 
 function historyQuery(isExport = false) {
   const [applyBegin, applyEnd] = historyApplyRange.value || todayRange();
@@ -887,8 +909,10 @@ watch(
                   v-model:value="auditFilters.Username"
                   allow-clear
                   placeholder="代理账号"
-                  class="w-44"
-                />
+                  style="width: 220px"
+                >
+                  <template #addonBefore>代理账号</template>
+                </Input>
                 <Select
                   v-model:value="auditFilters.WalletType"
                   class="w-36"
@@ -903,25 +927,24 @@ watch(
                   v-model:value="auditFilters.ApplyName"
                   allow-clear
                   placeholder="申请账号"
-                  class="w-40"
-                />
+                  style="width: 220px"
+                >
+                  <template #addonBefore>申请账号</template>
+                </Input>
                 <Input
                   v-model:value="auditFilters.ApplyDesc"
                   allow-clear
                   placeholder="申请备注"
-                  class="w-44"
-                />
+                  style="width: 220px"
+                >
+                  <template #addonBefore>申请备注</template>
+                </Input>
                 <DatePicker.RangePicker v-model:value="auditRange" />
                 <Button type="primary" @click="searchAudit">查询</Button>
                 <Button @click="resetAudit">重置</Button>
               </div>
               <div class="mb-3 flex items-center justify-between">
-                <span>
-                  申请金额汇总：
-                  <b class="text-red-500">{{
-                    formatAmountFromCent(auditTotalAmount)
-                  }}</b>
-                </span>
+                <SummaryCards :items="auditSummaryItems" />
                 <Space>
                   <Button
                     v-if="canBatchApprove"
@@ -1027,8 +1050,10 @@ watch(
                 v-model:value="historyFilters.Username"
                 allow-clear
                 placeholder="代理账号"
-                class="w-40"
-              />
+                style="width: 220px"
+              >
+                <template #addonBefore>代理账号</template>
+              </Input>
               <Select
                 v-model:value="historyFilters.WalletType"
                 class="w-36"
@@ -1043,14 +1068,18 @@ watch(
                 v-model:value="historyFilters.ApplyName"
                 allow-clear
                 placeholder="申请账号"
-                class="w-40"
-              />
+                style="width: 220px"
+              >
+                <template #addonBefore>申请账号</template>
+              </Input>
               <Input
                 v-model:value="historyFilters.ApplyDesc"
                 allow-clear
                 placeholder="申请备注"
-                class="w-40"
-              />
+                style="width: 220px"
+              >
+                <template #addonBefore>申请备注</template>
+              </Input>
               <Select
                 v-model:value="historyFilters.Approve"
                 class="w-36"
@@ -1060,14 +1089,18 @@ watch(
                 v-model:value="historyFilters.ApproveName"
                 allow-clear
                 placeholder="审核账号"
-                class="w-40"
-              />
+                style="width: 220px"
+              >
+                <template #addonBefore>审核账号</template>
+              </Input>
               <Input
                 v-model:value="historyFilters.ApproveDesc"
                 allow-clear
                 placeholder="审核备注"
-                class="w-40"
-              />
+                style="width: 220px"
+              >
+                <template #addonBefore>审核备注</template>
+              </Input>
               <span class="text-gray-500">申请时间</span>
               <DatePicker.RangePicker v-model:value="historyApplyRange" />
               <span class="text-gray-500">审核时间</span>
@@ -1076,20 +1109,7 @@ watch(
               <Button @click="resetHistory">重置</Button>
             </div>
             <div class="mb-3 flex items-center justify-between">
-              <Space>
-                <span>
-                  申请金额汇总：
-                  <b class="text-red-500">{{
-                    formatAmountFromCent(historyTotalAmount)
-                  }}</b>
-                </span>
-                <span>
-                  支付金额汇总：
-                  <b class="text-red-500">{{
-                    formatAmountFromCent(historyTotalRealAmount)
-                  }}</b>
-                </span>
-              </Space>
+              <SummaryCards :items="historySummaryItems" />
               <Button
                 v-if="canExportHistory"
                 type="primary"

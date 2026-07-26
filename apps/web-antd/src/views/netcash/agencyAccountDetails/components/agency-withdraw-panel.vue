@@ -8,7 +8,6 @@ import {
   Result,
   Select,
   Space,
-  Statistic,
   Table,
 } from 'ant-design-vue';
 import dayjs, { type Dayjs } from 'dayjs';
@@ -18,6 +17,7 @@ import {
   fetchAgentNetcashDetailApi,
   fetchWithdrawAgentListApi,
 } from '#/api/netcash/agency-account-details';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
@@ -172,6 +172,10 @@ async function exportAll() {
   }
 }
 
+const summaryItems = computed(() => [
+  { label: '总提款', value: formatAmountFromCent(totalAmount.value) },
+]);
+
 watch(() => props.adminId, () => {
   applicant.value = '';
   void load();
@@ -181,53 +185,32 @@ onMounted(load);
 
 <template>
   <div v-if="canView" class="space-y-3">
-    <Space wrap>
-      <Input
-        v-model:value="orderId"
-        allow-clear
-        placeholder="订单号"
-        style="width: 190px"
-      />
-      <Select
-        v-model:value="status"
-        allow-clear
-        mode="multiple"
-        :options="statusOptions"
-        placeholder="全部状态"
-        style="min-width: 180px"
-      />
-      <DatePicker.RangePicker v-model:value="dateRange" show-time />
-      <Button type="primary" @click="load">查询</Button>
-      <Button @click="reset">重置</Button>
-      <Button :loading="exporting" @click="exportAll">导出全部</Button>
-    </Space>
-    <Statistic
-      :precision="2"
-      title="总提款（元）"
-      :value="totalAmount / 100"
-    />
-    <Table
-      bordered
-      :columns="columns"
-      :data-source="rows"
-      :loading="loading"
-      :pagination="{
-        current: pager.current,
-        pageSize: pager.pageSize,
-        total: pager.total,
-        showSizeChanger: true,
-      }"
-      :row-key="(row) => String(row.Id ?? row.OrderId ?? '')"
-      :scroll="{ x: 1450 }"
-      size="small"
-      @change="
+    <div class="mb-3">
+      <Space wrap>
+        <Input v-model:value="orderId" allow-clear placeholder="订单号" style="width: 220px">
+          <template #addonBefore>订单号</template>
+        </Input>
+        <Select v-model:value="status" allow-clear mode="multiple" :options="statusOptions" placeholder="全部状态"
+          style="min-width: 180px" />
+        <DatePicker.RangePicker v-model:value="dateRange" show-time />
+        <Button type="primary" @click="load">查询</Button>
+        <Button @click="reset">重置</Button>
+        <Button :loading="exporting" @click="exportAll">导出全部</Button>
+      </Space>
+    </div>
+    <SummaryCards :items="summaryItems" />
+    <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="{
+      current: pager.current,
+      pageSize: pager.pageSize,
+      total: pager.total,
+      showSizeChanger: true,
+    }" :row-key="(row) => String(row.Id ?? row.OrderId ?? '')" :scroll="{ x: 1450 }" size="small" @change="
         (page) => {
           pager.current = page.current || 1;
           pager.pageSize = page.pageSize || 20;
           load();
         }
-      "
-    >
+      ">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'Status'">
           {{ statusText(record) }}
@@ -251,10 +234,5 @@ onMounted(load);
       </template>
     </Table>
   </div>
-  <Result
-    v-else
-    status="403"
-    sub-title="无提款记录查看权限"
-    title="403"
-  />
+  <Result v-else status="403" sub-title="无提款记录查看权限" title="403" />
 </template>

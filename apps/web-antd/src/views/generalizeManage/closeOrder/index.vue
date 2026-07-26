@@ -16,7 +16,6 @@ import {
   Result,
   Select,
   Space,
-  Statistic,
   Tag,
 } from 'ant-design-vue';
 import BigNumber from 'bignumber.js';
@@ -27,6 +26,7 @@ import {
   fetchCloseOrderListApi,
   startCloseOrderApi,
 } from '#/api/promotion/close-order';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   CLOSE_ORDER_STATUS_COLOR,
@@ -250,6 +250,22 @@ const gridOptions: VxeTableGridOptions<CloseOrderItem> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
+const summaryItems = computed(() => [
+  {
+    label: '申请金额总计',
+    value:
+      headerData.value.applyMoney +
+      headerData.value.goingMoney +
+      headerData.value.remitMoney +
+      headerData.value.rejectMoney,
+  },
+  {
+    label: '已打款金额总计',
+    value: Number(headerData.value.remitRateMoney).toFixed(2),
+  },
+  { label: '拒绝金额总计', value: headerData.value.rejectMoney },
+]);
+
 function reloadGrid() {
   gridApi.setGridOptions({ columns: buildColumns() });
   gridApi.reload();
@@ -417,29 +433,7 @@ onMounted(() => {
         <Button @click="handleReset">重置</Button>
       </div>
 
-      <div class="summary-grid">
-        <div class="summary-item">
-          <Statistic
-            title="申请金额总计"
-            :value="
-              headerData.applyMoney +
-              headerData.goingMoney +
-              headerData.remitMoney +
-              headerData.rejectMoney
-            "
-          />
-        </div>
-        <div class="summary-item">
-          <Statistic
-            title="已打款金额总计"
-            :precision="2"
-            :value="headerData.remitRateMoney"
-          />
-        </div>
-        <div class="summary-item">
-          <Statistic title="拒绝金额总计" :value="headerData.rejectMoney" />
-        </div>
-      </div>
+      <SummaryCards :items="summaryItems" />
 
       <Grid>
         <template #status="{ row }">
@@ -507,22 +501,4 @@ onMounted(() => {
   border-radius: 10px;
 }
 
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.summary-item {
-  padding: 14px;
-  background: hsl(var(--muted) / 25%);
-  border-radius: 8px;
-}
-
-@media (max-width: 900px) {
-  .summary-grid {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

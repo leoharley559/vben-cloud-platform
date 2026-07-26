@@ -143,8 +143,10 @@ watch(
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 160px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Select
         v-model:value="filterVipLevel"
         class="w-28"

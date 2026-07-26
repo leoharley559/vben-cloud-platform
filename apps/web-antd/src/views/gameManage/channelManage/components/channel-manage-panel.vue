@@ -137,10 +137,12 @@ function handleSearch() {
       <Input
         v-model:value="filterUsername"
         allow-clear
-        class="!w-[240px]"
         placeholder="代理账号"
+        style="width: 240px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Button type="primary" @click="handleSearch">查询</Button>
     </div>
     <div class="mb-3 text-xs text-gray-400">

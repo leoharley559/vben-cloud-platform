@@ -25,6 +25,9 @@ export const overridesPreferences = defineOverridesPreferences({
     locale: 'zh-CN',
     name: import.meta.env.VITE_APP_TITLE,
   },
+  logo: {
+    source: '/logo.png',
+  },
 });
 
 export const preferencesExtension =

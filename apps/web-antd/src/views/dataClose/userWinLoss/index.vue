@@ -440,10 +440,12 @@ onMounted(async () => {
         v-model:value="filters.LoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 160px"
+        style="width: 220px"
         @blur="normalizeLoginAccount"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
       <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
       <Select

@@ -608,9 +608,11 @@ onMounted(() => void load(true));
               v-model:value="keyword"
               allow-clear
               placeholder="通道名称/显示名称"
-              style="width: 240px"
+              style="width: 260px"
               @press-enter="query"
-            />
+            >
+              <template #addonBefore>通道名称</template>
+            </Input>
             <Button :loading="loading" type="primary" @click="query"
               >查询</Button
             >

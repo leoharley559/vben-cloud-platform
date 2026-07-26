@@ -195,24 +195,26 @@ onMounted(() => {
   <OpsListPanel v-if="canView">
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">游戏账号</span>
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
           placeholder="请输入"
-          style="width: 160px"
+          style="width: 240px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">钱包账号</span>
         <Input
           v-model:value="filterAccountNum"
           allow-clear
           placeholder="请输入"
-          style="width: 160px"
+          style="width: 240px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>钱包账号</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">钱包类型</span>

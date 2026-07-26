@@ -23,6 +23,7 @@ import {
   switchAgencyStatusApi,
 } from '#/api/netcash/agency';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
@@ -448,8 +449,31 @@ function resetFilters() {
   gridApi.reload();
 }
 
+/** 行内 AdminId / Id 收窄为接口可用的 id，避免索引签名带来的 unknown */
+function resolveRowAdminId(row: AgencyListItem | null | undefined) {
+  const value = row?.AdminId ?? row?.Id;
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'number' || typeof value === 'string') return value;
+  return String(value);
+}
+
+/** 金额类字段收窄，供 formatAmount / 输赢计算使用 */
+function asAmountInput(value: unknown): null | number | string | undefined {
+  if (value === undefined || value === null) return value;
+  if (typeof value === 'number' || typeof value === 'string') return value;
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+}
+
+/** 文本类字段收窄，供链接 username 等展示使用 */
+function asDisplayText(value: unknown): number | string | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'number' || typeof value === 'string') return value;
+  return String(value);
+}
+
 function drillDown(row: AgencyListItem) {
-  const adminId = row.AdminId ?? row.Id;
+  const adminId = resolveRowAdminId(row);
   if (!adminId || Number(row.LowerAgent || 0) <= 0) {
     return;
   }
@@ -485,7 +509,7 @@ async function submitStatus() {
     return;
   }
   const row = statusRow.value;
-  const adminId = row?.AdminId ?? row?.Id;
+  const adminId = resolveRowAdminId(row);
   if (!row || !adminId) {
     return;
   }
@@ -536,6 +560,47 @@ function getWinLossAmount(sumWinGold?: null | number | string) {
   return -Number(sumWinGold || 0);
 }
 
+/** 输赢着色：盈利绿、亏损红 */
+function winLossClass(amount: number) {
+  if (amount > 0) return 'text-emerald-500';
+  return amount < 0 ? 'text-red-500' : '';
+}
+
+const summaryItems = computed(() => {
+  const winLoss = getWinLossAmount(totalData.value.SumWinGold);
+  return [
+    {
+      label: '会员',
+      value: totalData.value.TotalMember ?? totalData.value.Members ?? 0,
+    },
+    {
+      label: '存款',
+      value: formatAmountFromCent(
+        totalData.value.SumPayMoney ?? totalData.value.TotalPayMoney ?? 0,
+      ),
+    },
+    {
+      label: '提款',
+      value: formatAmountFromCent(
+        totalData.value.SumWithDrawMoney ??
+          totalData.value.TotalWithDrawMoney ??
+          0,
+      ),
+    },
+    {
+      label: '有效投注',
+      value: formatAmountFromCent(
+        totalData.value.SumBetValidMoney ?? totalData.value.TotalBetMoney ?? 0,
+      ),
+    },
+    {
+      label: '输赢',
+      value: formatAmountFromCent(winLoss),
+      valueClass: winLossClass(winLoss),
+    },
+  ];
+});
+
 const exportLoading = ref(false);
 async function exportAgencyList() {
   exportLoading.value = true;
@@ -565,14 +630,16 @@ async function exportAgencyList() {
       发佣方式:
         AGENCY_SEND_COMMISSION_TYPE_MAP[Number(row.SendCommissionType)] ||
         row.SendCommissionType,
-      推广产品: formatPackageNames(row.PackageId),
+      推广产品: formatPackageNames(asDisplayText(row.PackageId)),
       场馆费率: row.ApiFeeTemplateName || row.ApiFeeTemplateId,
       下级会员: row.Members,
       活跃人数: row.SumActiveStatus,
       存款: formatAmountFromCent(Number(row.SumPayMoney || 0)),
       提款: formatAmountFromCent(Number(row.SumWithDrawMoney || 0)),
       有效投注: formatAmountFromCent(Number(row.SumBetValidMoney || 0)),
-      总输赢: formatAmountFromCent(getWinLossAmount(row.SumWinGold)),
+      总输赢: formatAmountFromCent(
+        getWinLossAmount(asAmountInput(row.SumWinGold)),
+      ),
       注册IP: row.RegIp,
       注册地址: row.RegAddress,
       最后登录IP: row.LastLoginIp,
@@ -605,26 +672,34 @@ onMounted(() => {
         v-model:value="filterUsername"
         allow-clear
         placeholder="代理账号"
-        style="width: 180px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Input
         v-model:value="filterTeamName"
         allow-clear
         placeholder="团队名称"
-        style="width: 180px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>团队名称</template>
+      </Input>
       <Input
         v-model:value="filterDeveloperName"
         allow-clear
         placeholder="发展人"
-        style="width: 180px"
-      />
+        style="width: 210px"
+      >
+        <template #addonBefore>发展人</template>
+      </Input>
       <Input
         v-model:value="filterMaintainerName"
         allow-clear
         placeholder="维护人"
-        style="width: 180px"
-      />
+        style="width: 210px"
+      >
+        <template #addonBefore>维护人</template>
+      </Input>
       <Select
         v-model:value="filterStatus"
         allow-clear
@@ -650,56 +725,74 @@ onMounted(() => {
         v-model:value="filterMobile"
         allow-clear
         placeholder="手机号"
-        style="width: 160px"
-      />
+        style="width: 210px"
+      >
+        <template #addonBefore>手机号</template>
+      </Input>
       <Input
         v-model:value="filterMainUsername"
         allow-clear
         placeholder="上级账号"
-        style="width: 160px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>上级账号</template>
+      </Input>
       <Input
         v-model:value="filterParentAdminId"
         allow-clear
         placeholder="下级代理 ID"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>下级代理 ID</template>
+      </Input>
       <Input
         v-model:value="filterWithdrawAccName"
         allow-clear
         placeholder="银行姓名"
-        style="width: 160px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>银行姓名</template>
+      </Input>
       <Input
         v-model:value="filterWithdrawAccNum"
         allow-clear
         placeholder="银行卡号"
-        style="width: 180px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>银行卡号</template>
+      </Input>
       <Input
         v-model:value="filterRegistIP"
         allow-clear
         placeholder="注册 IP"
-        style="width: 150px"
-      />
+        style="width: 210px"
+      >
+        <template #addonBefore>注册 IP</template>
+      </Input>
       <Input
         v-model:value="filterLastLoginIP"
         allow-clear
         placeholder="最后登录 IP"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>最后登录 IP</template>
+      </Input>
       <Input
         v-model:value="filterRegistDevice"
         allow-clear
         placeholder="注册设备"
-        style="width: 160px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>注册设备</template>
+      </Input>
       <Input
         v-model:value="filterLastLoginDevice"
         allow-clear
         placeholder="最后登录设备"
-        style="width: 170px"
-      />
+        style="width: 250px"
+      >
+        <template #addonBefore>最后登录设备</template>
+      </Input>
       <DatePicker.RangePicker v-model:value="filterDateRange" />
       <span class="text-sm text-gray-500">统计时间</span>
       <DatePicker.RangePicker v-model:value="statisticsRange" />
@@ -730,26 +823,7 @@ onMounted(() => {
         </Button>
       </template>
     </div>
-    <div class="mb-3 grid grid-cols-2 gap-2 text-sm md:grid-cols-5">
-      <div class="rounded border p-2">会员：{{ totalData.TotalMember ?? totalData.Members ?? 0 }}</div>
-      <div class="rounded border p-2">存款：{{ formatAmountFromCent(totalData.SumPayMoney ?? totalData.TotalPayMoney ?? 0) }}</div>
-      <div class="rounded border p-2">提款：{{ formatAmountFromCent(totalData.SumWithDrawMoney ?? totalData.TotalWithDrawMoney ?? 0) }}</div>
-      <div class="rounded border p-2">有效投注：{{ formatAmountFromCent(totalData.SumBetValidMoney ?? totalData.TotalBetMoney ?? 0) }}</div>
-      <div class="rounded border p-2">
-        输赢：
-        <span
-          :class="
-            getWinLossAmount(totalData.SumWinGold) > 0
-              ? 'text-emerald-500'
-              : getWinLossAmount(totalData.SumWinGold) < 0
-                ? 'text-red-500'
-                : ''
-          "
-        >
-          {{ formatAmountFromCent(getWinLossAmount(totalData.SumWinGold)) }}
-        </span>
-      </div>
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #status="{ row }">
@@ -781,14 +855,14 @@ onMounted(() => {
       <template #winLoss="{ row }">
         <span
           :class="
-            getWinLossAmount(row.SumWinGold) > 0
-              ? 'text-emerald-500'
-              : getWinLossAmount(row.SumWinGold) < 0
-                ? 'text-red-500'
-                : ''
+            winLossClass(getWinLossAmount(asAmountInput(row.SumWinGold)))
           "
         >
-          {{ formatAmountFromCent(getWinLossAmount(row.SumWinGold)) }}
+          {{
+            formatAmountFromCent(
+              getWinLossAmount(asAmountInput(row.SumWinGold)),
+            )
+          }}
         </span>
       </template>
       <template #fanDian="{ row }">
@@ -804,7 +878,7 @@ onMounted(() => {
             CountBeginTime: statisticsRange?.[0]?.startOf('day').unix(),
             CountEndTime: statisticsRange?.[1]?.endOf('day').unix(),
           }"
-          :username="row.Username"
+          :username="asDisplayText(row.Username)"
         />
       </template>
       <template #mainUsername="{ row }">
@@ -812,7 +886,7 @@ onMounted(() => {
           :admin-id="
             resolveAgencyAdminId(row, 'MainAdminId', 'ParentAdminId')
           "
-          :username="row.MainUsername"
+          :username="asDisplayText(row.MainUsername)"
         />
       </template>
       <template #action="{ row }">
@@ -853,18 +927,26 @@ onMounted(() => {
     />
     <AgencyMemberModal
       v-model:open="memberModalOpen"
-      :admin-id="memberRow?.AdminId"
-      :admin-name="memberRow?.Username"
+      :admin-id="resolveRowAdminId(memberRow)"
+      :admin-name="
+        memberRow?.Username == null || memberRow.Username === ''
+          ? undefined
+          : String(memberRow.Username)
+      "
       @success="gridApi.reload()"
     />
     <AgencyFanDianModal v-model:open="fanDianOpen" :row="fanDianRow" />
     <AgencyMemberDetailModal
       v-model:open="memberDetailOpen"
       :active-only="memberDetailActiveOnly"
-      :admin-id="memberDetailRow?.AdminId"
+      :admin-id="resolveRowAdminId(memberDetailRow)"
       :begin-time="statisticsRange?.[0]?.startOf('day').unix()"
       :end-time="statisticsRange?.[1]?.endOf('day').unix()"
-      :username="memberDetailRow?.Username"
+      :username="
+        memberDetailRow?.Username == null || memberDetailRow.Username === ''
+          ? undefined
+          : String(memberDetailRow.Username)
+      "
     />
     <Modal
       v-model:open="statusModalOpen"

@@ -6,22 +6,13 @@ import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
-import {
-  Button,
-  DatePicker,
-  Input,
-  Result,
-  Select,
-  Space,
-  Statistic,
-  Tag,
-  message,
-} from 'ant-design-vue';
+import { Button, DatePicker, Input, Result, Select, Space, Tag, message } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchEvoSideBetListApi } from '#/api/memberManage/game-record';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -261,6 +252,31 @@ const winLossTotalText = computed(() =>
   formatAmountFromCent(summary.value.SumWinGold - summary.value.SumBetGold),
 );
 
+function winLossClass(amount: number) {
+  if (amount > 0) return 'text-emerald-500';
+  return amount < 0 ? 'text-red-500' : '';
+}
+
+const summaryItems = computed(() => {
+  const winLoss = summary.value.SumWinGold - summary.value.SumBetGold;
+  return [
+    { label: '下注总额', value: betTotalText.value },
+    {
+      label: '有效投注总额',
+      value: formatAmountFromCent(summary.value.SumValidWater),
+    },
+    {
+      label: '返奖总额',
+      value: formatAmountFromCent(summary.value.SumWinGold),
+    },
+    {
+      label: '输赢总额',
+      value: winLossTotalText.value,
+      valueClass: winLossClass(winLoss),
+    },
+  ];
+});
+
 function validateDateRange() {
   const [begin, end] = filterDateRange.value || [];
   const beginTime = begin ? begin.startOf('day').unix() : defaultBegin.unix();
@@ -387,18 +403,7 @@ onMounted(async () => {
     description="会员管理 · EVO 真人 Sidebet 详情"
     title="EVO Sidebet 详情"
   >
-    <div class="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-      <Statistic title="下注总额" :value="betTotalText" />
-      <Statistic
-        title="有效投注总额"
-        :value="formatAmountFromCent(summary.SumValidWater)"
-      />
-      <Statistic
-        title="返奖总额"
-        :value="formatAmountFromCent(summary.SumWinGold)"
-      />
-      <Statistic title="输赢总额" :value="winLossTotalText" />
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <div class="mb-4 flex flex-wrap items-end gap-2">
       <div class="flex items-center gap-2">
@@ -432,40 +437,44 @@ onMounted(async () => {
         />
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">游戏账号</span>
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          class="w-40"
+          class="w-60"
           placeholder="请输入"
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">代理账号</span>
         <Input
           v-model:value="filterUsername"
           allow-clear
-          class="w-36"
+          class="w-60"
           placeholder="请输入"
-        />
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">注单号</span>
         <Input
           v-model:value="filterTransactionId"
           allow-clear
-          class="w-44"
+          class="w-60"
           placeholder="请输入"
-        />
+        >
+          <template #addonBefore>注单号</template>
+        </Input>
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">牌局编号</span>
         <Input
           v-model:value="filterRoundId"
           allow-clear
-          class="w-36"
+          class="w-60"
           placeholder="请输入"
-        />
+        >
+          <template #addonBefore>牌局编号</template>
+        </Input>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-sm text-gray-500">状态</span>

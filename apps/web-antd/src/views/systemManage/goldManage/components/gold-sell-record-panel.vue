@@ -4,10 +4,11 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, Card, DatePicker, Input, Statistic } from 'ant-design-vue';
+import { Button, DatePicker, Input } from 'ant-design-vue';
 
 import { fetchGoldSellRecordListApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
@@ -143,6 +144,10 @@ const gridOptions: VxeTableGridOptions<RecordRow> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
+const summaryItems = computed(() => [
+  { label: '授信金币合计', value: sumAddScores.value },
+]);
+
 function handleSearch() {
   void gridApi.reload();
 }
@@ -226,9 +231,7 @@ onMounted(() => {
         <Button @click="handleReset">重置</Button>
       </template>
       <template #extra>
-        <Card size="small" class="!inline-block min-w-[180px]">
-          <Statistic :value="sumAddScores" title="授信金币合计" />
-        </Card>
+        <SummaryCards :items="summaryItems" />
       </template>
     </ReportQueryCard>
 

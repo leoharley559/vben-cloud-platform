@@ -276,14 +276,15 @@ onMounted(() => {
   <OpsListPanel>
     <template #filters>
       <div v-if="canFilter" class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">会员层级</span>
         <Input
           v-model:value="filterLevelName"
           allow-clear
           placeholder="请输入"
-          style="width: 200px"
+          style="width: 260px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>会员层级</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">创建时间</span>

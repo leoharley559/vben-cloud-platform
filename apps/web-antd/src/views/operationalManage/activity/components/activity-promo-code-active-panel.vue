@@ -91,14 +91,18 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         v-model:value="filterId"
         allow-clear
         placeholder="优惠码ID"
-        style="width: 140px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>优惠码ID</template>
+      </Input>
       <Input
         v-model:value="filterName"
         allow-clear
         placeholder="优惠码名称"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>优惠码名称</template>
+      </Input>
       <DatePicker.RangePicker
         v-model:value="activeTimeRange"
         show-time

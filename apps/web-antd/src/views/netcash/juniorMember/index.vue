@@ -18,7 +18,6 @@ import {
   Result,
   Select,
   Space,
-  Statistic,
   Table,
   Tabs,
   Tag,
@@ -39,6 +38,7 @@ import {
   validateJuniorImportApi,
 } from '#/api/netcash/junior-member';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
 import { buildPlayerDetailPath } from '#/utils/player-detail-route';
@@ -486,6 +486,11 @@ const importStats = computed(() => ({
   total: importRows.value.length,
   valid: importRows.value.filter((item) => item.PlayerExists).length,
 }));
+const importSummaryItems = computed(() => [
+  { label: '导入总数', value: importStats.value.total },
+  { label: '有效', value: importStats.value.valid, valueClass: 'text-emerald-500' },
+  { label: '无效', value: importStats.value.invalid, valueClass: 'text-red-500' },
+]);
 const importColumns: Column[] = [
   { dataIndex: 'PlayerAccount', title: '游戏账号', width: 180 },
   { dataIndex: 'PackageName', title: '所属产品', width: 150 },
@@ -636,16 +641,20 @@ onMounted(async () => {
                 v-model:value="filters.LoginAccount"
                 allow-clear
                 placeholder="游戏账号"
-                style="width: 170px"
+                style="width: 220px"
                 @press-enter="searchMembers"
-              />
+              >
+                <template #addonBefore>游戏账号</template>
+              </Input>
               <Input
                 v-model:value="filters.Promoter"
                 allow-clear
                 placeholder="归属代理"
-                style="width: 170px"
+                style="width: 220px"
                 @press-enter="searchMembers"
-              />
+              >
+                <template #addonBefore>归属代理</template>
+              </Input>
               <Select
                 v-model:value="filters.PackageId"
                 allow-clear
@@ -792,9 +801,11 @@ onMounted(async () => {
               v-model:value="recordFilters.LoginAccount"
               allow-clear
               placeholder="游戏账号"
-              style="width: 180px"
+              style="width: 220px"
               @press-enter="loadRecords"
-            />
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
             <Select
               v-model:value="recordFilters.PackageId"
               allow-clear
@@ -918,19 +929,7 @@ onMounted(async () => {
         <Button @click="downloadTemplate">下载模板</Button>
         <span class="text-gray-500">最多 1000 条，文件不超过 1MB</span>
       </Space>
-      <div class="mb-4 grid grid-cols-3 gap-3">
-        <Statistic title="导入总数" :value="importStats.total" />
-        <Statistic
-          title="有效"
-          :value="importStats.valid"
-          :value-style="{ color: '#3f8600' }"
-        />
-        <Statistic
-          title="无效"
-          :value="importStats.invalid"
-          :value-style="{ color: '#cf1322' }"
-        />
-      </div>
+      <SummaryCards :items="importSummaryItems" />
       <Table
         class="mb-4"
         :columns="importColumns"

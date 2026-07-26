@@ -325,8 +325,10 @@ function statusMeta(value?: number | string) {
           v-model:value="filterLoginAccount"
           allow-clear
           placeholder="玩家账号"
-          style="width: 140px"
-        />
+          style="width: 220px"
+        >
+          <template #addonBefore>玩家账号</template>
+        </Input>
         <Select
           v-model:value="filterVipLevel"
           allow-clear
@@ -360,8 +362,10 @@ function statusMeta(value?: number | string) {
           v-model:value="filterActivityName"
           allow-clear
           placeholder="活动名称"
-          style="width: 140px"
-        />
+          style="width: 220px"
+        >
+          <template #addonBefore>活动名称</template>
+        </Input>
         <Select
           v-model:value="filterStatus"
           allow-clear

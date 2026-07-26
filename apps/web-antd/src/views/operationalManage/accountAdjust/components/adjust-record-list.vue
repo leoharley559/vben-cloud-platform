@@ -20,6 +20,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import {
@@ -56,6 +57,13 @@ const canExport = computed(() => checkPermission(10098));
 const defaultRange = getYesterdayRangeSeconds();
 const totalAmount = ref(0);
 const exportLoading = ref(false);
+
+const summaryItems = computed(() => [
+  {
+    label: '调整合计',
+    value: formatAmountFromCent(totalAmount.value),
+  },
+]);
 
 const filterOrderId = ref('');
 const filterLoginAccount = ref('');
@@ -519,9 +527,7 @@ onMounted(() => {
       </Button>
     </div>
 
-    <div class="mb-2 text-sm text-gray-600">
-      调整合计：{{ formatAmountFromCent(totalAmount) }}
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #adminUserName="{ row }">

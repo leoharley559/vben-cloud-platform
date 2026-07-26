@@ -136,10 +136,18 @@ onMounted(() => canView.value && gridApi.reload());
 <template>
   <div v-if="canView">
     <div class="mb-3 flex flex-wrap items-center gap-2">
-      <Input v-model:value="username" allow-clear placeholder="代理账号" style="width: 180px" />
-      <Input v-model:value="email" allow-clear placeholder="申请邮箱" style="width: 180px" />
-      <Input v-model:value="regIp" allow-clear placeholder="注册 IP" style="width: 160px" />
-      <Input v-model:value="mobile" allow-clear placeholder="手机号" style="width: 160px" />
+      <Input v-model:value="username" allow-clear placeholder="代理账号" style="width: 220px">
+        <template #addonBefore>代理账号</template>
+      </Input>
+      <Input v-model:value="email" allow-clear placeholder="申请邮箱" style="width: 220px">
+        <template #addonBefore>申请邮箱</template>
+      </Input>
+      <Input v-model:value="regIp" allow-clear placeholder="注册 IP" style="width: 210px">
+        <template #addonBefore>注册 IP</template>
+      </Input>
+      <Input v-model:value="mobile" allow-clear placeholder="手机号" style="width: 210px">
+        <template #addonBefore>手机号</template>
+      </Input>
       <Select
         v-model:value="approve"
         allow-clear

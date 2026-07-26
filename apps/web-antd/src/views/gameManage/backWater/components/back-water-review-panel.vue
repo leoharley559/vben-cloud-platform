@@ -551,12 +551,17 @@ onMounted(async () => {
 
     <div class="query-panel">
       <div class="query-grid">
-        <Input v-model:value="filters.OrderId" allow-clear placeholder="订单号" />
+        <Input v-model:value="filters.OrderId" allow-clear placeholder="订单号" style="width: 220px">
+          <template #addonBefore>订单号</template>
+        </Input>
         <Input
           v-model:value="filters.LoginAccount"
           allow-clear
           placeholder="游戏账号"
-        />
+          style="width: 220px"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
         <Select v-model:value="filters.VipLevel" :options="vipOptions" />
         <Select
           v-if="mode === 'system'"
@@ -568,7 +573,10 @@ onMounted(async () => {
           v-model:value="filters.AdminName"
           allow-clear
           placeholder="代理账号"
-        />
+          style="width: 220px"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
         <Select
           v-model:value="filters.PackId"
           :options="packageOptionsList"

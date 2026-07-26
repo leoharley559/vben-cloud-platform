@@ -4,10 +4,11 @@ import type { CloudListResult } from '#/types/operation-manage';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Input, Select, Statistic } from 'ant-design-vue';
+import { Button, DatePicker, Input, Select } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -181,6 +182,15 @@ function readSummaryValue(field: string) {
   return 0;
 }
 
+const summaryCards = computed(() =>
+  (props.config.summaryItems || []).map((item) => ({
+    label: item.title,
+    value: item.amount
+      ? formatAmountFromCent(Number(readSummaryValue(item.field) || 0))
+      : Number(readSummaryValue(item.field) || 0),
+  })),
+);
+
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: props.config.columns.map((column) => ({
     field: column.field,
@@ -245,15 +255,19 @@ defineExpose({ reload: () => gridApi.reload() });
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Input
         v-if="enabledFilters.has('username')"
         v-model:value="filterUsername"
         allow-clear
         placeholder="账号"
-        style="width: 180px"
-      />
+        style="width: 230px"
+      >
+        <template #addonBefore>账号</template>
+      </Input>
       <Select
         v-if="enabledFilters.has('package')"
         v-model:value="filterPackageId"
@@ -281,25 +295,7 @@ defineExpose({ reload: () => gridApi.reload() });
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
 
-    <div
-      v-if="config.summaryItems?.length"
-      class="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4"
-    >
-      <div
-        v-for="item in config.summaryItems"
-        :key="item.field"
-        class="rounded border px-3 py-2"
-      >
-        <Statistic
-          :title="item.title"
-          :value="
-            item.amount
-              ? formatAmountFromCent(Number(readSummaryValue(item.field) || 0))
-              : Number(readSummaryValue(item.field) || 0)
-          "
-        />
-      </div>
-    </div>
+    <SummaryCards :items="summaryCards" />
 
     <Grid>
       <template

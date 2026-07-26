@@ -127,14 +127,15 @@ function handleReset() {
   <OpsListPanel>
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">游戏账号</span>
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
           placeholder="请输入"
-          style="width: 160px"
+          style="width: 240px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">产品</span>
@@ -147,14 +148,15 @@ function handleReset() {
         />
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">手机号</span>
         <Input
           v-model:value="filterPhoneNum"
           allow-clear
           placeholder="请输入"
-          style="width: 180px"
+          style="width: 250px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>手机号</template>
+        </Input>
       </div>
       <Button :loading="loading" type="primary" @click="handleSearch">
         查询

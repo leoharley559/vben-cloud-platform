@@ -68,14 +68,15 @@ function handleReset() {
   >
     <div class="mb-4 flex flex-wrap items-end gap-2">
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">游戏账号</span>
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          class="w-48"
+          class="w-64"
           placeholder="请输入"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-sm text-gray-500">产品</span>

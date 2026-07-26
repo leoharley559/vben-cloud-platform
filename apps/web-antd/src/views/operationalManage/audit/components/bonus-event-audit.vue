@@ -23,6 +23,7 @@ import {
 } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
@@ -63,6 +64,14 @@ const rejectOpen = ref(false);
 const rejectRow = ref<BonusAuditListItem | null>(null);
 const exportLoading = ref(false);
 const totalAmount = ref(0);
+
+const summaryItems = computed(() => [
+  {
+    label: '金额总计',
+    value: formatAmountFromCent(totalAmount.value),
+    valueClass: 'font-medium text-gray-900',
+  },
+]);
 
 const filterLoginAccount = ref('');
 const filterPackageName = ref('');
@@ -586,12 +595,7 @@ onMounted(() => {
       </Button>
     </div>
 
-    <div class="mb-3 text-sm text-gray-600">
-      金额总计：
-      <span class="font-medium text-gray-900">
-        {{ formatAmountFromCent(totalAmount) }}
-      </span>
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #approve="{ row }">

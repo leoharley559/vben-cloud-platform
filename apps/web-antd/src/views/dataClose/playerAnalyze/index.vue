@@ -516,10 +516,12 @@ onMounted(() => {
         v-model:value="filters.LoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 180px"
+        style="width: 220px"
         @blur="normalizeLoginAccount"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Select
         v-model:value="filters.RegisterOrLogin"
         :options="REGISTER_OR_LOGIN_OPTIONS"

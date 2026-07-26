@@ -292,13 +292,14 @@ function handlePreview(path?: string) {
           />
         </div>
         <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">联赛名称</span>
           <Input
             v-model:value="filterLeagueShortName"
             allow-clear
             placeholder="请输入联赛名称"
-            style="width: 220px"
-          />
+            style="width: 260px"
+          >
+            <template #addonBefore>联赛名称</template>
+          </Input>
         </div>
         <div class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">时间</span>

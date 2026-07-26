@@ -129,7 +129,9 @@ onMounted(() => canView.value && gridApi.reload());
 <template>
   <div v-if="canView">
     <div class="mb-4 flex flex-wrap items-center gap-2">
-      <Input v-model:value="developerName" allow-clear placeholder="发展人名称" style="width: 220px" />
+      <Input v-model:value="developerName" allow-clear placeholder="发展人名称" style="width: 250px">
+        <template #addonBefore>发展人名称</template>
+      </Input>
       <DatePicker.RangePicker v-model:value="dateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="reset">重置</Button>

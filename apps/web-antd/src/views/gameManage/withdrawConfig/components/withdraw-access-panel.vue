@@ -399,16 +399,15 @@ onMounted(() => {
         <div class="flex flex-col gap-3">
           <Card size="small" title="查询条件">
             <Space wrap>
-              <div class="flex flex-col gap-1">
-                <span class="text-xs text-gray-500">游戏账号</span>
-                <Input
-                  v-model:value="playerId"
-                  allow-clear
-                  placeholder="请输入游戏账号"
-                  style="width: 180px"
-                  @press-enter="searchDetail"
-                />
-              </div>
+              <Input
+                v-model:value="playerId"
+                allow-clear
+                placeholder="请输入游戏账号"
+                style="width: 230px"
+                @press-enter="searchDetail"
+              >
+                <template #addonBefore>游戏账号</template>
+              </Input>
               <div class="flex flex-col gap-1">
                 <span class="text-xs text-gray-500">访问页面</span>
                 <Select

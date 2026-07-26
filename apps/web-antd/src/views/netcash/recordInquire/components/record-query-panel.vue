@@ -4,10 +4,11 @@ import type { RecordQueryBaseQuery, RecordQueryListResult } from '#/types/netcas
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, DatePicker, Input, message, Select, Space, Statistic } from 'ant-design-vue';
+import { Button, DatePicker, Input, message, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 
 type QueryKind = 'bonus' | 'standard' | 'transaction';
@@ -139,6 +140,13 @@ const walletOptions = [
   { label: '代客钱包', value: 3 },
 ];
 const money = (v: unknown) => (Number(v || 0) / 100).toFixed(2);
+
+const summaryCards = computed(() =>
+  (props.config.summaryItems || []).map((item) => ({
+    label: item.title,
+    value: money(summaries[item.field]),
+  })),
+);
 
 function cleanLoginAccount() {
   query.LoginAccount = String(query.LoginAccount || '')
@@ -365,17 +373,29 @@ onMounted(() => {
   <div>
     <Space class="mb-4 flex flex-wrap" wrap>
       <template v-if="kind === 'standard'">
-        <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" style="width: 180px" @press-enter="search" />
-        <Input v-model:value="query.LoginAccount" allow-clear placeholder="游戏账号" style="width: 180px" @blur="cleanLoginAccount" @press-enter="search" />
+        <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" style="width: 220px" @press-enter="search">
+          <template #addonBefore>代理账号</template>
+        </Input>
+        <Input v-model:value="query.LoginAccount" allow-clear placeholder="游戏账号" style="width: 220px" @blur="cleanLoginAccount" @press-enter="search">
+          <template #addonBefore>游戏账号</template>
+        </Input>
         <Select v-model:value="query.PackageId" allow-clear :options="packages" placeholder="所属产品" style="width: 160px" />
         <Select v-if="config.showDataType" v-model:value="query.DataSearchType" :options="dataTypes" placeholder="数据类型" style="width: 130px" />
       </template>
 
       <template v-else-if="kind === 'bonus'">
-        <Input v-model:value="query.LoginAccount" allow-clear placeholder="游戏账号" style="width: 180px" @blur="cleanLoginAccount" @press-enter="search" />
-        <Input v-model:value="query.OrderId" allow-clear placeholder="订单号" style="width: 180px" @press-enter="search" />
-        <Input v-model:value="query.Username" allow-clear placeholder="代理账号" style="width: 180px" @press-enter="search" />
-        <Input v-model:value="query.BonusTitle" allow-clear placeholder="红利标题" style="width: 180px" @press-enter="search" />
+        <Input v-model:value="query.LoginAccount" allow-clear placeholder="游戏账号" style="width: 220px" @blur="cleanLoginAccount" @press-enter="search">
+          <template #addonBefore>游戏账号</template>
+        </Input>
+        <Input v-model:value="query.OrderId" allow-clear placeholder="订单号" style="width: 220px" @press-enter="search">
+          <template #addonBefore>订单号</template>
+        </Input>
+        <Input v-model:value="query.Username" allow-clear placeholder="代理账号" style="width: 220px" @press-enter="search">
+          <template #addonBefore>代理账号</template>
+        </Input>
+        <Input v-model:value="query.BonusTitle" allow-clear placeholder="红利标题" style="width: 220px" @press-enter="search">
+          <template #addonBefore>红利标题</template>
+        </Input>
         <Input v-model:value="query.OperatorAccount" allow-clear placeholder="申请人/审核人" style="width: 180px">
           <template #addonBefore>
             <Select v-model:value="query.OperatorAccountType" :options="[{ label: '申请人', value: 1 }, { label: '审核人', value: 2 }]" style="width: 100px" />
@@ -395,7 +415,9 @@ onMounted(() => {
       </template>
 
       <template v-else>
-        <Input v-model:value="query.AdminAccount" allow-clear placeholder="代理账号" style="width: 180px" @press-enter="search" />
+        <Input v-model:value="query.AdminAccount" allow-clear placeholder="代理账号" style="width: 220px" @press-enter="search">
+          <template #addonBefore>代理账号</template>
+        </Input>
         <Select v-model:value="query.WalletType" :options="walletOptions" placeholder="钱包类型" style="width: 140px" />
         <Select v-model:value="query.TransferType" :options="config.transferTypeOptions" placeholder="账变类型" style="width: 170px" />
       </template>
@@ -410,9 +432,7 @@ onMounted(() => {
       <Button @click="reset">重置</Button>
       <Button v-if="config.exportPermission" :loading="exporting" type="primary" ghost @click="exportExcel">导出 Excel</Button>
     </Space>
-    <div v-if="config.summaryItems?.length" class="mb-4 flex flex-wrap gap-8 rounded bg-gray-50 px-4 py-3">
-      <Statistic v-for="item in config.summaryItems" :key="item.field" :title="item.title" :value="money(summaries[item.field])" />
-    </div>
+    <SummaryCards :items="summaryCards" />
     <Grid>
       <template
         v-for="column in config.columns.filter((item) => item.slot)"

@@ -259,16 +259,20 @@ defineExpose({ reload: () => gridApi.reload() });
         v-model:value="filterKeyword"
         allow-clear
         :placeholder="kind === 'ip' ? 'IP地址' : '设备标识'"
-        style="width: 180px"
+        style="width: 240px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>{{ kind === 'ip' ? 'IP地址' : '设备标识' }}</template>
+      </Input>
       <Input
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 180px"
+        style="width: 260px"
         @press-enter="handleSearch"
-      />
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <DatePicker.RangePicker v-model:value="filterDateRange" />
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="resetFilters">重置</Button>

@@ -349,8 +349,11 @@ defineExpose({ buildConfig });
           v-model:value="query.GameName"
           allow-clear
           placeholder="输入游戏名称"
+          style="width: 240px"
           @press-enter="searchGames"
-        />
+        >
+          <template #addonBefore>游戏名称</template>
+        </Input>
         <Select
           v-model:value="query.Category"
           :options="categoryOptions"

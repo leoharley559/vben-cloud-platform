@@ -263,14 +263,15 @@ async function handleExport(payload: Record<string, unknown>) {
   <OpsListPanel>
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">游戏账号</span>
         <Input
           v-model:value="filterPlayerId"
           allow-clear
           placeholder="请输入"
-          style="width: 180px"
+          style="width: 260px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">访问页面</span>

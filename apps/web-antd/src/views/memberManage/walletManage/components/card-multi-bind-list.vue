@@ -152,14 +152,15 @@ onMounted(() => {
   <OpsListPanel v-if="canView">
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">账号</span>
         <Input
           v-model:value="filterBankAccount"
           allow-clear
           placeholder="请输入"
-          style="width: 200px"
+          style="width: 250px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>账号</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">添加时间</span>

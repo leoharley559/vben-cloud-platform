@@ -334,8 +334,10 @@ onMounted(() => {
         v-model:value="filterProductName"
         allow-clear
         placeholder="商品名称"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>商品名称</template>
+      </Input>
       <Select
         v-model:value="filterProductType"
         allow-clear
@@ -359,14 +361,18 @@ onMounted(() => {
         v-model:value="filterOrderId"
         allow-clear
         placeholder="订单编号"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>订单编号</template>
+      </Input>
       <Input
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 150px"
-      />
+        style="width: 230px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <ChannelSelect v-model:value="filterChannelIds" style="width: 200px" />
       <Select
         v-model:value="filterPackageId"

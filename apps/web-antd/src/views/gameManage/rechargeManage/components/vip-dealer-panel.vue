@@ -765,9 +765,11 @@ onMounted(() => {
           v-model:value="query.Keyword"
           allow-clear
           placeholder="账号 / 客服名称"
-          style="width: 220px"
+          style="width: 260px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>关键词</template>
+        </Input>
         <Select
           v-model:value="query.Status"
           allow-clear

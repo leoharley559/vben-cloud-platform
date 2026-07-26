@@ -194,14 +194,18 @@ async function handleExport(payload: Record<string, unknown>) {
           v-model:value="filterOrderId"
           allow-clear
           placeholder="订单编号"
-          style="width: 140px"
-        />
+          style="width: 230px"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
           placeholder="游戏账号"
-          style="width: 140px"
-        />
+          style="width: 220px"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
         <Select
           v-model:value="filterVipLevel"
           allow-clear

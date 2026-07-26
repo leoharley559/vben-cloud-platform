@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
@@ -12,6 +12,7 @@ import {
 } from 'ant-design-vue';
 
 import { getCreditLimitApplyRecordListApi } from '#/api/netcash/credit-limit';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { CREDIT_APPROVE_STATUS_MAP } from '#/utils/netcash';
 
 import {
@@ -64,6 +65,10 @@ const columns = [
   { dataIndex: 'Status', key: 'Status', title: '状态' },
 ];
 
+const summaryItems = computed(() => [
+  { label: '调整金额合计', value: amount(totalAmount.value) },
+]);
+
 function buildQuery() {
   return {
     ...query,
@@ -115,19 +120,25 @@ onMounted(load);
 <template>
   <div>
     <Space class="mb-4" wrap>
-      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" />
+      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="代理类型" style="width: 150px" />
       <Select v-model:value="query.TransferType" :options="transferTypeOptions" placeholder="申请类型" style="width: 150px" />
-      <Input v-model:value="query.ApplyAccount" allow-clear placeholder="申请人" />
+      <Input v-model:value="query.ApplyAccount" allow-clear placeholder="申请人" style="width: 210px">
+        <template #addonBefore>申请人</template>
+      </Input>
       <DatePicker.RangePicker v-model:value="applyRange" />
-      <Input v-model:value="query.FinishAccount" allow-clear placeholder="审核人" />
+      <Input v-model:value="query.FinishAccount" allow-clear placeholder="审核人" style="width: 210px">
+        <template #addonBefore>审核人</template>
+      </Input>
       <Select v-model:value="query.Status" :options="statusOptions" placeholder="审核结果" style="width: 150px" />
       <DatePicker.RangePicker v-model:value="finishRange" />
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
     </Space>
 
-    <div class="mb-3 rounded bg-gray-50 px-4 py-3 text-sm">调整金额合计：{{ amount(totalAmount) }}</div>
+    <SummaryCards :items="summaryItems" />
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1850 }" size="small">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>

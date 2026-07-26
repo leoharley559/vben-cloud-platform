@@ -222,6 +222,10 @@ function toVbenRoute(
       hideInMenu: node.hidden,
       icon: resolveMenuIcon(node.name, node.path),
       keepAlive: node.keepAlive,
+      // 详情页 query（时间、姓名）不参与 tab key，避免同代理反复开页触发 DOM 冲突
+      ...(path.includes('agencyAccountDetails') || path.includes('playerDetails')
+        ? { fullPathKey: false }
+        : {}),
       originalPath: path,
       title: translateMenuTitle(node.name),
     },

@@ -7,13 +7,11 @@ import { computed, reactive, ref } from 'vue';
 
 import {
   Button,
-  Card,
   DatePicker,
   InputNumber,
   message,
   Modal,
   Space,
-  Statistic,
   Switch,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -26,6 +24,7 @@ import {
   fetchSmsOverviewApi,
   updateSmsAutoBuyApi,
 } from '#/api/gameManage/message-manage';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
@@ -53,11 +52,44 @@ const dateRange = ref<[Dayjs, Dayjs]>([
   dayjs().endOf('day'),
 ]);
 const autoBuy = ref(false);
-const summaryLoading = ref(false);
 const buyVisible = ref(false);
 const saving = ref(false);
 const buyNumber = ref(10_000);
 const buyCost = computed(() => Number((buyNumber.value * 0.018).toFixed(2)));
+
+const overviewSummaryItems = computed(() => {
+  const items: Array<{ label: string; value: number | string }> = [];
+  if (canSummary.value) {
+    items.push(
+      {
+        label: '短信剩余数量',
+        value: Number(summary.ShortMessage || 0),
+      },
+      {
+        label: '今日消耗',
+        value: Number(summary.TodayConsume || 0),
+      },
+    );
+  }
+  if (canBuy.value) {
+    items.push({
+      label: '购买费率',
+      value: '180 云币 / 10,000 条',
+    });
+  }
+  return items;
+});
+
+const dailySummaryItems = computed(() => [
+  {
+    label: '购买总数',
+    value: Number(dailyTotal.TotalBuyTimes || 0),
+  },
+  {
+    label: '消耗总数',
+    value: Number(dailyTotal.TotalConsume || 0),
+  },
+]);
 
 const gridOptions: VxeTableGridOptions<DailyRow> = {
   columns: [
@@ -102,14 +134,9 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 async function loadSummary() {
   if (!canSummary.value && !canBuy.value) return;
-  summaryLoading.value = true;
-  try {
-    const result = await fetchSmsOverviewApi();
-    Object.assign(summary, result);
-    autoBuy.value = Number(result.IsAutoBuy) === 1;
-  } finally {
-    summaryLoading.value = false;
-  }
+  const result = await fetchSmsOverviewApi();
+  Object.assign(summary, result);
+  autoBuy.value = Number(result.IsAutoBuy) === 1;
 }
 
 function search() {
@@ -177,23 +204,17 @@ void loadSummary();
 
 <template>
   <div>
-    <div v-if="canSummary || canBuy" class="summary-grid">
-      <Card v-if="canSummary" :loading="summaryLoading" class="summary-card">
-        <Statistic
-          title="短信剩余数量"
-          :value="Number(summary.ShortMessage || 0)"
-        />
-        <div class="mt-3 flex gap-6 text-xs text-gray-400">
-          <span>本月赠送：{{ summary.MonthGift || 0 }}</span>
-          <span>本月购买：{{ summary.MonthBuy || 0 }}</span>
-        </div>
-      </Card>
-      <Card v-if="canSummary" :loading="summaryLoading" class="summary-card">
-        <Statistic title="今日消耗" :value="Number(summary.TodayConsume || 0)" />
-      </Card>
-      <Card v-if="canBuy" class="summary-card">
-        <Statistic title="购买费率" value="180 云币 / 10,000 条" />
-        <Space class="mt-3">
+    <div v-if="canSummary || canBuy" class="mb-4">
+      <SummaryCards :items="overviewSummaryItems" />
+      <div
+        v-if="canSummary"
+        class="mt-2 flex gap-6 text-xs text-gray-400"
+      >
+        <span>本月赠送：{{ summary.MonthGift || 0 }}</span>
+        <span>本月购买：{{ summary.MonthBuy || 0 }}</span>
+      </div>
+      <div v-if="canBuy" class="mt-3">
+        <Space>
           <Button type="primary" @click="openBuy">购买短信</Button>
           <span v-if="canAutoBuy">
             自动购买
@@ -204,7 +225,7 @@ void loadSummary();
             />
           </span>
         </Space>
-      </Card>
+      </div>
     </div>
 
     <template v-if="canDaily">
@@ -215,16 +236,7 @@ void loadSummary();
           <Button @click="reset">重置</Button>
         </Space>
       </div>
-      <div class="daily-total">
-        <Statistic
-          title="购买总数"
-          :value="Number(dailyTotal.TotalBuyTimes || 0)"
-        />
-        <Statistic
-          title="消耗总数"
-          :value="Number(dailyTotal.TotalConsume || 0)"
-        />
-      </div>
+      <SummaryCards :items="dailySummaryItems" />
       <div v-if="canDailyList" class="data-grid"><Grid /></div>
     </template>
 
@@ -264,18 +276,6 @@ void loadSummary();
 </template>
 
 <style scoped>
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 18px;
-}
-
-.summary-card {
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
 .query-panel {
   display: flex;
   align-items: center;
@@ -288,16 +288,6 @@ void loadSummary();
   border-radius: 10px;
 }
 
-.daily-total {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 240px));
-  gap: 14px;
-  padding: 14px 18px;
-  margin-bottom: 14px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
 .data-grid {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
@@ -305,10 +295,6 @@ void loadSummary();
 }
 
 @media (max-width: 800px) {
-  .summary-grid {
-    grid-template-columns: 1fr;
-  }
-
   .query-panel {
     align-items: stretch;
     flex-direction: column;

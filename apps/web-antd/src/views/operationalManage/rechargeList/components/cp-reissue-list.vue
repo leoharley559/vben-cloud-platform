@@ -227,20 +227,26 @@ onMounted(() => {
         v-model:value="filterOrderId"
         allow-clear
         placeholder="订单编号"
-        style="width: 200px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>订单编号</template>
+      </Input>
       <Input
         v-model:value="filterPlayerId"
         allow-clear
         placeholder="玩家ID"
-        style="width: 140px"
-      />
+        style="width: 210px"
+      >
+        <template #addonBefore>玩家ID</template>
+      </Input>
       <Input
         v-model:value="filterGameOrderId"
         allow-clear
         placeholder="游戏订单号"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>游戏订单号</template>
+      </Input>
       <Select
         v-model:value="filterPackageId"
         :options="

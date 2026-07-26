@@ -186,8 +186,10 @@ function handleTableChange(pagination: {
         v-model:value="filterAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 160px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Select
         v-model:value="filterPackageId"
         :field-names="{ label: 'PackageName', value: 'PackageId' }"
@@ -203,8 +205,10 @@ function handleTableChange(pagination: {
         v-model:value="filterChannelId"
         allow-clear
         placeholder="渠道 ID"
-        style="width: 140px"
-      />
+        style="width: 210px"
+      >
+        <template #addonBefore>渠道ID</template>
+      </Input>
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询

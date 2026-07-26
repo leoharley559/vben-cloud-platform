@@ -32,6 +32,14 @@ export const AGENCY_SEND_COMMISSION_TYPE_MAP: Record<number, string> = {
   2: '系统发放全部代理',
 };
 
+/** 代理备注操作类型（对齐旧站 overview statusFilter） */
+export const AGENCY_REMARK_TYPE_MAP: Record<number, string> = {
+  1: '新增',
+  2: '编辑',
+  3: '启用',
+  4: '停用',
+};
+
 export const SPILL_STATUS_MAP: Record<number, string> = {
   1: '申请中',
   2: '已通过',

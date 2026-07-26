@@ -17,7 +17,6 @@ import {
   Result,
   Select,
   Space,
-  Statistic,
   Tag,
   message,
 } from 'ant-design-vue';
@@ -28,6 +27,7 @@ import {
   fetchSpillManageListApi,
 } from '#/api/netcash/spill-manage';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -240,6 +240,10 @@ async function submitAudit() {
   }
 }
 
+const summaryItems = computed(() => [
+  { label: '申请数量', value: applyTotal.value },
+]);
+
 onMounted(() => {
   if (canViewPage.value) {
     gridApi.query();
@@ -260,16 +264,20 @@ onMounted(() => {
           v-model:value="filterLoginAccount"
           allow-clear
           placeholder="游戏账号"
-          style="width: 200px"
+          style="width: 230px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
         <Input
           v-model:value="filterAccount"
           allow-clear
           placeholder="申请代理"
-          style="width: 200px"
+          style="width: 230px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>申请代理</template>
+        </Input>
         <Select
           v-model:value="filterPackageId"
           allow-clear
@@ -300,7 +308,7 @@ onMounted(() => {
         <Button @click="resetQuery">重置</Button>
       </div>
 
-      <Statistic class="mb-4" title="申请数量" :value="applyTotal" />
+      <SummaryCards :items="summaryItems" />
 
       <Grid>
         <template #loginAccount="{ row }">

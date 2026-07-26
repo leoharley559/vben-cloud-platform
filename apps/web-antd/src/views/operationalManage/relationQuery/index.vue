@@ -19,7 +19,6 @@ import {
   Radio,
   Result,
   Select,
-  Statistic,
   message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -31,6 +30,7 @@ import {
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -54,6 +54,11 @@ const canViewPage = computed(() => checkPermission(10023));
  */
 const defaultRange = getTodayRangeSeconds();
 const totalData = ref<RelationQueryTotal>({});
+const summaryItems = computed(() => [
+  { label: '游戏账号总计', value: totalData.value.PlayerCount || 0 },
+  { label: 'IP总计', value: totalData.value.IpCount || 0 },
+  { label: '设备号总计', value: totalData.value.DeviceIdCount || 0 },
+]);
 const totalCount = ref(0);
 const tableRows = ref<RelationQueryItem[]>([]);
 const exportLoading = ref(false);
@@ -293,17 +298,18 @@ onMounted(() => {
       <OpsListPanel>
         <template #filters>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">游戏账号</span>
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
               placeholder="请输入"
-              style="width: 180px"
+              style="width: 260px"
               @press-enter="handleSearch"
               @blur="
                 filterLoginAccount = normalizeLoginAccount(filterLoginAccount)
               "
-            />
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">所属产品</span>
@@ -316,31 +322,34 @@ onMounted(() => {
             />
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">上级代理</span>
             <Input
               v-model:value="filterInviterLoginAccount"
               allow-clear
               placeholder="请输入"
-              style="width: 160px"
-            />
+              style="width: 240px"
+            >
+              <template #addonBefore>上级代理</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">设备号</span>
             <Input
               v-model:value="filterDeviceId"
               allow-clear
               placeholder="请输入"
-              style="width: 180px"
-            />
+              style="width: 250px"
+            >
+              <template #addonBefore>设备号</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">登录IP</span>
             <Input
               v-model:value="filterLoginIp"
               allow-clear
               placeholder="请输入"
-              style="width: 150px"
-            />
+              style="width: 220px"
+            >
+              <template #addonBefore>登录IP</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">渠道查询</span>
@@ -368,22 +377,24 @@ onMounted(() => {
             </div>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">登录地址</span>
             <Input
               v-model:value="filterLoginAddress"
               allow-clear
               placeholder="请输入"
-              style="width: 160px"
-            />
+              style="width: 240px"
+            >
+              <template #addonBefore>登录地址</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">登录设备</span>
             <Input
               v-model:value="filterLoginPlatform"
               allow-clear
               placeholder="请输入"
-              style="width: 140px"
-            />
+              style="width: 220px"
+            >
+              <template #addonBefore>登录设备</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">登录时间</span>
@@ -399,9 +410,7 @@ onMounted(() => {
         </template>
 
         <template #summary>
-          <Statistic title="游戏账号总计" :value="totalData.PlayerCount || 0" />
-          <Statistic title="IP总计" :value="totalData.IpCount || 0" />
-          <Statistic title="设备号总计" :value="totalData.DeviceIdCount || 0" />
+          <SummaryCards :items="summaryItems" />
         </template>
 
         <Grid>

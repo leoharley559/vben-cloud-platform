@@ -558,17 +558,19 @@ onMounted(() => {
         <Input
           v-model:value="query.Username"
           allow-clear
-          addon-before="账号用户名"
           placeholder="请输入"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>账号用户名</template>
+        </Input>
         <Input
           v-model:value="query.Name"
           allow-clear
-          addon-before="账号名称"
           placeholder="请输入"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>账号名称</template>
+        </Input>
         <Select
           v-model:value="query.Status"
           allow-clear

@@ -22,6 +22,7 @@ import {
   rejectCreditLimitApi,
 } from '#/api/netcash/credit-limit';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { createRequestHash } from '#/utils/crypto';
@@ -70,6 +71,10 @@ const columns = [
   { dataIndex: 'ApplyNote', key: 'ApplyNote', title: '申请备注' },
   { key: 'actions', title: '操作', width: 140 },
 ];
+
+const summaryItems = computed(() => [
+  { label: '申请金额合计', value: amount(totalAmount.value) },
+]);
 
 function canReview(row: Row) {
   return !isSameAcctActionRestricted(
@@ -191,10 +196,14 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
     <Space class="mb-4" wrap>
       <Tag color="blue">平台可用额度：{{ amount(platformCredit) }}</Tag>
       <Button @click="loadPlatformCredit">刷新额度</Button>
-      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" />
+      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="代理类型" style="width: 150px" />
       <Select v-model:value="query.TransferType" :options="transferTypeOptions" placeholder="申请类型" style="width: 150px" />
-      <Input v-model:value="query.ApplyAccount" allow-clear placeholder="申请人" />
+      <Input v-model:value="query.ApplyAccount" allow-clear placeholder="申请人" style="width: 210px">
+        <template #addonBefore>申请人</template>
+      </Input>
       <DatePicker.RangePicker v-model:value="applyRange" />
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
@@ -202,7 +211,7 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
       <Button v-if="canReject" :disabled="selectedKeys.length === 0" danger @click="batchReview(false)">批量拒绝</Button>
     </Space>
 
-    <div class="mb-3 rounded bg-gray-50 px-4 py-3 text-sm">申请金额合计：{{ amount(totalAmount) }}</div>
+    <SummaryCards :items="summaryItems" />
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" :row-selection="canApprove || canReject ? rowSelection : undefined" row-key="Id" :scroll="{ x: 1350 }" size="small">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>

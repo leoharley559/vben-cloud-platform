@@ -310,19 +310,23 @@ onMounted(() => {
         v-model:value="filterActivityId"
         allow-clear
         placeholder="活动ID"
-        style="width: 120px"
-      />
+        style="width: 200px"
+      >
+        <template #addonBefore>活动ID</template>
+      </Input>
       <Input
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 160px"
+        style="width: 240px"
         @change="
           filterLoginAccount = String(filterLoginAccount || '')
             .trim()
             .toLowerCase()
         "
-      />
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Select
         v-model:value="filterStatus"
         class="w-28"

@@ -22,7 +22,6 @@ import {
   Row,
   Select,
   Space,
-  Statistic,
   Table,
   Tag,
 } from 'ant-design-vue';
@@ -39,6 +38,7 @@ import {
   sendCommissionApi,
 } from '#/api/netcash/commission-manage';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useGameConfig } from '#/composables/use-game-config';
@@ -241,20 +241,20 @@ const allColumns = computed<TableColumnsType>(() => {
   return result;
 });
 
-const summaryCards = computed(() => [
+const summaryItems = computed(() => [
   {
-    title: '总输赢',
+    label: '总输赢',
     value: cent(Number(total.value.SumBetGold || 0) - Number(total.value.SumWinGold || 0)),
   },
-  { title: '平台费', value: cent(total.value.SumApiFeeTotal) },
+  { label: '平台费', value: cent(total.value.SumApiFeeTotal) },
   {
-    title: props.context === 'grant' ? '发放佣金' : '佣金总额',
+    label: props.context === 'grant' ? '发放佣金' : '佣金总额',
     value: cent(
       total.value.SumCommissionChangeAfter ??
         total.value.SumCommissionTotal,
     ),
   },
-  { title: '活跃人数', value: Number(total.value.SumActivityUserNum || 0) },
+  { label: '活跃人数', value: Number(total.value.SumActivityUserNum || 0) },
 ]);
 
 const rowSelection = computed(() =>
@@ -820,11 +820,7 @@ onMounted(async () => {
 
     <Alert v-if="context === 'grant'" class="mb-4" message="手动发放只允许发放已结束结算周期且未结算的记录。" type="warning" show-icon />
 
-    <Row :gutter="12" class="mb-4">
-      <Col v-for="card in summaryCards" :key="card.title" :lg="6" :sm="12" :xs="24">
-        <Card size="small"><Statistic :title="card.title" :value="card.value" /></Card>
-      </Col>
-    </Row>
+    <SummaryCards :items="summaryItems" />
 
     <Card size="small">
       <div class="ledger-actions">

@@ -626,51 +626,65 @@ onBeforeUnmount(() => {
           v-model:value="filters.ChannelId"
           allow-clear
           placeholder="渠道号"
-          style="width: 145px"
+          style="width: 210px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>渠道号</template>
+        </Input>
         <Input
           v-model:value="filters.ChannelName"
           allow-clear
           placeholder="渠道名称"
-          style="width: 165px"
+          style="width: 230px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>渠道名称</template>
+        </Input>
         <Input
           v-model:value="filters.PromoterAdminUserName"
           allow-clear
           placeholder="代理账号"
-          style="width: 165px"
+          style="width: 230px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
         <Input
           v-model:value="filters.PromoterAdminName"
           allow-clear
           placeholder="代理名称"
-          style="width: 165px"
+          style="width: 230px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>代理名称</template>
+        </Input>
         <Input
           v-model:value="filters.InvitationCode"
           allow-clear
           placeholder="邀请码"
-          style="width: 145px"
+          style="width: 210px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>邀请码</template>
+        </Input>
         <Input
           v-model:value="filters.NetCashDomain"
           allow-clear
           placeholder="专属 APP 域名"
-          style="width: 185px"
+          style="width: 260px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>专属 APP 域名</template>
+        </Input>
         <Input
           v-model:value="filters.NetCashH5Domain"
           allow-clear
           placeholder="专属 H5 域名"
-          style="width: 185px"
+          style="width: 260px"
           @press-enter="search"
-        />
+        >
+          <template #addonBefore>专属 H5 域名</template>
+        </Input>
         <Select
           v-model:value="filters.PushType"
           allow-clear

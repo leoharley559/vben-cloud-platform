@@ -389,7 +389,9 @@ onMounted(loadTab);
 
       <Card class="mt-4" size="small" title="按代理账号限制">
         <Space class="mb-4" wrap>
-          <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" />
+          <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
+            <template #addonBefore>代理账号</template>
+          </Input>
           <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="代理类型" style="width: 150px" />
           <DatePicker.RangePicker v-model:value="createRange" />
           <Button type="primary" @click="search">查询</Button>

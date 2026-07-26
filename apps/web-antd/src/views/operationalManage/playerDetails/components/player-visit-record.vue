@@ -232,14 +232,18 @@ onMounted(async () => {
         v-model:value="filterTitle"
         allow-clear
         placeholder="二级标题"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>二级标题</template>
+      </Input>
       <Input
         v-model:value="filterContent"
         allow-clear
         placeholder="三级内容"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>三级内容</template>
+      </Input>
       <DatePicker.RangePicker v-model:value="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询

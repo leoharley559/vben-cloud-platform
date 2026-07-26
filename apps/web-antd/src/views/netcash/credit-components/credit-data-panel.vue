@@ -16,6 +16,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 export interface CreditColumn {
@@ -205,6 +206,15 @@ const hasSummary = computed(
   () => Array.isArray(props.config.summaries) && props.config.summaries.length > 0,
 );
 
+const summaryItems = computed(() =>
+  (props.config.summaries || []).map((summary) => ({
+    label: summary.label,
+    value: summary.amount
+      ? formatAmountFromCent(Number(totalData.value[summary.field] || 0))
+      : Number(totalData.value[summary.field] || 0),
+  })),
+);
+
 function reset() {
   for (const filter of props.config.filters || []) {
     if (filter.field) {
@@ -264,18 +274,20 @@ defineExpose({
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-3">
       <template v-for="filter in config.filters || []" :key="filter.label">
-        <div class="flex flex-col gap-1">
+        <Input
+          v-if="(!filter.type || filter.type === 'input') && filter.field"
+          v-model:value="filterValues[filter.field]"
+          allow-clear
+          :placeholder="filter.placeholder || `请输入${filter.label}`"
+          style="width: 220px"
+          @press-enter="gridApi.reload()"
+        >
+          <template #addonBefore>{{ filter.label }}</template>
+        </Input>
+        <div v-else class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">{{ filter.label }}</span>
-          <Input
-            v-if="(!filter.type || filter.type === 'input') && filter.field"
-            v-model:value="filterValues[filter.field]"
-            allow-clear
-            :placeholder="filter.placeholder || `请输入${filter.label}`"
-            style="width: 180px"
-            @press-enter="gridApi.reload()"
-          />
           <Select
-            v-else-if="filter.type === 'select' && filter.field"
+            v-if="filter.type === 'select' && filter.field"
             v-model:value="filterValues[filter.field]"
             allow-clear
             :options="filter.options"
@@ -337,19 +349,7 @@ defineExpose({
       <slot name="toolbar" :reload="gridApi.reload"></slot>
     </div>
 
-    <div
-      v-if="hasSummary"
-      class="mb-3 flex flex-wrap gap-x-8 gap-y-2 rounded bg-gray-50 px-4 py-3 text-sm"
-    >
-      <span v-for="summary in config.summaries" :key="summary.field">
-        {{ summary.label }}：
-        {{
-          summary.amount
-            ? formatAmountFromCent(Number(totalData[summary.field] || 0))
-            : Number(totalData[summary.field] || 0)
-        }}
-      </span>
-    </div>
+    <SummaryCards v-if="hasSummary" :items="summaryItems" />
 
     <Grid>
       <template #loginAccount="{ row }">

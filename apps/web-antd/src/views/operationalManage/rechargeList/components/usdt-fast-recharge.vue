@@ -250,20 +250,26 @@ onMounted(() => {
         v-model:value="filterRequestAddress"
         allow-clear
         placeholder="申请地址"
-        style="width: 200px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>申请地址</template>
+      </Input>
       <Input
         v-model:value="filterChannelAddress"
         allow-clear
         placeholder="收款地址"
-        style="width: 200px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>收款地址</template>
+      </Input>
       <Input
         v-model:value="filterCheckerName"
         allow-clear
         placeholder="审核人员"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>审核人员</template>
+      </Input>
       <DatePicker.RangePicker v-model:value="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询

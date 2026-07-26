@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
@@ -22,6 +22,7 @@ import {
   getNetCashAccountListApi,
 } from '#/api/netcash/credit-limit';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { createRequestHash } from '#/utils/crypto';
 
 import {
@@ -78,6 +79,11 @@ const exportColumns = [
   { field: 'Credit', formatter: amount, title: '剩余额度（元）' },
   { field: 'CreditDue', formatter: amount, title: '代充欠款（元）' },
 ];
+
+const summaryItems = computed(() => [
+  { label: '总剩余额度', value: amount(summary.TotalCredit) },
+  { label: '总代充欠款', value: amount(summary.CreditDue) },
+]);
 
 function buildQuery(page = query.Page, pageSize = query.PageSize) {
   return {
@@ -275,7 +281,9 @@ onMounted(load);
 <template>
   <div>
     <Space class="mb-4" wrap>
-      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" />
+      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Select v-model:value="query.AccountTypes" :options="accountTypeOptions.slice(1)" mode="multiple" placeholder="代理类型" style="min-width: 220px" />
       <DatePicker.RangePicker v-model:value="agentCreateRange" />
       <InputNumber v-model:value="query.BeginCreditRange" :min="0" :precision="2" placeholder="最小额度（元）" />
@@ -288,10 +296,7 @@ onMounted(load);
       <Button v-if="checkPermission(11_754)" type="primary" @click="openAdjust()">批量调整代理</Button>
     </Space>
 
-    <div class="mb-3 flex gap-8 rounded bg-gray-50 px-4 py-3 text-sm">
-      <span>总剩余额度：{{ amount(summary.TotalCredit) }}</span>
-      <span>总代充欠款：{{ amount(summary.CreditDue) }}</span>
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="AgentAccount" :scroll="{ x: 1200 }" size="small">
       <template #bodyCell="{ column, record, index }">

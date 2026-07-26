@@ -15,6 +15,7 @@ import dayjs from 'dayjs';
 
 import { fetchPlayerGoldHandleListApi } from '#/api/operationManage/player-gold-handle';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -95,6 +96,19 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(createDefaultDateRange()
 const totalAmount = ref(0);
 const totalRealAmount = ref(0);
 const exportLoading = ref(false);
+
+const summaryItems = computed(() => [
+  {
+    label: '申请金额总计',
+    value: formatAmountFromCent(totalAmount.value),
+    valueClass: 'font-medium text-gray-900',
+  },
+  {
+    label: '实际金额总计',
+    value: formatAmountFromCent(totalRealAmount.value),
+    valueClass: 'font-medium text-gray-900',
+  },
+]);
 
 const packageSelectOptions = computed(() =>
   packageOptions.value.map((item) => ({
@@ -471,20 +485,7 @@ async function handleExport() {
       </Button>
     </div>
 
-    <div class="mb-3 flex flex-wrap gap-4 text-sm text-gray-600">
-      <span>
-        申请金额总计：
-        <span class="font-medium text-gray-900">
-          {{ formatAmountFromCent(totalAmount) }}
-        </span>
-      </span>
-      <span>
-        实际金额总计：
-        <span class="font-medium text-gray-900">
-          {{ formatAmountFromCent(totalRealAmount) }}
-        </span>
-      </span>
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #loginAccount="{ row }">

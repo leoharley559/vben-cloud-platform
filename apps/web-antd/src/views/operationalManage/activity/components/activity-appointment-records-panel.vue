@@ -127,19 +127,23 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           v-model:value="filterOrderId"
           allow-clear
           placeholder="订单号"
-          style="width: 160px"
-        />
+          style="width: 230px"
+        >
+          <template #addonBefore>订单号</template>
+        </Input>
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
           placeholder="游戏账号"
-          style="width: 160px"
+          style="width: 240px"
           @change="
             filterLoginAccount = String(filterLoginAccount || '')
               .trim()
               .toLowerCase()
           "
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
         <Select
           v-model:value="filterPackageId"
           allow-clear
@@ -151,8 +155,10 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           v-model:value="filterWithdrawOrderId"
           allow-clear
           placeholder="取款订单号"
-          style="width: 180px"
-        />
+          style="width: 260px"
+        >
+          <template #addonBefore>取款订单号</template>
+        </Input>
         <DatePicker.RangePicker
           v-model:value="withdrawTimeRange"
           :placeholder="['取款开始', '取款结束']"

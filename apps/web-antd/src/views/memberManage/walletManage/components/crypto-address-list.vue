@@ -192,24 +192,26 @@ onMounted(() => {
   <OpsListPanel v-if="canView">
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">游戏账号</span>
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
           placeholder="请输入"
-          style="width: 160px"
+          style="width: 240px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">虚拟币地址</span>
         <Input
           v-model:value="filterDigitalAddress"
           allow-clear
           placeholder="请输入"
-          style="width: 200px"
+          style="width: 260px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>虚拟币地址</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">添加时间</span>

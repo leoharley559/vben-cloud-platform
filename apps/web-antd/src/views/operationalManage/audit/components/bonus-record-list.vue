@@ -19,6 +19,7 @@ import { fetchBonusRecordListApi } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -65,6 +66,14 @@ const canExport = computed(() => checkPermission(11967));
 const defaultRange = getYesterdayRangeSeconds();
 const exportLoading = ref(false);
 const sumBonus = ref(0);
+
+const summaryItems = computed(() => [
+  {
+    label: '红利总计',
+    value: formatAmountFromCent(sumBonus.value),
+    valueClass: 'text-red-500',
+  },
+]);
 
 const filterLoginAccount = ref('');
 const filterPlayerStatus = ref(-1);
@@ -641,12 +650,7 @@ onMounted(() => {
       </Button>
     </div>
 
-    <div class="mb-3 text-sm text-gray-600">
-      红利总计：
-      <span class="font-medium text-red-500">
-        {{ formatAmountFromCent(sumBonus) }}
-      </span>
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #username="{ row }">

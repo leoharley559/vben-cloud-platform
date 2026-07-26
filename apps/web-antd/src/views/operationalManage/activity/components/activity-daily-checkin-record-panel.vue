@@ -89,14 +89,18 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         v-model:value="filterEventId"
         allow-clear
         placeholder="活动ID"
-        style="width: 140px"
-      />
+        style="width: 210px"
+      >
+        <template #addonBefore>活动ID</template>
+      </Input>
       <Input
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Select
         v-model:value="filterPackageId"
         allow-clear

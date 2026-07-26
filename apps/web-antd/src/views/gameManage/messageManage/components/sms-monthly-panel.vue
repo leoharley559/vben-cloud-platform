@@ -3,12 +3,13 @@ import type { Dayjs } from 'dayjs';
 
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 
-import { Button, DatePicker, Space, Statistic } from 'ant-design-vue';
+import { Button, DatePicker, Space } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchSmsMonthlyListApi } from '#/api/gameManage/message-manage';
+import SummaryCards from '#/components/global/summary-cards.vue';
 
 defineOptions({ name: 'SmsMonthlyPanel' });
 
@@ -21,6 +22,17 @@ interface MonthRow {
 
 const monthRange = ref<[Dayjs, Dayjs]>();
 const totals = reactive<Record<string, unknown>>({});
+
+const summaryItems = computed(() => [
+  {
+    label: '购买总数',
+    value: Number(totals.TotalBuyTimes || 0),
+  },
+  {
+    label: '消耗总数',
+    value: Number(totals.TotalConsume || 0),
+  },
+]);
 
 const gridOptions: VxeTableGridOptions<MonthRow> = {
   columns: [
@@ -83,10 +95,7 @@ function reset() {
         <Button @click="reset">重置</Button>
       </Space>
     </div>
-    <div class="totals">
-      <Statistic title="购买总数" :value="Number(totals.TotalBuyTimes || 0)" />
-      <Statistic title="消耗总数" :value="Number(totals.TotalConsume || 0)" />
-    </div>
+    <SummaryCards :items="summaryItems" />
     <div class="data-grid"><Grid /></div>
   </div>
 </template>
@@ -100,16 +109,6 @@ function reset() {
   padding: 18px;
   margin-bottom: 14px;
   background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.totals {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 240px));
-  gap: 14px;
-  padding: 14px 18px;
-  margin-bottom: 14px;
   border: 1px solid hsl(var(--border));
   border-radius: 10px;
 }

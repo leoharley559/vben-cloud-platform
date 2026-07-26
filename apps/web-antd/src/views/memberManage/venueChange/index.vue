@@ -420,24 +420,26 @@ onMounted(async () => {
       <OpsListPanel>
         <template #filters>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">游戏账号</span>
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
               placeholder="请输入"
-              style="width: 180px"
+              style="width: 260px"
               @press-enter="handleSearch"
-            />
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">流水号</span>
             <Input
               v-model:value="filterOrderId"
               allow-clear
               placeholder="请输入"
-              style="width: 180px"
+              style="width: 250px"
               @press-enter="handleSearch"
-            />
+            >
+              <template #addonBefore>流水号</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">转账类型</span>

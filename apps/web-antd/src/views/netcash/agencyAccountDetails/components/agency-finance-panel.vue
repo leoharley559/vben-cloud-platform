@@ -29,7 +29,7 @@ import {
 import { fetchDrawingsChannelSettingListApi } from '#/api/netcash/drawmoney-manage';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
-import { formatNetcashDateTime } from '#/utils/netcash';
+import { AGENCY_REMARK_TYPE_MAP, formatNetcashDateTime } from '#/utils/netcash';
 
 defineOptions({ name: 'AgencyFinancePanel' });
 const props = defineProps<{ adminId: number | string }>();
@@ -393,9 +393,9 @@ onMounted(() => {
           </template>
           <template v-else-if="column.key === 'Type'">
             {{
-              ({ 1: '新增', 2: '编辑', 3: '启用', 4: '停用' } as Record<number, string>)[
-                Number(record.Type)
-              ] || record.Type
+              AGENCY_REMARK_TYPE_MAP[Number(record.Type)] ||
+              record.Type ||
+              '-'
             }}
           </template>
         </template>

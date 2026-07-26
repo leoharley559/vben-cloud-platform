@@ -146,26 +146,34 @@ onMounted(() => {
         v-model:value="filterOrderId"
         allow-clear
         placeholder="订单编号"
-        style="width: 200px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>订单编号</template>
+      </Input>
       <Input
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Input
         v-model:value="filterGameOrderId"
         allow-clear
         placeholder="游戏订单号"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>游戏订单号</template>
+      </Input>
       <Input
         v-model:value="filterThirdOrderId"
         allow-clear
         placeholder="三方订单号"
-        style="width: 180px"
-      />
+        style="width: 260px"
+      >
+        <template #addonBefore>三方订单号</template>
+      </Input>
       <Select
         v-model:value="filterPackageId"
         :options="

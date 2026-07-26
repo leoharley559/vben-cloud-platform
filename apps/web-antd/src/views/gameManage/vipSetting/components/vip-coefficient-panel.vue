@@ -259,7 +259,10 @@ onMounted(loadData);
           v-model:value="filters.GameName"
           allow-clear
           placeholder="输入游戏名称"
-        />
+          style="width: 240px"
+        >
+          <template #addonBefore>游戏名称</template>
+        </Input>
         <Select
           v-model:value="filters.Category"
           :options="categoryOptions"

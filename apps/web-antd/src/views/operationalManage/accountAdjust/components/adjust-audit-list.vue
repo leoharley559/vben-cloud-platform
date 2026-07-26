@@ -25,6 +25,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -69,6 +70,13 @@ const rejectOpen = ref(false);
 const rejectRow = ref<PlayerAdjustListItem | null>(null);
 const totalAmount = ref(0);
 const exportLoading = ref(false);
+
+const summaryItems = computed(() => [
+  {
+    label: '调整合计',
+    value: formatAmountFromCent(totalAmount.value),
+  },
+]);
 
 const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>('');
@@ -537,9 +545,7 @@ onMounted(() => {
       </Button>
     </div>
 
-    <div class="mb-2 text-sm text-gray-600">
-      调整合计：{{ formatAmountFromCent(totalAmount) }}
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #approve="{ row }">

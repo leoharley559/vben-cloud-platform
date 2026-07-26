@@ -5,16 +5,15 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  Card,
   DatePicker,
   Result,
   Space,
-  Statistic,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchCloudCoinDetailListApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
@@ -153,6 +152,10 @@ const gridOptions: VxeTableGridOptions<DetailRow> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
+const summaryItems = computed(() => [
+  { label: '云币合计', value: Number(totalCloudCoin.value).toFixed(2) },
+]);
+
 function handleSearch() {
   gridApi.reload();
 }
@@ -186,9 +189,7 @@ onMounted(() => {
       </Space>
     </div>
 
-    <Card size="small" class="w-fit min-w-[180px]">
-      <Statistic :precision="2" :value="totalCloudCoin" title="云币合计" />
-    </Card>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #amount="{ row }">

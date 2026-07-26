@@ -14,7 +14,6 @@ import {
   message,
   Modal,
   Space,
-  Statistic,
   Switch,
   Tag,
 } from 'ant-design-vue';
@@ -27,6 +26,7 @@ import {
   sendRecallApi,
   updateRecallSwitchApi,
 } from '#/api/gameManage/message-manage';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'SmsRecallPanel' });
@@ -92,6 +92,18 @@ const detailTitle = computed(() => {
         : '首存人数')
       : '待召回人数';
   return `${metric} - ${detailQuery.BeginTime}`;
+});
+
+const detailSummaryItems = computed(() => {
+  if (!isRegister.value && detailQuery.ReportType !== 1) {
+    return [];
+  }
+  return [
+    {
+      label: isRegister.value ? '首存人数' : '成功召回人数',
+      value: detailSummary.value,
+    },
+  ];
 });
 
 function recallRate(row: RecallRow) {
@@ -403,11 +415,7 @@ async function exportDetail() {
     width="1100px"
   >
     <div class="detail-header">
-      <Statistic
-        v-if="isRegister || detailQuery.ReportType === 1"
-        :title="isRegister ? '首存人数' : '成功召回人数'"
-        :value="detailSummary"
-      />
+      <SummaryCards :items="detailSummaryItems" />
       <Button type="primary" @click="exportDetail">导出 CSV</Button>
     </div>
     <Descriptions class="mb-3" size="small">

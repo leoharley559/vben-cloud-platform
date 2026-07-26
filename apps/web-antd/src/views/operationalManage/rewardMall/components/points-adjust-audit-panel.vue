@@ -371,14 +371,18 @@ onMounted(() => {
         v-model:value="filterOrderId"
         allow-clear
         placeholder="订单号"
-        style="width: 180px"
-      />
+        style="width: 250px"
+      >
+        <template #addonBefore>订单号</template>
+      </Input>
       <Input
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Select
         v-model:value="filterPackageId"
         allow-clear
@@ -397,8 +401,10 @@ onMounted(() => {
         v-model:value="filterAdminUserName"
         allow-clear
         placeholder="代理账号"
-        style="width: 150px"
-      />
+        style="width: 230px"
+      >
+        <template #addonBefore>代理账号</template>
+      </Input>
       <Select
         v-model:value="filterHandleType"
         allow-clear

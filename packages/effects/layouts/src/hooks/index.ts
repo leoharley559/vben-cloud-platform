@@ -26,23 +26,20 @@ export function transformComponent(
   }
 
   const routeName = route.name as string;
-  // 如果组件没有 name，则直接返回
+  // 没有路由名时无法对齐 KeepAlive include，原样返回
   if (!routeName) {
     return component;
   }
   const componentName = (component?.type as any)?.name;
 
-  // 已经设置过 name，则直接返回
-  if (componentName) {
-    return component;
-  }
-
-  // componentName 与 routeName 一致，则直接返回
+  // KeepAlive 的 include 用的是 route.name；已对齐则无需再改
   if (componentName === routeName) {
     return component;
   }
 
-  // 设置 name
+  // 动态菜单路由名形如 agencyAccountDetails_284，页面 defineOptions 常是
+  // AgencyAccountDetails，名称不一致会导致离开页时不被缓存却仍走 Transition，
+  // 与 Tabs/异步更新叠加后出现 insertBefore / parentNode 报错
   component.type ||= {};
   (component.type as any).name = routeName;
 

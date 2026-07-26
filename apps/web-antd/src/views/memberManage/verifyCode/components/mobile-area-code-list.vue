@@ -249,24 +249,26 @@ onMounted(() => {
   <OpsListPanel v-if="canView">
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">国家名称</span>
         <Input
           v-model:value="filterCountryName"
           allow-clear
           placeholder="请输入"
-          style="width: 160px"
+          style="width: 240px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>国家名称</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">区码</span>
         <Input
           v-model:value="filterDialingCode"
           allow-clear
           placeholder="请输入"
-          style="width: 120px"
+          style="width: 200px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>区码</template>
+        </Input>
       </div>
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">

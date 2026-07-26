@@ -537,26 +537,34 @@ onMounted(() => {
         v-model:value="filterLoginAccount"
         allow-clear
         placeholder="游戏账号"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
       <Input
         v-model:value="filterPackageName"
         allow-clear
         placeholder="产品名称"
-        style="width: 160px"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>产品名称</template>
+      </Input>
       <Input
         v-model:value="filterOrderId"
         allow-clear
         placeholder="订单号"
-        style="width: 180px"
-      />
+        style="width: 250px"
+      >
+        <template #addonBefore>订单号</template>
+      </Input>
       <Input
         v-model:value="filterGiftName"
         allow-clear
         placeholder="奖品名称"
-        style="width: 140px"
-      />
+        style="width: 220px"
+      >
+        <template #addonBefore>奖品名称</template>
+      </Input>
       <Select
         v-model:value="filterVipLevel"
         :options="VIP_LEVEL_OPTIONS"
@@ -588,14 +596,18 @@ onMounted(() => {
         v-model:value="filterContact"
         allow-clear
         placeholder="收货人"
-        style="width: 120px"
-      />
+        style="width: 200px"
+      >
+        <template #addonBefore>收货人</template>
+      </Input>
       <Input
         v-model:value="filterMobile"
         allow-clear
         placeholder="收货电话"
-        style="width: 130px"
-      />
+        style="width: 210px"
+      >
+        <template #addonBefore>收货电话</template>
+      </Input>
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canRecord" @click="openRecord">人工录单</Button>

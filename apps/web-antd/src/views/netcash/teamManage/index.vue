@@ -524,9 +524,15 @@ onMounted(() => {
       <Tabs v-model:active-key="activeTab" size="small" @change="onTabChange">
         <Tabs.TabPane v-if="canEnterManage" key="manage" tab="团队列表">
           <div class="mb-4 flex flex-wrap items-center gap-2">
-            <Input v-model:value="teamQuery.TeamName" allow-clear placeholder="团队名称" style="width: 170px" />
-            <Input v-model:value="teamQuery.Username" allow-clear placeholder="主线账号" style="width: 170px" />
-            <Input v-model:value="teamQuery.SubUserName" allow-clear placeholder="副线账号" style="width: 170px" />
+            <Input v-model:value="teamQuery.TeamName" allow-clear placeholder="团队名称" style="width: 220px">
+              <template #addonBefore>团队名称</template>
+            </Input>
+            <Input v-model:value="teamQuery.Username" allow-clear placeholder="主线账号" style="width: 220px">
+              <template #addonBefore>主线账号</template>
+            </Input>
+            <Input v-model:value="teamQuery.SubUserName" allow-clear placeholder="副线账号" style="width: 220px">
+              <template #addonBefore>副线账号</template>
+            </Input>
             <Select
               v-model:value="teamQuery.Type"
               :options="[{ label: '全部类型', value: -1 }, { label: '普通团队', value: 1 }, { label: '正式团队', value: 2 }]"
@@ -592,9 +598,15 @@ onMounted(() => {
         <Tabs.TabPane v-if="canViewRecord" key="record" tab="操作记录">
           <template v-if="canViewRecordList">
             <div class="mb-4 flex flex-wrap items-center gap-2">
-              <Input v-model:value="recordQuery.TeamName" allow-clear placeholder="团队名称" style="width: 170px" />
-              <Input v-model:value="recordQuery.Username" allow-clear placeholder="主线账号" style="width: 170px" />
-              <Input v-model:value="recordQuery.SubName" allow-clear placeholder="副线账号" style="width: 170px" />
+              <Input v-model:value="recordQuery.TeamName" allow-clear placeholder="团队名称" style="width: 220px">
+                <template #addonBefore>团队名称</template>
+              </Input>
+              <Input v-model:value="recordQuery.Username" allow-clear placeholder="主线账号" style="width: 220px">
+                <template #addonBefore>主线账号</template>
+              </Input>
+              <Input v-model:value="recordQuery.SubName" allow-clear placeholder="副线账号" style="width: 220px">
+                <template #addonBefore>副线账号</template>
+              </Input>
               <Select
                 v-model:value="recordQuery.Operate"
                 :options="[

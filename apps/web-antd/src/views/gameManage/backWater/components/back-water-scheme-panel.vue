@@ -729,7 +729,10 @@ onMounted(async () => {
         allow-clear
         placeholder="搜索方案名称"
         class="max-w-sm"
-      />
+        style="width: 240px"
+      >
+        <template #addonBefore>方案名称</template>
+      </Input>
       <Space>
         <Button
           v-if="canCreate"

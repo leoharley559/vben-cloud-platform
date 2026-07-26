@@ -334,14 +334,15 @@ onMounted(async () => {
   <OpsListPanel v-if="canViewTable">
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">称号名称</span>
         <Input
           v-model:value="filterName"
           allow-clear
           placeholder="请输入"
-          style="width: 180px"
+          style="width: 260px"
           @press-enter="handleSearch"
-        />
+        >
+          <template #addonBefore>称号名称</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">称号类别</span>

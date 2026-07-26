@@ -11,7 +11,6 @@ import {
   Modal,
   Select,
   Space,
-  Statistic,
   Table,
   Tag,
   Upload,
@@ -24,6 +23,7 @@ import {
   checkAgencyPlayersApi,
 } from '#/api/netcash/agency';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 type Row = Record<string, any>;
@@ -65,6 +65,11 @@ const stats = computed(() => ({
   total: rows.value.length,
   valid: rows.value.filter(isValid).length,
 }));
+const summaryItems = computed(() => [
+  { label: '总数', value: stats.value.total },
+  { label: '有效', value: stats.value.valid, valueClass: 'text-emerald-500' },
+  { label: '无效', value: stats.value.invalid, valueClass: 'text-red-500' },
+]);
 const rowSelection = computed(() => ({
   getCheckboxProps: (row: Row) => ({ disabled: !isValid(row) }),
   onChange: (keys: Array<number | string>) => {
@@ -231,11 +236,7 @@ watch(
       <Button @click="writeTemplate">下载模板</Button>
       <span class="text-gray-500">最多 1000 条，文件不超过 1MB</span>
     </Space>
-    <div class="mb-4 grid grid-cols-3 gap-3">
-      <Statistic title="总数" :value="stats.total" />
-      <Statistic title="有效" :value="stats.valid" :value-style="{ color: '#3f8600' }" />
-      <Statistic title="无效" :value="stats.invalid" :value-style="{ color: '#cf1322' }" />
-    </div>
+    <SummaryCards :items="summaryItems" />
     <Space class="mb-3">
       <Input v-model:value="bulkNote" :maxlength="400" placeholder="批量备注" style="width: 320px" />
       <Button @click="applyBulkNote">应用到已选有效记录</Button>

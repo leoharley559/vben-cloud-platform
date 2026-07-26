@@ -155,7 +155,9 @@ onMounted(async () => {
           allow-clear
           placeholder="模板名称"
           style="width: 220px"
-        />
+        >
+          <template #addonBefore>模板名称</template>
+        </Input>
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button v-if="canCreate" type="primary" @click="handleCreate">
           新增落地

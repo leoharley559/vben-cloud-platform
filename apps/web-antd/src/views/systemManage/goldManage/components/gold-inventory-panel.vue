@@ -4,7 +4,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Card, DatePicker, Statistic, Tooltip } from 'ant-design-vue';
+import { Button, DatePicker, Tooltip } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import {
@@ -12,6 +12,7 @@ import {
   fetchGoldInventoryDetailApi,
 } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
@@ -53,7 +54,6 @@ const emptyTotalSum = (): TotalSum => ({
 
 const { checkPermission } = useCloudPermission();
 
-const bannerLoading = ref(false);
 const bannerScoreChange = ref({
   AvailScores: 0,
   IncomeScores: 0,
@@ -101,6 +101,34 @@ const summaryShipments = computed(
     summaryPlayerOut.value,
 );
 
+const bannerSummaryItems = computed(() => [
+  { label: '剩余库存', value: bannerScoreChange.value.AvailScores },
+  {
+    label: '今日进货(上级包网)',
+    value: bannerScoreChange.value.IncomeScores,
+  },
+  { label: '今日出货(玩家)', value: bannerPlayerOut.value.toFixed(2) },
+  {
+    label: '今日出货(币商)',
+    value: bannerScoreChange.value.OutCoinDealerScores,
+  },
+  {
+    label: '今日出货(子包网)',
+    value: bannerScoreChange.value.OutAgentScores,
+  },
+]);
+
+const detailSummaryItems = computed(() => [
+  { label: '进货合计', value: summaryIncoming.value },
+  { label: '出货合计', value: summaryShipments.value },
+  { label: '出货玩家', value: summaryPlayerOut.value.toFixed(2) },
+  {
+    label: '出货币商',
+    value: totalData.value.SumOutSellCoinDealer,
+  },
+  { label: '出货子包网', value: totalData.value.SumOutSellAgent },
+]);
+
 function num(row: InventoryRow, key: string) {
   return Number(row[key] || 0);
 }
@@ -136,7 +164,6 @@ function resetBanner() {
 
 async function loadBanner() {
   if (!canBanner.value) return;
-  bannerLoading.value = true;
   try {
     const result = await fetchGoldInventoryApi({
       BeginTime: '',
@@ -160,8 +187,6 @@ async function loadBanner() {
     };
   } catch {
     resetBanner();
-  } finally {
-    bannerLoading.value = false;
   }
 }
 
@@ -284,44 +309,7 @@ onMounted(() => {
       <div class="mb-3 text-sm font-medium text-gray-700">
         今日金币库存变化
       </div>
-      <div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <Card size="small">
-          <Statistic
-            :loading="bannerLoading"
-            :value="bannerScoreChange.AvailScores"
-            title="剩余库存"
-          />
-        </Card>
-        <Card size="small">
-          <Statistic
-            :loading="bannerLoading"
-            :value="bannerScoreChange.IncomeScores"
-            title="今日进货(上级包网)"
-          />
-        </Card>
-        <Card size="small">
-          <Statistic
-            :loading="bannerLoading"
-            :precision="2"
-            :value="bannerPlayerOut"
-            title="今日出货(玩家)"
-          />
-        </Card>
-        <Card size="small">
-          <Statistic
-            :loading="bannerLoading"
-            :value="bannerScoreChange.OutCoinDealerScores"
-            title="今日出货(币商)"
-          />
-        </Card>
-        <Card size="small">
-          <Statistic
-            :loading="bannerLoading"
-            :value="bannerScoreChange.OutAgentScores"
-            title="今日出货(子包网)"
-          />
-        </Card>
-      </div>
+      <SummaryCards :items="bannerSummaryItems" />
     </div>
 
     <div v-if="canDetail">
@@ -335,29 +323,7 @@ onMounted(() => {
           <Button @click="handleReset">重置</Button>
         </template>
         <template #extra>
-          <div class="grid grid-cols-2 gap-3 md:grid-cols-5">
-            <Card size="small">
-              <Statistic :value="summaryIncoming" title="进货合计" />
-            </Card>
-            <Card size="small">
-              <Statistic :value="summaryShipments" title="出货合计" />
-            </Card>
-            <Card size="small">
-              <Statistic :precision="2" :value="summaryPlayerOut" title="出货玩家" />
-            </Card>
-            <Card size="small">
-              <Statistic
-                :value="totalData.SumOutSellCoinDealer"
-                title="出货币商"
-              />
-            </Card>
-            <Card size="small">
-              <Statistic
-                :value="totalData.SumOutSellAgent"
-                title="出货子包网"
-              />
-            </Card>
-          </div>
+          <SummaryCards :items="detailSummaryItems" />
         </template>
       </ReportQueryCard>
 
