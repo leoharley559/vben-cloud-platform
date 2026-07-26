@@ -10,8 +10,6 @@ import type {
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 
 import {
-  Breadcrumb,
-  BreadcrumbItem,
   Button,
   Input,
   message,
@@ -94,7 +92,7 @@ const filters = reactive({
 const selectedPromoterId = ref<'' | ChannelId>('');
 const rows = ref<ChannelRow[]>([]);
 const parents = ref<ChannelAdminOption[]>([]);
-const subordinates = ref<ChannelRow[]>([]);
+const subordinates = ref<ChannelAdminOption[]>([]);
 /** 测试渠道：面包屑仅根账号时禁止创建（对齐旧站 AdminTitleList.length === 1） */
 const createDisabled = computed(
   () => Boolean(props.isTest) && parents.value.length <= 1,
@@ -297,8 +295,7 @@ const gridOptions: VxeTableGridOptions<ChannelRow> = {
           };
           const result = await fetchMoneyChannelListApi(query);
           rows.value = result.Items;
-          if (result.MoreItems.Parents.length > 0)
-            parents.value = result.MoreItems.Parents;
+          // 对齐旧站：列表接口的 MoreItems.Parents 不覆盖代理链路面包屑
           schedulePoll(rows.value);
           return {
             items: rows.value,
@@ -326,8 +323,11 @@ async function loadHierarchy(adminId: '' | ChannelId = selectedPromoterId.value)
   if (!can('hierarchy')) return undefined;
   hierarchyLoading.value = true;
   try {
+    // 对齐旧站：链路只有根节点时 AdminId 传空
+    const requestAdminId =
+      parents.value.length <= 1 && !adminId ? '' : adminId;
     const result = await fetchChannelHierarchyApi({
-      AdminId: adminId,
+      AdminId: requestAdminId,
       AdminType: 7,
       ChannelId: filters.ChannelId.trim(),
       ChannelName: filters.ChannelName.trim(),
@@ -337,21 +337,29 @@ async function loadHierarchy(adminId: '' | ChannelId = selectedPromoterId.value)
       NetCashH5Domain: filters.NetCashH5Domain.trim(),
       PromoterAdminName: filters.PromoterAdminName.trim(),
       PromoterAdminUserName: filters.PromoterAdminUserName.trim(),
-      // 旧站层级请求清空 PushType
       PushType: '',
     });
-    const sons = result.ItemsSon ?? [];
-    // 启用代理时过滤停用下级（Status=2）
+    const sons = (result.ItemsSon ?? []) as ChannelAdminOption[];
     subordinates.value =
       filters.IsHiddenAgent === 2
         ? sons
         : sons.filter((item) => Number(item.Status) !== 2);
-    parents.value =
-      result.Parents?.length > 0
-        ? result.Parents
-        : result.ItemsAdmin
-          ? [result.ItemsAdmin]
-          : [];
+
+    // 对齐旧站 getTGList：
+    // 1) 首次无链路时写入 ItemsAdmin
+    // 2) Parents 完整（含根节点且不短于本地）时用接口链路
+    // 3) 否则保留本地已 push 的 leying/A/B，绝不被截断
+    if (parents.value.length === 0 && result.ItemsAdmin) {
+      parents.value = [result.ItemsAdmin];
+    } else if (result.Parents && result.Parents.length > 0) {
+      const rootId = parents.value[0]?.Id;
+      const hasRoot =
+        !rootId ||
+        result.Parents.some((item) => String(item.Id) === String(rootId));
+      if (hasRoot && result.Parents.length >= parents.value.length) {
+        parents.value = result.Parents;
+      }
+    }
     return result;
   } catch {
     subordinates.value = [];
@@ -440,8 +448,27 @@ async function reset() {
     Sort: '',
   });
   selectedPromoterId.value = '';
+  parents.value = [];
   await loadHierarchy('');
   await reloadFirstPage();
+}
+
+/** 规范化层级节点（下级 ItemsSon 可能挂在 ChannelRow 结构上） */
+function toHierarchyNode(
+  row: ChannelAdminOption | ChannelRow,
+): ChannelAdminOption {
+  const record = row as Record<string, unknown>;
+  return {
+    Id: row.Id,
+    Name: String(row.Name ?? record.PromoterAdminName ?? ''),
+    Username: String(
+      (row as ChannelAdminOption).Username ??
+        record.Username ??
+        record.PromoterAdminUserName ??
+        '',
+    ),
+    Status: record.Status,
+  };
 }
 
 async function selectPromoter(
@@ -449,27 +476,48 @@ async function selectPromoter(
   index?: number,
 ) {
   if (row.Id == null) return;
-  selectedPromoterId.value = row.Id;
-  if (index !== undefined) {
-    parents.value = parents.value.slice(0, index + 1);
-  } else {
-    // 点击下级：追加面包屑（对齐旧站 AdminTitleList.push）
-    const exists = parents.value.some(
-      (item) => String(item.Id) === String(row.Id),
+  const node = toHierarchyNode(row);
+
+  if (index === undefined) {
+    // 点击下级：对齐旧站 handleAdmin，先 push 再请求
+    const existsIndex = parents.value.findIndex(
+      (item) => String(item.Id) === String(node.Id),
     );
-    if (!exists) {
-      parents.value = [
-        ...parents.value,
-        {
-          Id: row.Id,
-          Name: row.Name,
-          Username: (row as ChannelAdminOption).Username,
-        },
-      ];
+    if (existsIndex >= 0) {
+      parents.value = parents.value.slice(0, existsIndex + 1);
+    } else {
+      parents.value = [...parents.value, node];
     }
+  } else {
+    // 点击链路节点：对齐旧站 fnClickTiltle，截断到该级
+    parents.value = parents.value.slice(0, index + 1);
   }
-  await loadHierarchy(row.Id);
+
+  // 对齐旧站：链路仅根节点时 AdminId 传空
+  selectedPromoterId.value = parents.value.length <= 1 ? '' : node.Id!;
+  await loadHierarchy(selectedPromoterId.value);
   await reloadFirstPage();
+}
+
+/** 链路展示优先账号：leying/A/B */
+function formatHierarchyLabel(item: ChannelAdminOption | ChannelRow) {
+  const node = toHierarchyNode(item);
+  return (
+    String(node.Username || '').trim() ||
+    String(node.Name || '').trim() ||
+    String(node.Id ?? '-')
+  );
+}
+
+/** 下级代理：账号 + 姓名，便于辨认 */
+function formatSubordinateLabel(item: ChannelAdminOption | ChannelRow) {
+  const node = toHierarchyNode(item);
+  const username = String(node.Username || '').trim();
+  const name = String(node.Name || '').trim();
+  if (username && name && username !== name) {
+    return `${username}（${name}）`;
+  }
+  return username || name || String(node.Id ?? '-');
 }
 
 function createChannel() {
@@ -674,28 +722,44 @@ onBeforeUnmount(() => {
       v-if="can('hierarchy')"
       class="mb-4 rounded border border-gray-200 p-3"
     >
-      <div class="mb-2 flex justify-between">
+      <div class="mb-2 flex items-center justify-between">
         <b>代理层级</b>
         <span v-if="hierarchyLoading" class="text-xs text-gray-400">加载中…</span>
       </div>
-      <Breadcrumb v-if="parents.length > 0" class="mb-3">
-        <BreadcrumbItem v-for="(item, index) in parents" :key="String(item.Id)">
-          <Button size="small" type="link" @click="selectPromoter(item, index)">
-            {{ item.Name || item.Username || item.Id }}
+      <div class="mb-3 flex flex-wrap items-center gap-1 rounded bg-slate-50 px-3 py-2 text-sm">
+        <template v-if="parents.length > 0">
+          <template v-for="(item, index) in parents" :key="String(item.Id)">
+            <span v-if="index > 0" class="text-gray-400">/</span>
+            <a
+              class="cursor-pointer hover:underline"
+              :class="
+                index === parents.length - 1
+                  ? 'font-semibold text-blue-600'
+                  : 'text-gray-700'
+              "
+              @click.prevent="selectPromoter(item, index)"
+            >
+              {{ formatHierarchyLabel(item) }}
+            </a>
+          </template>
+        </template>
+        <span v-else class="text-gray-400">暂无层级</span>
+      </div>
+      <div class="flex flex-wrap items-start gap-2">
+        <span class="mt-1 shrink-0 text-sm text-gray-600">下级代理：</span>
+        <Space v-if="subordinates.length > 0" wrap>
+          <Button
+            v-for="item in subordinates"
+            :key="String(item.Id)"
+            size="small"
+            :danger="Number(item.Status) === 2"
+            @click="selectPromoter(item)"
+          >
+            {{ formatSubordinateLabel(item) }}
           </Button>
-        </BreadcrumbItem>
-      </Breadcrumb>
-      <Space v-if="subordinates.length > 0" wrap>
-        <Button
-          v-for="item in subordinates"
-          :key="String(item.Id)"
-          size="small"
-          @click="selectPromoter(item)"
-        >
-          {{ item.Name || item.Username || item.Id }}
-        </Button>
-      </Space>
-      <span v-else class="text-sm text-gray-400">当前层级暂无下级代理</span>
+        </Space>
+        <span v-else class="mt-1 text-sm text-gray-400">当前层级暂无下级代理</span>
+      </div>
     </div>
 
     <Grid v-if="can('list')">

@@ -18,8 +18,11 @@ import dayjs from 'dayjs';
 
 import { fetchPlayerAuthListApi } from '#/api/memberManage/player-authentication';
 import AccountSelect from '#/components/global/account-select.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import {
@@ -124,11 +127,16 @@ const gridOptions: VxeTableGridOptions<PlayerAuthListItem> = {
       slots: { default: 'risk' },
       title: '风控分析',
     },
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PlayerId', minWidth: 100, title: '玩家ID' },
     { field: 'PackageName', minWidth: 120, title: '产品名称' },
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
-    { field: 'Username', minWidth: 110, title: '代理账号' },
+    { field: 'Username', minWidth: 110, slots: { default: 'username' }, title: '代理账号' },
     {
       field: 'AuthScenario',
       formatter: ({ cellValue }) => formatAuthScenario(cellValue),
@@ -407,6 +415,18 @@ onMounted(() => {
     </template>
 
     <Grid>
+      <template #username="{ row }">
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.Username"
+        />
+      </template>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
       <template #status>
         <Tag color="warning">待审核</Tag>
       </template>

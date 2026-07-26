@@ -89,14 +89,14 @@ export function enrichFundFlowItems(
       AddGold: addGoldYuan,
       Balance:
         exInfo.Balance !== undefined && exInfo.Balance !== null
-          ? Number(exInfo.Balance) / 100
+          ? (Number(exInfo.Balance) / 100).toFixed(2)
           : ' - ',
     };
 
     if (Number(row.Reason) === 97) {
       const balanceText =
         exInfo.Balance !== undefined && exInfo.Balance !== null
-          ? String(Number(exInfo.Balance) / 100)
+          ? (Number(exInfo.Balance) / 100).toFixed(2)
           : ' - ';
       langZh = langZh.replaceAll('{Balance}', balanceText);
       langTw = langTw.replaceAll('{Balance}', balanceText);

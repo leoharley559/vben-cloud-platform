@@ -361,7 +361,10 @@ onMounted(async () => {
 
     <Grid>
       <template #loginAccount="{ row }">
-        <PlayerAccountLink :login-account="String(row.LoginAccount || '')" />
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
       </template>
       <template #state="{ row }">
         <Tag :color="getPlatformTransferStateColor(row.State)">

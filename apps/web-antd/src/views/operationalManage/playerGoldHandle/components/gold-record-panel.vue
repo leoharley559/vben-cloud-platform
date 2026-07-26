@@ -14,11 +14,13 @@ import {
 import dayjs from 'dayjs';
 
 import { fetchPlayerGoldHandleListApi } from '#/api/operationManage/player-gold-handle';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { exportRowsToCsv } from '#/utils/export-csv';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -36,6 +38,7 @@ interface RecordRow {
   LoginAccount?: string;
   OrderId?: string;
   PackageName?: string;
+  PlayerId?: number | string;
   RealApplyAmount?: number;
   Reason?: number;
   Title?: string;
@@ -72,7 +75,7 @@ const { packageOptions } = useOperationOptions();
 const canViewTable = computed(() => checkPermission(10090));
 const canExport = computed(() => checkPermission(10091));
 
-/** 与旧站 listQuery 对齐，默认昨日；Done/Reason 支持多选 join(',') */
+/** 与旧站 listQuery 对齐，默认当前月；Done/Reason 支持多选 join(',') */
 const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>();
 const filterChannelIds = ref<Array<number | string> | number | string>();
@@ -81,10 +84,13 @@ const filterWaterType = ref<number>(0);
 const filterDone = ref<Array<number | string>>([]);
 const filterReason = ref<Array<number | string>>([]);
 const filterDataSearchType = ref(0);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs().subtract(1, 'day').startOf('day'),
-  dayjs().subtract(1, 'day').endOf('day'),
-]);
+
+function createDefaultDateRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  const range = getCurrentMonthRangeSeconds();
+  return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+}
+
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(createDefaultDateRange());
 
 const totalAmount = ref(0);
 const totalRealAmount = ref(0);
@@ -169,7 +175,7 @@ function formatWater(row: RecordRow) {
   if (Number(row.WaterType) === 2) {
     return formatAmountFromCent(Number(row.WaterAmount || 0));
   }
-  return String(Number(row.Water || 0) / 100);
+  return (Number(row.Water || 0) / 100).toFixed(2);
 }
 
 const gridOptions: VxeTableGridOptions<RecordRow> = {
@@ -201,7 +207,7 @@ const gridOptions: VxeTableGridOptions<RecordRow> = {
       title: '类型',
     },
     { field: 'OrderId', minWidth: 180, title: '订单编号' },
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
     { field: 'PackageName', minWidth: 100, title: '产品名称' },
     {
       field: 'ChannelName',
@@ -296,10 +302,7 @@ function resetFilters() {
   filterDone.value = [];
   filterReason.value = [];
   filterDataSearchType.value = 0;
-  filterDateRange.value = [
-    dayjs().subtract(1, 'day').startOf('day'),
-    dayjs().subtract(1, 'day').endOf('day'),
-  ];
+  filterDateRange.value = createDefaultDateRange();
   gridApi.reload();
 }
 
@@ -484,6 +487,12 @@ async function handleExport() {
     </div>
 
     <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId"
+        />
+      </template>
       <template #done="{ row }">
         <Tag :color="DONE_MAP[Number(row.Done)]?.color || 'default'">
           {{ DONE_MAP[Number(row.Done)]?.text || String(row.Done ?? '-') }}

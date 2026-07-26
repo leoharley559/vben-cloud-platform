@@ -477,7 +477,7 @@ async function handleExport() {
         row.LoginAccount,
         row.ChannelName || row.ChannelId,
         row.PackageName,
-        Math.round(Number(row.Profit || 0) / 100),
+        formatAmountFromCent(row.Profit),
         Number(row.Recharged || 0),
         Number(row.WithdrawGold || 0),
         calcChargeExchangeRatio(row.Recharged, row.WithdrawGold),

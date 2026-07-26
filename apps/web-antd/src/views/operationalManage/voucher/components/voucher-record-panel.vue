@@ -22,6 +22,7 @@ import {
   fetchVoucherListAllApi,
 } from '#/api/operationManage/voucher';
 import PassPopup from '#/components/security/pass-popup.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { ACTIVITY_TYPE_OPTIONS, VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
@@ -124,11 +125,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildExportQuery() {
-  const {
-    Page: _page,
-    PageSize: _size,
-    ...rest
-  } = buildQuery({
+  const { Page: _page, PageSize: _size, ...rest } = buildQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -138,7 +135,7 @@ function buildExportQuery() {
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
     { type: 'seq', minWidth: 60, title: '序号' },
-    { field: 'LoginAccount', minWidth: 120, title: '玩家账号' },
+    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '玩家账号' },
     {
       field: 'VipLevel',
       formatter: ({ cellValue }) =>
@@ -387,6 +384,12 @@ function statusMeta(value?: number | string) {
     </div>
 
     <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
       <template #status="{ row }">
         <Tag :color="statusMeta(row.Status)?.color || 'default'">
           {{ statusMeta(row.Status)?.label || row.Status || '-' }}
@@ -394,6 +397,10 @@ function statusMeta(value?: number | string) {
       </template>
     </Grid>
 
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </div>
 </template>

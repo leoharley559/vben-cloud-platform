@@ -65,14 +65,14 @@ function metricValue(row: GameStatementRow): number {
       return Number(row.CountNum || 0);
     }
     case 'gameDetailsBetMoney': {
-      return Number(((Number(row.SumBet || 0) / 100).toFixed(0)));
+      return Number(((Number(row.SumBet || 0) / 100).toFixed(2)));
     }
     case 'giftMoney': {
-      return Number(((Number(row.SumWin || 0) / 100).toFixed(0)));
+      return Number(((Number(row.SumWin || 0) / 100).toFixed(2)));
     }
     case 'profitAmt': {
       return Number(
-        (calcProfit(row.SumBet, row.SumWin) / 100).toFixed(0),
+        (calcProfit(row.SumBet, row.SumWin) / 100).toFixed(2),
       );
     }
     case 'profitCompare': {
@@ -80,7 +80,7 @@ function metricValue(row: GameStatementRow): number {
       return Number(String(rate).replace('%', '')) || 0;
     }
     case 'validBetAmount': {
-      return Number(((Number(row.SumValidBet || 0) / 100).toFixed(0)));
+      return Number(((Number(row.SumValidBet || 0) / 100).toFixed(2)));
     }
     default: {
       return 0;

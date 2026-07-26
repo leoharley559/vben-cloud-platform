@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchInviteActivityListApi } from '#/api/operationManage/activity';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -61,7 +62,12 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
-    { field: 'LoginAccount', minWidth: 130, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 130,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PackageName', minWidth: 120, title: '产品包' },
     { field: 'PlayerId', minWidth: 100, title: '玩家ID' },
     { field: 'Username', minWidth: 120, title: '上级代理' },
@@ -166,7 +172,14 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           重置
         </Button>
       </div>
-      <Grid />
+      <Grid>
+        <template #loginAccount="{ row }">
+          <PlayerAccountLink
+            :login-account="String(row.LoginAccount || '')"
+            :player-id="row.PlayerId as number | string | undefined"
+          />
+        </template>
+      </Grid>
     </template>
   </div>
 </template>

@@ -25,6 +25,7 @@ import {
   getServiceWsUrl,
   type CloudWsStatus,
 } from '#/utils/ws';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { ServiceMessageType } from '#/utils/ws/service-message-type';
 
 defineOptions({ name: 'ServiceWorkbenchPanel' });
@@ -842,7 +843,17 @@ onBeforeUnmount(() => {
               onClick: () => selectPlayer(row),
             })
           "
-        />
+        >
+          <template #bodyCell="{ column, record, text }">
+            <template v-if="column.key === 'LoginAccount'">
+              <PlayerAccountLink
+                :login-account="String(record.LoginAccount || '')"
+                :player-id="record.Receive as number | string | undefined"
+              />
+            </template>
+            <template v-else>{{ text }}</template>
+          </template>
+        </Table>
       </Card>
 
       <Card class="lg:col-span-2" size="small" title="会话详情 / 聊天">

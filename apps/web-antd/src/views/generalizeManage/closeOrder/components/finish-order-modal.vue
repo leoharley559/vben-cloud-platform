@@ -78,7 +78,7 @@ function netMoney() {
   const value = new BigNumber(props.row?.Money || 0).minus(
     props.row?.ServiceCharge || 0,
   );
-  return value.isNaN() ? '' : value.toFixed(0);
+  return value.isNaN() ? '' : value.toFixed(2);
 }
 
 function accountTypeName() {

@@ -18,6 +18,8 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import PassPopup from '#/components/security/pass-popup.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatNetcashDateTime } from '#/utils/netcash';
 
 defineOptions({ name: 'DrawmoneyManage' });
@@ -71,7 +73,7 @@ function assertWithdrawDateSpan(){
 const withdrawGridOptions:VxeTableGridOptions<Record<string,unknown>>={
   columns:[
     {type:'checkbox',width:48},{field:'Status',title:'状态',minWidth:110,formatter:({row})=>withdrawStatus(row)},
-    {field:'ApplyAccount',title:'代理账号',minWidth:130},{field:'CreateTime',title:'申请时间',minWidth:160,formatter:({cellValue})=>dt(cellValue)},
+    {field:'ApplyAccount',title:'代理账号',minWidth:130,slots:{default:'applyAccount'}},{field:'CreateTime',title:'申请时间',minWidth:160,formatter:({cellValue})=>dt(cellValue)},
     {field:'FinanceTime',title:'财务响应时间',minWidth:160,formatter:({cellValue})=>dt(cellValue)},{field:'FinishTime',title:'结束时间',minWidth:160,formatter:({cellValue})=>dt(cellValue)},
     {field:'PayType',title:'提款方式',minWidth:110,formatter:({cellValue})=>payType[Number(cellValue)]||String(cellValue??'-')},{field:'OrderId',title:'订单编号',minWidth:190},
     {field:'PayAccount',title:'出款账号',minWidth:170,formatter:({row})=>[row.PayName,row.DigitalType,row.PayAccount].filter(Boolean).join(' / ')||'-'},{field:'PayRealName',title:'持卡人',minWidth:120},{field:'ApplyAmount',title:'申请金额',minWidth:110,formatter:({cellValue})=>money(cellValue),sortable:true},
@@ -86,8 +88,9 @@ const withdrawGridOptions:VxeTableGridOptions<Record<string,unknown>>={
       const r=await fetchDrawmoneyListApi(withdrawalParams(page));
       Object.keys(withdrawTotal).forEach((key)=>delete withdrawTotal[key]);
       Object.assign(withdrawTotal,r.Total||{});
+      const items=r.Items||[];
       withdrawCount.value=Number(r.Pagination?.MaxCount||0);
-      return{items:r.Items||[],total:withdrawCount.value};
+      return{items,total:withdrawCount.value};
     }catch{
       Object.keys(withdrawTotal).forEach((key)=>delete withdrawTotal[key]);
       withdrawCount.value=0;
@@ -123,8 +126,9 @@ function resetAutoTimer(){if(autoRefreshTimer)clearInterval(autoRefreshTimer);au
 async function toggleAutoRefresh(checked:boolean){try{await drawmoneyRequest.saveAutoRefresh({Key:'agentwithdraw',Status:checked?'open':'close'});autoRefreshStatus.value=checked?1:2;resetAutoTimer();message.success('切换成功');}catch{/* */}}
 function resetWithdraw(){Object.assign(withdrawQuery,{Applicant:'',OrderId:'',HandlerName:'',ShowName:'',AccountType:[],WithdrawAccount:'',SelectTimeType:1,AmountType:1,AmountMin:undefined,AmountMax:undefined,PayName:'',WithdrawStatus:''});withdrawRange.value=[dayjs().subtract(1,'day').startOf('day'),dayjs().endOf('day')];withdrawGridApi.reload();}
 function filterPending(){withdrawQuery.WithdrawStatus='1,5,6';withdrawGridApi.reload();}
-function exportWithdraw(){if(withdrawCount.value<1)return void message.warning('暂无可导出数据');if(!assertWithdrawDateSpan())return;exportPass.value?.validate(73);}
-async function submitExport(security:Record<string,unknown>){try{const {Page:_,PageSize:__,...query}=withdrawalParams({currentPage:1,pageSize:20});const result=await exportDrawmoneyListApi({...query,...security});if(result?.Id&&Number(result.Status)===0){Modal.confirm({title:'提示',content:'导出任务已建立，是否前往下载管理？',onOk:()=>router.push('/operationalManage/downloadCsvManage')});}else message.error(result?.Remark||'建立导出任务失败');}catch{/* */}}
+function buildWithdrawExportQuery(){const{Page:_p,PageSize:_s,IsExp:_e,...rest}=withdrawalParams({currentPage:1,pageSize:20});return rest;}
+function exportWithdraw(){if(withdrawCount.value<1)return void message.warning('暂无数据可导出');if(!assertWithdrawDateSpan())return;exportPass.value?.validate(73);}
+async function submitExport(security:Record<string,unknown>){try{const query=buildWithdrawExportQuery();const result=await exportDrawmoneyListApi({...query,...security});if(result?.Id&&Number(result.Status)===0){Modal.confirm({title:'提示',content:'导出任务已建立，是否前往下载管理？',onOk:()=>router.push('/operationalManage/downloadCsvManage')});}else message.error(result?.Remark||'建立导出任务失败');}catch{/* */}}
 async function openAuto(){
   try{
     const r:any=await drawmoneyRequest.autoSettings({Page:1,PageSize:999});
@@ -154,7 +158,7 @@ async function saveAuto(){
 
 // 黑名单
 const blackKeyword=ref(''), blackOpen=ref(false), blackEditing=ref(false), blackForm=reactive({Id:'',Account:'',Desc:'',CreateAccount:''});
-const blackGridOptions:VxeTableGridOptions<Record<string,unknown>>={columns:[{type:'seq',title:'序号',width:60},{field:'CreateTime',title:'日期',formatter:({cellValue})=>dt(cellValue),minWidth:160},{field:'BlackAccount',title:'代理账号',minWidth:140},{field:'Desc',title:'备注',minWidth:180},{field:'CreateAccount',title:'创建人',minWidth:120},{field:'actions',title:'操作',slots:{default:'actions'},width:150}],height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{try{const r=await fetchDrawmoneyBlacklistApi({Keyword:blackKeyword.value,Page:page.currentPage,PageSize:page.pageSize});return{items:r?.Items||[],total:Number(r?.Pagination?.MaxCount||0)};}catch{return{items:[],total:0};}}}}};
+const blackGridOptions:VxeTableGridOptions<Record<string,unknown>>={columns:[{type:'seq',title:'序号',width:60},{field:'CreateTime',title:'日期',formatter:({cellValue})=>dt(cellValue),minWidth:160},{field:'BlackAccount',title:'代理账号',minWidth:140,slots:{default:'blackAccount'}},{field:'Desc',title:'备注',minWidth:180},{field:'CreateAccount',title:'创建人',minWidth:120},{field:'actions',title:'操作',slots:{default:'actions'},width:150}],height:'auto',pagerConfig:{pageSize:20},proxyConfig:{ajax:{query:async({page})=>{try{const r=await fetchDrawmoneyBlacklistApi({Keyword:blackKeyword.value,Page:page.currentPage,PageSize:page.pageSize});return{items:r?.Items||[],total:Number(r?.Pagination?.MaxCount||0)};}catch{return{items:[],total:0};}}}}};
 const [BlackGrid,blackGridApi]=useVbenVxeGrid({gridOptions:blackGridOptions});
 function editBlack(row?:Record<string,unknown>){blackEditing.value=!!row;Object.assign(blackForm,{Id:row?.Id||'',Account:row?.BlackAccount||'',Desc:row?.Desc||'',CreateAccount:row?.CreateAccount||''});blackOpen.value=true;}
 async function saveBlack(){if(!blackForm.Account)return void message.warning('代理账号必填');try{const data={Id:blackForm.Id,Account:blackForm.Account,Desc:blackForm.Desc};if(blackEditing.value)await editDrawmoneyBlackApi(data);else await addDrawmoneyBlackApi(data);blackOpen.value=false;message.success('保存成功');blackGridApi.reload();}catch{/* */}}
@@ -233,6 +237,12 @@ onUnmounted(()=>{if(autoRefreshTimer)clearInterval(autoRefreshTimer);});
             <Button v-if="Number(withdrawTotal.PendingCountNum) > 0" danger type="link" @click="filterPending">查看未处理订单</Button>
           </Space>
           <WithdrawGrid>
+            <template #applyAccount="{ row }">
+              <AgencyAccountLink
+                :admin-id="resolveAgencyAdminId(row)"
+                :username="row.ApplyAccount"
+              />
+            </template>
             <template #actions="{row}">
 <Space :size="0" wrap>
               <Button v-if="checkPermission(10162) && Number(row.Status) === 1 && Number(row.Process) === 1" type="link" size="small" @click="start(row)">开始处理</Button>
@@ -251,7 +261,14 @@ onUnmounted(()=>{if(autoRefreshTimer)clearInterval(autoRefreshTimer);});
         <Result v-else-if="tab.key === 'drawings'" status="403" sub-title="无提款列表查看权限" title="403" />
         <template v-else-if="tab.key === 'black' && checkPermission(10163)">
           <Space class="mb-3"><Input v-model:value="blackKeyword" placeholder="全部" /><Button type="primary" @click="blackGridApi.reload()">查询</Button><Button @click="()=>{blackKeyword = '';blackGridApi.reload()}">重置</Button><Button v-if="checkPermission(10165)" type="primary" @click="editBlack()">新增黑名单</Button></Space>
-          <BlackGrid><template #actions="{row}"><Button v-if="checkPermission(10166)" type="link" @click="editBlack(row)">编辑</Button><Button v-if="checkPermission(10167)" danger type="link" @click="removeBlack(row)">删除</Button></template></BlackGrid>
+          <BlackGrid>
+            <template #blackAccount="{ row }">
+              <AgencyAccountLink
+                :admin-id="resolveAgencyAdminId(row)"
+                :username="row.BlackAccount"
+              />
+            </template>
+            <template #actions="{row}"><Button v-if="checkPermission(10166)" type="link" @click="editBlack(row)">编辑</Button><Button v-if="checkPermission(10167)" danger type="link" @click="removeBlack(row)">删除</Button></template></BlackGrid>
         </template>
         <Result v-else-if="tab.key === 'black'" status="403" sub-title="无提款黑名单查看权限" title="403" />
         <template v-else-if="tab.key === 'channel' && checkPermission(11697)">

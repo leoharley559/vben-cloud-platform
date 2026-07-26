@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
 
 import { fetchJuniorMemberListApi } from '#/api/netcash/junior-member';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
 
@@ -140,11 +141,17 @@ watch(
       :scroll="{ x: 1500, y: 480 }"
       size="small"
     >
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'Status'">
+      <template #bodyCell="{ column, record, text }">
+        <template v-if="column.key === 'LoginAccount'">
+          <PlayerAccountLink
+            :login-account="String(record.LoginAccount || '')"
+            :player-id="record.PlayerId as number | string | undefined"
+          />
+        </template>
+        <template v-else-if="column.key === 'Status'">
           <Tag>{{ statusMap[Number(record.Status)] || record.Status }}</Tag>
         </template>
-        <template v-else>{{ display(String(column.key), record[column.key]) }}</template>
+        <template v-else>{{ text ?? display(String(column.key), record[column.key]) }}</template>
       </template>
     </Table>
   </Modal>

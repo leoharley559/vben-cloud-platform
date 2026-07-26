@@ -18,6 +18,7 @@ import {
   copyTableText,
   exportRowsToXlsx,
 } from '#/views/dataClose/shared/report-utils';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 
 defineOptions({ name: 'GameStatementPlayersModal' });
 
@@ -44,7 +45,7 @@ const visible = computed({
 
 const columns = [
   { title: '#', customRender: ({ index }: { index: number }) => index + 1, width: 60 },
-  { dataIndex: 'LoginAccount', title: '游戏账号' },
+  { dataIndex: 'LoginAccount', key: 'LoginAccount', title: '游戏账号' },
   { dataIndex: 'PlayerId', title: '玩家ID' },
   { dataIndex: 'ChannelName', title: '渠道名称' },
   { dataIndex: 'ChannelId', title: '渠道号' },
@@ -150,7 +151,17 @@ watch(
       bordered
       row-key="PlayerId"
       size="small"
-    />
+    >
+      <template #bodyCell="{ column, record, text }">
+        <template v-if="column.key === 'LoginAccount'">
+          <PlayerAccountLink
+            :login-account="String(record.LoginAccount || '')"
+            :player-id="record.PlayerId as number | string | undefined"
+          />
+        </template>
+        <template v-else>{{ text }}</template>
+      </template>
+    </Table>
     <div class="mt-3 flex justify-end">
       <Pagination
         v-model:current="pager.Page"

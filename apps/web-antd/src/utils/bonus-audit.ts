@@ -74,7 +74,7 @@ export function formatBonusWaterRequirement(row: {
   WaterType?: number | string;
 }) {
   if (Number(row.WaterType) === 2) {
-    return String(Number(row.WaterAmount || 0) / 100);
+    return (Number(row.WaterAmount || 0) / 100).toFixed(2);
   }
-  return String(Number(row.Water || 0) / 100);
+  return (Number(row.Water || 0) / 100).toFixed(2);
 }

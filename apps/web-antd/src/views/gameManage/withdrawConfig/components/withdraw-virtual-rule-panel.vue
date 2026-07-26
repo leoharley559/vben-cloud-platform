@@ -33,6 +33,7 @@ import {
   updateUsdtWithdrawRateApi,
   updateWithdrawFirstConfigApi,
 } from '#/api/gameManage/withdraw-rules';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 
 const { packageOptions } = useOperationOptions();
@@ -611,12 +612,19 @@ onMounted(loadMain);
       :row-key="(row) => String(row.PlayerId ?? row.Id)"
       size="small"
     >
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'actions'">
+      <template #bodyCell="{ column, record, text }">
+        <template v-if="column.key === 'Account'">
+          <PlayerAccountLink
+            :login-account="String(record.Account || '')"
+            :player-id="record.PlayerId as number | string | undefined"
+          />
+        </template>
+        <template v-else-if="column.key === 'actions'">
           <Button danger type="link" @click="removeWhitelist(record)"
             >删除</Button
           >
         </template>
+        <template v-else>{{ text }}</template>
       </template>
     </Table>
     <Pagination
@@ -690,7 +698,17 @@ onMounted(loadMain);
       "
       :row-selection="batchRowSelection"
       size="small"
-    />
+    >
+      <template #bodyCell="{ column, record, text }">
+        <template v-if="column.key === 'Account'">
+          <PlayerAccountLink
+            :login-account="String(record.Account || '')"
+            :player-id="record.PlayerId as number | string | undefined"
+          />
+        </template>
+        <template v-else>{{ text }}</template>
+      </template>
+    </Table>
     <div v-if="batchRows.length" class="mt-2 text-sm text-gray-500">
       已匹配 {{ batchRows.length }} 条，已选择
       {{ batchSelectedIds.length }} 条； 玩家 ID 为 0 的记录不可提交。

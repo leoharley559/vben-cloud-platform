@@ -33,7 +33,9 @@ import {
   removeTeamDeputyApi,
   updateTeamApi,
 } from '#/api/netcash/team-manage';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatNetcashDateTime } from '#/utils/netcash';
 
 defineOptions({ name: 'TeamManage' });
@@ -548,6 +550,11 @@ onMounted(() => {
           >
             <template #bodyCell="{ column, record, index }">
               <template v-if="column.key === 'index'">{{ (teamQuery.Page - 1) * teamQuery.PageSize + index + 1 }}</template>
+              <AgencyAccountLink
+                v-else-if="column.key === 'Username'"
+                :admin-id="resolveAgencyAdminId(record)"
+                :username="record.Username"
+              />
               <template v-else-if="column.key === 'CreateTime'">{{ formatNetcashDateTime(record.CreateTime) }}</template>
               <template v-else-if="column.key === 'Deputys'">
                 <Button type="link" size="small" @click="openDetail(record)">{{ record.Deputys ?? 0 }}</Button>
@@ -612,7 +619,17 @@ onMounted(() => {
               size="small"
             >
               <template #bodyCell="{ column, record }">
-                <template v-if="column.key === 'Note'">{{ recordContent(record) }}</template>
+                <AgencyAccountLink
+                  v-if="column.key === 'Username'"
+                  :admin-id="resolveAgencyAdminId(record)"
+                  :username="record.Username"
+                />
+                <AgencyAccountLink
+                  v-else-if="column.key === 'SubUsername'"
+                  :admin-id="resolveAgencyAdminId(record, 'SubAdminId')"
+                  :username="record.SubUsername"
+                />
+                <template v-else-if="column.key === 'Note'">{{ recordContent(record) }}</template>
                 <template v-else-if="column.key === 'CreateTime'">{{ formatNetcashDateTime(record.CreateTime) }}</template>
               </template>
             </Table>
@@ -686,6 +703,11 @@ onMounted(() => {
       <Table :columns="detailColumns" :data-source="detailRows" :loading="detailLoading" :pagination="false" row-key="AdminId" size="small">
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'TeamCreateTime'">{{ formatNetcashDateTime(record.TeamCreateTime) }}</template>
+          <AgencyAccountLink
+            v-else-if="column.key === 'Username'"
+            :admin-id="resolveAgencyAdminId(record)"
+            :username="record.Username"
+          />
           <template v-else-if="column.key === 'actions'">
             <Button v-if="canRemoveDeputy" danger type="link" size="small" @click="removeDeputy(record)">移除</Button>
           </template>

@@ -217,7 +217,7 @@ onMounted(load);
         total: pager.total,
         showSizeChanger: true,
       }"
-      :row-key="(row, index) => String(row.Id || row.OrderId || index)"
+      :row-key="(row) => String(row.Id ?? row.OrderId ?? '')"
       :scroll="{ x: 1450 }"
       size="small"
       @change="

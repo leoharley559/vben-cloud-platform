@@ -60,7 +60,7 @@ const packageSelectOptions = computed(() => [
 
 const summaryItems = computed(() => {
   const t = todayItems.value;
-  const win = num(t.SumTransBetMoney1) - num(t.SumTransWinMoney1);
+  const win = -num(t.SumTransWinMoney1);
   return [
     { title: '投注金额', value: formatAmountFromCent(t.SumTransBetMoney1) },
     { title: '有效投注', value: formatAmountFromCent(t.SumTransBetValidMoney1) },
@@ -96,9 +96,7 @@ const chartSeries = computed(() => [
         hourItems.value.find(
           (item) => num(item.Hour ?? item.ReportHour) === hour,
         ) || {};
-      return (
-        (num(row.SumTransBetMoney1) - num(row.SumTransWinMoney1)) / 100
-      );
+      return -num(row.SumTransWinMoney1) / 100;
     }),
     name: '公司输赢',
     type: 'line' as const,

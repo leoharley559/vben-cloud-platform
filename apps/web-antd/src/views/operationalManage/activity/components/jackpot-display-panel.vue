@@ -731,7 +731,7 @@ onMounted(() => {
         :columns="timeColumns"
         :data-source="timeRows"
         :pagination="false"
-        :row-key="(_, index) => `time-${index}`"
+        :row-key="(row) => `time-${row.BeginTime ?? row.StartTime ?? JSON.stringify(row)}`"
         size="small"
         class="mb-6"
       >
@@ -768,7 +768,7 @@ onMounted(() => {
         :columns="gameColumns"
         :data-source="gameRows"
         :pagination="false"
-        :row-key="(_, index) => `game-${index}`"
+        :row-key="(row) => `game-${row.GameId ?? row.GameType ?? JSON.stringify(row)}`"
         size="small"
         class="mb-4"
       >

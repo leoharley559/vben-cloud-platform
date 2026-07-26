@@ -3,7 +3,6 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AgencyListItem } from '#/types/netcash';
 
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 import {
   Button,
@@ -23,27 +22,87 @@ import {
   fetchAgencyListApi,
   switchAgencyStatusApi,
 } from '#/api/netcash/agency';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   AGENCY_ACCOUNT_TYPE_MAP,
+  AGENCY_SEND_COMMISSION_TYPE_MAP,
+  AGENCY_SETTLEMENT_TYPE_MAP,
   AGENCY_STATUS_MAP,
   AGENCY_TYPE_MAP,
   formatNetcashDateTime,
 } from '#/utils/netcash';
 
+import AgencyFanDianModal from './agency-fandian-modal.vue';
 import AgencyFormModal from './agency-form-modal.vue';
 import AgencyMemberDetailModal from './agency-member-detail-modal.vue';
 import AgencyMemberModal from './agency-member-modal.vue';
 
 defineOptions({ name: 'AgencyList' });
 
-const router = useRouter();
 const { checkPermission } = useCloudPermission();
+const { packageOptions } = useOperationOptions();
+
+/** 真实产品列表（不含「全部产品」占位） */
+const realPackageList = computed(() =>
+  packageOptions.value.filter(
+    (item) => item.PackageId !== '' && item.PackageId != null,
+  ),
+);
+
+/** 对齐旧站 packageIdFilter：仅空/-1 视为全部产品；具体 ID 反查名称 */
+function formatPackageNames(packageId?: null | number | string) {
+  const raw =
+    packageId === undefined || packageId === null
+      ? ''
+      : String(packageId).trim();
+  if (!raw || raw === '-1') {
+    return '全部产品';
+  }
+
+  const selectedIds = raw
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (selectedIds.length === 0 || selectedIds.includes('-1')) {
+    return '全部产品';
+  }
+
+  const list = realPackageList.value;
+  const names: string[] = [];
+  for (const id of selectedIds) {
+    const hit = list.find(
+      (item) =>
+        String(item.PackageId) === String(id) ||
+        Number(item.PackageId) === Number(id),
+    );
+    if (hit?.PackageName) {
+      names.push(String(hit.PackageName).trim());
+    }
+  }
+
+  // 接口偶发仍回传「全部勾选后的 id 列表」而非 -1，此时才显示全部产品
+  if (
+    list.length > 1 &&
+    selectedIds.length === list.length &&
+    names.length === list.length
+  ) {
+    return '全部产品';
+  }
+
+  if (names.length > 0) {
+    return names.join(', ');
+  }
+
+  // 配置未命中时回退原始值，避免误显示「全部产品」
+  return raw;
+}
 
 const canViewList = computed(() => checkPermission(10_085));
 const canSwitch = computed(() => checkPermission(10_111));
-const canViewDetail = computed(() => checkPermission(11_251));
 const canAdd = computed(() => checkPermission(10_106));
 const canEdit = computed(() => checkPermission(10_110));
 const canAddMember = computed(() => checkPermission(11_353));
@@ -81,11 +140,88 @@ const filterMainUsername = ref('');
 const filterParentAdminId = ref('');
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 const statisticsRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs().startOf('day'),
-  dayjs().endOf('day'),
+  dayjs().startOf('month'),
+  dayjs().endOf('month'),
 ]);
 const drillPath = ref<Array<{ id: number | string; username: string }>>([]);
 const totalData = ref<Record<string, number>>({});
+
+const COLUMN_STORAGE_KEY = 'agencyListMore';
+/** 显示列候选（含默认选中项，对齐会员列表交互） */
+const COLUMN_OPTIONS = [
+  { label: '代理账号', value: 'Username' },
+  { label: '状态', value: 'Status' },
+  { label: '姓名', value: 'Name' },
+  { label: '手机号', value: 'MobileNumber' },
+  { label: '发展人', value: 'DeveloperName' },
+  { label: '创建时间', value: 'CreateTime' },
+  { label: '代理类型', value: 'Type' },
+  { label: '代理模式', value: 'AccountType' },
+  { label: '上级账号', value: 'MainUsername' },
+  { label: '代理层级', value: 'AccountLevel' },
+  { label: '团队', value: 'TeamName' },
+  { label: '下级代理', value: 'LowerAgent' },
+  { label: '佣金级距', value: 'CommissionRateDiff' },
+  { label: '佣金算法', value: 'AlgorithmTemplateName' },
+  { label: '佣金周期', value: 'SettlementType' },
+  { label: '发佣方式', value: 'SendCommissionType' },
+  { label: '返水配置', value: 'AgentFanDianConfig' },
+  { label: '推广产品', value: 'PackageId' },
+  { label: '场馆费率', value: 'ApiFeeTemplateName' },
+  { label: '下级会员', value: 'Members' },
+  { label: '活跃人数', value: 'SumActiveStatus' },
+  { label: '存款', value: 'SumPayMoney' },
+  { label: '提款', value: 'SumWithDrawMoney' },
+  { label: '有效投注', value: 'SumBetValidMoney' },
+  { label: '总输赢', value: 'SumWinGold' },
+  { label: '注册IP', value: 'RegIp' },
+  { label: '注册地址', value: 'RegAddress' },
+  { label: '最后登录IP', value: 'LastLoginIp' },
+  { label: '最后登录地址', value: 'LastLoginAddress' },
+  { label: '维护人', value: 'MaintainerName' },
+  { label: '备注', value: 'RemarkOnDeactivation' },
+];
+
+const DEFAULT_COLUMNS = [
+  'Username',
+  'Status',
+  'Name',
+  'CreateTime',
+  'Type',
+  'AccountType',
+  'MainUsername',
+  'SettlementType',
+  'AgentFanDianConfig',
+  'Members',
+  'SumActiveStatus',
+  'SumPayMoney',
+  'SumWithDrawMoney',
+  'SumBetValidMoney',
+  'SumWinGold',
+  'LastLoginIp',
+  'MaintainerName',
+  'RemarkOnDeactivation',
+];
+
+const visibleColumns = ref<string[]>(
+  (() => {
+    try {
+      const raw = localStorage.getItem(COLUMN_STORAGE_KEY);
+      const parsed = raw ? (JSON.parse(raw) as string[]) : [];
+      return parsed.length > 0 ? parsed : [...DEFAULT_COLUMNS];
+    } catch {
+      return [...DEFAULT_COLUMNS];
+    }
+  })(),
+);
+
+function showColumn(field: string) {
+  // 代理账号与操作列常驻，保证列表可用性
+  if (field === 'Username' || field === 'action') {
+    return true;
+  }
+  return visibleColumns.value.includes(field);
+}
 
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   return {
@@ -114,21 +250,24 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
   };
 }
 
-const gridOptions: VxeTableGridOptions<AgencyListItem> = {
-  columns: [
+function buildColumns(): VxeTableGridOptions<AgencyListItem>['columns'] {
+  const allColumns: VxeTableGridOptions<AgencyListItem>['columns'] = [
+    {
+      field: 'Username',
+      fixed: 'left',
+      minWidth: 130,
+      slots: { default: 'username' },
+      title: '代理账号',
+    },
     {
       field: 'Status',
       minWidth: 90,
       slots: { default: 'status' },
       title: '状态',
     },
-    {
-      field: 'Username',
-      minWidth: 130,
-      slots: { default: 'username' },
-      title: '代理账号',
-    },
     { field: 'Name', minWidth: 100, title: '姓名' },
+    { field: 'MobileNumber', minWidth: 120, title: '手机号' },
+    { field: 'DeveloperName', minWidth: 120, title: '发展人' },
     {
       field: 'CreateTime',
       formatter: ({ cellValue }) => formatNetcashDateTime(cellValue),
@@ -150,13 +289,19 @@ const gridOptions: VxeTableGridOptions<AgencyListItem> = {
       title: '代理模式',
     },
     {
-      field: 'CommissionTemplateId',
-      minWidth: 130,
-      slots: { default: 'commission' },
-      title: '佣金方案',
+      field: 'MainUsername',
+      minWidth: 120,
+      slots: { default: 'mainUsername' },
+      title: '上级账号',
     },
-    { field: 'ApiFeeTemplateName', minWidth: 130, title: '场馆费率' },
-    { field: 'AlgorithmTemplateName', minWidth: 130, title: '佣金算法' },
+    { field: 'AccountLevel', minWidth: 90, title: '代理层级' },
+    { field: 'TeamName', minWidth: 120, title: '团队' },
+    {
+      field: 'LowerAgent',
+      minWidth: 90,
+      slots: { default: 'lowerAgent' },
+      title: '下级代理',
+    },
     {
       field: 'CommissionRateDiff',
       formatter: ({ cellValue }) =>
@@ -164,17 +309,36 @@ const gridOptions: VxeTableGridOptions<AgencyListItem> = {
       minWidth: 110,
       title: '佣金级距',
     },
-    { field: 'TeamName', minWidth: 120, title: '团队' },
-    { field: 'DeveloperName', minWidth: 120, title: '发展人' },
-    { field: 'MobileNumber', minWidth: 120, title: '手机号' },
-    { field: 'MainUsername', minWidth: 120, title: '上级账号' },
-    { field: 'AccountLevel', minWidth: 90, title: '代理层级' },
+    { field: 'AlgorithmTemplateName', minWidth: 130, title: '佣金算法' },
     {
-      field: 'LowerAgent',
-      minWidth: 90,
-      slots: { default: 'lowerAgent' },
-      title: '下级代理',
+      field: 'SettlementType',
+      formatter: ({ cellValue }) =>
+        AGENCY_SETTLEMENT_TYPE_MAP[Number(cellValue)] ||
+        String(cellValue ?? '-'),
+      minWidth: 100,
+      title: '佣金周期',
     },
+    {
+      field: 'SendCommissionType',
+      formatter: ({ cellValue }) =>
+        AGENCY_SEND_COMMISSION_TYPE_MAP[Number(cellValue)] ||
+        String(cellValue ?? '-'),
+      minWidth: 140,
+      title: '发佣方式',
+    },
+    {
+      field: 'AgentFanDianConfig',
+      minWidth: 100,
+      slots: { default: 'fanDian' },
+      title: '返水配置',
+    },
+    {
+      field: 'PackageId',
+      formatter: ({ cellValue }) => formatPackageNames(cellValue),
+      minWidth: 130,
+      title: '推广产品',
+    },
+    { field: 'ApiFeeTemplateName', minWidth: 130, title: '场馆费率' },
     { field: 'Members', minWidth: 90, slots: { default: 'members' }, title: '下级会员' },
     { field: 'SumActiveStatus', minWidth: 90, slots: { default: 'activeMembers' }, title: '活跃人数' },
     {
@@ -189,26 +353,28 @@ const gridOptions: VxeTableGridOptions<AgencyListItem> = {
       minWidth: 110,
       title: '提款',
     },
-    { field: 'SumBetGold', minWidth: 110, slots: { default: 'winLoss' }, title: '总输赢' },
     {
       field: 'SumBetValidMoney',
       formatter: ({ cellValue }) => formatAmountFromCent(Number(cellValue || 0)),
       minWidth: 110,
       title: '有效投注',
     },
+    {
+      field: 'SumWinGold',
+      minWidth: 110,
+      slots: { default: 'winLoss' },
+      title: '总输赢',
+    },
     { field: 'RegIp', minWidth: 130, title: '注册 IP' },
     { field: 'RegAddress', minWidth: 140, title: '注册地址' },
     { field: 'LastLoginIp', minWidth: 130, title: '最后登录 IP' },
     { field: 'LastLoginAddress', minWidth: 140, title: '最后登录地址' },
     { field: 'MaintainerName', minWidth: 110, title: '维护人' },
-    { field: 'PackageId', minWidth: 130, title: '推广产品' },
     {
       field: 'RemarkOnDeactivation',
       minWidth: 150,
       title: '备注',
     },
-    { field: 'SettlementType', minWidth: 100, title: '佣金周期' },
-    { field: 'SendCommissionType', minWidth: 110, title: '发佣方式' },
     {
       field: 'action',
       fixed: 'right',
@@ -216,7 +382,14 @@ const gridOptions: VxeTableGridOptions<AgencyListItem> = {
       slots: { default: 'action' },
       title: '操作',
     },
-  ],
+  ];
+  return (allColumns || []).filter((col) =>
+    showColumn(String((col as { field?: string }).field ?? '')),
+  );
+}
+
+const gridOptions: VxeTableGridOptions<AgencyListItem> = {
+  columns: buildColumns(),
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
@@ -241,6 +414,15 @@ const gridOptions: VxeTableGridOptions<AgencyListItem> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
+function persistColumns() {
+  localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(visibleColumns.value));
+  try {
+    gridApi.setGridOptions?.({ columns: buildColumns() });
+  } catch {
+    // 适配器差异时忽略
+  }
+}
+
 function resetFilters() {
   filterUsername.value = '';
   filterTeamName.value = '';
@@ -259,26 +441,11 @@ function resetFilters() {
   filterParentAdminId.value = '';
   filterDateRange.value = undefined;
   statisticsRange.value = [
-    dayjs().startOf('day'),
-    dayjs().endOf('day'),
+    dayjs().startOf('month'),
+    dayjs().endOf('month'),
   ];
   drillPath.value = [];
   gridApi.reload();
-}
-
-function openDetail(row: AgencyListItem) {
-  const adminId = row.AdminId;
-  if (!canViewDetail.value || !adminId) {
-    return;
-  }
-  router.push({
-    path: `/netcash/agencyAccountDetails/${adminId}`,
-    query: {
-      CountBeginTime: statisticsRange.value?.[0]?.startOf('day').unix() || '',
-      CountEndTime: statisticsRange.value?.[1]?.endOf('day').unix() || '',
-      Name: String(row.Name || ''),
-    },
-  });
 }
 
 function drillDown(row: AgencyListItem) {
@@ -348,6 +515,13 @@ function openMemberModal(row: AgencyListItem) {
   memberModalOpen.value = true;
 }
 
+const fanDianOpen = ref(false);
+const fanDianRow = ref<AgencyListItem | null>(null);
+function openFanDianModal(row: AgencyListItem) {
+  fanDianRow.value = row;
+  fanDianOpen.value = true;
+}
+
 const memberDetailOpen = ref(false);
 const memberDetailActiveOnly = ref(false);
 const memberDetailRow = ref<AgencyListItem>();
@@ -356,6 +530,10 @@ function openMemberDetail(row: AgencyListItem, activeOnly: boolean) {
   memberDetailRow.value = row;
   memberDetailActiveOnly.value = activeOnly;
   memberDetailOpen.value = true;
+}
+
+function getWinLossAmount(sumWinGold?: null | number | string) {
+  return -Number(sumWinGold || 0);
 }
 
 const exportLoading = ref(false);
@@ -370,43 +548,39 @@ async function exportAgencyList() {
       状态: AGENCY_STATUS_MAP[Number(row.Status)] || row.Status,
       代理账号: row.Username,
       姓名: row.Name,
+      手机号: row.MobileNumber,
+      发展人: row.DeveloperName,
       创建时间: formatNetcashDateTime(row.CreateTime),
       代理类型: AGENCY_TYPE_MAP[Number(row.Type)] || row.Type,
-      团队: row.TeamName,
       代理模式: AGENCY_ACCOUNT_TYPE_MAP[Number(row.AccountType)] || row.AccountType,
-      佣金方案:
-        Number(row.AccountType) === 2
-          ? `${Number(row.CommissionRate || 0) / 100}%`
-          : row.CommissionTemplateName ||
-            row.CommissionMultiTemplateName ||
-            row.CommissionTemplateId ||
-            row.CommissionMultiTemplateId,
-      场馆费率: row.ApiFeeTemplateName || row.ApiFeeTemplateId,
-      佣金算法: row.AlgorithmTemplateName || row.AlgorithmTemplateId,
-      佣金周期: row.SettlementType,
-      发佣方式: row.SendCommissionType,
-      佣金级距: `${(Number(row.CommissionRateDiff || 0) / 100).toFixed(2)}%`,
-      代理层级: row.AccountLevel,
       上级账号: row.MainUsername,
+      代理层级: row.AccountLevel,
+      团队: row.TeamName,
       下级代理: row.LowerAgent,
+      佣金级距: `${(Number(row.CommissionRateDiff || 0) / 100).toFixed(2)}%`,
+      佣金算法: row.AlgorithmTemplateName || row.AlgorithmTemplateId,
+      佣金周期:
+        AGENCY_SETTLEMENT_TYPE_MAP[Number(row.SettlementType)] ||
+        row.SettlementType,
+      发佣方式:
+        AGENCY_SEND_COMMISSION_TYPE_MAP[Number(row.SendCommissionType)] ||
+        row.SendCommissionType,
+      推广产品: formatPackageNames(row.PackageId),
+      场馆费率: row.ApiFeeTemplateName || row.ApiFeeTemplateId,
       下级会员: row.Members,
       活跃人数: row.SumActiveStatus,
       存款: formatAmountFromCent(Number(row.SumPayMoney || 0)),
       提款: formatAmountFromCent(Number(row.SumWithDrawMoney || 0)),
-      总输赢: formatAmountFromCent(
-        Number(row.SumBetGold || 0) - Number(row.SumWinGold || 0),
-      ),
       有效投注: formatAmountFromCent(Number(row.SumBetValidMoney || 0)),
+      总输赢: formatAmountFromCent(getWinLossAmount(row.SumWinGold)),
       注册IP: row.RegIp,
       注册地址: row.RegAddress,
       最后登录IP: row.LastLoginIp,
       最后登录地址: row.LastLoginAddress,
-      发展人: row.DeveloperName,
       维护人: row.MaintainerName,
-      推广产品: row.PackageId,
       备注: row.RemarkOnDeactivation,
     }));
-    if (!data.length) return void message.warning('暂无可导出数据');
+    if (data.length === 0) return void message.warning('暂无可导出数据');
     const book = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(data), '代理列表');
     XLSX.writeFile(book, `代理列表_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
@@ -529,6 +703,16 @@ onMounted(() => {
       <DatePicker.RangePicker v-model:value="filterDateRange" />
       <span class="text-sm text-gray-500">统计时间</span>
       <DatePicker.RangePicker v-model:value="statisticsRange" />
+      <Select
+        v-model:value="visibleColumns"
+        mode="multiple"
+        allow-clear
+        placeholder="显示列"
+        style="min-width: 180px"
+        :max-tag-count="1"
+        :options="COLUMN_OPTIONS"
+        @change="persistColumns"
+      />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button :loading="exportLoading" @click="exportAgencyList">导出 Excel</Button>
@@ -537,7 +721,7 @@ onMounted(() => {
       </Button>
     </div>
 
-    <div v-if="drillPath.length" class="mb-3 flex items-center gap-1 text-sm">
+    <div v-if="drillPath.length > 0" class="mb-3 flex items-center gap-1 text-sm">
       <Button size="small" type="link" @click="drillBack(0)">全部代理</Button>
       <template v-for="(item, index) in drillPath" :key="item.id">
         <span>/</span>
@@ -550,8 +734,21 @@ onMounted(() => {
       <div class="rounded border p-2">会员：{{ totalData.TotalMember ?? totalData.Members ?? 0 }}</div>
       <div class="rounded border p-2">存款：{{ formatAmountFromCent(totalData.SumPayMoney ?? totalData.TotalPayMoney ?? 0) }}</div>
       <div class="rounded border p-2">提款：{{ formatAmountFromCent(totalData.SumWithDrawMoney ?? totalData.TotalWithDrawMoney ?? 0) }}</div>
-      <div class="rounded border p-2">输赢：{{ formatAmountFromCent((totalData.SumBetGold ?? 0) - (totalData.SumWinGold ?? 0)) }}</div>
       <div class="rounded border p-2">有效投注：{{ formatAmountFromCent(totalData.SumBetValidMoney ?? totalData.TotalBetMoney ?? 0) }}</div>
+      <div class="rounded border p-2">
+        输赢：
+        <span
+          :class="
+            getWinLossAmount(totalData.SumWinGold) > 0
+              ? 'text-emerald-500'
+              : getWinLossAmount(totalData.SumWinGold) < 0
+                ? 'text-red-500'
+                : ''
+          "
+        >
+          {{ formatAmountFromCent(getWinLossAmount(totalData.SumWinGold)) }}
+        </span>
+      </div>
     </div>
 
     <Grid>
@@ -578,41 +775,45 @@ onMounted(() => {
       </template>
       <template #activeMembers="{ row }">
         <Button size="small" type="link" @click="openMemberDetail(row, true)">
-          {{ row.SumActiveStatus ?? '查看' }}
+          查看
         </Button>
       </template>
       <template #winLoss="{ row }">
-        {{
-          formatAmountFromCent(
-            Number(row.SumBetGold || 0) - Number(row.SumWinGold || 0),
-          )
-        }}
+        <span
+          :class="
+            getWinLossAmount(row.SumWinGold) > 0
+              ? 'text-emerald-500'
+              : getWinLossAmount(row.SumWinGold) < 0
+                ? 'text-red-500'
+                : ''
+          "
+        >
+          {{ formatAmountFromCent(getWinLossAmount(row.SumWinGold)) }}
+        </span>
       </template>
-      <template #commission="{ row }">
-        <span v-if="Number(row.AccountType) === 1">
-          {{ row.CommissionTemplateName || row.CommissionTemplateId || '-' }}
-        </span>
-        <span v-else-if="Number(row.AccountType) === 2">
-          {{ Number(row.CommissionRate || 0) / 100 }}%
-        </span>
-        <span v-else>
-          {{
-            row.CommissionMultiTemplateName ||
-            row.CommissionMultiTemplateId ||
-            '查看多费率'
-          }}
-        </span>
+      <template #fanDian="{ row }">
+        <Button size="small" type="link" @click="openFanDianModal(row)">
+          查看
+        </Button>
       </template>
       <template #username="{ row }">
-        <Button
-          v-if="canViewDetail"
-          size="small"
-          type="link"
-          @click="openDetail(row)"
-        >
-          {{ row.Username }}
-        </Button>
-        <span v-else>{{ row.Username }}</span>
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :query="{
+            Name: String(row.Name || row.Username || ''),
+            CountBeginTime: statisticsRange?.[0]?.startOf('day').unix(),
+            CountEndTime: statisticsRange?.[1]?.endOf('day').unix(),
+          }"
+          :username="row.Username"
+        />
+      </template>
+      <template #mainUsername="{ row }">
+        <AgencyAccountLink
+          :admin-id="
+            resolveAgencyAdminId(row, 'MainAdminId', 'ParentAdminId')
+          "
+          :username="row.MainUsername"
+        />
       </template>
       <template #action="{ row }">
         <Space>
@@ -656,6 +857,7 @@ onMounted(() => {
       :admin-name="memberRow?.Username"
       @success="gridApi.reload()"
     />
+    <AgencyFanDianModal v-model:open="fanDianOpen" :row="fanDianRow" />
     <AgencyMemberDetailModal
       v-model:open="memberDetailOpen"
       :active-only="memberDetailActiveOnly"

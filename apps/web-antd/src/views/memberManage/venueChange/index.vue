@@ -26,6 +26,7 @@ import {
   manualPlatformTransferApi,
 } from '#/api/operationManage/platform-transfer';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
@@ -182,7 +183,7 @@ function validateBeforeQuery() {
 const gridOptions: VxeTableGridOptions<PlatformTransferItem> = {
   columns: [
     { type: 'seq', title: '序号', width: 60 },
-    { field: 'LoginAccount', minWidth: 130, title: '游戏账号' },
+    { field: 'LoginAccount', minWidth: 130, slots: { default: 'loginAccount' }, title: '游戏账号' },
     {
       field: 'Type',
       formatter: ({ cellValue }) => formatTransferType(cellValue),
@@ -500,6 +501,12 @@ onMounted(async () => {
         </template>
 
         <Grid>
+          <template #loginAccount="{ row }">
+            <PlayerAccountLink
+              :login-account="String(row.LoginAccount || '')"
+              :player-id="row.PlayerId as number | string | undefined"
+            />
+          </template>
           <template #state="{ row }">
             <Tag :color="getPlatformTransferStateColor(row.State)">
               {{ formatPlatformTransferState(row.State) }}

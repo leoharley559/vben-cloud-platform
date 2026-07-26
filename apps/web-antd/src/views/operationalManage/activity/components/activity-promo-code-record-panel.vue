@@ -2,6 +2,7 @@
 import type { OperationListConfig } from '../../components/operation-list-panel.vue';
 
 import OperationListPanel from '../../components/operation-list-panel.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { fetchPromoGiftRecordApi } from '#/api/operationManage/promotion-code';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -11,7 +12,7 @@ const config: OperationListConfig = {
   columns: [
     { field: 'EventId', title: '活动ID', minWidth: 90 },
     { field: 'GiftCode', title: '优惠码', minWidth: 140 },
-    { field: 'LoginAccount', title: '游戏账号', minWidth: 120 },
+    { field: 'LoginAccount', title: '游戏账号', minWidth: 120, slot: 'loginAccount' },
     {
       field: 'CreateTime',
       formatter: (value) => formatOperationDateTime(value as string),
@@ -28,5 +29,12 @@ const config: OperationListConfig = {
 </script>
 
 <template>
-  <OperationListPanel :config="config" />
+  <OperationListPanel :config="config">
+    <template #loginAccount="{ row }">
+      <PlayerAccountLink
+        :login-account="String(row.LoginAccount || '')"
+        :player-id="row.PlayerId as number | string | undefined"
+      />
+    </template>
+  </OperationListPanel>
 </template>

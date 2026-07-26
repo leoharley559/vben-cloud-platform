@@ -453,7 +453,7 @@ watch(adminId, () => {
                 ]"
                 :data-source="remarks"
                 :pagination="false"
-                :row-key="(row, index) => String(row.Id || index)"
+                :row-key="(row) => String(row.Id ?? '')"
                 size="small"
                 :scroll="{ y: 220 }"
               >
@@ -565,7 +565,7 @@ watch(adminId, () => {
         ]"
         :data-source="moneyRecords"
         :pagination="false"
-        :row-key="(row, index) => String(row.Id || index)"
+        :row-key="(row) => String(row.Id ?? '')"
         size="small"
       >
         <template #bodyCell="{ column, record }">
@@ -598,7 +598,7 @@ watch(adminId, () => {
         ]"
         :data-source="rateRows"
         :pagination="false"
-        :row-key="(row, index) => String(row.Id || row.Name || index)"
+        :row-key="(row) => String(row.Id ?? row.Name ?? '')"
         size="small"
       >
         <template #bodyCell="{ column, record }">

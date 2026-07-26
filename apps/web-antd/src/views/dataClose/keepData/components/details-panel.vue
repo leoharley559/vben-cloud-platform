@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { TableColumnType } from 'ant-design-vue';
 
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, h, onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import {
@@ -29,6 +29,7 @@ import {
   fetchKeepDataSectionDauDetailApi,
 } from '#/api/dataClose/keep-data';
 import PassPopup from '#/components/security/pass-popup.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   KEEP_DATA_FIRST_REG_EXPORT_PAGE_ID,
@@ -85,7 +86,11 @@ const columns = computed<TableColumnType<KeepRow>[]>(() => {
     },
     {
       align: 'center',
-      dataIndex: 'LoginAccount',
+      customRender: ({ record }) =>
+        h(PlayerAccountLink, {
+          loginAccount: String(record.LoginAccount || ''),
+          playerId: record.PlayerId as number | string | undefined,
+        }),
       key: 'LoginAccount',
       title: '游戏账号',
     },
@@ -278,15 +283,27 @@ function handleSecureExportClick() {
   }
   const pageId = securePageId.value;
   if (pageId == null) return;
-  const { Page: _p, PageSize: _ps, IsExp: _e, ...params } = lastExportQuery.value;
-  passPopupRef.value?.validate(pageId, params);
+  const {
+    IsExp: _e,
+    Page: _page,
+    PageSize: _size,
+    ...params
+  } = lastExportQuery.value;
+  passPopupRef.value?.validate(pageId, {
+    ...params,
+  });
 }
 
 async function handleSecureExport(payload: Record<string, unknown>) {
   exportLoading.value = true;
   try {
     const pageId = securePageId.value;
-    const { Page: _p, PageSize: _ps, IsExp: _e, ...params } = {
+    const {
+      IsExp: _e,
+      Page: _page,
+      PageSize: _size,
+      ...params
+    } = {
       ...lastExportQuery.value,
       ...payload,
     };
@@ -472,6 +489,10 @@ onMounted(() => {
         @change="loadList"
       />
     </div>
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleSecureExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleSecureExport"
+    />
   </div>
 </template>

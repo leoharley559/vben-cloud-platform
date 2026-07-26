@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { CreditPanelConfig } from '../credit-components/credit-data-panel.vue';
 
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -46,6 +48,7 @@ import {
 } from '#/api/netcash/dk-credit';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { createRequestHash } from '#/utils/crypto';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -103,7 +106,7 @@ const playerConfig: CreditPanelConfig = {
   actionWidth: 120,
   baseQuery: { BindPhone: '-1', PlayerLevelId: -1, VipLevel: '-1' },
   columns: [
-    { field: 'LoginAccount', title: '会员账号' },
+    { field: 'LoginAccount', slot: 'loginAccount', title: '会员账号' },
     { field: 'PackageName', title: '产品包' },
     { field: 'Gold', formatter: amount, title: '主钱包（元）' },
     { field: 'VipLevel', formatter: (value) => `VIP ${value ?? '-'}`, title: '会员等级' },
@@ -160,7 +163,7 @@ const pendingConfig: CreditPanelConfig = {
   actionWidth: 150,
   baseQuery: { AgentType: 3, Status: 1, WalletType: 3 },
   columns: [
-    { field: 'AgentAccount', title: '系统账号' },
+    { field: 'AgentAccount', slot: 'agentAccount', title: '系统账号' },
     { field: 'AgentNickName', title: '账号昵称' },
     { field: 'TotalCreditLimit', formatter: amount, title: '总额度（元）' },
     { field: 'AppliableAmount', formatter: amount, title: '剩余可申请（元）' },
@@ -243,7 +246,7 @@ const accountConfig: CreditPanelConfig = {
   baseQuery: { AgentType: 3, Status: 1, WalletType: 3 },
   columns: [
     { field: 'CreateTime', formatter: date, minWidth: 165, title: '创建时间' },
-    { field: 'AgentAccount', title: '系统账号' },
+    { field: 'AgentAccount', slot: 'agentAccount', title: '系统账号' },
     { field: 'AgentNickName', title: '账号昵称' },
     { field: 'TotalCreditLimit', formatter: amount, title: '总额度（元）' },
     { field: 'AccumulateCredit', formatter: amount, title: '累计额度申请（元）' },
@@ -277,7 +280,7 @@ const adjustRecordConfig: CreditPanelConfig = {
   baseQuery: { AgentType: 3, Status: '', WalletType: 3 },
   columns: [
     { field: 'TransferType', formatter: (_value, row) => changeType(row), title: '变更类型' },
-    { field: 'AgentAccount', title: '系统账号' },
+    { field: 'AgentAccount', slot: 'agentAccount', title: '系统账号' },
     { field: 'AgentNickName', title: '账号昵称' },
     { field: 'AdjustAmount', formatter: amount, title: '额度变更（元）' },
     { field: 'ApplyTime', formatter: date, minWidth: 165, title: '申请时间' },
@@ -579,6 +582,7 @@ interface BatchRow {
   ReferenceAccount: string;
   Remarks: string;
   WithdrawWaterMultiply: number;
+  _rowKey: number;
 }
 const batchOpen = ref(false);
 const batchSubmitting = ref(false);
@@ -586,9 +590,8 @@ const batchRows = ref<BatchRow[]>([]);
 const batchPassword = ref('');
 const batchSelectedKeys = ref<number[]>([]);
 const batchStats = computed(() => {
-  const selected = batchSelectedKeys.value
-    .map((index) => batchRows.value[index])
-    .filter((row): row is BatchRow => row !== undefined);
+  const keySet = new Set(batchSelectedKeys.value);
+  const selected = batchRows.value.filter((row) => keySet.has(row._rowKey));
   return {
     imported: batchRows.value.length,
     invalid: batchRows.value.filter((row) => !row.PlayerId).length,
@@ -669,15 +672,17 @@ async function beforeBatchUpload(file: File) {
       ReferenceAccount: String(player.LoginAccount || row.会员账号),
       Remarks: String(row.申请备注),
       WithdrawWaterMultiply: Number(row.流水倍数),
+      _rowKey: index,
     };
   });
   batchSelectedKeys.value = batchRows.value
-    .map((row, index) => (row.PlayerId ? index : -1))
-    .filter((index) => index >= 0);
+    .filter((row) => row.PlayerId)
+    .map((row) => row._rowKey);
   return false;
 }
 async function submitBatch() {
-  const selected = batchSelectedKeys.value.map((index) => batchRows.value[index]!);
+  const keySet = new Set(batchSelectedKeys.value);
+  const selected = batchRows.value.filter((row) => keySet.has(row._rowKey));
   if (selected.length === 0 || !batchPassword.value) {
     message.warning('请选择有效记录并输入支付密码');
     return;
@@ -919,6 +924,12 @@ onMounted(() => {
                 新增账号
               </Button>
             </template>
+            <template #agentAccount="{ row }">
+              <AgencyAccountLink
+                :admin-id="resolveAgencyAdminId(row)"
+                :username="row.AgentAccount"
+              />
+            </template>
             <template #actions="{ row }">
               <Space v-if="item.key === 'player'" :size="0">
                 <Button
@@ -1101,7 +1112,7 @@ onMounted(() => {
         ]"
         :data-source="batchRows"
         :pagination="false"
-        :row-key="(_row, index) => index!"
+        :row-key="(row) => String(row._rowKey)"
         :row-selection="{
           selectedRowKeys: batchSelectedKeys,
           getCheckboxProps: (row) => ({ disabled: !row.PlayerId }),

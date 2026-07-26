@@ -27,6 +27,7 @@ import {
   auditSpillManageApi,
   fetchSpillManageListApi,
 } from '#/api/netcash/spill-manage';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -139,7 +140,7 @@ const gridOptions: VxeTableGridOptions<SpillManageItem> = {
       minWidth: 160,
       title: '申请时间',
     },
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
     {
       field: 'RegisterTime',
       formatter: ({ cellValue }) => formatNetcashDateTime(cellValue),
@@ -302,6 +303,12 @@ onMounted(() => {
       <Statistic class="mb-4" title="申请数量" :value="applyTotal" />
 
       <Grid>
+        <template #loginAccount="{ row }">
+          <PlayerAccountLink
+            :login-account="String(row.LoginAccount || '')"
+            :player-id="row.PlayerId as number | string | undefined"
+          />
+        </template>
         <template #status="{ row }">
           <Tag :color="SPILL_STATUS_COLOR[Number(row.Status)] || 'default'">
             {{ SPILL_STATUS_MAP[Number(row.Status)] || row.Status }}

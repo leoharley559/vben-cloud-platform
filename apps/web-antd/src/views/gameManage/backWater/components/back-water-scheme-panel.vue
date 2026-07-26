@@ -912,7 +912,7 @@ onMounted(async () => {
                 :data-source="currentLang.Rule"
                 :pagination="false"
                 :scroll="{ x: 900 }"
-                :row-key="(row, index) => `${row.Id}-${index}`"
+                :row-key="(row) => String(row.Id ?? row.VipLevel ?? '')"
                 size="small"
               >
                 <template #bodyCell="{ column, record, index }">

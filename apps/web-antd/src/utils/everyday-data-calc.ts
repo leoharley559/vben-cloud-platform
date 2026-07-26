@@ -24,19 +24,25 @@ export function calcDailyReportRow(el: DailyReportRow | null | undefined) {
     sumReg === 0 ? 0 : (sumFirstPayNum / sumReg) * 100
   ).toFixed(2);
   el.AverageFirstPayMoney =
-    sumFirstPayNum === 0 ? 0 : sumFirstPayMoney / sumFirstPayNum;
+    sumFirstPayNum === 0
+      ? 0
+      : Math.round(sumFirstPayMoney / sumFirstPayNum);
   el.AverageTransBetMoney =
-    sumTransBetNum1 === 0 ? 0 : sumTransBetMoney1 / sumTransBetNum1;
+    sumTransBetNum1 === 0
+      ? 0
+      : Math.round(sumTransBetMoney1 / sumTransBetNum1);
   el.DiffPayWithdrawMoney = sumPayMergerMoney - sumWithdrawMoney;
   el.PercentPayWithdraw = (
     sumPayMergerMoney === 0 ? 0 : (sumWithdrawMoney / sumPayMergerMoney) * 100
   ).toFixed(2);
-  el.CompanyProfitMoney = sumTransBetMoney1 - sumTransWinMoney1;
+  // 公司输赢 = -派送金额（对齐旧站 table.vue；盈余比例/公司收入/折线同此口径）
+  el.CompanyProfitMoney = -sumTransWinMoney1;
   el.PercentProfit = (
     sumTransBetMoney1 === 0
       ? 0
       : (Number(el.CompanyProfitMoney) / sumTransBetMoney1) * 100
   ).toFixed(2);
+  // 公司收入 = 公司输赢 - 账户调整 - 红利 - 返水 - 代理佣金
   el.CompanyIncomeMoney =
     Number(el.CompanyProfitMoney) -
     sumAccountChangeSumNum -
@@ -45,7 +51,7 @@ export function calcDailyReportRow(el: DailyReportRow | null | undefined) {
     sumAgentCommissionSumNum;
   el.Arppu = (
     sumPayMergerNum === 0 ? 0 : sumPayMergerMoney / sumPayMergerNum / 100
-  ).toFixed(0);
+  ).toFixed(2);
 
   return el;
 }

@@ -11,6 +11,7 @@ import {
   fetchAgentDirectMemberStatsApi,
   fetchAgentPersonalStatsApi,
 } from '#/api/netcash/agency-account-details';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 const props = defineProps<{ adminId: string }>();
@@ -358,13 +359,16 @@ watch(
         @change="(page) => changePage('agent', page.current || 1, page.pageSize || 20)"
       >
         <template #bodyCell="{ column, record }">
-          <Button
+          <AgencyAccountLink
             v-if="column.key === 'account'"
-            type="link"
-            @click="drillAgent(record)"
-          >
-            {{ record.Username || '-' }}
-          </Button>
+            :admin-id="record.AdminId as number | string | undefined"
+            :query="{
+              Name: String(record.Username || ''),
+              CountBeginTime: dateRange[0].startOf('day').unix(),
+              CountEndTime: dateRange[1].endOf('day').unix(),
+            }"
+            :username="record.Username"
+          />
           <template v-else-if="amountFields.some((item) => item.dataIndex === column.key)">
             {{
               formatAmountFromCent(Number(record[String(column.key)] || 0))

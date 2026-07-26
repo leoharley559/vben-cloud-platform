@@ -183,7 +183,7 @@ const gridOptions: VxeTableGridOptions<InventoryRow> = {
     {
       align: 'center',
       field: 'outGoods',
-      formatter: ({ row }) => String(rowOutGoods(row)),
+      formatter: ({ row }) => rowOutGoods(row).toFixed(2),
       minWidth: 140,
       slots: { header: 'outGoodsHeader' },
       title: '出货',
@@ -302,7 +302,7 @@ onMounted(() => {
         <Card size="small">
           <Statistic
             :loading="bannerLoading"
-            :precision="0"
+            :precision="2"
             :value="bannerPlayerOut"
             title="今日出货(玩家)"
           />
@@ -343,7 +343,7 @@ onMounted(() => {
               <Statistic :value="summaryShipments" title="出货合计" />
             </Card>
             <Card size="small">
-              <Statistic :value="summaryPlayerOut" title="出货玩家" />
+              <Statistic :precision="2" :value="summaryPlayerOut" title="出货玩家" />
             </Card>
             <Card size="small">
               <Statistic

@@ -22,6 +22,8 @@ import {
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   exportBackWaterRecordApi,
   fetchBackWaterOrderDetailsApi,
@@ -31,6 +33,7 @@ import {
 } from '#/api/gameManage/back-water';
 import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -230,7 +233,12 @@ function queryParams(page: { currentPage: number; pageSize: number }) {
 
 const summaryColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
   { field: 'OrderId', minWidth: 190, title: '订单号' },
-  { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+  {
+    field: 'LoginAccount',
+    minWidth: 120,
+    slots: { default: 'loginAccount' },
+    title: '游戏账号',
+  },
   {
     field: 'VipLevel',
     formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
@@ -238,7 +246,7 @@ const summaryColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
     title: 'VIP 等级',
   },
   { field: 'LevelName', minWidth: 110, title: '玩家层级' },
-  { field: 'AdminName', minWidth: 110, title: '代理账号' },
+  { field: 'AdminName', minWidth: 110, slots: { default: 'adminName' }, title: '代理账号' },
   { field: 'PackageName', minWidth: 120, title: '所属产品' },
   {
     field: 'ChannelName',
@@ -311,7 +319,7 @@ const detailColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
     minWidth: 130,
     title: '游戏时间',
   },
-  { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+  { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
   {
     field: 'VipLevel',
     formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
@@ -460,9 +468,20 @@ async function openOrderDetails(row: BackWaterRow) {
   }
 }
 
+function buildExportQuery() {
+  const { Page: _page, PageSize: _size, ...rest } = queryParams({
+    currentPage: 1,
+    pageSize: 20,
+  });
+  return rest;
+}
+
 function requestExport() {
-  if (Number(gridApi.grid?.getProxyInfo?.()?.pager?.total || 0) < 1) {
-    message.warning('暂无可导出的数据');
+  const rows =
+    (gridApi.grid?.getTableData?.()?.fullData as BackWaterRow[] | undefined) ||
+    [];
+  if (rows.length < 1) {
+    message.warning('暂无数据可导出');
     return;
   }
   exportCode.value = '';
@@ -477,7 +496,7 @@ async function submitExport() {
   exportLoading.value = true;
   try {
     const result = await exportBackWaterRecordApi(activeType.value, {
-      ...queryParams({ currentPage: 1, pageSize: 20 }),
+      ...buildExportQuery(),
       GoogleCode: exportCode.value,
     });
     exportVisible.value = false;
@@ -632,6 +651,18 @@ onMounted(async () => {
 
     <div class="data-grid">
       <Grid>
+        <template #adminName="{ row }">
+          <AgencyAccountLink
+            :admin-id="resolveAgencyAdminId(row)"
+            :username="row.AdminName"
+          />
+        </template>
+        <template #loginAccount="{ row }">
+          <PlayerAccountLink
+            :login-account="String(row.LoginAccount || '')"
+            :player-id="row.PlayerId as number | string | undefined"
+          />
+        </template>
         <template #backWater="{ row }">
           <Button
             v-if="canOrderDetail"
@@ -714,7 +745,7 @@ onMounted(async () => {
               formatOperationDateTime(record.Date),
           },
         ]"
-        :row-key="(_, index) => `detail-${index}`"
+        :row-key="(row) => `detail-${row.Id ?? row.PlayerId ?? row.LoginAccount ?? JSON.stringify(row)}`"
       />
     </Modal>
 

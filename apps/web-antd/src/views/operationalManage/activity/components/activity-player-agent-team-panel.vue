@@ -7,6 +7,7 @@ import { Button, Input, Select } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerAgentTeamApi } from '#/api/operationManage/activity';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 
 defineOptions({ name: 'ActivityPlayerAgentTeamPanel' });
@@ -29,7 +30,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
     { field: 'PackageName', minWidth: 120, title: '产品包' },
     { field: 'MainCode', minWidth: 120, title: '代理线编号' },
     { field: 'Code', minWidth: 100, title: '代理编号' },
@@ -79,6 +80,13 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
-    <Grid />
+    <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
+    </Grid>
   </div>
 </template>

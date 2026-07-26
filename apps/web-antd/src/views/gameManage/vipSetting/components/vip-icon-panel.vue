@@ -204,7 +204,7 @@ onMounted(async () => {
       :data-source="rows"
       :loading="loading"
       :pagination="false"
-      :row-key="(row, index) => `${row.TemplateId}-${row.VipLevel ?? index}`"
+      :row-key="(row) => `${row.TemplateId}-${row.VipLevel ?? ''}`"
       :scroll="{ x: 1400 }"
       size="small"
     >

@@ -21,7 +21,9 @@ import {
   getCreditLimitApplyRecordListApi,
   rejectCreditLimitApi,
 } from '#/api/netcash/credit-limit';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { createRequestHash } from '#/utils/crypto';
 import { isSameAcctActionRestricted } from '#/utils/security-restriction';
 
@@ -204,6 +206,12 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" :row-selection="canApprove || canReject ? rowSelection : undefined" row-key="Id" :scroll="{ x: 1350 }" size="small">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>
+        <template v-else-if="column.key === 'AgentAccount'">
+          <AgencyAccountLink
+            :admin-id="resolveAgencyAdminId(record)"
+            :username="record.AgentAccount"
+          />
+        </template>
         <template v-else-if="column.key === 'AccountType'">{{ accountTypeMap[Number(record.AccountType)] || '-' }}</template>
         <template v-else-if="column.key === 'TransferType'">{{ transferTypeMap[Number(record.TransferType)] || '-' }}</template>
         <template v-else-if="column.key === 'AdjustAmount'"><span :class="Number(record.AdjustAmount) < 0 ? 'text-red-500' : 'text-green-600'">{{ amount(record.AdjustAmount) }}</span></template>

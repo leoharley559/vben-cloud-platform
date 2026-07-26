@@ -55,7 +55,7 @@ onMounted(loadData);
         :columns="columns"
         :data-source="list"
         :pagination="false"
-        :row-key="(row, index) => String(row.GameId || index)"
+        :row-key="(row) => String(row.GameId ?? row.GameName ?? '')"
         size="small"
       />
     </Card>

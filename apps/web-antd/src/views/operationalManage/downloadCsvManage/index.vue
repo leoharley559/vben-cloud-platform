@@ -88,16 +88,25 @@ const statusOptions = [
 ];
 
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
-  const [begin, end] = filterDateRange.value || [];
+  // 对齐旧站：Auto=true 时后端仅支持查当天
+  const range = autoRefresh.value
+    ? ([dayjs().startOf('day'), dayjs().endOf('day')] as [
+        dayjs.Dayjs,
+        dayjs.Dayjs,
+      ])
+    : filterDateRange.value || defaultDateRange();
+  const [begin, end] = range;
   return {
     Auto: autoRefresh.value,
-    // 保留 RangePicker 时分秒，勿强制 startOf/endOf('day')
+    // 保留 RangePicker 时分秒，勿强制 startOf/endOf('day')（非自动刷新时）
     BeginTime: begin ? begin.unix() : '',
     EndTime: end ? end.unix() : '',
     Id: filterId.value.trim(),
     Page: page.currentPage,
     PageSize: page.pageSize,
     Path: filterPath.value.trim(),
+    // 对齐实测/旧站列表常用排序
+    Sort: '-CreateTime',
     Status: filterStatus.value,
   };
 }
@@ -257,16 +266,18 @@ async function handlePassConfirm(data: Record<string, unknown>) {
   }
   downloadSaving.value = true;
   try {
+    const validCode = String(data.ValidCode || '').trim();
     const result = (await downloadCsvCheckApi({
       FileName: fileName,
       Id: id,
-      ValidCode: data.ValidCode || '',
+      ...(validCode ? { ValidCode: validCode } : {}),
     })) as { Path?: string };
     const path = String(result?.Path || '');
     if (!path) {
       message.error('未获取到下载路径');
       return;
     }
+    // 对齐旧站：BASE_API + /api/download?Path=&FileName=
     const base = String(apiURL || '/api').replace(/\/$/, '');
     window.open(
       `${base}/download?Path=${encodeURIComponent(path)}&FileName=${encodeURIComponent(fileName)}`,
@@ -308,6 +319,10 @@ function scheduleAutoRefresh() {
 
 function handleAutoRefreshChange(checked: boolean | string | number) {
   autoRefresh.value = Boolean(checked);
+  // 对齐旧站提示：开启自动刷新后仅查当天
+  if (autoRefresh.value) {
+    filterDateRange.value = [dayjs().startOf('day'), dayjs().endOf('day')];
+  }
   handleSearch();
 }
 
@@ -334,7 +349,7 @@ onUnmounted(() => {
         <Input
           v-model:value="filterId"
           allow-clear
-          maxlength="11"
+          :maxlength="11"
           placeholder="任务编号"
           style="width: 180px"
           @press-enter="handleSearch"
@@ -357,6 +372,7 @@ onUnmounted(() => {
         />
         <DatePicker.RangePicker
           v-model:value="filterDateRange"
+          :disabled="autoRefresh"
           :placeholder="['发起开始', '发起结束']"
           show-time
         />
@@ -365,7 +381,7 @@ onUnmounted(() => {
         <div v-if="canAutoRefresh" class="flex items-center gap-2">
           <span class="text-sm text-gray-500">自动刷新</span>
           <Switch :checked="autoRefresh" @change="handleAutoRefreshChange" />
-          <Tooltip title="开启后每 15 秒自动刷新列表（含导出中任务）">
+          <Tooltip title="开启后每 15 秒自动刷新；开启时日期仅能查询当天数据">
             <span class="cursor-help text-xs text-gray-400">说明</span>
           </Tooltip>
         </div>
@@ -390,7 +406,13 @@ onUnmounted(() => {
             :percent="progressPercent(row)"
             :show-info="true"
             size="small"
-            status="success"
+            :status="
+              Number(row.Status) === 2
+                ? 'exception'
+                : Number(row.Status) === 0
+                  ? 'active'
+                  : 'success'
+            "
           />
         </template>
         <template #actions="{ row }">

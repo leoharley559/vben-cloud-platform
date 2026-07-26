@@ -21,9 +21,13 @@ import {
   fetchPlayerAuthRecordApi,
 } from '#/api/memberManage/player-authentication';
 import AccountSelect from '#/components/global/account-select.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import {
@@ -44,6 +48,7 @@ const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 
 const exportLoading = ref(false);
 const totalCount = ref(0);
+const tableRows = ref<PlayerAuthRecordItem[]>([]);
 
 const filterLoginAccount = ref('');
 const filterPlayerId = ref('');
@@ -112,11 +117,16 @@ const gridOptions: VxeTableGridOptions<PlayerAuthRecordItem> = {
       slots: { default: 'status' },
       title: '状态',
     },
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PlayerId', minWidth: 100, title: '玩家ID' },
     { field: 'PackageName', minWidth: 120, title: '产品名称' },
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
-    { field: 'Username', minWidth: 110, title: '代理账号' },
+    { field: 'Username', minWidth: 110, slots: { default: 'username' }, title: '代理账号' },
     {
       field: 'AuthScenario',
       formatter: ({ cellValue }) => formatAuthScenario(cellValue),
@@ -189,6 +199,7 @@ const gridOptions: VxeTableGridOptions<PlayerAuthRecordItem> = {
           PageSize: page.pageSize,
         });
         const items = result?.Items || [];
+        tableRows.value = items;
         totalCount.value = Number(result?.Pagination?.MaxCount || items.length);
         return {
           items,
@@ -348,6 +359,18 @@ onMounted(() => {
     </template>
 
     <Grid>
+      <template #username="{ row }">
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.Username"
+        />
+      </template>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
       <template #status="{ row }">
         <Tag :color="getAuthStatusColor(row.ApproveStatus)">
           {{ formatAuthStatus(row.ApproveStatus) }}
@@ -376,6 +399,10 @@ onMounted(() => {
         <span v-else>-</span>
       </template>
     </Grid>
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </OpsListPanel>
 </template>

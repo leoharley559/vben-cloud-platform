@@ -337,7 +337,7 @@ onMounted(() => {
             :data-source="listByType(item.value)"
             :loading="loading"
             :pagination="false"
-            :row-key="(row, index) => String(row.Id || index)"
+            :row-key="(row) => String(row.Id ?? '')"
             size="small"
           >
             <template #bodyCell="{ column, record }">
@@ -384,7 +384,7 @@ onMounted(() => {
         :data-source="remarks"
         :loading="loading"
         :pagination="false"
-        :row-key="(row, index) => String(row.Id || index)"
+        :row-key="(row) => String(row.Id ?? '')"
         size="small"
       >
         <template #bodyCell="{ column, record }">
@@ -464,7 +464,7 @@ onMounted(() => {
         :data-source="logs"
         :loading="logsLoading"
         :pagination="false"
-        :row-key="(row, index) => String(row.Id || index)"
+        :row-key="(row) => String(row.Id ?? '')"
         size="small"
       >
         <template #bodyCell="{ column, record }">

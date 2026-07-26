@@ -85,7 +85,7 @@ function formatDateTime(
 
 function div100(value: unknown) {
   const num = Number(value);
-  return Number.isFinite(num) ? num / 100 : value;
+  return Number.isFinite(num) ? (num / 100).toFixed(2) : value;
 }
 
 function openClose(value: unknown, openText = '开启', closeText = '关闭') {

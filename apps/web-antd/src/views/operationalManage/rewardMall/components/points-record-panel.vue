@@ -22,8 +22,10 @@ import {
 } from '#/api/operationManage/reward-mall';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatActivityType } from '#/utils/bonus-reward';
@@ -133,11 +135,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildExportQuery() {
-  const {
-    Page: _page,
-    PageSize: _size,
-    ...rest
-  } = buildQuery({
+  const { Page: _page, PageSize: _size, ...rest } = buildQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -166,7 +164,7 @@ const gridOptions: VxeTableGridOptions<PointsRecordRow> = {
       title: '游戏账号(玩家状态)',
     },
     { field: 'PackageName', minWidth: 110, title: '所属产品' },
-    { field: 'Username', minWidth: 110, title: '代理账号' },
+    { field: 'Username', minWidth: 110, slots: { default: 'username' }, title: '代理账号' },
     {
       field: 'VipLevel',
       formatter: ({ cellValue }) =>
@@ -405,6 +403,12 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #username="{ row }">
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.Username"
+        />
+      </template>
       <template #loginAccount="{ row }">
         <div class="whitespace-pre-line">
           <PlayerAccountLink
@@ -418,7 +422,11 @@ onMounted(() => {
       </template>
     </Grid>
 
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </div>
 
   <Result

@@ -21,6 +21,8 @@ import {
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   exportBackWaterRecordApi,
   fetchBackWaterRecordApi,
@@ -30,6 +32,7 @@ import {
 } from '#/api/gameManage/back-water';
 import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -203,7 +206,12 @@ function queryParams(page: { currentPage: number; pageSize: number }) {
 const systemColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
   { type: 'checkbox', width: 50 },
   { field: 'OrderId', minWidth: 190, title: '订单号' },
-  { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+  {
+    field: 'LoginAccount',
+    minWidth: 120,
+    slots: { default: 'loginAccount' },
+    title: '游戏账号',
+  },
   {
     field: 'VipLevel',
     formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
@@ -211,7 +219,7 @@ const systemColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
     title: 'VIP 等级',
   },
   { field: 'LevelName', minWidth: 110, title: '玩家层级' },
-  { field: 'AdminName', minWidth: 110, title: '代理账号' },
+  { field: 'AdminName', minWidth: 110, slots: { default: 'adminName' }, title: '代理账号' },
   { field: 'PackageName', minWidth: 120, title: '所属产品' },
   {
     field: 'ChannelName',
@@ -252,7 +260,12 @@ const systemColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
 const manualColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
   { type: 'checkbox', width: 50 },
   { field: 'OrderId', minWidth: 190, title: '订单号' },
-  { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+  {
+    field: 'LoginAccount',
+    minWidth: 120,
+    slots: { default: 'loginAccount' },
+    title: '游戏账号',
+  },
   { field: 'PackageName', minWidth: 120, title: '所属产品' },
   {
     field: 'ChannelName',
@@ -483,8 +496,12 @@ async function submitExport() {
   }
   actionLoading.value = true;
   try {
+    const { Page: _page, PageSize: _size, ...query } = queryParams({
+      currentPage: 1,
+      pageSize: 20,
+    });
     const result = await exportBackWaterRecordApi('summary', {
-      ...queryParams({ currentPage: 1, pageSize: 20 }),
+      ...query,
       GoogleCode: exportCode.value,
     });
     exportVisible.value = false;
@@ -499,6 +516,13 @@ async function submitExport() {
 }
 
 function openExport() {
+  const rows =
+    (gridApi.grid?.getTableData?.()?.fullData as ReviewRow[] | undefined) ||
+    [];
+  if (rows.length < 1) {
+    message.warning('暂无数据可导出');
+    return;
+  }
   exportCode.value = '';
   exportVisible.value = true;
 }
@@ -622,6 +646,18 @@ onMounted(async () => {
 
     <div class="data-grid">
       <Grid>
+        <template #adminName="{ row }">
+          <AgencyAccountLink
+            :admin-id="resolveAgencyAdminId(row)"
+            :username="row.AdminName"
+          />
+        </template>
+        <template #loginAccount="{ row }">
+          <PlayerAccountLink
+            :login-account="String(row.LoginAccount || '')"
+            :player-id="row.PlayerId as number | string | undefined"
+          />
+        </template>
         <template #action="{ row }">
           <Space v-if="pending(row)" :size="0">
             <Button

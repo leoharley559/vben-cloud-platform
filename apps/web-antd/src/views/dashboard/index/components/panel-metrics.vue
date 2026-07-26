@@ -49,6 +49,9 @@ const cards = computed<MetricCard[]>(() => {
   const yWin = toNumber(yesterday.SumTransWinMoney1);
   const yPay = toNumber(yesterday.SumPayMergerMoney);
   const yWithdraw = toNumber(yesterday.SumWithdrawMoney);
+  // 对齐日报公司输赢：盈利 = -返奖
+  const profit = -win;
+  const yProfit = -yWin;
 
   const map: Record<string, MetricCard> = {
     SumTransBetMoney1: {
@@ -73,10 +76,10 @@ const cards = computed<MetricCard[]>(() => {
       accent: '#febf5b',
       key: 'WinSubBet',
       label: '盈利',
-      primary: hide ? '***' : String(centsToYuan(bet - win)),
-      secondary: bet ? `${(((bet - win) / bet) * 100).toFixed(2)}%` : '0%',
-      secondaryLabel: '盈率',
-      secondaryPositive: true,
+      primary: hide ? '***' : String(centsToYuan(profit)),
+      secondary: formatComparePercent(profit - yProfit, yProfit),
+      secondaryLabel: '较昨日',
+      secondaryPositive: profit - yProfit >= 0,
     },
     SumTotalPayMoney: {
       accent: '#34bfa3',

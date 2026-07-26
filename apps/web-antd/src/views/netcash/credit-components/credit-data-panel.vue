@@ -15,12 +15,15 @@ import {
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 export interface CreditColumn {
   field: string;
   formatter?: (value: unknown, row: Record<string, unknown>) => string;
   minWidth?: number;
+  /** vxe 列 slot 名，由父组件提供单元格内容 */
+  slot?: string;
   title: string;
 }
 
@@ -133,16 +136,19 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     { type: 'seq' as const, width: 56, title: '序号' },
     ...props.config.columns.map((column) => ({
       field: column.field,
-      formatter: column.formatter
-        ? ({
-            cellValue,
-            row,
-          }: {
-            cellValue: unknown;
-            row: Record<string, unknown>;
-          }) => column.formatter!(cellValue, row)
-        : undefined,
+      formatter: column.slot
+        ? undefined
+        : column.formatter
+          ? ({
+              cellValue,
+              row,
+            }: {
+              cellValue: unknown;
+              row: Record<string, unknown>;
+            }) => column.formatter!(cellValue, row)
+          : undefined,
       minWidth: column.minWidth || 120,
+      slots: column.slot ? { default: column.slot } : undefined,
       title: column.title,
     })),
     ...(props.config.showActions
@@ -346,6 +352,21 @@ defineExpose({
     </div>
 
     <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
+      <template
+        v-for="column in config.columns.filter(
+          (item) => item.slot && item.slot !== 'loginAccount',
+        )"
+        :key="column.slot"
+        #[column.slot!]="{ row }"
+      >
+        <slot :name="column.slot" :row="row" />
+      </template>
       <template v-if="config.showActions" #actions="{ row }">
         <slot name="actions" :row="row"></slot>
       </template>

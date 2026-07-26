@@ -21,8 +21,11 @@ import dayjs from 'dayjs';
 
 import { fetchUserWinLossListApi } from '#/api/dataClose/player-report';
 import AccountSelect from '#/components/global/account-select.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
@@ -120,8 +123,8 @@ function formatVenue(gameType: unknown) {
   return map[key] || key || '-';
 }
 
-function rowKey(row: Row, index: number) {
-  return `${row.LoginAccount ?? ''}-${row.GameType ?? ''}-${row.PackageName ?? ''}-${index}`;
+function rowKey(row: Row) {
+  return `${row.LoginAccount ?? ''}-${row.GameType ?? ''}-${row.PackageName ?? ''}`;
 }
 
 function disabledDate(current: Dayjs) {
@@ -521,7 +524,17 @@ onMounted(async () => {
         </template>
       </template>
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'SumBetWin'">
+        <PlayerAccountLink
+          v-if="column.key === 'LoginAccount'"
+          :login-account="String(record.LoginAccount || '')"
+          :player-id="record.PlayerId as number | string | undefined"
+        />
+        <AgencyAccountLink
+          v-else-if="column.key === 'Username'"
+          :admin-id="resolveAgencyAdminId(record)"
+          :username="record.Username"
+        />
+        <template v-else-if="column.key === 'SumBetWin'">
           <span
             :style="{
               color: playerWinLoss(record) < 0 ? '#f5222d' : '#52c41a',

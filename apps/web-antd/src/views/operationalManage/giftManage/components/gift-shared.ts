@@ -70,6 +70,8 @@ export function giftListTotal(
   }
   return Number(maxCount);
 }
+
+export function formatGiftDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
     return '-';
   }

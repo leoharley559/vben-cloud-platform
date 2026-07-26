@@ -103,7 +103,7 @@ export async function fetchGameRecordListApi(query: GameRecordListQuery) {
 /**
  * 导出游戏投注记录 Excel（游戏记录页导出，pageId=35）。
  *
- * @param params 与列表一致的筛选参数
+ * @param params 与列表一致的筛选参数（不含分页）
  * @returns 导出任务信息（Id、Remark、Status）
  * @see views/memberManage/gameRecord/components/game-record-list-panel.vue
  */

@@ -61,7 +61,7 @@ onMounted(loadData);
         :columns="columns"
         :data-source="list"
         :pagination="false"
-        :row-key="(row, index) => String(row.AdminId || index)"
+        :row-key="(row) => String(row.AdminId ?? row.Username ?? '')"
         size="small"
       />
     </Card>

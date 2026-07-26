@@ -144,7 +144,13 @@ function tailColumns(): ColumnsType<DailyReportRow> {
     },
     {
       customRender: ({ record }) => money(record.SumTransWinMoney1),
-      title: '派送金额',
+      title: () =>
+        h('span', [
+          '派送金额 ',
+          h(Tooltip, { title: '玩家盈亏' }, () =>
+            h('span', { class: 'cursor-help text-gray-400' }, 'ⓘ'),
+          ),
+        ]),
       width: 110,
     },
     {
@@ -197,14 +203,14 @@ const columns = computed<ColumnsType<DailyReportRow>>(() => [
   ...tailColumns(),
 ]);
 
-function rowKey(row: DailyReportRow, index?: number) {
+function rowKey(row: DailyReportRow) {
   if (props.variant === 'device') {
-    return `${row.ReportDay}-${row.DevicePlatform}-${index}`;
+    return `${row.ReportDay}-${row.DevicePlatform}`;
   }
   if (props.variant === 'vip') {
-    return `${row.ReportDay}-${row.VIPLevel}-${index}`;
+    return `${row.ReportDay}-${row.VIPLevel}`;
   }
-  return String(row.ReportDay || index);
+  return String(row.ReportDay ?? '');
 }
 </script>
 

@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 import { fetchPlayerAdjustListApi } from '#/api/operationManage/account-adjust';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -39,6 +40,7 @@ import {
   getAdjustHandleTypeColor,
   normalizeMultiFilterParam,
 } from '#/utils/account-adjust';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -189,8 +191,8 @@ const gridOptions: VxeTableGridOptions<PlayerAdjustListItem> = {
     },
     {
       field: 'AdminUserName',
-      formatter: ({ cellValue }) => String(cellValue || '-'),
       minWidth: 110,
+      slots: { default: 'adminUserName' },
       title: '代理账号',
     },
     {
@@ -429,7 +431,7 @@ onMounted(() => {
               .includes(input.toLowerCase())
         "
       />
-      <ChannelSelect v-model:value="filterChannelIds" style="width: 220px" />
+      <ChannelSelect v-model="filterChannelIds" style="width: 220px" />
       <Input
         v-model:value="filterAdminUserName"
         allow-clear
@@ -522,6 +524,12 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #adminUserName="{ row }">
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.AdminUserName"
+        />
+      </template>
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"

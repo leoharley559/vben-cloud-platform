@@ -20,6 +20,7 @@ import {
 } from '#/api/memberManage/crypto-address';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatCryptoConfigType } from '#/types/crypto-address';
@@ -80,7 +81,12 @@ function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
 
 const gridOptions: VxeTableGridOptions<CryptoAddressListItem> = {
   columns: [
-    { field: 'LoginAccount', minWidth: 130, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 130,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'DigitalType', minWidth: 90, title: '币种' },
     {
@@ -221,6 +227,12 @@ onMounted(() => {
     </template>
 
     <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
       <template #actions="{ row }">
         <Space>
           <Button

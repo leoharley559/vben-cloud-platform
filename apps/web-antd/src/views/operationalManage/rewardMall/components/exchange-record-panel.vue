@@ -146,11 +146,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildExportQuery() {
-  const {
-    Page: _page,
-    PageSize: _size,
-    ...rest
-  } = buildQuery({
+  const { Page: _page, PageSize: _size, ...rest } = buildQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -432,7 +428,11 @@ onMounted(() => {
       </template>
     </Grid>
 
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </div>
 
   <Result

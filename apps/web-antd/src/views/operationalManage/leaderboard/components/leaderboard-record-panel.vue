@@ -21,6 +21,7 @@ import {
 } from '#/api/operationManage/leaderboard';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -95,11 +96,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildExportQuery() {
-  const {
-    Page: _page,
-    PageSize: _size,
-    ...rest
-  } = buildQuery({
+  const { Page: _page, PageSize: _size, ...rest } = buildQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -124,7 +121,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
     {
       field: 'VipLevel',
       formatter: ({ cellValue }) =>
@@ -361,7 +358,18 @@ onMounted(() => {
         <Button v-else disabled title="需要权限 13436">导出 CSV</Button>
       </Space>
     </div>
-    <Grid />
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
+    </Grid>
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </div>
 </template>

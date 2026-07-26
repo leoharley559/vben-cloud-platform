@@ -23,6 +23,7 @@ import {
 } from '#/api/operationManage/account-adjust';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -38,7 +39,8 @@ import {
   formatAdjustWaterType,
   getAdjustApproveColor,
 } from '#/utils/account-adjust';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
+import { getLast3CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { ACCOUNT_ADJUST_AUDIT_PAGE_ID } from '#/utils/security-page-ids';
@@ -61,7 +63,7 @@ const canExport = computed(() => checkPermission(10105));
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const pendingApprove = ref<{ accounts: string; ids: string } | null>(null);
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getLast3CalendarDaysRangeSeconds();
 const selectedRows = ref<PlayerAdjustListItem[]>([]);
 const rejectOpen = ref(false);
 const rejectRow = ref<PlayerAdjustListItem | null>(null);
@@ -199,8 +201,8 @@ const gridOptions: VxeTableGridOptions<PlayerAdjustListItem> = {
     },
     {
       field: 'AdminUserName',
-      formatter: ({ cellValue }) => String(cellValue || '-'),
       minWidth: 110,
+      slots: { default: 'adminUserName' },
       title: '代理账号',
     },
     {
@@ -476,7 +478,7 @@ onMounted(() => {
               .includes(input.toLowerCase())
         "
       />
-      <ChannelSelect v-model:value="filterChannelIds" style="width: 220px" />
+      <ChannelSelect v-model="filterChannelIds" style="width: 220px" />
       <Input
         v-model:value="filterAdminUserName"
         allow-clear
@@ -544,6 +546,12 @@ onMounted(() => {
         <Tag :color="getAdjustApproveColor(row.Approve)">
           {{ formatAdjustApprove(row.Approve) }}
         </Tag>
+      </template>
+      <template #adminUserName="{ row }">
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.AdminUserName"
+        />
       </template>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

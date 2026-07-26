@@ -22,6 +22,7 @@ import {
   fetchGiftAuditListApi,
   remarkGiftApi,
 } from '#/api/operationManage/gift-manage';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
@@ -606,7 +607,10 @@ onMounted(() => {
     <Grid>
       <template #loginAccount="{ row }">
         <div>
-          <div>{{ row.LoginAccount }}</div>
+          <PlayerAccountLink
+            :login-account="String(row.LoginAccount || '')"
+            :player-id="row.PlayerId as number | string | undefined"
+          />
           <div class="text-xs text-gray-500">
             ({{ formatPlayerStatus(row.PlayerStatus) }})
           </div>

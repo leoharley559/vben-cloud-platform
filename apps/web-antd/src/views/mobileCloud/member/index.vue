@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue';
 import { Card, Input, Spin, Table } from 'ant-design-vue';
 
 import { fetchPlayerListApi } from '#/api/operationManage/player';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 
 import MobileMvpTip from '../../mobile/components/mobile-mvp-tip.vue';
 
@@ -54,7 +55,15 @@ onMounted(loadData);
         :pagination="false"
         :row-key="(row) => String(row.PlayerId || row.Id)"
         size="small"
-      />
+      >
+        <template #bodyCell="{ column, record }">
+          <PlayerAccountLink
+            v-if="column.key === 'account'"
+            :login-account="String(record.LoginAccount || '')"
+            :player-id="record.PlayerId as number | string | undefined"
+          />
+        </template>
+      </Table>
     </Card>
   </Spin>
 </template>

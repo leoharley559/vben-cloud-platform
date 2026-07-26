@@ -17,7 +17,9 @@ import dayjs from 'dayjs';
 
 import { fetchBonusRecordListApi } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -294,7 +296,7 @@ const gridOptions: VxeTableGridOptions<BonusRecordListItem> = {
       minWidth: 170,
       title: '首存时间',
     },
-    { field: 'Username', minWidth: 120, title: '代理账号' },
+    { field: 'Username', minWidth: 120, slots: { default: 'username' }, title: '代理账号' },
     {
       field: 'VipLevel',
       formatter: ({ cellValue }) =>
@@ -647,6 +649,12 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #username="{ row }">
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.Username"
+        />
+      </template>
       <template #loginAccount="{ row }">
         <div>
           <PlayerAccountLink

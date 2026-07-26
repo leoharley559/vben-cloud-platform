@@ -1063,7 +1063,7 @@ onMounted(() => {
         <Form.Item label="新密码" required>
           <Input.Password
             v-model:value="passwordForm.NewPassword"
-            maxlength="20"
+            :maxlength="20"
             placeholder="8–20 位，字母+数字"
           />
         </Form.Item>

@@ -185,6 +185,7 @@ const totalData = ref<{
   SumWalletBalance?: number | string;
 }>({});
 const totalCount = ref(0);
+const tableRows = ref<PlayerListItem[]>([]);
 const exportLoading = ref(false);
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const levelFilterOptions = ref<
@@ -518,8 +519,10 @@ const gridOptions = computed<VxeTableGridOptions<PlayerListItem>>(() => ({
           SumWalletBalance?: number | string;
         };
         totalCount.value = Number(result.Pagination?.MaxCount || 0);
+        const items = result.Items || [];
+        tableRows.value = items;
         return {
-          items: result.Items || [],
+          items,
           total: totalCount.value,
         };
       },
@@ -1184,7 +1187,11 @@ onMounted(async () => {
       :player-level-id="levelPlayerLevelId"
       @success="handleSearch"
     />
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </Page>
 
   <Page v-else auto-content-height title="会员列表">

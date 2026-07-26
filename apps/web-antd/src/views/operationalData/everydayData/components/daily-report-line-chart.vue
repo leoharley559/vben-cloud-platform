@@ -62,7 +62,7 @@ watch(
 );
 
 function toYuan(value: unknown) {
-  return Number(((Number(value || 0) * props.exchangeRate) / 100).toFixed(0));
+  return Number(((Number(value || 0) * props.exchangeRate) / 100).toFixed(2));
 }
 
 function buildSeries(metric: ChartMetric) {

@@ -191,7 +191,7 @@ onMounted(() => {
         :columns="columns"
         :data-source="paramRows"
         :pagination="false"
-        :row-key="(_, index) => `param-${index}`"
+        :row-key="(row) => `param-${row.Key ?? row.Name ?? JSON.stringify(row)}`"
         size="small"
       >
         <template #bodyCell="{ column, record }">

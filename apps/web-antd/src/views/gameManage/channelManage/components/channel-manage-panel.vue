@@ -11,7 +11,9 @@ import {
   updateChannelInviteCodeApi,
 } from '#/api/gameManage';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 
 defineOptions({ name: 'ChannelManagePanel' });
 
@@ -45,7 +47,7 @@ const gridOptions: VxeTableGridOptions<ChannelRow> = {
   columns: [
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
     { field: 'ChannelName', minWidth: 140, title: '渠道名称' },
-    { field: 'PromoterAdminUserName', minWidth: 120, title: '代理账号' },
+    { field: 'PromoterAdminUserName', minWidth: 120, slots: { default: 'promoterUsername' }, title: '代理账号' },
     { field: 'PromoterAdminName', minWidth: 120, title: '代理名称' },
     { field: 'InvitationCode', minWidth: 120, title: '邀请码' },
     {
@@ -145,6 +147,14 @@ function handleSearch() {
       已支持邀请码编辑；打包/短链/登录注册配置待下一迭代。
     </div>
     <Grid>
+      <template #promoterUsername="{ row }">
+        <AgencyAccountLink
+          :admin-id="
+            resolveAgencyAdminId(row, 'PromoterAdminId', 'AdminId')
+          "
+          :username="row.PromoterAdminUserName"
+        />
+      </template>
       <template #action="{ row }">
         <Button v-if="canEdit" size="small" @click="openEdit(row)">
           邀请码

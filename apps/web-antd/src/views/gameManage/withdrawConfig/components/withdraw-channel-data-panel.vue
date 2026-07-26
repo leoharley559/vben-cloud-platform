@@ -252,7 +252,7 @@ onMounted(() => {
           :columns="columns"
           :data-source="list"
           :pagination="false"
-          :row-key="(row, index) => String(row.Id ?? `${row.Account}-${index}`)"
+          :row-key="(row) => String(row.Id ?? row.Account ?? '')"
           :scroll="{ x: 1100 }"
           size="small"
           @change="handleTableChange"

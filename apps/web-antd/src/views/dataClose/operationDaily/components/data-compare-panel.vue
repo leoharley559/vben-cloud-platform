@@ -227,15 +227,14 @@ function recomputeBucket(b: CompareBucket) {
         100
       ).toFixed(2)
     : '0.00';
-  const firm = num(b.SumTransBetMoney1) - num(b.SumTransWinMoney1);
+  const firm = -num(b.SumTransWinMoney1);
   b.FirmBunko = firm.toFixed(2);
   b.Surplus = num(b.SumTransBetMoney1)
     ? ((firm / num(b.SumTransBetMoney1)) * 100).toFixed(2)
     : '0.00';
   b.FullBring = (num(b.SumPayMergerMoney) - num(b.SumWithdrawMoney)).toFixed(2);
   b.Income = (
-    num(b.SumTransBetMoney1) -
-    num(b.SumTransWinMoney1) +
+    -num(b.SumTransWinMoney1) +
     num(b.SumAccountChangeSumNum) -
     num(b.SumRedSumNum) -
     num(b.SumBetWaterMoney) -

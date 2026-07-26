@@ -67,16 +67,11 @@ export function resolveChartFieldValue(
       return w ? Number(((w / (pay || 1)) * 100).toFixed(2)) : 0;
     }
     case 'FirmBunko': {
-      return Number(
-        (
-          (num(row.SumTransBetMoney1) - num(row.SumTransWinMoney1)) /
-          100
-        ).toFixed(2),
-      );
+      return Number((-num(row.SumTransWinMoney1) / 100).toFixed(2));
     }
     case 'Surplus': {
       const bet = num(row.SumTransBetMoney1);
-      const firm = num(row.SumTransBetMoney1) - num(row.SumTransWinMoney1);
+      const firm = -num(row.SumTransWinMoney1);
       return bet ? Number(((firm / bet) * 100).toFixed(2)) : 0;
     }
     case 'FullBring': {
@@ -89,8 +84,7 @@ export function resolveChartFieldValue(
     }
     case 'Income': {
       const income =
-        num(row.SumTransBetMoney1) -
-        num(row.SumTransWinMoney1) +
+        -num(row.SumTransWinMoney1) +
         -Math.abs(num(row.SumAccountChangeSumNum)) -
         num(row.SumRedSumNum) -
         num(row.SumBetWaterMoney) -
@@ -173,7 +167,7 @@ export function applyCompareFormulas(data: Record<string, CompareBucket>) {
           100
         ).toFixed(2)
       : '0.00';
-    const firm = num(bucket.SumTransBetMoney1) - num(bucket.SumTransWinMoney1);
+    const firm = -num(bucket.SumTransWinMoney1);
     next.FirmBunko = firm.toFixed(2);
     next.Surplus = num(bucket.SumTransBetMoney1)
       ? ((firm / num(bucket.SumTransBetMoney1)) * 100).toFixed(2)
@@ -182,8 +176,7 @@ export function applyCompareFormulas(data: Record<string, CompareBucket>) {
       num(bucket.SumPayMergerMoney) - num(bucket.SumWithdrawMoney)
     ).toFixed(2);
     next.Income = (
-      num(bucket.SumTransBetMoney1) -
-      num(bucket.SumTransWinMoney1) +
+      -num(bucket.SumTransWinMoney1) +
       num(bucket.SumAccountChangeSumNum) -
       num(bucket.SumRedSumNum) -
       num(bucket.SumBetWaterMoney) -
@@ -240,11 +233,10 @@ export function buildMetricRow(
   return row;
 }
 
-/** 公司收入（运营日报）：bet-win - change - red - water - commission */
+/** 公司收入（运营日报）：公司输赢(-派送) - change - red - water - commission */
 export function calcCompanyIncome(item: CompareBucket) {
   return (
-    num(item.SumTransBetMoney1) -
-    num(item.SumTransWinMoney1) -
+    calcCompanyWin(item) -
     num(item.SumAccountChangeSumNum) -
     num(item.SumRedSumNum) -
     num(item.SumBetWaterMoney) -
@@ -252,8 +244,9 @@ export function calcCompanyIncome(item: CompareBucket) {
   );
 }
 
+/** 公司输赢 = -派送金额 */
 export function calcCompanyWin(item: CompareBucket) {
-  return num(item.SumTransBetMoney1) - num(item.SumTransWinMoney1);
+  return -num(item.SumTransWinMoney1);
 }
 
 export function calcOperatingCost(item: CompareBucket) {

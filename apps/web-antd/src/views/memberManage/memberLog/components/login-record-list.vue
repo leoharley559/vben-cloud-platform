@@ -21,6 +21,7 @@ import {
 } from '#/api/memberManage/member-logs';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -43,6 +44,7 @@ const canExport = computed(() => checkPermission(12246));
 const defaultRange = getTodayRangeSeconds();
 const exportLoading = ref(false);
 const totalCount = ref(0);
+const tableRows = ref<LoginLogListItem[]>([]);
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 
 const filterLoginAccount = ref('');
@@ -115,7 +117,12 @@ function getQueryParams() {
 const gridOptions: VxeTableGridOptions<LoginLogListItem> = {
   columns: [
     { type: 'seq', title: '序号', width: 60 },
-    { field: 'LoginAccount', minWidth: 130, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 130,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     {
       field: 'DataFlag',
       formatter: ({ cellValue }) => formatMemberType(cellValue),
@@ -163,6 +170,7 @@ const gridOptions: VxeTableGridOptions<LoginLogListItem> = {
           PageSize: page.pageSize,
         });
         const items = result.Items || [];
+        tableRows.value = items;
         totalCount.value = Number(result.Pagination?.MaxCount || items.length);
         return {
           items,
@@ -310,7 +318,18 @@ onMounted(() => {
       </Button>
     </template>
 
-    <Grid />
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
+    </Grid>
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </OpsListPanel>
 </template>

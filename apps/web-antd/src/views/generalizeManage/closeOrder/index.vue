@@ -117,7 +117,7 @@ function formatCloseOrderDate(value?: number | string) {
 
 function netMoney(row: CloseOrderItem) {
   const value = new BigNumber(row.Money || 0).minus(row.ServiceCharge || 0);
-  return value.isNaN() ? '-' : value.toFixed(0);
+  return value.isNaN() ? '-' : value.toFixed(2);
 }
 
 function buildColumns() {

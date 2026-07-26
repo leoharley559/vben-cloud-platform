@@ -26,7 +26,7 @@ import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getLast3CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   canShowRechargeConfirmEmptyOrder,
@@ -75,7 +75,7 @@ const replaceOpen = ref(false);
 const replaceRow = ref<RechargeListItem | null>(null);
 const blankOpen = ref(false);
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getLast3CalendarDaysRangeSeconds();
 const filterOrderId = ref('');
 const filterLoginAccount = ref('');
 const filterPlayerId = ref('');

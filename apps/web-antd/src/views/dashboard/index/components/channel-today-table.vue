@@ -208,7 +208,7 @@ onMounted(() => {
       :loading="loading"
       :locale="{ emptyText: '暂无渠道今日数据' }"
       :pagination="false"
-      :row-key="(row, index) => String(row.ChannelId ?? index)"
+      :row-key="(row) => String(row.ChannelId ?? row.ChannelName ?? '')"
       :scroll="{ x: 1100, y: 420 }"
       size="small"
     />

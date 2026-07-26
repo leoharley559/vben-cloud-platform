@@ -17,6 +17,7 @@ import { formatOperationDateTime } from '#/utils/operation-status';
 
 import OperationListPanel from '../components/operation-list-panel.vue';
 import type { OperationListConfig } from '../components/operation-list-panel.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 
 defineOptions({ name: 'ActivityStatistics' });
 
@@ -24,7 +25,7 @@ const { checkPermission } = useCloudPermission();
 const activeTab = ref('visit');
 
 const visitColumns: OperationListConfig['columns'] = [
-  { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+  { field: 'LoginAccount', minWidth: 120, slot: 'loginAccount', title: '游戏账号' },
   { field: 'PackageName', minWidth: 120, title: '产品包' },
   {
     field: 'VisitTime',
@@ -87,7 +88,7 @@ const tabs = computed(() =>
     {
       config: {
         columns: [
-          { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+          { field: 'LoginAccount', minWidth: 120, slot: 'loginAccount', title: '游戏账号' },
           { field: 'PrizeName', minWidth: 120, title: '奖品' },
           {
             field: 'CreateTime',
@@ -140,7 +141,14 @@ onMounted(() => {
           <OperationListPanel
             v-if="activeTab === item.key"
             :config="item.config"
-          />
+          >
+            <template #loginAccount="{ row }">
+              <PlayerAccountLink
+                :login-account="String(row.LoginAccount || '')"
+                :player-id="row.PlayerId as number | string | undefined"
+              />
+            </template>
+          </OperationListPanel>
         </Tabs.TabPane>
       </Tabs>
     </Card>

@@ -244,7 +244,7 @@ function fillFromRow(row: GameTitleItem) {
     ? row.Rules.map((item) => ({
         ...item,
         Value: isDollarRule(item)
-          ? Number(((Number(item.Value) || 0) / 100).toFixed(0))
+          ? Number(((Number(item.Value) || 0) / 100).toFixed(2))
           : Number(item.Value) || 1,
       }))
     : [{ SubType: 1, TargetId: 0, Type: 1, Value: 1 }];

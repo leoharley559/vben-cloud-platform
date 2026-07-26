@@ -55,6 +55,7 @@ const canViewPage = computed(() => checkPermission(10023));
 const defaultRange = getTodayRangeSeconds();
 const totalData = ref<RelationQueryTotal>({});
 const totalCount = ref(0);
+const tableRows = ref<RelationQueryItem[]>([]);
 const exportLoading = ref(false);
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 
@@ -200,8 +201,10 @@ const gridOptions: VxeTableGridOptions<RelationQueryItem> = {
         });
         totalData.value = result?.Total || {};
         totalCount.value = Number(result?.Pagination?.MaxCount || 0);
+        const items = result?.Items || [];
+        tableRows.value = items;
         return {
-          items: result?.Items || [],
+          items,
           total: totalCount.value,
         };
       },
@@ -404,16 +407,19 @@ onMounted(() => {
         <Grid>
           <template #loginAccount="{ row }">
             <PlayerAccountLink
-              v-if="row.LoginAccount"
-              :login-account="String(row.LoginAccount)"
+              :login-account="String(row.LoginAccount || '')"
+              :player-id="row.PlayerId as number | string | undefined"
             />
-            <span v-else>--</span>
           </template>
         </Grid>
       </OpsListPanel>
     </Card>
 
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </Page>
 
   <Page v-else auto-content-height title="关联号查询">

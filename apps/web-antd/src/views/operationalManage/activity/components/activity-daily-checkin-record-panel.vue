@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchDailyCheckInPlayerRecordApi } from '#/api/operationManage/activity';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -43,7 +44,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
     { field: 'EventId', minWidth: 90, title: '活动ID' },
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
     { field: 'PackageName', minWidth: 120, title: '产品包' },
     {
       field: 'EventType',
@@ -116,6 +117,13 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
-    <Grid />
+    <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
+    </Grid>
   </div>
 </template>

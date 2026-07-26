@@ -287,7 +287,7 @@ onMounted(() => {
       :data-source="walletList"
       :loading="loading"
       :pagination="false"
-      :row-key="(record, index) => `${record.GameId}-${index}`"
+      :row-key="(record) => String(record.GameId ?? record.GameName ?? '')"
       size="small"
     >
       <template #bodyCell="{ column, record }">

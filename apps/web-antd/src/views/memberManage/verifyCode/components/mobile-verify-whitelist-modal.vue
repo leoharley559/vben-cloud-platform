@@ -19,6 +19,7 @@ import {
   fetchMobileVerifyWhitelistApi,
 } from '#/api/memberManage/mobile-verify-code';
 import { queryPlayerByAccountApi } from '#/api/operationManage/player';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 
 defineOptions({ name: 'MobileVerifyWhitelistModal' });
@@ -270,7 +271,12 @@ function handleTableChange(pagination: {
       @change="handleTableChange"
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'actions'">
+        <PlayerAccountLink
+          v-if="column.key === 'account'"
+          :login-account="String(record.Account || '')"
+          :player-id="record.PlayerId"
+        />
+        <template v-else-if="column.key === 'actions'">
           <Button
             danger
             size="small"

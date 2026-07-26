@@ -18,7 +18,9 @@ import dayjs from 'dayjs';
 import { fetchRewardPointAdjustListApi } from '#/api/operationManage/reward-mall';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { getTodayRangeSeconds } from '#/utils/date-range';
@@ -175,7 +177,7 @@ const gridOptions: VxeTableGridOptions<AdjustRecordRow> = {
       slots: { default: 'loginAccount' },
       title: '游戏账号',
     },
-    { field: 'AdminUserName', minWidth: 110, title: '代理账号' },
+    { field: 'AdminUserName', minWidth: 110, slots: { default: 'adminUserName' }, title: '代理账号' },
     { field: 'PackageName', minWidth: 100, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '所属渠道' },
     {
@@ -441,6 +443,12 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #adminUserName="{ row }">
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.AdminUserName"
+        />
+      </template>
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"

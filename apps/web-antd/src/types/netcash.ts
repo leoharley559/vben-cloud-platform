@@ -1,9 +1,30 @@
 import type { ChannelId } from '#/types/channel-config';
 import type { CloudPagination } from '#/types/operation-manage';
 
+/** 代理返水单行（场馆维度） */
+export interface AgentFanDianLine {
+  id?: number | string;
+  name?: string;
+  /** 存储可能是百分比数值（2.6）或小数比例（0.026） */
+  rebate?: number | string;
+  type?: string;
+}
+
+/** 代理返水单等级：grade_S / grade_A ... */
+export interface AgentFanDianGrade {
+  earnestMoney?: number | string;
+  effectiveFlow?: number | string;
+  gameConfigList?: AgentFanDianLine[];
+  name?: string;
+}
+
+export type AgentFanDianConfig = Record<string, AgentFanDianGrade>;
+
 export interface AgencyListItem {
   AccountLevel?: number;
   AccountType?: number;
+  /** 游戏返水配置，接口下发 JSON 字符串 */
+  AgentFanDianConfig?: AgentFanDianConfig | string;
   CommissionTemplateId?: number;
   CreateTime?: number | string;
   DeveloperName?: string;

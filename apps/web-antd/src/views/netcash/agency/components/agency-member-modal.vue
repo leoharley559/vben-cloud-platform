@@ -23,6 +23,7 @@ import {
   addAgencyPlayerApi,
   checkAgencyPlayersApi,
 } from '#/api/netcash/agency';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 type Row = Record<string, any>;
@@ -250,7 +251,13 @@ watch(
       size="small"
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'OriginalAdmin'">
+        <template v-if="column.key === 'PlayerAccount'">
+          <PlayerAccountLink
+            :login-account="String(record.PlayerAccount || '')"
+            :player-id="record.PlayerId as number | string | undefined"
+          />
+        </template>
+        <template v-else-if="column.key === 'OriginalAdmin'">
           {{ record.OriginalAdmin || '玩家不存在' }}
         </template>
         <template v-else-if="column.key === 'valid'">

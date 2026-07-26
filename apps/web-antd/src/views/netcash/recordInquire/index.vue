@@ -23,6 +23,9 @@ import { formatNetcashDateTime } from '#/utils/netcash';
 import { formatPlayerStatus } from '#/utils/player-status';
 
 import RecordQueryPanel from './components/record-query-panel.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 
 defineOptions({ name: 'RecordInquire' });
 
@@ -116,9 +119,9 @@ const applyNote = (value: unknown, row: Record<string, unknown>) => {
 };
 const base = [
   { field: 'CreateTime', formatter: dt, title: '日期' },
-  { field: 'LoginAccount', title: '游戏账号' },
+  { field: 'LoginAccount', slot: 'loginAccount', title: '游戏账号' },
   { field: 'PackageName', title: '所属产品' },
-  { field: 'AgentAccount', title: '代理账号' },
+  { field: 'AgentAccount', slot: 'agencyAccount', title: '代理账号' },
   { field: 'AgentName', title: '代理名称' },
 ];
 
@@ -236,10 +239,11 @@ const tabs = computed(() =>
           {
             field: 'LoginAccount',
             formatter: playerAccount,
+            slot: 'loginAccount',
             title: '游戏账号',
           },
           { field: 'PackageName', title: '所属产品' },
-          { field: 'Username', title: '代理账号' },
+          { field: 'Username', slot: 'agencyAccount', title: '代理账号' },
           {
             field: 'VipLevel',
             formatter: (value: unknown) => `VIP ${value ?? '-'}`,
@@ -354,7 +358,7 @@ const tabs = computed(() =>
     {
       config: {
         columns: [
-          { field: 'AdminAccount', title: '代理账号' },
+          { field: 'AdminAccount', slot: 'agencyAccount', title: '代理账号' },
           { field: 'OrderId', title: '订单号' },
           {
             field: 'WalletType',
@@ -438,7 +442,30 @@ onMounted(() => {
           <RecordQueryPanel
             v-if="active === item.key && checkPermission(item.inner)"
             :config="item.config as RecordQueryPanelConfig"
-          />
+          >
+            <template #agencyAccount="{ row }">
+              <AgencyAccountLink
+                :admin-id="resolveAgencyAdminId(row)"
+                :username="
+                  row.AgentAccount ?? row.Username ?? row.AdminAccount
+                "
+              />
+            </template>
+            <template #loginAccount="{ row }">
+              <span v-if="Number(row.PlayerStatus)">
+                <PlayerAccountLink
+                  :login-account="String(row.LoginAccount || '')"
+                  :player-id="row.PlayerId as number | string | undefined"
+                />
+                （{{ formatPlayerStatus(Number(row.PlayerStatus)) }}）
+              </span>
+              <PlayerAccountLink
+                v-else
+                :login-account="String(row.LoginAccount || '')"
+                :player-id="row.PlayerId as number | string | undefined"
+              />
+            </template>
+          </RecordQueryPanel>
           <Result
             v-else-if="active === item.key"
             status="403"

@@ -608,7 +608,7 @@ onMounted(async () => {
         :data-source="rows"
         :loading="loading"
         :pagination="false"
-        :row-key="(row, index) => row.Id || row.GameType || index"
+        :row-key="(row) => row.Id || row.GameType || ''"
         :scroll="{ x: 'max-content' }"
         bordered
         size="small"

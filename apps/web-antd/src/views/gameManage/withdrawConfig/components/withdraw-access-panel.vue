@@ -29,6 +29,7 @@ import {
   fetchWithdrawAccessStatisticsApi,
 } from '#/api/gameManage/withdraw-data';
 import PassPopup from '#/components/security/pass-popup.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -260,10 +261,9 @@ function openExport() {
     message.warning('暂无数据可导出');
     return;
   }
-  passPopupRef.value?.validate(
-    VISIT_STATISTIC_EXPORT_PAGE_ID,
-    detailQuery(false),
-  );
+  passPopupRef.value?.validate(VISIT_STATISTIC_EXPORT_PAGE_ID, {
+    ...detailQuery(false),
+  });
 }
 
 async function exportDetail(payload: Record<string, unknown>) {
@@ -477,12 +477,7 @@ onMounted(() => {
                 :columns="detailColumns"
                 :data-source="detailList"
                 :pagination="false"
-                :row-key="
-                  (row, index) =>
-                    String(
-                      row.Id ?? `${row.LoginAccount}-${row.BeginTime}-${index}`,
-                    )
-                "
+                :row-key="(row) => String(row.Id ?? `${row.LoginAccount}-${row.BeginTime}`)"
                 :scroll="{ x: 1000 }"
                 size="small"
                 @change="changeDetailSort"
@@ -505,6 +500,12 @@ onMounted(() => {
                   </template>
                   <template v-else-if="column.key === 'AppType'">
                     {{ resolveAppTypeLabel(record.AppType, deviceOptions) }}
+                  </template>
+                  <template v-else-if="column.key === 'LoginAccount'">
+                    <PlayerAccountLink
+                      :login-account="String(record.LoginAccount || '')"
+                      :player-id="record.PlayerId as number | string | undefined"
+                    />
                   </template>
                 </template>
               </Table>
@@ -562,7 +563,7 @@ onMounted(() => {
                   :columns="deviceColumns"
                   :data-source="deviceList"
                   :pagination="false"
-                  :row-key="(_, index) => `device-${index}`"
+                  row-key="DeviceType"
                   size="small"
                 >
                   <template #summary>
@@ -600,7 +601,7 @@ onMounted(() => {
                   :columns="userColumns"
                   :data-source="userTypeList"
                   :pagination="false"
-                  :row-key="(_, index) => `user-${index}`"
+                  row-key="UserType"
                   size="small"
                 >
                   <template #summary>
@@ -631,7 +632,7 @@ onMounted(() => {
                 :columns="vipColumns"
                 :data-source="vipList"
                 :pagination="false"
-                :row-key="(_, index) => `vip-${index}`"
+                row-key="VipLevel"
                 :scroll="{ x: 900 }"
                 size="small"
               >
@@ -670,7 +671,11 @@ onMounted(() => {
       </Tabs.TabPane>
     </Tabs>
 
-    <PassPopup ref="passPopupRef" type="csv" @confirm="exportDetail" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="exportDetail"
+    />
   </div>
   <Empty v-else description="无提现访问记录权限" />
 </template>

@@ -2,6 +2,8 @@
 
 import dayjs from 'dayjs';
 
+import { formatAmountFromCent } from '#/utils/format-amount';
+
 export function toNumber(value: unknown) {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -91,9 +93,9 @@ export function normalizeTimedMap(
   return mapped;
 }
 
-/** 分转元（整数展示，对齐旧站 count-to） */
+/** 分转元展示（保留两位小数，对齐旧站 RMBfilters） */
 export function centsToYuan(value: unknown) {
-  return Math.round(toNumber(value) / 100);
+  return formatAmountFromCent(toNumber(value));
 }
 
 /** 环比百分比文案，如 +12% / -3% */
@@ -184,8 +186,7 @@ export const PANEL_METRICS: PanelMetricDef[] = [
     label: '返奖金额',
   },
   {
-    calc: (row) =>
-      toNumber(row.SumTransBetMoney1) - toNumber(row.SumTransWinMoney1),
+    calc: (row) => -toNumber(row.SumTransWinMoney1),
     hasDigits: true,
     key: 'WinSubBet',
     label: '盈利',

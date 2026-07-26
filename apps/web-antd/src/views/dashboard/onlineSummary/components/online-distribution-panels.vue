@@ -99,7 +99,7 @@ const userColumns = [
           :data-source="venueList"
           :pagination="false"
           :scroll="{ y: 360 }"
-          :row-key="(row, index) => `v-${resolveVenueGameId(row) || index}`"
+          :row-key="(row) => `v-${resolveVenueGameId(row) || row.GameName || ''}`"
           size="small"
         />
       </div>
@@ -118,7 +118,7 @@ const userColumns = [
             :data-source="userList"
             :pagination="false"
             :scroll="{ y: 360 }"
-            :row-key="(row, index) => `u-${row.IpDetailName || index}`"
+            :row-key="(row) => `u-${row.IpDetailName || row.Ip || ''}`"
             size="small"
           />
         </div>

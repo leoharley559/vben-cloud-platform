@@ -52,6 +52,18 @@ export function getLast7CalendarDaysRangeSeconds() {
   };
 }
 
+/**
+ * 默认查询近 3 个自然日（含今天）（unix 秒）。
+ * 对齐旧站 `getBeforeDateTimestamp(3)` ～ `getBeforeDateTimestamp()`
+ * （内部 days-1 → 今天−2 日 00:00 ～ 今天 23:59:59）。
+ */
+export function getLast3CalendarDaysRangeSeconds() {
+  return {
+    BeginTime: dayjs().subtract(2, 'day').startOf('day').unix(),
+    EndTime: dayjs().endOf('day').unix(),
+  };
+}
+
 /** 玩家详情登录记录默认：当月（unix 秒） */
 export function getCurrentMonthRangeSeconds() {
   return {

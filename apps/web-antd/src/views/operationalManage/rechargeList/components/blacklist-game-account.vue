@@ -20,6 +20,7 @@ import {
   deleteRechargeBlackPlayerApi,
   fetchRechargeBlackPlayerListApi,
 } from '#/api/operationManage/recharge-extra';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -108,7 +109,7 @@ const gridOptions: VxeTableGridOptions<RechargeBlackPlayerItem> = {
       minWidth: 170,
       title: '禁止日期',
     },
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     {
       field: 'PayType',
@@ -287,6 +288,12 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
       <template #actions="{ row }">
         <Space>
           <Button

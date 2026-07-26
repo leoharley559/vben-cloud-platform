@@ -17,6 +17,8 @@ export interface RecordColumn {
   field: string;
   formatter?: (value: unknown, row: Record<string, unknown>) => unknown;
   minWidth?: number;
+  /** vxe 列 slot 名，由父组件提供单元格内容 */
+  slot?: string;
   title: string;
 }
 
@@ -202,10 +204,13 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     { type: 'seq', title: '序号', width: 60 },
     ...props.config.columns.map((c) => ({
       field: c.field,
-      formatter: c.formatter
-        ? ({ cellValue, row }: any) => c.formatter!(cellValue, row)
-        : undefined,
+      formatter: c.slot
+        ? undefined
+        : c.formatter
+          ? ({ cellValue, row }: any) => c.formatter!(cellValue, row)
+          : undefined,
       minWidth: c.minWidth || 130,
+      slots: c.slot ? { default: c.slot } : undefined,
       title: c.title,
     })),
   ],
@@ -408,6 +413,14 @@ onMounted(() => {
     <div v-if="config.summaryItems?.length" class="mb-4 flex flex-wrap gap-8 rounded bg-gray-50 px-4 py-3">
       <Statistic v-for="item in config.summaryItems" :key="item.field" :title="item.title" :value="money(summaries[item.field])" />
     </div>
-    <Grid />
+    <Grid>
+      <template
+        v-for="column in config.columns.filter((item) => item.slot)"
+        :key="column.slot"
+        #[column.slot!]="{ row }"
+      >
+        <slot :name="column.slot" :row="row" />
+      </template>
+    </Grid>
   </div>
 </template>

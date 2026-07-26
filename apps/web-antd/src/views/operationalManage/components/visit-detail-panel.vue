@@ -22,6 +22,7 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import PassPopup from '#/components/security/pass-popup.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -60,6 +61,7 @@ const { projectConfig } = useProjectConfig();
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const exportLoading = ref(false);
 const totalCount = ref(0);
+const tableRows = ref<VisitDetailRow[]>([]);
 
 /**
  * 对齐旧站 noticeDetail/emailDetail：
@@ -164,11 +166,8 @@ const gridOptions: VxeTableGridOptions<VisitDetailRow> = {
     },
     {
       field: 'LoginAccount',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : String(cellValue),
       minWidth: 120,
+      slots: { default: 'loginAccount' },
       title: '游戏账号',
     },
     {
@@ -185,10 +184,12 @@ const gridOptions: VxeTableGridOptions<VisitDetailRow> = {
       query: async ({ page }) => {
         if (props.canLoad === false) {
           totalCount.value = 0;
+          tableRows.value = [];
           return { items: [], total: 0 };
         }
         const result = await fetchNoticeDetailDataApi(buildQuery(page));
         const items = (result.Items || []) as VisitDetailRow[];
+        tableRows.value = items;
         totalCount.value = Number(result.Pagination?.MaxCount || items.length);
         return {
           items,
@@ -326,8 +327,19 @@ async function handleExport(payload: Record<string, unknown>) {
     <div v-if="canLoad === false" class="py-10 text-center text-gray-400">
       无明细数据查询权限
     </div>
-    <Grid v-else />
+    <Grid v-else>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
+    </Grid>
 
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </OpsListPanel>
 </template>

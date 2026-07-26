@@ -3,9 +3,12 @@ import type { ColumnsType } from 'ant-design-vue/es/table';
 
 import { computed, h } from 'vue';
 
-import { Table, Tag } from 'ant-design-vue';
+import { Table, Tag, Tooltip } from 'ant-design-vue';
 
 import type { ChannelDim, ChannelRow } from '#/utils/channel-data-calc';
+
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { antTableScrollY } from '#/utils/table-height';
 
@@ -64,8 +67,10 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
         }
         return String(record.ReportDay || '');
       },
-      fixed: 'left',
+      // 代理维仅固定「代理账号」；渠道维仍固定日期
+      ...(props.dim === 'channel' ? { fixed: 'left' as const } : {}),
       title: '日期',
+      fixed: 'left',
       width: Number(props.reportType) === 3 ? 200 : 120,
     });
   }
@@ -73,6 +78,11 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
   if (props.dim === 'agent') {
     cols.push(
       {
+        customRender: ({ record }) =>
+          h(AgencyAccountLink, {
+            adminId: resolveAgencyAdminId(record as ChannelRow),
+            username: record.Username,
+          }),
         dataIndex: 'Username',
         fixed: 'left',
         title: '代理账号',
@@ -80,7 +90,6 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
       },
       {
         dataIndex: 'Agentname',
-        fixed: 'left',
         title: '代理名称',
         width: 110,
       },
@@ -92,7 +101,6 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
             type === 1 ? '普通' : '官方',
           );
         },
-        fixed: 'left',
         title: '代理类型',
         width: 100,
       },
@@ -112,8 +120,7 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
         width: 110,
       },
       {
-        dataIndex: 'PackageName',
-        fixed: 'left',
+        dataIndex: 'PackageName', 
         title: '所属产品',
         width: 120,
       },
@@ -175,7 +182,13 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
     },
     {
       customRender: ({ record }) => money(record.SumTransWinMoney1),
-      title: '派送金额',
+      title: () =>
+        h('span', [
+          '派送金额 ',
+          h(Tooltip, { title: '玩家盈亏' }, () =>
+            h('span', { class: 'cursor-help text-gray-400' }, 'ⓘ'),
+          ),
+        ]),
       width: 100,
     },
     {
@@ -231,8 +244,8 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
   return cols;
 });
 
-function rowKey(row: ChannelRow, index?: number) {
-  return `${row.ReportDay}-${row.Username}-${row.ChannelId}-${row.Agentname}-${index}`;
+function rowKey(row: ChannelRow) {
+  return `${row.ReportDay}-${row.Username}-${row.ChannelId}-${row.Agentname}`;
 }
 </script>
 

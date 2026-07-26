@@ -112,7 +112,7 @@ onMounted(loadData);
         :columns="historyColumns"
         :data-source="historyItems"
         :pagination="false"
-        :row-key="(row, index) => String(row.Date || index)"
+        :row-key="(row) => String(row.Date ?? '')"
         size="small"
       />
     </Card>

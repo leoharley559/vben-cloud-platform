@@ -517,7 +517,7 @@ function exportFailItems() {
         size="small"
         :pagination="false"
         :data-source="batchResult?.FailItems || []"
-        :row-key="(_: FailItem, index?: number) => String(index ?? 0)"
+        :row-key="(row: FailItem) => String(row.LoginAccount ?? row.PlayerId ?? JSON.stringify(row))"
         :columns="[
           { title: '游戏账号', dataIndex: 'LoginAccount' },
           { title: '产品名称', dataIndex: 'PackageName' },

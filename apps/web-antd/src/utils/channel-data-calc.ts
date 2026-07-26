@@ -23,12 +23,15 @@ export function calcChannelRow(row: ChannelRow, dim: ChannelDim): ChannelRow {
     sumReg === 0 ? 0 : (sumFirstPayNum / sumReg) * 100
   ).toFixed(2);
   next.AverageFirstPayMoney =
-    sumFirstPayNum === 0 ? 0 : sumFirstPayMoney / sumFirstPayNum;
+    sumFirstPayNum === 0
+      ? 0
+      : Math.round(sumFirstPayMoney / sumFirstPayNum);
   next.DiffPayWithdrawMoney = sumPayMergerMoney - sumWithdrawMoney;
   next.PercentPayWithdraw = (
     sumPayMergerMoney === 0 ? 0 : (sumWithdrawMoney / sumPayMergerMoney) * 100
   ).toFixed(2);
-  next.CompanyProfitMoney = sumTransBetMoney1 - sumTransWinMoney1;
+  // 公司输赢 = -派送金额（对齐 everydayData / 旧站 table.vue）
+  next.CompanyProfitMoney = -sumTransWinMoney1;
   next.PercentProfit = (
     sumTransBetMoney1 === 0
       ? 0

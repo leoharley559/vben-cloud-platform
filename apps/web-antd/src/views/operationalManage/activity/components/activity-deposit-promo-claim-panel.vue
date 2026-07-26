@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchDepositPromoClaimHistoryApi } from '#/api/operationManage/activity';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -59,7 +60,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     },
     { field: 'PlatformOrderId', minWidth: 140, title: '后台订单号' },
     { field: 'GameOrderId', minWidth: 140, title: '游戏订单号' },
-    { field: 'PlayerAccount', minWidth: 120, title: '游戏账号' },
+    { field: 'PlayerAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
     { field: 'PackageName', minWidth: 120, title: '产品包' },
     {
       field: 'PayAmount',
@@ -138,6 +139,13 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       <DatePicker.RangePicker v-model:value="dateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
-    <Grid />
+    <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.PlayerAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
+    </Grid>
   </div>
 </template>

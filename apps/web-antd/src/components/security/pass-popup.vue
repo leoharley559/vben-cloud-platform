@@ -10,10 +10,13 @@ defineOptions({ name: 'PassPopup' });
 const props = withDefaults(
   defineProps<{
     promptMsg?: string;
+    /** 顶部提示样式 */
+    promptType?: 'error' | 'info' | 'success' | 'warning';
     title?: string;
     type?: 'csv' | 'gcode' | 'private';
   }>(),
   {
+    promptType: 'warning',
     type: 'gcode',
   },
 );
@@ -27,6 +30,7 @@ const visible = ref(false);
 const showPassForm = ref(true);
 const validCode = ref('');
 const privatePassword = ref('');
+const filePassword = ref('');
 const pendingOptions = ref<Record<string, unknown>>({});
 
 const dialogTitle = computed(() => {
@@ -52,12 +56,14 @@ const canConfirm = computed(() => {
   if (props.type === 'gcode') {
     return /^\d{6}$/.test(validCode.value);
   }
-  return !!validCode.value;
+  // csv：对齐旧站 PrivatePassword，非空即可
+  return !!filePassword.value.trim();
 });
 
 function resetForm() {
   validCode.value = '';
   privatePassword.value = '';
+  filePassword.value = '';
   pendingOptions.value = {};
 }
 
@@ -66,121 +72,91 @@ function openWithSecurity(
   options: Record<string, unknown> = {},
 ) {
   pendingOptions.value = { ...options };
-  if (pageId && checkSecured(pageId)) {
-    showPassForm.value = true;
-    validCode.value = '';
-    privatePassword.value = '';
-    visible.value = true;
+  const secured = checkSecured(pageId);
+  showPassForm.value = secured;
+  if (!secured) {
+    emit('confirm', { ...pendingOptions.value });
     return;
   }
-  emit('confirm', { ...options });
-}
-
-/** 无安全限制时不弹窗，直接 confirm */
-function validate(
-  pageId?: number | string,
-  options: Record<string, unknown> = {},
-) {
-  openWithSecurity(pageId ?? '', options);
-}
-
-/** 无安全限制时仍弹窗，但不显示密码输入框 */
-function prompt(
-  pageId?: number | string,
-  options: Record<string, unknown> = {},
-) {
-  pendingOptions.value = { ...options };
-  showPassForm.value = !!(pageId && checkSecured(pageId));
-  validCode.value = '';
-  privatePassword.value = '';
   visible.value = true;
 }
 
-function handleClose() {
+function validate(pageId: number | string, options: Record<string, unknown> = {}) {
+  openWithSecurity(pageId, options);
+}
+
+function handleCancel() {
   visible.value = false;
   resetForm();
   emit('close');
 }
 
-function handleConfirm() {
-  if (showPassForm.value) {
-    if (props.type === 'private' && privatePassword.value.trim().length < 6) {
-      return;
-    }
-    if (props.type === 'gcode' && !/^\d{6}$/.test(validCode.value)) {
-      return;
-    }
+function handleOk() {
+  if (!canConfirm.value) {
+    return;
   }
-
-  let payload: Record<string, unknown> = { ...pendingOptions.value };
+  const payload: Record<string, unknown> = { ...pendingOptions.value };
   if (showPassForm.value) {
     if (props.type === 'private') {
-      payload = {
-        ...payload,
-        PrivatePassword: privatePassword.value,
-      };
+      payload.PrivatePassword = privatePassword.value.trim();
+    } else if (props.type === 'gcode') {
+      payload.GoogleCode = validCode.value;
     } else {
-      payload = {
-        ...payload,
-        ValidCode: validCode.value,
-      };
+      payload.PrivatePassword = filePassword.value.trim();
     }
   }
-
-  emit('confirm', payload);
   visible.value = false;
   resetForm();
+  emit('confirm', payload);
 }
 
 defineExpose({
-  prompt,
+  openWithSecurity,
   validate,
 });
 </script>
 
 <template>
   <Modal
-    :confirm-loading="false"
-    :ok-button-props="{ disabled: !canConfirm }"
-    :open="visible"
+    v-model:open="visible"
     :title="dialogTitle"
     destroy-on-close
-    ok-text="确认"
-    cancel-text="取消"
-    width="480px"
-    @cancel="handleClose"
-    @ok="handleConfirm"
+    @cancel="handleCancel"
+    @ok="handleOk"
   >
     <Alert
       v-if="promptMsg"
+      :message="promptMsg"
+      :type="promptType"
       class="mb-3"
       show-icon
-      type="warning"
-      :message="promptMsg"
     />
-    <slot name="description" />
-    <div v-if="showPassForm && type === 'gcode'" class="mt-2">
-      <div class="mb-2 text-sm">谷歌验证码</div>
-      <Input
-        v-model:value="validCode"
-        allow-clear
-        :maxlength="6"
-        placeholder="请输入6位谷歌验证码"
-        @press-enter="handleConfirm"
-      />
-      <p class="mt-2 text-xs text-red-500">
-        如未绑定谷歌验证器，请先在个人中心完成绑定。
-      </p>
+    <div v-if="showPassForm" class="space-y-3">
+      <template v-if="type === 'private'">
+        <div class="text-sm text-gray-500">请输入私人密码</div>
+        <Input.Password
+          v-model:value="privatePassword"
+          allow-clear
+          placeholder="私人密码"
+        />
+      </template>
+      <template v-else-if="type === 'gcode'">
+        <div class="text-sm text-gray-500">请输入谷歌验证码</div>
+        <Input
+          v-model:value="validCode"
+          allow-clear
+          maxlength="6"
+          placeholder="6 位验证码"
+        />
+      </template>
+      <template v-else>
+        <div class="text-sm text-gray-500">请输入文件密码</div>
+        <Input.Password
+          v-model:value="filePassword"
+          allow-clear
+          placeholder="文件密码"
+        />
+      </template>
     </div>
-    <div v-if="showPassForm && type === 'private'" class="mt-2">
-      <div class="mb-2 text-sm">私人密码</div>
-      <Input.Password
-        v-model:value="privatePassword"
-        allow-clear
-        placeholder="请输入私人密码"
-        @press-enter="handleConfirm"
-      />
-    </div>
-    <slot name="extra" />
   </Modal>
 </template>

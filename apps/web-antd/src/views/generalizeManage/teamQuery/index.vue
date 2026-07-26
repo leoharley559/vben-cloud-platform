@@ -21,6 +21,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchTeamQueryListApi } from '#/api/promotion/team-query';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   formatCommissionRate,
@@ -355,15 +356,10 @@ onMounted(() => {
       />
       <Grid>
         <template #adminUsername="{ row }">
-          <Button
-            v-if="canDrillDown"
-            size="small"
-            type="link"
-            @click="handleDrillDown(row)"
-          >
-            {{ row.AdminUsername }}
-          </Button>
-          <span v-else>{{ row.AdminUsername }}</span>
+          <AgencyAccountLink
+            :admin-id="row.AdminId as number | string | undefined"
+            :username="row.AdminUsername"
+          />
         </template>
       </Grid>
     </Card>

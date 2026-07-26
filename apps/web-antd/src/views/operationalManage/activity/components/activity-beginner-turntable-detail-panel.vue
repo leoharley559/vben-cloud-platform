@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchNewPlayerDrawListApi } from '#/api/operationManage/activity';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { formatActivityType } from '#/utils/bonus-reward';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -57,7 +58,7 @@ const prizeStatusMap: Record<number, string> = {
 
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
-    { field: 'Account', minWidth: 120, title: '游戏账号' },
+    { field: 'Account', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
     { field: 'BindPhone', minWidth: 120, title: '手机号' },
     {
       field: 'RegistTime',
@@ -146,6 +147,13 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
-    <Grid />
+    <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.Account || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
+    </Grid>
   </div>
 </template>

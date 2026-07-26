@@ -6,6 +6,7 @@ import { computed, ref, watch } from 'vue';
 import { Button, Input, Modal, Select } from 'ant-design-vue';
 
 import { fetchLeaderboardRecordApi } from '#/api/operationManage/leaderboard';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 
@@ -63,7 +64,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     { field: 'Ranking', minWidth: 80, title: '排名' },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
-    { field: 'LoginAccount', minWidth: 120, title: '游戏账号' },
+    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
     {
       field: 'VipLevel',
       formatter: ({ cellValue }) =>
@@ -157,6 +158,13 @@ watch(
       />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
-    <Grid />
+    <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId as number | string | undefined"
+        />
+      </template>
+    </Grid>
   </Modal>
 </template>

@@ -358,7 +358,7 @@ onMounted(() => {
         :data-source="playerInfo.Data || []"
         :loading="loading"
         :pagination="false"
-        :row-key="(_, index) => `venue-${index}`"
+        :row-key="(row) => `venue-${row.GameId ?? row.GameType ?? row.Name ?? JSON.stringify(row)}`"
         size="small"
       >
         <template #bodyCell="{ column, record }">

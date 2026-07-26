@@ -563,10 +563,7 @@ void loadRedTitles();
               size="small"
               :pagination="false"
               :data-source="batchResult.FailItems"
-              :row-key="
-                (row: { LoginAccount?: string }, index: number) =>
-                  `${row.LoginAccount || 'fail'}-${index}`
-              "
+              :row-key="(row: { LoginAccount?: string; Msg?: string }) => `${row.LoginAccount || 'fail'}-${row.Msg ?? ''}`"
               :columns="[
                 { title: '账号', dataIndex: 'LoginAccount' },
                 {

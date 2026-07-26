@@ -2,7 +2,7 @@
 import type { TableColumnType, TableProps } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, h, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
@@ -24,6 +24,7 @@ import {
   fetchPlayerStatisticsListApi,
 } from '#/api/dataClose/player-report';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
@@ -387,7 +388,11 @@ const columns = computed<TableColumnType<Row>[]>(() => {
   const map: Record<string, TableColumnType<Row>> = {
     LoginAccount: {
       align: 'center',
-      dataIndex: 'LoginAccount',
+      customRender: ({ record }) =>
+        h(PlayerAccountLink, {
+          loginAccount: String(record.LoginAccount || ''),
+          playerId: record.PlayerId as number | string | undefined,
+        }),
       fixed: 'left',
       key: 'LoginAccount',
       title: '玩家账号',
@@ -846,23 +851,31 @@ async function handleCopy() {
   }
 }
 
+function buildExportParams() {
+  const {
+    SearchType: _st,
+    Page: _page,
+    PageSize: _size,
+    ...params
+  } = buildQuery('list');
+  return params;
+}
+
 function handleExportClick() {
   if (total.value < 1) {
     message.warning('暂无数据可导出');
     return;
   }
-  const { Page: _p, PageSize: _ps, SearchType: _st, ...params } =
-    buildQuery('list');
-  passPopupRef.value?.validate(PLAYER_STATISTICS_EXPORT_PAGE_ID, params);
+  passPopupRef.value?.validate(PLAYER_STATISTICS_EXPORT_PAGE_ID, {
+    ...buildExportParams(),
+  });
 }
 
 async function handleExport(payload: Record<string, unknown>) {
   exportLoading.value = true;
   try {
-    const { Page: _p, PageSize: _ps, SearchType: _st, ...params } =
-      buildQuery('list');
     const result = await exportPlayerStatisticsCsvApi({
-      ...params,
+      ...buildExportParams(),
       ...payload,
     });
     if (result?.Id && Number(result.Status) === 0) {
@@ -1082,7 +1095,11 @@ onMounted(() => {
       />
     </div>
 
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </Page>
   <Result v-else status="403" sub-title="无玩家统计报表查看权限" title="403" />
 </template>

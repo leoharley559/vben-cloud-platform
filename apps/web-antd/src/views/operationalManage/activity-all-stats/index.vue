@@ -17,6 +17,7 @@ import { formatOperationDateTime } from '#/utils/operation-status';
 
 import OperationListPanel from '../components/operation-list-panel.vue';
 import type { OperationListConfig } from '../components/operation-list-panel.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 
 defineOptions({ name: 'ActivityAllStats' });
 
@@ -40,7 +41,7 @@ const baseExtraQuery = computed(() => ({
 const visitDetailConfig = computed(
   (): OperationListConfig => ({
     columns: [
-      { field: 'LoginAccount', title: '游戏账号' },
+      { field: 'LoginAccount', slot: 'loginAccount', title: '游戏账号' },
       { field: 'PackageName', title: '产品包' },
       {
         field: 'VisitTime',
@@ -76,7 +77,7 @@ const visitStatisticsConfig = computed(
 const firstPayConfig = computed(
   (): OperationListConfig => ({
     columns: [
-      { field: 'LoginAccount', title: '游戏账号' },
+      { field: 'LoginAccount', slot: 'loginAccount', title: '游戏账号' },
       { field: 'PackageName', title: '产品包' },
       { field: 'FirstPayAmount', title: '首存金额' },
       { field: 'BonusAmount', title: '彩金金额' },
@@ -95,7 +96,7 @@ const firstPayConfig = computed(
 const luckyDrawConfig = computed(
   (): OperationListConfig => ({
     columns: [
-      { field: 'LoginAccount', title: '游戏账号' },
+      { field: 'LoginAccount', slot: 'loginAccount', title: '游戏账号' },
       { field: 'PackageName', title: '产品包' },
       { field: 'PrizeName', title: '奖品名称' },
       {
@@ -175,7 +176,14 @@ onMounted(() => {
           <OperationListPanel
             v-if="activeTab === item.key"
             :config="item.config"
-          />
+          >
+            <template #loginAccount="{ row }">
+              <PlayerAccountLink
+                :login-account="String(row.LoginAccount || '')"
+                :player-id="row.PlayerId as number | string | undefined"
+              />
+            </template>
+          </OperationListPanel>
         </Tabs.TabPane>
       </Tabs>
     </Card>

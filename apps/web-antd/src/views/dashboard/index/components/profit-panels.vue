@@ -8,6 +8,7 @@ import {
   fetchGameProfitLossApi,
   fetchPlayerProfitLossApi,
 } from '#/api/dashboard';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -105,7 +106,15 @@ function goRanking() {
 }
 
 const playerWinColumns = [
-  { dataIndex: 'LoginAccount', key: 'LoginAccount', title: '游戏账号' },
+  {
+    customRender: ({ record }: { record: Record<string, unknown> }) =>
+      h(PlayerAccountLink, {
+        loginAccount: String(record.LoginAccount || ''),
+        playerId: record.PlayerId as number | string | undefined,
+      }),
+    key: 'LoginAccount',
+    title: '游戏账号',
+  },
   { dataIndex: 'ChannelName', key: 'ChannelName', title: '所属渠道' },
   {
     key: 'amount',
@@ -116,7 +125,15 @@ const playerWinColumns = [
 ];
 
 const playerLoseColumns = [
-  { dataIndex: 'LoginAccount', key: 'LoginAccount', title: '游戏账号' },
+  {
+    customRender: ({ record }: { record: Record<string, unknown> }) =>
+      h(PlayerAccountLink, {
+        loginAccount: String(record.LoginAccount || ''),
+        playerId: record.PlayerId as number | string | undefined,
+      }),
+    key: 'LoginAccount',
+    title: '游戏账号',
+  },
   { dataIndex: 'ChannelName', key: 'ChannelName', title: '所属渠道' },
   {
     key: 'amount',
@@ -179,7 +196,7 @@ onMounted(() => {
           :locale="{ emptyText: '暂无盈利游戏（ItemsLose）' }"
           :pagination="false"
           :scroll="{ y: 400 }"
-          :row-key="(row, index) => `gw-${row.GameId || index}`"
+          :row-key="(row) => `gw-${row.GameId ?? row.GameName ?? ''}`"
           size="small"
         />
       </Card>
@@ -197,7 +214,7 @@ onMounted(() => {
           :locale="{ emptyText: '暂无亏损游戏（ItemsWin）' }"
           :pagination="false"
           :scroll="{ y: 400 }"
-          :row-key="(row, index) => `gl-${row.GameId || index}`"
+          :row-key="(row) => `gl-${row.GameId ?? row.GameName ?? ''}`"
           size="small"
         />
       </Card>
@@ -218,7 +235,7 @@ onMounted(() => {
           :locale="{ emptyText: '暂无盈利玩家' }"
           :pagination="false"
           :scroll="{ y: 400 }"
-          :row-key="(row, index) => `pw-${row.PlayerId || index}`"
+          :row-key="(row) => `pw-${row.PlayerId ?? row.LoginAccount ?? ''}`"
           size="small"
         />
       </Card>
@@ -236,7 +253,7 @@ onMounted(() => {
           :locale="{ emptyText: '暂无亏损玩家' }"
           :pagination="false"
           :scroll="{ y: 400 }"
-          :row-key="(row, index) => `pl-${row.PlayerId || index}`"
+          :row-key="(row) => `pl-${row.PlayerId ?? row.LoginAccount ?? ''}`"
           size="small"
         />
       </Card>

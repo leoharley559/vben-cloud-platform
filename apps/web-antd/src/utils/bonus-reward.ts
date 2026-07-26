@@ -178,7 +178,7 @@ export function formatBaseTurnover(row: {
   WaterType?: number | string;
 }) {
   if (Number(row.WaterType) === 2) {
-    return Number(row.WaterAmount || 0) / 100;
+    return (Number(row.WaterAmount || 0) / 100).toFixed(2);
   }
   return row.Draw ?? '-';
 }

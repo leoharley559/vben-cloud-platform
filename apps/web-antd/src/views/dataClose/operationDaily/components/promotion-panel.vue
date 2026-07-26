@@ -20,6 +20,7 @@ import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { calcArppu } from '#/utils/promotion-data';
 import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
@@ -86,9 +87,7 @@ const summaryItems = computed(() => {
     },
     {
       title: '新增ARPPU',
-      value: newPayUser
-        ? formatAmountFromCent(newPayMoney / newPayUser)
-        : '0.00',
+      value: calcArppu(newPayUser, newPayMoney),
     },
     {
       title: '有新增渠道数',
@@ -159,7 +158,7 @@ const channelRows = computed(() => {
       PayNum,
       PayMoney,
       TodayPayRate: percentText(PayNum, Reg),
-      TodayArppu: PayNum ? formatAmountFromCent(PayMoney / PayNum) : '0.00',
+      TodayArppu: calcArppu(PayNum, PayMoney),
       PayMoneyText: formatAmountFromCent(PayMoney),
       DiffText: formatAmountFromCent(Diff),
       _rawPayMoney: PayMoney,

@@ -204,10 +204,10 @@ export function formatAdjustWater(row: {
     return (waterAmount / 100).toFixed(2);
   }
   if (handleType === 2 && waterType === 1) {
-    return water / 100 === 0 ? '0' : `-${(water / 100).toFixed(0)}`;
+    return water / 100 === 0 ? '0.00' : `-${(water / 100).toFixed(2)}`;
   }
   if (handleType === 2 && waterType === 2) {
-    return waterAmount / 100 === 0 ? '0' : (waterAmount / 100).toFixed(0);
+    return waterAmount / 100 === 0 ? '0.00' : (waterAmount / 100).toFixed(2);
   }
   return '-';
 }

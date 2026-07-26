@@ -24,6 +24,7 @@ import {
   fetchGameTitleOwnerListApi,
   multiAddGameTitleOwnerApi,
 } from '#/api/memberManage/game-title';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -66,6 +67,7 @@ const batchIssueText = ref('');
 const batchIssueLoading = ref(false);
 const exportLoading = ref(false);
 const totalCount = ref(0);
+const tableRows = ref<GameTitleOwnerItem[]>([]);
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -107,7 +109,12 @@ const gridOptions: VxeTableGridOptions<GameTitleOwnerItem> = {
       minWidth: 100,
       title: '状态',
     },
-    { field: 'Account', minWidth: 140, title: '游戏账号' },
+    {
+      field: 'Account',
+      minWidth: 140,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     {
       field: 'PackageId',
       formatter: ({ cellValue }) => getPackageName(cellValue),
@@ -136,12 +143,15 @@ const gridOptions: VxeTableGridOptions<GameTitleOwnerItem> = {
     ajax: {
       query: async ({ page }) => {
         if (!props.gameTitle?.Id) {
+          tableRows.value = [];
           return { items: [], total: 0 };
         }
         const result = await fetchGameTitleOwnerListApi(getQueryParams(page));
+        const items = result.Items || [];
+        tableRows.value = items;
         totalCount.value = Number(result.Pagination?.MaxCount || 0);
         return {
-          items: result.Items || [],
+          items,
           total: totalCount.value,
         };
       },
@@ -260,6 +270,14 @@ function handleBatchDelete() {
   });
 }
 
+function buildExportQuery() {
+  const { Page: _page, PageSize: _size, ...rest } = getQueryParams({
+    currentPage: 1,
+    pageSize: 20,
+  });
+  return rest;
+}
+
 function handleExportClick() {
   if (!props.gameTitle?.Id) {
     return;
@@ -269,7 +287,7 @@ function handleExportClick() {
     return;
   }
   passPopupRef.value?.validate(GAME_TITLE_OWNER_EXPORT_PAGE_ID, {
-    ...getQueryParams({ currentPage: 1, pageSize: 20 }),
+    ...buildExportQuery(),
   });
 }
 
@@ -280,7 +298,7 @@ async function handleExport(payload: Record<string, unknown> = {}) {
   exportLoading.value = true;
   try {
     const result = await exportGameTitleOwnerListApi({
-      ...getQueryParams({ currentPage: 1, pageSize: 20 }),
+      ...buildExportQuery(),
       ...payload,
     });
     if (result?.Id && Number(result.Status) === 0) {
@@ -423,6 +441,12 @@ watch(
       </div>
 
       <Grid>
+        <template #loginAccount="{ row }">
+          <PlayerAccountLink
+            :login-account="String(row.Account || '')"
+            :player-id="row.PlayerId as number | string | undefined"
+          />
+        </template>
         <template #actions="{ row }">
           <Space>
             <Button
@@ -490,5 +514,9 @@ watch(
     </Modal>
   </Modal>
 
-  <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+  <PassPopup
+    ref="passPopupRef"
+    type="csv"
+    @confirm="handleExport"
+  />
 </template>

@@ -39,8 +39,10 @@ import {
   provideBonusApi,
   queryBonusAdminIdApi,
 } from '#/api/netcash/bonus-manage';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { createRequestHash } from '#/utils/crypto';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
@@ -380,7 +382,7 @@ function exportBatchFailures() {
     failures.map((row) => [
       String(row.Username || ''),
       String(row.AdminId || ''),
-      Number(row.Amount || 0) / 100,
+      Number((Number(row.Amount || 0) / 100).toFixed(2)),
       String(row.Msg || ''),
     ]),
     ['代理账号', '代理ID', '申请金额', '失败原因'],
@@ -668,11 +670,11 @@ async function exportHistory() {
         Number(row.BonusType) === 1 ? '代理红利' : String(row.BonusType || ''),
         formatNetcashDateTime(row.CreateTime),
         String(row.ApplyName || ''),
-        Number(row.Amount || 0) / 100,
+        Number((Number(row.Amount || 0) / 100).toFixed(2)),
         String(row.ApplyDesc || ''),
         formatNetcashDateTime(row.ApproveTime),
         String(row.ApproveName || ''),
-        Number(row.RealAmount || 0) / 100,
+        Number((Number(row.RealAmount || 0) / 100).toFixed(2)),
         String(row.ApproveDesc || ''),
       ]),
       [
@@ -956,6 +958,12 @@ watch(
                   >
                     {{ statusText(record.Approve) }}
                   </Tag>
+                  <template v-else-if="column.key === 'Username'">
+                    <AgencyAccountLink
+                      :admin-id="resolveAgencyAdminId(record)"
+                      :username="record.Username"
+                    />
+                  </template>
                   <template v-else-if="column.key === 'WalletType'">
                     {{ Number(record.WalletType) === 1 ? '佣金钱包' : '-' }}
                   </template>
@@ -1096,10 +1104,7 @@ watch(
               :data-source="historyRows"
               :loading="historyLoading"
               :pagination="false"
-              :row-key="
-                (row: BonusManageItem, index?: number) =>
-                  String(row.Id || `${row.OrderId}-${index}`)
-              "
+              :row-key="(row: BonusManageItem) => String(row.Id || row.OrderId || '')"
               :scroll="{ x: 1900 }"
               size="small"
             >
@@ -1110,6 +1115,12 @@ watch(
                 >
                   {{ statusText(record.Approve) }}
                 </Tag>
+                <template v-else-if="column.key === 'Username'">
+                  <AgencyAccountLink
+                    :admin-id="resolveAgencyAdminId(record)"
+                    :username="record.Username"
+                  />
+                </template>
                 <template v-else-if="column.key === 'WalletType'">
                   {{ Number(record.WalletType) === 1 ? '佣金钱包' : '-' }}
                 </template>
@@ -1171,10 +1182,7 @@ watch(
         ]"
         :data-source="batchPreview"
         :pagination="false"
-        :row-key="
-          (row: BatchPreviewRow, index?: number) =>
-            `${row.Username}-${index || 0}`
-        "
+        :row-key="(row: BatchPreviewRow) => `${row.Username}-${row.AdminId ?? row.AmountYuan ?? ''}`"
         :scroll="{ y: 420 }"
         size="small"
       >
@@ -1212,10 +1220,7 @@ watch(
         ]"
         :data-source="batchResult?.FailItems || []"
         :pagination="false"
-        :row-key="
-          (row: Record<string, unknown>, index?: number) =>
-            `${row.Username}-${index || 0}`
-        "
+        :row-key="(row: Record<string, unknown>) => `${row.Username}-${row.AdminId ?? row.Amount ?? ''}`"
         size="small"
       >
         <template #bodyCell="{ column, record }">

@@ -90,7 +90,7 @@ const relegationDay = ref(90);
 const form = reactive<Row>({});
 const enabledRequirements = reactive<Record<string, boolean>>({});
 
-const fromCent = (value: unknown) => Number(value || 0) / 100;
+const fromCent = (value: unknown) => (Number(value || 0) / 100).toFixed(2);
 const toCent = (value: unknown) => Math.ceil(Number(value || 0) * 100);
 
 async function loadData() {

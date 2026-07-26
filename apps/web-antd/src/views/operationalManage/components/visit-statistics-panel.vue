@@ -215,7 +215,7 @@ onMounted(() => {
             :data-source="deviceList"
             :loading="loading"
             :pagination="false"
-            :row-key="(_, index) => `device-${index}`"
+            row-key="DeviceType"
             :scroll="{ x: true }"
           >
             <template #summary>
@@ -276,7 +276,7 @@ onMounted(() => {
             :data-source="userTypeList"
             :loading="loading"
             :pagination="false"
-            :row-key="(_, index) => `user-${index}`"
+            row-key="UserType"
             :scroll="{ x: true }"
           >
             <template #summary>
@@ -327,7 +327,7 @@ onMounted(() => {
           :data-source="vipList"
           :loading="loading"
           :pagination="false"
-          :row-key="(_, index) => `vip-${index}`"
+          row-key="VipLevel"
           :scroll="{ x: 1200 }"
         >
           <template #summary>

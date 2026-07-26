@@ -145,7 +145,7 @@ onMounted(loadAll);
           :data-source="rows.history"
           :loading="loading.history"
           :pagination="pagers.history"
-          :row-key="(row, index) => String(row.Id || index)"
+          :row-key="(row) => String(row.Id ?? '')"
           :scroll="{ x: 650 }"
           size="small"
           @change="(page) => changePage('history', page)"

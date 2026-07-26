@@ -25,6 +25,7 @@ import {
   remarkGiftApi,
 } from '#/api/operationManage/gift-manage';
 import { queryPlayerByAccountApi } from '#/api/operationManage/player';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -61,6 +62,7 @@ interface GiftRow {
   Mobile?: string;
   OrderId?: string;
   PackageName?: string;
+  PlayerId?: number | string;
   PlayerStatus?: number;
   Recharge?: number;
   Remark?: string;
@@ -613,7 +615,10 @@ onMounted(() => {
     <Grid>
       <template #loginAccount="{ row }">
         <div>
-          <div>{{ row.LoginAccount }}</div>
+          <PlayerAccountLink
+            :login-account="String(row.LoginAccount || '')"
+            :player-id="row.PlayerId as number | string | undefined"
+          />
           <Tag
             v-if="row.PlayerStatus && Number(row.PlayerStatus) !== 0"
             class="mt-1"

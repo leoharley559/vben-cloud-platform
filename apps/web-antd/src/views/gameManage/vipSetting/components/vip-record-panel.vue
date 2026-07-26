@@ -16,6 +16,7 @@ import {
 import dayjs, { type Dayjs } from 'dayjs';
 
 import { fetchVipRecordListApi } from '#/api/gameManage/vip-setting';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 
@@ -329,7 +330,7 @@ onMounted(() => {
           showSizeChanger: true,
           total,
         }"
-        :row-key="(row, index) => `${row.CreateTime}-${row.LoginAccount}-${index}`"
+        :row-key="(row) => `${row.CreateTime}-${row.LoginAccount}-${row.VipLevel ?? row.Id ?? ''}`"
         :scroll="{ x: 1400 }"
         size="small"
         @change="
@@ -341,7 +342,13 @@ onMounted(() => {
         "
       >
         <template #bodyCell="{ column, record }">
-          <span v-if="column.key === 'CreateTime'">
+          <template v-if="column.key === 'LoginAccount'">
+            <PlayerAccountLink
+              :login-account="String(record.LoginAccount || '')"
+              :player-id="record.PlayerId as number | string | undefined"
+            />
+          </template>
+          <span v-else-if="column.key === 'CreateTime'">
             {{ formatTime(record.CreateTime) }}
           </span>
           <span v-else-if="moneyKeys.has(String(column.key))">

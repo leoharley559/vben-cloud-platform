@@ -28,6 +28,7 @@ import {
 } from '#/api/memberManage/game-record';
 import { fetchIosAppStoreListApi } from '#/api/operationalData/everyday-data';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
@@ -40,22 +41,23 @@ import {
   BET_STATUS_OPTIONS,
   BET_TIME_TYPE_OPTIONS,
   BET_YES_NO_OPTIONS,
-  MAX_BET_QUERY_RANGE_SECONDS,
   calcBetWinLoss,
   calcBetWinLossCell,
   formatBetSettleLogType,
   formatBetStatus,
+  MAX_BET_QUERY_RANGE_SECONDS,
   pickBetAmount,
 } from '#/utils/bet-detail';
 import {
   getLast7CalendarDaysRangeSeconds,
   getYesterdayToTodayRangeSeconds,
 } from '#/utils/date-range';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatGameName } from '#/utils/game-config';
 import {
-  PLAYER_STATUS_OPTIONS,
   formatPlayerStatus,
+  PLAYER_STATUS_OPTIONS,
 } from '#/utils/player-status';
 import { GAME_RECORD_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
@@ -414,7 +416,7 @@ const gridOptions: VxeTableGridOptions<PlayerBetRecordItem> = {
       minWidth: 90,
       title: 'VIP等级',
     },
-    { field: 'Username', minWidth: 110, title: '代理账号' },
+    { field: 'Username', minWidth: 110, slots: { default: 'username' }, title: '代理账号' },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     {
       field: 'VendorCode',
@@ -762,7 +764,7 @@ onMounted(async () => {
   <div>
     <OpsListPanel>
       <template #filters>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">场馆模版</span>
           <Select
             :value="filterVenuesTemp"
@@ -787,7 +789,7 @@ onMounted(async () => {
             :options="platformGameOptions"
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">产品</span>
           <Select
             v-model:value="filterPackageId"
@@ -795,11 +797,11 @@ onMounted(async () => {
             :options="packageSelectOptions"
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">渠道号</span>
           <ChannelSelect v-model="filterChannelIds" style="width: 180px" />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">游戏名称</span>
           <Select
             v-model:value="filterSubGameId"
@@ -824,7 +826,7 @@ onMounted(async () => {
             <Button @click="bulkOpen = true">批量</Button>
           </Space.Compact>
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">场馆类型</span>
           <Select
             :value="filterVenueTypes"
@@ -839,7 +841,7 @@ onMounted(async () => {
             "
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">代理账号</span>
           <Input
             v-model:value="filterUsername"
@@ -906,7 +908,7 @@ onMounted(async () => {
             :options="BET_YES_NO_OPTIONS"
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">邀请站点</span>
           <Select
             v-model:value="filterInviteSite"
@@ -917,7 +919,7 @@ onMounted(async () => {
             :options="inviteSiteOptions"
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">玩家状态</span>
           <Select
             v-model:value="filterPlayerStatus"
@@ -928,7 +930,7 @@ onMounted(async () => {
             :options="PLAYER_STATUS_OPTIONS"
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">玩家标签</span>
           <Input
             v-model:value="filterTagName"
@@ -936,7 +938,7 @@ onMounted(async () => {
             style="width: 140px"
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">站点类型</span>
           <Select
             v-model:value="filterSiteTypes"
@@ -947,7 +949,7 @@ onMounted(async () => {
             :options="siteTypeOptions"
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">上架包</span>
           <Select
             v-model:value="filterAppUrl"
@@ -958,7 +960,7 @@ onMounted(async () => {
             :options="appUrlOptions"
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">设备类型</span>
           <Select
             v-model:value="filterDevicePlatform"
@@ -969,7 +971,7 @@ onMounted(async () => {
             :options="devicePlatformOptions"
           />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">时区</span>
           <Select
             v-model:value="filterTimeZone"
@@ -1029,6 +1031,12 @@ onMounted(async () => {
       </template>
 
       <Grid>
+        <template #username="{ row }">
+          <AgencyAccountLink
+            :admin-id="resolveAgencyAdminId(row)"
+            :username="row.Username"
+          />
+        </template>
         <template #loginAccount="{ row }">
           <PlayerAccountLink
             v-if="
@@ -1148,6 +1156,10 @@ onMounted(async () => {
       :row="thirdRow"
       :games="gameConfig.games"
     />
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </div>
 </template>

@@ -20,6 +20,7 @@ import {
 } from '#/api/operationManage/reward-mall';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
@@ -84,11 +85,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildExportQuery() {
-  const {
-    Page: _page,
-    PageSize: _size,
-    ...rest
-  } = buildQuery({
+  const { Page: _page, PageSize: _size, ...rest } = buildQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -101,11 +98,8 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     { field: 'OrderId', minWidth: 140, title: '订单号' },
     {
       field: 'LoginAccount',
-      formatter: ({ row }) =>
-        row.LoginAccount
-          ? `${row.LoginAccount}(${formatPlayerStatus(row.PlayerStatus as number)})`
-          : '-',
       minWidth: 160,
+      slots: { default: 'loginAccount' },
       title: '玩家账号(状态)',
     },
     { field: 'ChannelId', minWidth: 100, title: '所属渠道' },
@@ -243,8 +237,24 @@ async function handleExport(payload: Record<string, unknown>) {
       </Button>
     </div>
 
-    <Grid />
+    <Grid>
+      <template #loginAccount="{ row }">
+        <div class="whitespace-pre-line">
+          <PlayerAccountLink
+            :login-account="String(row.LoginAccount || '')"
+            :player-id="row.PlayerId as number | string | undefined"
+          />
+          <div v-if="row.LoginAccount" class="text-xs text-gray-400">
+            ({{ formatPlayerStatus(row.PlayerStatus as number) }})
+          </div>
+        </div>
+      </template>
+    </Grid>
 
-    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
+    <PassPopup
+      ref="passPopupRef"
+      type="csv"
+      @confirm="handleExport"
+    />
   </Modal>
 </template>

@@ -24,6 +24,7 @@ import {
   resetPlayerBindCardCountApi,
   updatePlayerBindCardConfigApi,
 } from '#/api/gameManage/withdraw-rules';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 
@@ -245,7 +246,12 @@ onMounted(loadConfig);
       size="small"
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'actions'">
+        <PlayerAccountLink
+          v-if="column.key === 'LoginAccount'"
+          :login-account="String(record.LoginAccount || '')"
+          :player-id="record.PlayerId as number | string | undefined"
+        />
+        <template v-else-if="column.key === 'actions'">
           <Button danger type="link" @click="removeIgnore(record)">删除</Button>
         </template>
       </template>

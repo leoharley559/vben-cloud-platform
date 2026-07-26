@@ -229,11 +229,7 @@ function buildIssueQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildIssueExportQuery() {
-  const {
-    Page: _p,
-    PageSize: _s,
-    ...rest
-  } = buildIssueQuery({
+  const { Page: _page, PageSize: _size, ...rest } = buildIssueQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -490,7 +486,11 @@ async function handleIssueExport(payload: Record<string, unknown>) {
         </Button>
       </div>
       <IssueGrid />
-      <PassPopup ref="passPopupRef" type="csv" @confirm="handleIssueExport" />
+      <PassPopup
+        ref="passPopupRef"
+        type="csv"
+        @confirm="handleIssueExport"
+      />
     </div>
   </div>
 </template>

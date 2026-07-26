@@ -32,6 +32,7 @@ import {
   updateRechargeNameConfigApi,
 } from '#/api/gameManage';
 import { queryPlayerByAccountApi } from '#/api/operationManage/player';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 
@@ -617,7 +618,12 @@ onMounted(() => {
         size="small"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'actions'">
+          <PlayerAccountLink
+            v-if="column.key === 'LoginAccount'"
+            :login-account="String(record.LoginAccount || '')"
+            :player-id="record.PlayerId as number | string | undefined"
+          />
+          <template v-else-if="column.key === 'actions'">
             <Button
               danger
               size="small"

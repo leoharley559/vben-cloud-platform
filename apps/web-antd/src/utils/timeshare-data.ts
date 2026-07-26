@@ -45,7 +45,7 @@ function getMetricValue(item: TimeshareHourItem, metric: TimeshareMetricKey) {
       return Number(item.SumDevice ?? 0);
     }
     case 'addExchangeMoney': {
-      return Number(item.SumWithdrawMoney ?? 0) / 100;
+      return Number((Number(item.SumWithdrawMoney ?? 0) / 100).toFixed(2));
     }
     case 'addExchangeNum': {
       return Number(item.SumWithdrawNum ?? 0);
@@ -54,10 +54,12 @@ function getMetricValue(item: TimeshareHourItem, metric: TimeshareMetricKey) {
       return Number(item.SumReg ?? 0);
     }
     case 'addPayMoney': {
-      return (
-        (Number(item.SumAgentPayMoney ?? 0) +
-          Number(item.SumPayMoney ?? 0)) /
-        100
+      return Number(
+        (
+          (Number(item.SumAgentPayMoney ?? 0) +
+            Number(item.SumPayMoney ?? 0)) /
+          100
+        ).toFixed(2),
       );
     }
     case 'addPayNum': {

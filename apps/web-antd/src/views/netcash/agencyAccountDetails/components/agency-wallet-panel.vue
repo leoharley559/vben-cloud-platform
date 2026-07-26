@@ -509,7 +509,7 @@ onMounted(load);
         total: pager.total,
         showSizeChanger: true,
       }"
-      :row-key="(row, index) => String(row.Id || row.OrderId || index)"
+      :row-key="(row) => String(row.Id ?? row.OrderId ?? '')"
       :scroll="{ x: activeTab === 'commission' ? 2500 : 1100 }"
       size="small"
       @change="

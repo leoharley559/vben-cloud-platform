@@ -159,7 +159,7 @@ onMounted(() => {
       :data-source="list"
       :loading="loading"
       :pagination="false"
-      :row-key="(record, index) => String(record.UUID ?? index)"
+      :row-key="(record) => String(record.UUID ?? '')"
       size="small"
     >
       <template #bodyCell="{ column, record }">

@@ -9,7 +9,9 @@ import {
   fetchRelationDetailListApi,
   fetchRelationSummaryListApi,
 } from '#/api/netcash/agency-account-details';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 const props = defineProps<{ adminId: string }>();
@@ -188,13 +190,18 @@ onMounted(loadAll);
             :data-source="rows.device"
             :loading="loading.device"
             :pagination="pagers.device"
-            :row-key="(row, index) => String(row.Id || row.DeviceId || index)"
+            :row-key="(row) => String(row.Id ?? row.DeviceId ?? '')"
             :scroll="{ x: 650 }"
             size="small"
             @change="(page) => changePage('device', page)"
           >
             <template #bodyCell="{ column, record }">
-              <template v-if="['Recharged', 'SumRecharge'].includes(String(column.key))">
+              <AgencyAccountLink
+                v-if="column.key === 'UserName'"
+                :admin-id="resolveAgencyAdminId(record)"
+                :username="record.UserName"
+              />
+              <template v-else-if="['Recharged', 'SumRecharge'].includes(String(column.key))">
                 {{
                   formatAmountFromCent(
                     Number(record[String(column.key)] || 0),
@@ -213,13 +220,18 @@ onMounted(loadAll);
             :data-source="rows.ip"
             :loading="loading.ip"
             :pagination="pagers.ip"
-            :row-key="(row, index) => String(row.Id || row.Ip || index)"
+            :row-key="(row) => String(row.Id ?? row.Ip ?? '')"
             :scroll="{ x: 650 }"
             size="small"
             @change="(page) => changePage('ip', page)"
           >
             <template #bodyCell="{ column, record }">
-              <template v-if="['Recharged', 'SumRecharge'].includes(String(column.key))">
+              <AgencyAccountLink
+                v-if="column.key === 'UserName'"
+                :admin-id="resolveAgencyAdminId(record)"
+                :username="record.UserName"
+              />
+              <template v-else-if="['Recharged', 'SumRecharge'].includes(String(column.key))">
                 {{
                   formatAmountFromCent(
                     Number(record[String(column.key)] || 0),

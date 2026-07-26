@@ -31,6 +31,7 @@ import {
   updateAgentDomainApi,
 } from '#/api/netcash/agent-domain';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 defineOptions({ name: 'AgentDomainManage' });
@@ -113,7 +114,7 @@ const columns: VxeTableGridOptions<AgentDomainRow>['columns'] = [
     slots: { default: 'adminStatus' },
     title: '账号状态',
   },
-  { field: 'Username', minWidth: 130, title: '代理账号' },
+  { field: 'Username', minWidth: 130, slots: { default: 'username' }, title: '代理账号' },
   { field: 'Name', minWidth: 130, title: '代理名称' },
   {
     field: 'CreateTime',
@@ -416,6 +417,12 @@ async function exportExcel() {
             {{ statusText(row.AdminStatus) }}
           </Tag>
           <span v-else>-</span>
+        </template>
+        <template #username="{ row }">
+          <AgencyAccountLink
+            :admin-id="row.AdminId as number | string | undefined"
+            :username="row.Username"
+          />
         </template>
         <template #agentType="{ row }">
           <Tag

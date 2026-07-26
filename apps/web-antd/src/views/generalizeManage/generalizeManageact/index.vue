@@ -38,7 +38,9 @@ import {
   updatePromoterApi,
   updatePromoterTeamApi,
 } from '#/api/promotion/manage';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   PROMOTER_FUNCTION_MAP,
   PROMOTER_SETTLE_TYPE_MAP,
@@ -643,8 +645,13 @@ onMounted(() => {
         @expand="onExpand"
       >
         <template #bodyCell="{ column, record }">
+          <AgencyAccountLink
+            v-if="column.key === 'Username'"
+            :admin-id="resolveAgencyAdminId(record)"
+            :username="record.Username"
+          />
           <Tag
-            v-if="column.key === 'Status'"
+            v-else-if="column.key === 'Status'"
             :color="record.Status === 1 ? 'green' : 'red'"
           >
             {{ record.Status === 1 ? '启用' : '停用' }}

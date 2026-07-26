@@ -8,6 +8,7 @@ import { Button, Input, Select, Space, message } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchMobileVerifyCodeListApi } from '#/api/memberManage/mobile-verify-code';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -74,7 +75,7 @@ const gridOptions: VxeTableGridOptions<MobileVerifyCodeListItem> = {
       title: '申请时间',
     },
     { field: 'PhoneNum', minWidth: 130, title: '手机号' },
-    { field: 'LoginAccount', minWidth: 130, title: '游戏账号' },
+    { field: 'LoginAccount', minWidth: 130, slots: { default: 'loginAccount' }, title: '游戏账号' },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'VerifyCode', minWidth: 100, title: '验证码' },
   ],
@@ -165,7 +166,14 @@ function handleReset() {
       </Button>
     </template>
 
-    <Grid />
+    <Grid>
+      <template #loginAccount="{ row }">
+        <PlayerAccountLink
+          :login-account="String(row.LoginAccount || '')"
+          :player-id="row.PlayerId"
+        />
+      </template>
+    </Grid>
 
     <GenerateMobileCodeModal v-model:open="generateOpen" />
     <MobileVerifyWhitelistModal v-model:open="whitelistOpen" />

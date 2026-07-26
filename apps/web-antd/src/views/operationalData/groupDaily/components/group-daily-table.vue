@@ -3,7 +3,7 @@ import type { ColumnsType } from 'ant-design-vue/es/table';
 
 import { computed, h } from 'vue';
 
-import { Table } from 'ant-design-vue';
+import { Table, Tooltip } from 'ant-design-vue';
 
 import { formatAmountFromCent } from '#/utils/format-amount';
 import type { GroupDailyRow } from '#/utils/group-daily';
@@ -180,7 +180,13 @@ const columns = computed<ColumnsType<GroupDailyRow>>(() => {
     },
     {
       customRender: ({ record }) => money(record.SumTransWinMoney1),
-      title: '派送金额',
+      title: () =>
+        h('span', [
+          '派送金额 ',
+          h(Tooltip, { title: '玩家盈亏' }, () =>
+            h('span', { class: 'cursor-help text-gray-400' }, 'ⓘ'),
+          ),
+        ]),
       width: 100,
     },
     {
@@ -241,8 +247,8 @@ const columns = computed<ColumnsType<GroupDailyRow>>(() => {
   return cols;
 });
 
-function rowKey(row: GroupDailyRow, index?: number) {
-  return `${row.ReportDay}-${row.GroupId1}-${row.GroupId2}-${row.GroupId3}-${row.GroupId}-${row.Username}-${index}`;
+function rowKey(row: GroupDailyRow) {
+  return `${row.ReportDay}-${row.GroupId1}-${row.GroupId2}-${row.GroupId3}-${row.GroupId}-${row.Username}`;
 }
 </script>
 

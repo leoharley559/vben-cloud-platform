@@ -38,7 +38,9 @@ import {
   oneKeySendCommissionApi,
   sendCommissionApi,
 } from '#/api/netcash/commission-manage';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useGameConfig } from '#/composables/use-game-config';
 
 import {
@@ -845,7 +847,7 @@ onMounted(async () => {
         :data-source="rows"
         :loading="loading"
         :pagination="false"
-        :row-key="(row, index) => row.Id || `${row.Username}-${index}`"
+        :row-key="(row) => row.Id || `${row.Username}-${row.CreateTime ?? ''}`"
         :row-selection="rowSelection"
         :scroll="{ x: 'max-content', y: 520 }"
         bordered
@@ -863,7 +865,21 @@ onMounted(async () => {
             size="small"
           >
             <template #bodyCell="{ column, record: child }">
-              {{ displayCell(columnKey(column), child) }}
+              <AgencyAccountLink
+                v-if="columnKey(column) === 'Username'"
+                :admin-id="resolveAgencyAdminId(child)"
+                :username="child.Username"
+              />
+              <AgencyAccountLink
+                v-else-if="columnKey(column) === 'MainUsername'"
+                :admin-id="
+                  resolveAgencyAdminId(child, 'MainAdminId', 'ParentAdminId')
+                "
+                :username="child.MainUsername"
+              />
+              <template v-else>
+                {{ displayCell(columnKey(column), child) }}
+              </template>
             </template>
           </Table>
         </template>
@@ -889,6 +905,18 @@ onMounted(async () => {
               <Button v-if="canAdjust" type="link" size="small" :disabled="canSelectRow(record)" @click="openAdjust(record)">调整</Button>
             </Space>
           </template>
+          <AgencyAccountLink
+            v-else-if="columnKey(column) === 'Username'"
+            :admin-id="resolveAgencyAdminId(record)"
+            :username="record.Username"
+          />
+          <AgencyAccountLink
+            v-else-if="columnKey(column) === 'MainUsername'"
+            :admin-id="
+              resolveAgencyAdminId(record, 'MainAdminId', 'ParentAdminId')
+            "
+            :username="record.MainUsername"
+          />
           <template v-else>
             <span :class="{ negative: ['WinLoss', 'CleanBetWinTotal', 'LastMonthCleanBetWinTotal', 'ReversalWinLoss'].includes(String(column.key)) && Number(String(displayCell(columnKey(column), record)).replaceAll(',', '')) < 0 }">
               {{ displayCell(columnKey(column), record) }}

@@ -15,6 +15,8 @@ export interface OperationListColumn {
   field: string;
   formatter?: (value: unknown, row?: Record<string, unknown>) => string;
   minWidth?: number;
+  /** vxe 列 slot 名，由父组件提供单元格内容 */
+  slot?: string;
   title: string;
 }
 
@@ -182,10 +184,13 @@ function readSummaryValue(field: string) {
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: props.config.columns.map((column) => ({
     field: column.field,
-    formatter: column.formatter
-      ? ({ cellValue, row }) => column.formatter!(cellValue, row)
-      : undefined,
+    formatter: column.slot
+      ? undefined
+      : column.formatter
+        ? ({ cellValue, row }) => column.formatter!(cellValue, row)
+        : undefined,
     minWidth: column.minWidth || 120,
+    slots: column.slot ? { default: column.slot } : undefined,
     title: column.title,
   })),
   height: 'auto',
@@ -296,6 +301,14 @@ defineExpose({ reload: () => gridApi.reload() });
       </div>
     </div>
 
-    <Grid />
+    <Grid>
+      <template
+        v-for="column in config.columns.filter((item) => item.slot)"
+        :key="column.slot"
+        #[column.slot!]="{ row }"
+      >
+        <slot :name="column.slot" :row="row" />
+      </template>
+    </Grid>
   </div>
 </template>
