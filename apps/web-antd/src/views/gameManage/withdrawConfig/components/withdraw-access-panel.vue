@@ -394,7 +394,7 @@ onMounted(() => {
 
 <template>
   <div v-if="canView">
-    <Tabs v-model:active-key="activeTab" type="card">
+    <Tabs v-model:active-key="activeTab" type="line" size="small">
       <Tabs.TabPane v-if="canDetail" key="detail" tab="明细">
         <div class="flex flex-col gap-3">
           <Card size="small" title="查询条件">

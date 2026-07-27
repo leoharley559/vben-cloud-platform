@@ -69,7 +69,7 @@ watch(
     title="返水设置"
   >
     <Card class="back-water-card" :bordered="false">
-      <Tabs v-model:active-key="activeTab" type="line" size="large">
+      <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <BackWaterReviewPanel
             v-if="item.key === 'audit' && activeTab === 'audit'"

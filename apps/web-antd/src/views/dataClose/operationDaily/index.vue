@@ -82,7 +82,7 @@ watchEffect(() => {
     title="数据分析"
   >
     <Card class="operation-daily-card" size="small">
-      <Tabs v-model:active-key="activeTab" size="small" type="card">
+      <Tabs v-model:active-key="activeTab" size="small" type="line">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <component :is="item.component" v-if="activeTab === item.key" />
         </Tabs.TabPane>

@@ -13,7 +13,8 @@ export function formatAmount(
     return (0).toFixed(digits);
   }
   const value = new BigNumber(amount);
-  if (value.isNaN()) {
+  if (value.isNaN() || value.isZero()) {
+    // 避免 -0 / -0.00（对 0 取反后再格式化会出现）
     return (0).toFixed(digits);
   }
   return value.toFormat(digits, BigNumber.ROUND_HALF_UP);

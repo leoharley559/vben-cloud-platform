@@ -781,14 +781,14 @@ watch(
     title="红利管理"
   >
     <Card>
-      <Tabs v-model:active-key="activeTab" type="line">
+      <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane
           v-for="tab in availableTabs"
           :key="tab.key"
           :tab="tab.title"
         >
           <div v-if="tab.key === 'provide'" class="space-y-4">
-            <Tabs v-model:active-key="provideMode" size="small">
+            <Tabs v-model:active-key="provideMode" type="line" size="small">
               <Tabs.TabPane
                 v-if="canSingleProvide"
                 key="single"

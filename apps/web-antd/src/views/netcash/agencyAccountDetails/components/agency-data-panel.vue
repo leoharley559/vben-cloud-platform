@@ -208,8 +208,8 @@ const venueDetailRows = computed(() => {
         line && !Number.isNaN(rebateRatio)
           ? (item.validBet / 100) * rebateRatio
           : 0;
-      /** 平台盈亏：SumWinGold 的相反数 */
-      const platformPnL = -item.winGold;
+      /** 平台盈亏：SumWinGold 的相反数（避免 -0） */
+      const platformPnL = item.winGold === 0 ? 0 : -item.winGold;
 
       return {
         bet: item.bet,
@@ -306,10 +306,11 @@ const amountFields = [
   { dataIndex: 'SumProfit', title: '平台盈亏' },
 ];
 
-/** 金额列取值；平台盈亏取派奖金额相反数 */
+/** 金额列取值；平台盈亏取派奖金额相反数（避免 -0） */
 function amountValue(row: Row, dataIndex: string) {
   if (dataIndex === 'SumProfit') {
-    return -Number(row.SumWinMoney || 0);
+    const win = Number(row.SumWinMoney || 0);
+    return win === 0 ? 0 : -win;
   }
   return Number(row[dataIndex] || 0);
 }

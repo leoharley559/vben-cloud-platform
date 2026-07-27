@@ -38,7 +38,7 @@ onMounted(() => {
 <template>
   <Page v-if="canViewPage" auto-content-height title="代理额度管理">
     <Card>
-      <Tabs v-model:active-key="activeTab" destroy-inactive-tab-pane type="card">
+      <Tabs v-model:active-key="activeTab" destroy-inactive-tab-pane type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <Result
             v-if="!checkPermission(item.inner)"

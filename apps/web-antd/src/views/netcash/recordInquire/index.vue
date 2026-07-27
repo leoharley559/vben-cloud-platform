@@ -433,7 +433,7 @@ onMounted(() => {
     title="记录查询"
   >
     <Card>
-      <Tabs v-model:active-key="active" type="card">
+      <Tabs v-model:active-key="active" type="line" size="small">
         <Tabs.TabPane
           v-for="item in tabs"
           :key="item.key"

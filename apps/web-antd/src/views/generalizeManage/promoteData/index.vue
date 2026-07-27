@@ -58,7 +58,7 @@ onMounted(() => {
     title="推广报表"
   >
     <Card class="report-card" :bordered="false">
-      <Tabs v-model:active-key="activeTab" class="report-tabs" type="line">
+      <Tabs v-model:active-key="activeTab" class="report-tabs" type="line" size="small">
         <Tabs.TabPane v-if="canAccountData" key="account" tab="账户数据">
           <KeepAlive>
             <ChannelDataList v-if="activeTab === 'account'" />

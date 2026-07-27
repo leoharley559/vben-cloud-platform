@@ -72,7 +72,8 @@ watch(
         v-else
         v-model:active-key="activeTab"
         destroy-inactive-tab-pane
-        type="card"
+        type="line"
+        size="small"
       >
         <Tabs.TabPane
           v-for="item in tabs"

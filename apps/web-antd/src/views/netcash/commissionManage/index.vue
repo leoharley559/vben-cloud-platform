@@ -119,7 +119,7 @@ onMounted(() => {
     title="佣金管理"
   >
     <Card>
-      <Tabs v-model:active-key="activeTab" type="card">
+      <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <SchemePanel
             v-if="activeTab === item.key && item.component === 'scheme'"
@@ -129,6 +129,7 @@ onMounted(() => {
             v-else-if="activeTab === 'grant' && item.component === 'grant'"
             v-model:active-key="grantTab"
             type="line"
+            size="small"
           >
             <Tabs.TabPane
               v-for="sub in grantSubTabs"
@@ -146,6 +147,7 @@ onMounted(() => {
             v-else-if="activeTab === 'record' && item.component === 'record'"
             v-model:active-key="recordTab"
             type="line"
+            size="small"
           >
             <Tabs.TabPane
               v-for="sub in recordSubTabs"

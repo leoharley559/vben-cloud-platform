@@ -47,7 +47,7 @@ onMounted(() => {
     title="推广素材"
   >
     <Card class="page-card">
-      <Tabs v-model:active-key="activeTab" type="card">
+      <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <component :is="item.component" v-if="activeTab === item.key" />
         </Tabs.TabPane>

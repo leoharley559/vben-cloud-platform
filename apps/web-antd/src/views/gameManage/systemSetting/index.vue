@@ -36,7 +36,7 @@ const activeKey = ref(
 <template>
   <div class="system-setting-page">
     <Card v-if="tabs.length > 0" :bordered="false" class="tabs-card">
-      <Tabs v-model:active-key="activeKey" destroy-inactive-tab-pane>
+      <Tabs v-model:active-key="activeKey" destroy-inactive-tab-pane type="line" size="small">
         <Tabs.TabPane v-for="tab in tabs" :key="tab.key" :tab="tab.label">
           <component :is="tab.component" v-if="activeKey === tab.key" />
         </Tabs.TabPane>

@@ -48,7 +48,7 @@ watchEffect(() => {
     title="短信管理"
   >
     <Card class="message-manage-card" :bordered="false">
-      <Tabs v-model:active-key="activeTab" type="line" size="large">
+      <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <SmsOverviewPanel
             v-if="item.key === 'overview' && activeTab === 'overview'"

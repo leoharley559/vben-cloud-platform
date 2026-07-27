@@ -47,7 +47,7 @@ watchEffect(() => {
     title="场馆管理"
   >
     <Card class="site-manage-card" :bordered="false">
-      <Tabs v-model:active-key="activeTab" type="line" size="large">
+      <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <VenueManagePanel
             v-if="item.key === 'venue' && activeTab === 'venue'"

@@ -222,7 +222,7 @@ onUnmounted(()=>{if(autoRefreshTimer)clearInterval(autoRefreshTimer);});
 <template>
   <Page v-if="tabs.length > 0" auto-content-height description="代理网赚 · 提款管理" title="提款管理">
     <Card>
-<Tabs v-model:active-key="active" type="card" @change="(key)=>key === 'channel' && loadTypes()">
+<Tabs v-model:active-key="active" type="line" size="small" @change="(key)=>key === 'channel' && loadTypes()">
       <Tabs.TabPane v-for="tab in tabs" :key="tab.key" :tab="tab.label">
         <template v-if="tab.key === 'drawings' && checkPermission(10158)">
           <Space class="mb-3 flex flex-wrap" wrap>

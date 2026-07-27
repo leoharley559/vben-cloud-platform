@@ -521,7 +521,7 @@ onMounted(() => {
 <template>
   <Page v-if="canViewPage" auto-content-height title="团队管理">
     <Card>
-      <Tabs v-model:active-key="activeTab" size="small" @change="onTabChange">
+      <Tabs v-model:active-key="activeTab" type="line" size="small" @change="onTabChange">
         <Tabs.TabPane v-if="canEnterManage" key="manage" tab="团队列表">
           <div class="mb-4 flex flex-wrap items-center gap-2">
             <Input v-model:value="teamQuery.TeamName" allow-clear placeholder="团队名称" style="width: 220px">

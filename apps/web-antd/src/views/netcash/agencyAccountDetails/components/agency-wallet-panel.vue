@@ -422,7 +422,7 @@ onMounted(load);
 </script>
 
 <template>
-  <Tabs v-model:active-key="activeTab" type="card" size="small">
+  <Tabs v-model:active-key="activeTab" type="line" size="small">
     <Tabs.TabPane
       v-for="item in tabs"
       :key="item.key"

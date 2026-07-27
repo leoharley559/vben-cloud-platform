@@ -350,7 +350,7 @@ onMounted(loadTab);
 </script>
 
 <template>
-  <Tabs v-model:active-key="activeTab" type="card">
+  <Tabs v-model:active-key="activeTab" type="line" size="small">
     <Tabs.TabPane v-for="tab in tabs" :key="tab.key" :tab="tab.label">
       <Card :loading="loading" size="small">
         <p class="mb-4 text-sm text-gray-500">{{ tab.note }}</p>

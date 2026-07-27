@@ -56,7 +56,7 @@ watchEffect(() => {
     title="包体管理"
   >
     <Card class="package-manage-card" :bordered="false">
-      <Tabs v-model:active-key="activeTab" size="large">
+      <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane
           v-for="item in tabs"
           :key="item.key"

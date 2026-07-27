@@ -557,7 +557,8 @@ function openMemberDetail(row: AgencyListItem, activeOnly: boolean) {
 }
 
 function getWinLossAmount(sumWinGold?: null | number | string) {
-  return -Number(sumWinGold || 0);
+  const amount = Number(sumWinGold || 0);
+  return amount === 0 ? 0 : -amount;
 }
 
 /** 输赢着色：盈利绿、亏损红 */

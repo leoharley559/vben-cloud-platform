@@ -799,7 +799,8 @@ onMounted(async () => {
 
           <Tabs
             :active-key="activeLang"
-            type="card"
+            type="line"
+            size="small"
             @change="changeLanguage"
           >
             <Tabs.TabPane
