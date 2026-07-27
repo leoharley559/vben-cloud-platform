@@ -1,0 +1,95 @@
+{
+  "venues": [
+    {
+      "_id": "69104c34ce593539a9d9150e",
+      "GameId": 1024,
+      "VenueCode": "ty",
+      "VenueName": "TY",
+      "Description": "熊猫体育",
+      "GameStatus": 1,
+      "EndTime": 1773655200,
+      "StartTime": 1773639000
+    },
+    {
+      "_id": "69104c34ce593539a9d91514",
+      "GameId": 1030,
+      "VenueCode": "zr",
+      "VenueName": "ZR",
+      "Description": "DB真人",
+      "GameStatus": 1,
+      "EndTime": 1775088000,
+      "StartTime": 1775077200
+    },
+    {
+      "_id": "69104c34ce593539a9d9150a",
+      "GameId": 1020,
+      "VenueCode": "by_qp",
+      "VenueName": "BY_QP",
+      "Description": "博雅棋牌",
+      "GameStatus": 1
+    },
+    {
+      "_id": "69a82e5e0fb276e658335955",
+      "GameId": 1038,
+      "VenueCode": "db_qp",
+      "VenueName": "DB_QP",
+      "Description": "DB棋牌",
+      "GameStatus": 1
+    },
+    {
+      "_id": "69104c34ce593539a9d914fc",
+      "GameId": 1006,
+      "VenueCode": "dj",
+      "VenueName": "DJ",
+      "Description": "DB电竞",
+      "GameStatus": 1,
+      "EndTime": 1774929600,
+      "StartTime": 1774918800
+    },
+    {
+      "_id": "69104c34ce593539a9d914f7",
+      "GameId": 1001,
+      "VenueCode": "by",
+      "VenueName": "BY",
+      "Description": "DB捕鱼",
+      "GameStatus": 1
+    },
+    {
+      "_id": "69104c34ce593539a9d914f9",
+      "GameId": 1003,
+      "VenueCode": "cp",
+      "VenueName": "CP",
+      "Description": "DB彩票",
+      "GameStatus": 1,
+      "EndTime": 1774321200,
+      "StartTime": 1774310400
+    },
+    {
+      "_id": "69104c34ce593539a9d91502",
+      "GameId": 1012,
+      "VenueCode": "dz",
+      "VenueName": "DZ",
+      "Description": "DB电子",
+      "GameStatus": 1,
+      "EndTime": 1773489600,
+      "StartTime": 1773398711
+    },
+    {
+      "_id": "69104c34ce593539a9d9151b",
+      "GameId": 1037,
+      "VenueCode": "hash",
+      "VenueName": "HASH",
+      "Description": "DB哈希",
+      "GameStatus": 1
+    }
+  ],
+  "fanDianCategories": [
+    { "id": 1, "name": "体育", "type": "ty", "gameIdList": [1024] },
+    { "id": 2, "name": "真人", "type": "zr", "gameIdList": [1030] },
+    { "id": 3, "name": "棋牌", "type": "qp", "gameIdList": [1020, 1038] },
+    { "id": 4, "name": "电竞", "type": "dj", "gameIdList": [1006] },
+    { "id": 5, "name": "彩票", "type": "cp", "gameIdList": [1003] },
+    { "id": 6, "name": "电子", "type": "dz", "gameIdList": [1012] },
+    { "id": 7, "name": "娱乐", "type": "yl", "gameIdList": [1001, 1037] }
+  ]
+}

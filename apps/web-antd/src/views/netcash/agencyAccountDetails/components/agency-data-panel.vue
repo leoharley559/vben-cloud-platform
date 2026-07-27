@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { AgencyListItem, AgentFanDianLine } from '#/types/netcash';
+
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -12,7 +14,15 @@ import {
   fetchAgentPersonalStatsApi,
 } from '#/api/netcash/agency-account-details';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
-import { formatAmountFromCent } from '#/utils/format-amount';
+import venueConfig from '#/config/venue-config.json';
+import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
+import {
+  formatAgentFanDianRebate,
+  getAgentFanDianLines,
+  parseAgentFanDianConfig,
+} from '#/utils/netcash';
+
+import AgencyFanDianModal from '../../agency/components/agency-fandian-modal.vue';
 
 const props = defineProps<{ adminId: string }>();
 const route = useRoute();
@@ -20,6 +30,12 @@ const router = useRouter();
 
 type Row = Record<string, unknown>;
 type Kind = 'agent' | 'member';
+
+const GRADE_ORDER = ['grade_S', 'grade_A', 'grade_B', 'grade_C'];
+
+const venueByGameId = new Map(
+  venueConfig.venues.map((item) => [Number(item.GameId), item]),
+);
 
 const loading = ref(false);
 const personal = ref<Row[]>([]);
@@ -29,6 +45,243 @@ const memberTotal = ref<Row>({});
 const agentTotal = ref<Row>({});
 const memberPager = reactive({ current: 1, pageSize: 20, total: 0 });
 const agentPager = reactive({ current: 1, pageSize: 20, total: 0 });
+const fanDianOpen = ref(false);
+
+const fanDianRow = computed(
+  () => (personal.value[0] as AgencyListItem | undefined) || null,
+);
+
+function openFanDianModal() {
+  fanDianOpen.value = true;
+}
+
+function shortGradeLabel(gradeKey: string) {
+  const matched = /^grade_(.+)$/i.exec(gradeKey);
+  const code = matched?.[1];
+  return `${code ? code.toUpperCase() : gradeKey}级`;
+}
+
+/** 按 SumValidBetMoney（分→元）匹配最高可达等级 */
+function resolveCurrentGrade(
+  fanDianConfig: ReturnType<typeof parseAgentFanDianConfig>,
+  validBetCents: number,
+) {
+  if (!fanDianConfig) return null;
+  const validBetYuan = validBetCents / 100;
+  const grades = Object.keys(fanDianConfig)
+    .toSorted((a, b) => {
+      const ia = GRADE_ORDER.indexOf(a);
+      const ib = GRADE_ORDER.indexOf(b);
+      if (ia === -1 && ib === -1) return a.localeCompare(b);
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    })
+    .map((key) => ({
+      flow: Number(fanDianConfig[key]?.effectiveFlow || 0),
+      key,
+      label: shortGradeLabel(key),
+      lines: getAgentFanDianLines(fanDianConfig[key]),
+    }))
+    // 流水门槛从高到低，取第一个满足 ≥ 的等级
+    .toSorted((a, b) => b.flow - a.flow);
+
+  return grades.find((grade) => validBetYuan >= grade.flow) || null;
+}
+
+function matchFanDianLine(
+  lines: AgentFanDianLine[],
+  gameId: number,
+  typeCode: string,
+) {
+  return (
+    lines.find((line) => {
+      const id = Number(line.id);
+      const type = String(line.type || '').trim();
+      return (
+        (!Number.isNaN(id) && id === gameId) ||
+        (typeCode && type === typeCode) ||
+        (type && type === String(gameId))
+      );
+    }) || null
+  );
+}
+
+/** 兼容数组 / 对象两种 GameTypeStats */
+function normalizeGameTypeStats(raw: unknown) {
+  if (!raw) return [];
+
+  let list: Array<Record<string, unknown>> = [];
+  if (Array.isArray(raw)) {
+    list = raw;
+  } else if (typeof raw === 'object') {
+    list = Object.entries(raw as Record<string, unknown>).map(
+      ([key, value]) => {
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          return { GameId: key, ...(value as Record<string, unknown>) };
+        }
+        return { GameId: key };
+      },
+    );
+  }
+
+  return list
+    .map((item) => {
+      const gameId = Number(
+        item.GameId ?? item.Id ?? item.gameId ?? item.ApiId ?? 0,
+      );
+      const typeCode = String(
+        item.Type ?? item.GameType ?? item.VenueCode ?? '',
+      ).trim();
+      const bet = Number(
+        item.SumBetGameMoney ??
+          item.BetGold ??
+          item.BetAmount ??
+          item.Bet ??
+          item.SumBetGold ??
+          0,
+      );
+      const validBet = Number(
+        item.SumValidBetMoney ??
+          item.ValidBetGold ??
+          item.ValidBet ??
+          item.ValidWater ??
+          item.SumValidWater ??
+          0,
+      );
+      const winGold = Number(
+        item.SumWinGold ?? item.WinGold ?? item.SumWinMoney ?? 0,
+      );
+      return { bet, gameId, typeCode, validBet, winGold };
+    })
+    .filter((item) => item.gameId > 0 || item.typeCode);
+}
+
+function resolveVenueLabel(gameId: number, typeCode: string) {
+  if (gameId > 0) {
+    const venue = venueByGameId.get(gameId);
+    if (venue?.Description) return venue.Description;
+  }
+  if (typeCode) {
+    const category = venueConfig.fanDianCategories.find(
+      (item) => item.type === typeCode || item.name === typeCode,
+    );
+    if (category) {
+      const names = category.gameIdList
+        .map((id) => venueByGameId.get(Number(id))?.Description)
+        .filter(Boolean);
+      if (names.length > 0) return names.join('、');
+      return category.name;
+    }
+  }
+  return gameId > 0 ? String(gameId) : typeCode || '-';
+}
+
+const venueDetailRows = computed(() => {
+  const self = personal.value[0];
+  if (!self) return [];
+
+  const fanDianConfig = parseAgentFanDianConfig(self.AgentFanDianConfig);
+  const grade = resolveCurrentGrade(
+    fanDianConfig,
+    Number(self.SumValidBetMoney || 0),
+  );
+  const stats = normalizeGameTypeStats(self.GameTypeStats);
+
+  return stats
+    .filter(
+      (item) => item.bet !== 0 || item.validBet !== 0 || item.winGold !== 0,
+    )
+    .map((item, index) => {
+      let typeCode = item.typeCode;
+      if (!typeCode && item.gameId > 0) {
+        const category = venueConfig.fanDianCategories.find((cat) =>
+          cat.gameIdList.map(Number).includes(item.gameId),
+        );
+        typeCode = category?.type || '';
+      }
+      const line = grade
+        ? matchFanDianLine(grade.lines, item.gameId, typeCode)
+        : null;
+      const rebateRatio = Number(line?.rebate);
+      const rebateAmount =
+        line && !Number.isNaN(rebateRatio)
+          ? (item.validBet / 100) * rebateRatio
+          : 0;
+      /** 平台盈亏：SumWinGold 的相反数 */
+      const platformPnL = -item.winGold;
+
+      return {
+        bet: item.bet,
+        key: `${item.gameId || typeCode}-${index}`,
+        levelRate: grade
+          ? `${grade.label}/${formatAgentFanDianRebate(line?.rebate)}`
+          : '-',
+        platformPnL,
+        rebateAmount,
+        validBet: item.validBet,
+        venue: resolveVenueLabel(item.gameId, typeCode),
+      };
+    });
+});
+
+const venueDetailTotal = computed(() => {
+  let bet = 0;
+  let validBet = 0;
+  let platformPnL = 0;
+  let rebateAmount = 0;
+  for (const row of venueDetailRows.value) {
+    bet += row.bet;
+    validBet += row.validBet;
+    platformPnL += row.platformPnL;
+    rebateAmount += row.rebateAmount;
+  }
+  return { bet, platformPnL, rebateAmount, validBet };
+});
+
+/** 盈亏着色：盈利绿、亏损红 */
+function pnlClass(amount: number) {
+  if (amount > 0) return 'text-emerald-500';
+  return amount < 0 ? 'text-red-500' : '';
+}
+
+const venueDetailColumns = [
+  { dataIndex: 'venue', key: 'venue', title: '场馆', width: 160 },
+  {
+    dataIndex: 'levelRate',
+    key: 'levelRate',
+    title: '代理等级/返点比例',
+    width: 160,
+  },
+  {
+    align: 'right' as const,
+    dataIndex: 'bet',
+    key: 'bet',
+    title: '投注金额',
+    width: 140,
+  },
+  {
+    align: 'right' as const,
+    dataIndex: 'validBet',
+    key: 'validBet',
+    title: '有效投注',
+    width: 140,
+  },
+  {
+    align: 'right' as const,
+    dataIndex: 'rebateAmount',
+    key: 'rebateAmount',
+    title: '返点金额',
+    width: 140,
+  },
+  {
+    align: 'right' as const,
+    dataIndex: 'platformPnL',
+    key: 'platformPnL',
+    title: '平台盈亏',
+    width: 140,
+  },
+];
 
 function routeTime(value: unknown, fallback: Dayjs) {
   const number = Number(value);
@@ -49,16 +302,21 @@ const amountFields = [
   { dataIndex: 'SumWinMoney', title: '派奖金额' },
   { dataIndex: 'SumRedGold', title: '红利' },
   { dataIndex: 'SumBackWaterMoney', title: '返水' },
-  /** 盈亏：SumWinMoney 的相反数 */
-  { dataIndex: 'SumProfit', title: '盈亏' },
+  /** 平台盈亏：SumWinMoney 的相反数 */
+  { dataIndex: 'SumProfit', title: '平台盈亏' },
 ];
 
-/** 金额列取值；盈亏取派奖金额相反数 */
+/** 金额列取值；平台盈亏取派奖金额相反数 */
 function amountValue(row: Row, dataIndex: string) {
   if (dataIndex === 'SumProfit') {
     return -Number(row.SumWinMoney || 0);
   }
   return Number(row[dataIndex] || 0);
+}
+
+/** 金额列 class：平台盈亏按正负着色 */
+function amountCellClass(dataIndex: string, value: number) {
+  return dataIndex === 'SumProfit' ? pnlClass(value) : '';
 }
 
 function columns(kind: 'agent' | 'member' | 'personal') {
@@ -139,18 +397,6 @@ function drillPlayer(row: Row) {
   });
 }
 
-function drillAgent(row: Row) {
-  if (!row.AdminId) return;
-  void router.push({
-    path: `/netcash/agencyAccountDetails/${row.AdminId}`,
-    query: {
-      CountBeginTime: dateRange.value[0].unix(),
-      CountEndTime: dateRange.value[1].unix(),
-      Name: String(row.Username || ''),
-    },
-  });
-}
-
 const combinedRows = computed<Row[]>(() => {
   const username = String(personal.value[0]?.Username || '');
   return [
@@ -225,8 +471,11 @@ watch(
           重置
         </Button>
         <Button @click="exportData">导出当前数据</Button>
+        <Button type="primary" @click="openFanDianModal">查看返水配置</Button>
       </Space>
     </div>
+    <AgencyFanDianModal v-model:open="fanDianOpen" :row="fanDianRow" />
+    
     <section>
       <Table bordered :columns="columns('personal')" :data-source="personal" :loading="loading" :pagination="false"
         row-key="AdminId" :scroll="{ x: 1200 }" size="small">
@@ -234,10 +483,10 @@ watch(
           <template v-if="amountFields.some((item) => item.dataIndex === column.key)">
             <span
               :class="
-                column.key === 'SumProfit' &&
-                amountValue(record, String(column.key)) < 0
-                  ? 'text-red-500'
-                  : ''
+                amountCellClass(
+                  String(column.key),
+                  amountValue(record, String(column.key)),
+                )
               "
             >
               {{
@@ -250,31 +499,61 @@ watch(
         </template>
       </Table>
     </section>
-
-    <section>
-      <h3 class="mb-2 font-medium">团队合计</h3>
-      <Table bordered :columns="columns('agent')" :data-source="combinedRows" :pagination="false" row-key="Username"
-        :scroll="{ x: 1200 }" size="small">
+    <!-- 场馆明细 -->
+    <section v-if="venueDetailRows.length > 0">
+      <h3 class="mb-2 font-medium">场馆明细</h3>
+      <Table
+        bordered
+        class="venue-detail-table"
+        :columns="venueDetailColumns"
+        :data-source="venueDetailRows"
+        :loading="loading"
+        :pagination="false"
+        row-key="key"
+        size="small"
+      >
         <template #bodyCell="{ column, record }">
-          <template v-if="amountFields.some((item) => item.dataIndex === column.key)">
-            {{
-              formatAmountFromCent(amountValue(record, String(column.key)))
-            }}
+          <template v-if="column.key === 'bet'">
+            {{ formatAmountFromCent(record.bet) }}
+          </template>
+          <template v-else-if="column.key === 'validBet'">
+            {{ formatAmountFromCent(record.validBet) }}
+          </template>
+          <template v-else-if="column.key === 'platformPnL'">
+            <span :class="pnlClass(record.platformPnL)">
+              {{ formatAmountFromCent(record.platformPnL) }}
+            </span>
+          </template>
+          <template v-else-if="column.key === 'rebateAmount'">
+            {{ formatAmount(record.rebateAmount) }}
           </template>
         </template>
         <template #summary>
           <Table.Summary fixed>
             <Table.Summary.Row>
-              <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
-              <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
-                {{ formatAmountFromCent(Number(combinedTotal[item.dataIndex] || 0)) }}
+              <Table.Summary.Cell :index="0">合计</Table.Summary.Cell>
+              <Table.Summary.Cell :index="1" />
+              <Table.Summary.Cell :index="2" align="right">
+                {{ formatAmountFromCent(venueDetailTotal.bet) }}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell :index="3" align="right">
+                {{ formatAmountFromCent(venueDetailTotal.validBet) }}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell :index="4" align="right">
+                {{ formatAmount(venueDetailTotal.rebateAmount) }}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell :index="5" align="right">
+                <span :class="pnlClass(venueDetailTotal.platformPnL)">
+                  {{ formatAmountFromCent(venueDetailTotal.platformPnL) }}
+                </span>
               </Table.Summary.Cell>
             </Table.Summary.Row>
           </Table.Summary>
         </template>
       </Table>
     </section>
-
+     
+    <!-- 直属会员 -->
     <section>
       <h3 class="mb-2 font-medium">直属会员</h3>
       <Table bordered :columns="columns('member')" :data-source="members" :loading="loading" :pagination="{
@@ -289,9 +568,18 @@ watch(
             {{ record.LoginAccount || '-' }}
           </Button>
           <template v-else-if="amountFields.some((item) => item.dataIndex === column.key)">
-            {{
-              formatAmountFromCent(amountValue(record, String(column.key)))
-            }}
+            <span
+              :class="
+                amountCellClass(
+                  String(column.key),
+                  amountValue(record, String(column.key)),
+                )
+              "
+            >
+              {{
+                formatAmountFromCent(amountValue(record, String(column.key)))
+              }}
+            </span>
           </template>
         </template>
         <template #summary>
@@ -299,11 +587,65 @@ watch(
             <Table.Summary.Row>
               <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
               <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
-                {{
-                  formatAmountFromCent(
-                    amountValue(memberTotal, item.dataIndex),
-                  )
-                }}
+                <span
+                  :class="
+                    amountCellClass(
+                      item.dataIndex,
+                      amountValue(memberTotal, item.dataIndex),
+                    )
+                  "
+                >
+                  {{
+                    formatAmountFromCent(
+                      amountValue(memberTotal, item.dataIndex),
+                    )
+                  }}
+                </span>
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          </Table.Summary>
+        </template>
+      </Table>
+    </section>
+    <section>
+      <h3 class="mb-2 font-medium">团队合计</h3>
+      <Table bordered :columns="columns('agent')" :data-source="combinedRows" :pagination="false" row-key="Username"
+        :scroll="{ x: 1200 }" size="small">
+        <template #bodyCell="{ column, record }">
+          <template v-if="amountFields.some((item) => item.dataIndex === column.key)">
+            <span
+              :class="
+                amountCellClass(
+                  String(column.key),
+                  amountValue(record, String(column.key)),
+                )
+              "
+            >
+              {{
+                formatAmountFromCent(amountValue(record, String(column.key)))
+              }}
+            </span>
+          </template>
+        </template>
+        <template #summary>
+          <Table.Summary fixed>
+            <Table.Summary.Row>
+              <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
+              <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
+                <span
+                  :class="
+                    amountCellClass(
+                      item.dataIndex,
+                      Number(combinedTotal[item.dataIndex] || 0),
+                    )
+                  "
+                >
+                  {{
+                    formatAmountFromCent(
+                      Number(combinedTotal[item.dataIndex] || 0),
+                    )
+                  }}
+                </span>
               </Table.Summary.Cell>
             </Table.Summary.Row>
           </Table.Summary>
@@ -328,9 +670,18 @@ watch(
               CountEndTime: dateRange[1].endOf('day').unix(),
             }" :username="record.Username" />
           <template v-else-if="amountFields.some((item) => item.dataIndex === column.key)">
-            {{
-              formatAmountFromCent(amountValue(record, String(column.key)))
-            }}
+            <span
+              :class="
+                amountCellClass(
+                  String(column.key),
+                  amountValue(record, String(column.key)),
+                )
+              "
+            >
+              {{
+                formatAmountFromCent(amountValue(record, String(column.key)))
+              }}
+            </span>
           </template>
         </template>
         <template #summary>
@@ -338,11 +689,20 @@ watch(
             <Table.Summary.Row>
               <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
               <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
-                {{
-                  formatAmountFromCent(
-                    amountValue(agentTotal, item.dataIndex),
-                  )
-                }}
+                <span
+                  :class="
+                    amountCellClass(
+                      item.dataIndex,
+                      amountValue(agentTotal, item.dataIndex),
+                    )
+                  "
+                >
+                  {{
+                    formatAmountFromCent(
+                      amountValue(agentTotal, item.dataIndex),
+                    )
+                  }}
+                </span>
               </Table.Summary.Cell>
             </Table.Summary.Row>
           </Table.Summary>
@@ -351,3 +711,12 @@ watch(
     </section>
   </div>
 </template>
+
+<style scoped>
+.venue-detail-table :deep(.ant-table-thead > tr > th),
+.venue-detail-table :deep(.ant-table-tbody > tr > td),
+.venue-detail-table :deep(.ant-table-summary > tr > td) {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+</style>
