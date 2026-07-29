@@ -6,7 +6,17 @@ import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
-import { Button, DatePicker, Input, Result, Select, Space, Tag, message } from 'ant-design-vue';
+import {
+  Button,
+  Card,
+  DatePicker,
+  Input,
+  message,
+  Result,
+  Select,
+  Space,
+  Tag,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchEvoSideBetListApi } from '#/api/memberManage/game-record';
@@ -66,10 +76,7 @@ const filterIsBetTrade = ref(0);
 const filterSettleCount = ref(0);
 const filterSelectTimeType = ref(1);
 const filterDataSearchType = ref(0);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  defaultBegin,
-  defaultEnd,
-]);
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([defaultBegin, defaultEnd]);
 
 const subGameOptions = computed(() =>
   Object.entries(gameConfig.value.games).map(([gameId, game]) => ({
@@ -84,9 +91,7 @@ function formatDateTime(value?: number | string) {
   }
   const num = Number(value);
   const parsed = String(value).length > 10 ? dayjs(num) : dayjs.unix(num);
-  return parsed.isValid()
-    ? parsed.format('YYYY-MM-DD HH:mm:ss')
-    : String(value);
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : String(value);
 }
 
 function getQueryParams(extra?: {
@@ -156,8 +161,7 @@ const gridOptions: VxeTableGridOptions<EvoSideBetListItem> = {
     { field: 'GameId', minWidth: 90, title: '场馆编号' },
     {
       field: 'SubGameId',
-      formatter: ({ cellValue }) =>
-        formatGameName(cellValue, gameConfig.value.games),
+      formatter: ({ cellValue }) => formatGameName(cellValue, gameConfig.value.games),
       minWidth: 140,
       title: '游戏名称',
     },
@@ -167,9 +171,7 @@ const gridOptions: VxeTableGridOptions<EvoSideBetListItem> = {
     {
       field: 'BetGold',
       formatter: ({ cellValue, row }) =>
-        formatAmountFromCent(
-          Number(row.TotalBetGold) > 0 ? row.TotalBetGold : cellValue,
-        ),
+        formatAmountFromCent(Number(row.TotalBetGold) > 0 ? row.TotalBetGold : cellValue),
       minWidth: 110,
       sortable: true,
       title: '下注金额',
@@ -242,9 +244,7 @@ const loading = computed(() => gridApi.grid?.loading ?? false);
 
 const betTotalText = computed(() =>
   formatAmountFromCent(
-    summary.value.SumTotalBetGold > 0
-      ? summary.value.SumTotalBetGold
-      : summary.value.SumBetGold,
+    summary.value.SumTotalBetGold > 0 ? summary.value.SumTotalBetGold : summary.value.SumBetGold,
   ),
 );
 
@@ -355,9 +355,7 @@ async function handleExport() {
         {
           header: '下注金额',
           value: (row) =>
-            formatAmountFromCent(
-              Number(row.TotalBetGold) > 0 ? row.TotalBetGold : row.BetGold,
-            ),
+            formatAmountFromCent(Number(row.TotalBetGold) > 0 ? row.TotalBetGold : row.BetGold),
         },
         {
           header: '返奖金额',
@@ -366,9 +364,7 @@ async function handleExport() {
         {
           header: '输赢情况',
           value: (row) =>
-            formatAmountFromCent(
-              calcBetWinLoss(row.Status, row.WinGold, row.BetGold),
-            ),
+            formatAmountFromCent(calcBetWinLoss(row.Status, row.WinGold, row.BetGold)),
         },
         { header: '状态', value: (row) => formatBetStatus(row.Status) },
         {
@@ -403,164 +399,122 @@ onMounted(async () => {
     description="会员管理 · EVO 真人 Sidebet 详情"
     title="EVO Sidebet 详情"
   >
-    <SummaryCards :items="summaryItems" />
+    <Card>
+      <SummaryCards :items="summaryItems" />
 
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          class="w-36"
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          placeholder="全部产品"
-        />
+      <div class="mb-4 flex flex-wrap items-end gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            class="w-36"
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            placeholder="全部产品"
+          />
+        </div>
+        <div class="flex w-52 flex-col gap-1">
+          <span class="text-sm text-gray-500">渠道号</span>
+          <ChannelSelect v-model="filterChannelIds" />
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">游戏名称</span>
+          <Select
+            v-model:value="filterSubGameId"
+            allow-clear
+            class="w-44"
+            :options="subGameOptions"
+            placeholder="请选择"
+            show-search
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <Input v-model:value="filterLoginAccount" allow-clear class="w-60" placeholder="请输入">
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex items-center gap-2">
+          <Input v-model:value="filterUsername" allow-clear class="w-60" placeholder="请输入">
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <div class="flex items-center gap-2">
+          <Input v-model:value="filterTransactionId" allow-clear class="w-60" placeholder="请输入">
+            <template #addonBefore>注单号</template>
+          </Input>
+        </div>
+        <div class="flex items-center gap-2">
+          <Input v-model:value="filterRoundId" allow-clear class="w-60" placeholder="请输入">
+            <template #addonBefore>牌局编号</template>
+          </Input>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            class="w-28"
+            :options="BET_STATUS_OPTIONS"
+            placeholder="全部"
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">时间类型</span>
+          <Select
+            v-model:value="filterSelectTimeType"
+            class="w-28"
+            :options="BET_TIME_TYPE_OPTIONS"
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">是否投注</span>
+          <Select v-model:value="filterIsBetTrade" class="w-24" :options="BET_YES_NO_OPTIONS" />
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">结算次数</span>
+          <Select v-model:value="filterSettleCount" class="w-24" :options="BET_YES_NO_OPTIONS" />
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">数据类型</span>
+          <Select v-model:value="filterDataSearchType" class="w-28" :options="memberTypeOptions" />
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">时间范围</span>
+          <DatePicker.RangePicker v-model:value="filterDateRange" />
+        </div>
+        <Space>
+          <Button :loading="loading" type="primary" @click="handleSearch"> 查询 </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button v-if="canExport" :loading="exportLoading" @click="handleExportClick">
+            导出 CSV
+          </Button>
+        </Space>
       </div>
-      <div class="flex w-52 flex-col gap-1">
-        <span class="text-sm text-gray-500">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" />
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">游戏名称</span>
-        <Select
-          v-model:value="filterSubGameId"
-          allow-clear
-          class="w-44"
-          :options="subGameOptions"
-          placeholder="请选择"
-          show-search
-        />
-      </div>
-      <div class="flex items-center gap-2">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          class="w-60"
-          placeholder="请输入"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex items-center gap-2">
-        <Input
-          v-model:value="filterUsername"
-          allow-clear
-          class="w-60"
-          placeholder="请输入"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <div class="flex items-center gap-2">
-        <Input
-          v-model:value="filterTransactionId"
-          allow-clear
-          class="w-60"
-          placeholder="请输入"
-        >
-          <template #addonBefore>注单号</template>
-        </Input>
-      </div>
-      <div class="flex items-center gap-2">
-        <Input
-          v-model:value="filterRoundId"
-          allow-clear
-          class="w-60"
-          placeholder="请输入"
-        >
-          <template #addonBefore>牌局编号</template>
-        </Input>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          class="w-28"
-          :options="BET_STATUS_OPTIONS"
-          placeholder="全部"
-        />
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">时间类型</span>
-        <Select
-          v-model:value="filterSelectTimeType"
-          class="w-28"
-          :options="BET_TIME_TYPE_OPTIONS"
-        />
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">是否投注</span>
-        <Select
-          v-model:value="filterIsBetTrade"
-          class="w-24"
-          :options="BET_YES_NO_OPTIONS"
-        />
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">结算次数</span>
-        <Select
-          v-model:value="filterSettleCount"
-          class="w-24"
-          :options="BET_YES_NO_OPTIONS"
-        />
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">数据类型</span>
-        <Select
-          v-model:value="filterDataSearchType"
-          class="w-28"
-          :options="memberTypeOptions"
-        />
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">时间范围</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
-      </div>
-      <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button
-          v-if="canExport"
-          :loading="exportLoading"
-          @click="handleExportClick"
-        >
-          导出 CSV
-        </Button>
-      </Space>
-    </div>
 
-    <Grid>
-      <template #loginAccount="{ row }">
-        <PlayerAccountLink
-          v-if="
-            canOpenPlayer && row.PlayerId && Number(row.PlayerId) !== 99999999
-          "
-          :login-account="row.LoginAccount"
-          :permission-id="12207"
-          :player-id="row.PlayerId"
-        />
-        <span v-else>{{ row.LoginAccount || '-' }}</span>
-      </template>
-      <template #winLoss="{ row }">
-        {{
-          formatAmountFromCent(
-            calcBetWinLoss(row.Status, row.WinGold, row.BetGold),
-          )
-        }}
-      </template>
-      <template #status="{ row }">
-        <Tag>{{ formatBetStatus(row.Status) }}</Tag>
-      </template>
-    </Grid>
-    <PassPopup ref="passPopupRef" @confirm="handleExport" />
+      <Grid>
+        <template #loginAccount="{ row }">
+          <PlayerAccountLink
+            v-if="canOpenPlayer && row.PlayerId && Number(row.PlayerId) !== 99999999"
+            :login-account="row.LoginAccount"
+            :permission-id="12207"
+            :player-id="row.PlayerId"
+          />
+          <span v-else>{{ row.LoginAccount || '-' }}</span>
+        </template>
+        <template #winLoss="{ row }">
+          {{ formatAmountFromCent(calcBetWinLoss(row.Status, row.WinGold, row.BetGold)) }}
+        </template>
+        <template #status="{ row }">
+          <Tag>{{ formatBetStatus(row.Status) }}</Tag>
+        </template>
+      </Grid>
+      <PassPopup ref="passPopupRef" @confirm="handleExport" />
+    </Card>
   </Page>
   <Result v-else status="403" sub-title="无 EVO Sidebet 查看权限" title="403" />
 </template>

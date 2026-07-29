@@ -14,7 +14,6 @@ import {
   Modal,
   Pagination,
   Select,
-  Space,
   Spin,
   Table,
   Tabs,
@@ -28,8 +27,9 @@ import {
   fetchWithdrawAccessDetailApi,
   fetchWithdrawAccessStatisticsApi,
 } from '#/api/gameManage/withdraw-data';
-import PassPopup from '#/components/security/pass-popup.vue';
+import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -396,164 +396,159 @@ onMounted(() => {
   <div v-if="canView">
     <Tabs v-model:active-key="activeTab" type="line" size="small">
       <Tabs.TabPane v-if="canDetail" key="detail" tab="明细">
-        <div class="flex flex-col gap-3">
-          <Card size="small" title="查询条件">
-            <Space wrap>
-              <Input
-                v-model:value="playerId"
+        <OpsListPanel>
+          <template #filters>
+            <Input
+              v-model:value="playerId"
+              allow-clear
+              placeholder="请输入游戏账号"
+              style="width: 230px"
+              @press-enter="searchDetail"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-gray-500">访问页面</span>
+              <Select
+                v-model:value="detailKey"
+                :options="withdrawPageOptions"
+                style="width: 160px"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-gray-500">访问时间</span>
+              <DatePicker.RangePicker
+                v-model:value="visitRange"
+                :allow-clear="false"
+                show-time
+                format="YYYY-MM-DD HH:mm:ss"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-gray-500">离开时间</span>
+              <DatePicker.RangePicker
+                v-model:value="leaveRange"
                 allow-clear
-                placeholder="请输入游戏账号"
-                style="width: 230px"
-                @press-enter="searchDetail"
-              >
-                <template #addonBefore>游戏账号</template>
-              </Input>
-              <div class="flex flex-col gap-1">
-                <span class="text-xs text-gray-500">访问页面</span>
-                <Select
-                  v-model:value="detailKey"
-                  :options="withdrawPageOptions"
-                  style="width: 160px"
-                />
-              </div>
-              <div class="flex flex-col gap-1">
-                <span class="text-xs text-gray-500">访问时间</span>
-                <DatePicker.RangePicker
-                  v-model:value="visitRange"
-                  :allow-clear="false"
-                  show-time
-                  format="YYYY-MM-DD HH:mm:ss"
-                />
-              </div>
-              <div class="flex flex-col gap-1">
-                <span class="text-xs text-gray-500">离开时间</span>
-                <DatePicker.RangePicker
-                  v-model:value="leaveRange"
-                  allow-clear
-                  show-time
-                  format="YYYY-MM-DD HH:mm:ss"
-                />
-              </div>
-              <div class="flex flex-col gap-1">
-                <span class="text-xs text-gray-500">访问时长</span>
-                <TimePicker.RangePicker
-                  v-model:value="durationRange"
-                  allow-clear
-                  format="HH:mm:ss"
-                />
-              </div>
-              <div class="flex flex-col gap-1">
-                <span class="text-xs text-gray-500">访问设备</span>
-                <Select
-                  v-model:value="appType"
-                  :options="deviceSelectOptions"
-                  style="width: 130px"
-                />
-              </div>
-              <Button
-                type="primary"
-                :loading="detailLoading"
-                @click="searchDetail"
-              >
-                查询
-              </Button>
-              <Button @click="resetDetail">重置</Button>
-            </Space>
-          </Card>
+                show-time
+                format="YYYY-MM-DD HH:mm:ss"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-gray-500">访问时长</span>
+              <TimePicker.RangePicker
+                v-model:value="durationRange"
+                allow-clear
+                format="HH:mm:ss"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-gray-500">访问设备</span>
+              <Select
+                v-model:value="appType"
+                :options="deviceSelectOptions"
+                style="width: 130px"
+              />
+            </div>
+            <Button
+              type="primary"
+              :loading="detailLoading"
+              @click="searchDetail"
+            >
+              查询
+            </Button>
+            <Button @click="resetDetail">重置</Button>
+            <Button
+              v-if="canExport"
+              :loading="exportLoading"
+              @click="openExport"
+            >
+              导出 CSV
+            </Button>
+          </template>
 
-          <Card size="small" title="访问明细">
-            <template #extra>
-              <Button
-                v-if="canExport"
-                :loading="exportLoading"
-                @click="openExport"
-              >
-                导出 CSV
-              </Button>
-            </template>
-            <Spin :spinning="detailLoading">
-              <Table
-                :columns="detailColumns"
-                :data-source="detailList"
-                :pagination="false"
-                :row-key="(row) => String(row.Id ?? `${row.LoginAccount}-${row.BeginTime}`)"
-                :scroll="{ x: 1000 }"
-                size="small"
-                @change="changeDetailSort"
-              >
-                <template #bodyCell="{ column, record, index }">
-                  <template v-if="column.key === 'seq'">
-                    {{ (detailPage - 1) * detailPageSize + index + 1 }}
-                  </template>
-                  <template v-else-if="column.key === 'BeginTime'">
-                    {{ formatOperationDateTime(record.BeginTime) }}
-                  </template>
-                  <template v-else-if="column.key === 'EndTime'">
-                    {{ formatOperationDateTime(record.EndTime) }}
-                  </template>
-                  <template v-else-if="column.key === 'Source'">
-                    {{ formatVisitSource(record.Source) }}
-                  </template>
-                  <template v-else-if="column.key === 'VisitDuration'">
-                    {{ formatVisitDurationSeconds(record.VisitDuration) }}
-                  </template>
-                  <template v-else-if="column.key === 'AppType'">
-                    {{ resolveAppTypeLabel(record.AppType, deviceOptions) }}
-                  </template>
-                  <template v-else-if="column.key === 'LoginAccount'">
-                    <PlayerAccountLink
-                      :login-account="String(record.LoginAccount || '')"
-                      :player-id="record.PlayerId as number | string | undefined"
-                    />
-                  </template>
+          <Spin :spinning="detailLoading">
+            <Table
+              :columns="detailColumns"
+              :data-source="detailList"
+              :pagination="false"
+              :row-key="
+                (row) =>
+                  String(row.Id ?? `${row.LoginAccount}-${row.BeginTime}`)
+              "
+              :scroll="{ x: 1000 }"
+              size="small"
+              @change="changeDetailSort"
+            >
+              <template #bodyCell="{ column, record, index }">
+                <template v-if="column.key === 'seq'">
+                  {{ (detailPage - 1) * detailPageSize + index + 1 }}
                 </template>
-              </Table>
-              <div v-if="detailTotal > 0" class="mt-3 flex justify-end">
-                <Pagination
-                  :current="detailPage"
-                  :page-size="detailPageSize"
-                  :total="detailTotal"
-                  show-quick-jumper
-                  show-size-changer
-                  @change="changeDetailPage"
-                />
-              </div>
-            </Spin>
-          </Card>
-        </div>
+                <template v-else-if="column.key === 'BeginTime'">
+                  {{ formatOperationDateTime(record.BeginTime) }}
+                </template>
+                <template v-else-if="column.key === 'EndTime'">
+                  {{ formatOperationDateTime(record.EndTime) }}
+                </template>
+                <template v-else-if="column.key === 'Source'">
+                  {{ formatVisitSource(record.Source) }}
+                </template>
+                <template v-else-if="column.key === 'VisitDuration'">
+                  {{ formatVisitDurationSeconds(record.VisitDuration) }}
+                </template>
+                <template v-else-if="column.key === 'AppType'">
+                  {{ resolveAppTypeLabel(record.AppType, deviceOptions) }}
+                </template>
+                <template v-else-if="column.key === 'LoginAccount'">
+                  <PlayerAccountLink
+                    :login-account="String(record.LoginAccount || '')"
+                    :player-id="record.PlayerId as number | string | undefined"
+                  />
+                </template>
+              </template>
+            </Table>
+            <div v-if="detailTotal > 0" class="mt-3 flex justify-end">
+              <Pagination
+                :current="detailPage"
+                :page-size="detailPageSize"
+                :total="detailTotal"
+                show-quick-jumper
+                show-size-changer
+                @change="changeDetailPage"
+              />
+            </div>
+          </Spin>
+        </OpsListPanel>
       </Tabs.TabPane>
 
       <Tabs.TabPane v-if="canStatistics" key="statistics" tab="统计">
-        <div class="flex flex-col gap-3">
-          <Card size="small" title="查询条件">
-            <Space wrap>
-              <div class="flex flex-col gap-1">
-                <span class="text-xs text-gray-500">访问页面</span>
-                <Select
-                  v-model:value="statisticsKey"
-                  :options="withdrawPageOptions"
-                  style="width: 160px"
-                />
-              </div>
-              <div class="flex flex-col gap-1">
-                <span class="text-xs text-gray-500">统计时间</span>
-                <DatePicker.RangePicker
-                  v-model:value="statisticsRange"
-                  :allow-clear="false"
-                  show-time
-                  format="YYYY-MM-DD HH:mm:ss"
-                />
-              </div>
-              <Button
-                type="primary"
-                :loading="statisticsLoading"
-                @click="loadStatistics"
-              >
-                查询
-              </Button>
-              <Button @click="resetStatistics">重置</Button>
-            </Space>
-          </Card>
+        <OpsListPanel>
+          <template #filters>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-gray-500">访问页面</span>
+              <Select
+                v-model:value="statisticsKey"
+                :options="withdrawPageOptions"
+                style="width: 160px"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-gray-500">统计时间</span>
+              <DatePicker.RangePicker
+                v-model:value="statisticsRange"
+                :allow-clear="false"
+                show-time
+                format="YYYY-MM-DD HH:mm:ss"
+              />
+            </div>
+            <Button
+              type="primary"
+              :loading="statisticsLoading"
+              @click="loadStatistics"
+            >
+              查询
+            </Button>
+            <Button @click="resetStatistics">重置</Button>
+          </template>
 
           <Spin :spinning="statisticsLoading">
             <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
@@ -666,7 +661,7 @@ onMounted(() => {
               </Table>
             </Card>
           </Spin>
-        </div>
+        </OpsListPanel>
       </Tabs.TabPane>
     </Tabs>
 

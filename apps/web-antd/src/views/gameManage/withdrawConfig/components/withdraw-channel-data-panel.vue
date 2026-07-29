@@ -6,19 +6,18 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  Card,
   DatePicker,
   Empty,
   Input,
   Pagination,
   Select,
-  Space,
   Spin,
   Table,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchWithdrawChannelDataApi } from '#/api/gameManage/withdraw-data';
+import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -209,84 +208,80 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="canView" class="flex flex-col gap-3">
-    <Card size="small" title="查询条件">
-      <Space wrap>
-        <Input
-          v-model:value="account"
-          allow-clear
-          placeholder="请输入账户"
-          style="width: 220px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>账户</template>
-        </Input>
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">日期</span>
-          <DatePicker.RangePicker
-            v-model:value="dateRange"
-            show-time
-            :allow-clear="false"
-            format="YYYY-MM-DD HH:mm:ss"
-          />
-        </div>
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">数据类型</span>
-          <Select
-            v-model:value="dataSearchType"
-            :options="memberTypeOptions"
-            style="width: 120px"
-          />
-        </div>
-        <Button type="primary" :loading="loading" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
-    </Card>
+  <OpsListPanel v-if="canView">
+    <template #filters>
+      <Input
+        v-model:value="account"
+        allow-clear
+        placeholder="请输入账户"
+        style="width: 220px"
+        @press-enter="handleSearch"
+      >
+        <template #addonBefore>账户</template>
+      </Input>
+      <div class="flex flex-col gap-1">
+        <span class="text-xs text-gray-500">日期</span>
+        <DatePicker.RangePicker
+          v-model:value="dateRange"
+          show-time
+          :allow-clear="false"
+          format="YYYY-MM-DD HH:mm:ss"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-xs text-gray-500">数据类型</span>
+        <Select
+          v-model:value="dataSearchType"
+          :options="memberTypeOptions"
+          style="width: 120px"
+        />
+      </div>
+      <Button type="primary" :loading="loading" @click="handleSearch">
+        查询
+      </Button>
+      <Button @click="handleReset">重置</Button>
+    </template>
 
-    <Card size="small" title="通道数据">
-      <Spin :spinning="loading">
-        <Table
-          :columns="columns"
-          :data-source="list"
-          :pagination="false"
-          :row-key="(row) => String(row.Id ?? row.Account ?? '')"
-          :scroll="{ x: 1100 }"
-          size="small"
-          @change="handleTableChange"
-        >
-          <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'time'">
-              {{ dateRange[0].format('YYYY-MM-DD HH:mm:ss') }} -
-              {{ dateRange[1].format('YYYY-MM-DD HH:mm:ss') }}
-            </template>
-            <template v-else-if="column.key === 'AccountType'">
-              {{ withdrawTypeMap.get(String(record.AccountType ?? '')) || '-' }}
-            </template>
-            <template v-else-if="column.key === 'accountKind'">
-              {{ accountKind(record) }}
-            </template>
-            <template v-else-if="column.key === 'DailyAmount'">
-              {{ formatAmountFromCent(record.DailyAmount) }}
-            </template>
-            <template v-else-if="column.key === 'successRate'">
-              {{ successRate(record) }}
-            </template>
+    <Spin :spinning="loading">
+      <Table
+        :columns="columns"
+        :data-source="list"
+        :pagination="false"
+        :row-key="(row) => String(row.Id ?? row.Account ?? '')"
+        :scroll="{ x: 1100 }"
+        size="small"
+        @change="handleTableChange"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'time'">
+            {{ dateRange[0].format('YYYY-MM-DD HH:mm:ss') }} -
+            {{ dateRange[1].format('YYYY-MM-DD HH:mm:ss') }}
           </template>
-        </Table>
-        <div v-if="total > 0" class="mt-3 flex justify-end">
-          <Pagination
-            :current="page"
-            :page-size="pageSize"
-            :total="total"
-            show-size-changer
-            show-quick-jumper
-            @change="handlePageChange"
-          />
-        </div>
-      </Spin>
-    </Card>
-  </div>
+          <template v-else-if="column.key === 'AccountType'">
+            {{ withdrawTypeMap.get(String(record.AccountType ?? '')) || '-' }}
+          </template>
+          <template v-else-if="column.key === 'accountKind'">
+            {{ accountKind(record) }}
+          </template>
+          <template v-else-if="column.key === 'DailyAmount'">
+            {{ formatAmountFromCent(record.DailyAmount) }}
+          </template>
+          <template v-else-if="column.key === 'successRate'">
+            {{ successRate(record) }}
+          </template>
+        </template>
+      </Table>
+      <div v-if="total > 0" class="mt-3 flex justify-end">
+        <Pagination
+          :current="page"
+          :page-size="pageSize"
+          :total="total"
+          show-size-changer
+          show-quick-jumper
+          @change="handlePageChange"
+        />
+      </div>
+    </Spin>
+  </OpsListPanel>
   <Empty v-else description="无通道数据权限（10984）" />
 </template>

@@ -8,6 +8,7 @@ import { Page } from '@vben/common-ui';
 
 import {
   Button,
+  Card,
   Col,
   DatePicker,
   Dropdown,
@@ -33,10 +34,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
-import {
-  formatAmount,
-  formatAmountFromCent,
-} from '#/utils/format-amount';
+import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 import { formatPlayerStatus } from '#/utils/player-status';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
@@ -273,8 +271,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     {
       align: 'center',
-      customRender: ({ record }) =>
-        calcChargeExchangeRatio(record.Recharged, record.WithdrawGold),
+      customRender: ({ record }) => calcChargeExchangeRatio(record.Recharged, record.WithdrawGold),
       dataIndex: 'RechargedRatio',
       key: 'RechargedRatio',
       sorter: true,
@@ -327,8 +324,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     {
       align: 'center',
-      customRender: ({ record }) =>
-        formatReportDateTime(record.LastOfflineTime),
+      customRender: ({ record }) => formatReportDateTime(record.LastOfflineTime),
       key: 'LastOfflineTime',
       title: '最后登录',
       width: 160,
@@ -413,8 +409,7 @@ function handlePageChange(current: number, pageSize: number) {
 async function switchStatus(row: Row, status: number) {
   const name = String(row.PlayerName || row.LoginAccount || row.PlayerId);
   const label =
-    STATUS_ACTIONS.find((item) => item.value === status)?.label ||
-    formatPlayerStatus(status);
+    STATUS_ACTIONS.find((item) => item.value === status)?.label || formatPlayerStatus(status);
   const ok = await new Promise<boolean>((resolve) => {
     Modal.confirm({
       content:
@@ -505,185 +500,175 @@ onMounted(() => {
 </script>
 
 <template>
-  <Page
-    v-if="canView"
-    auto-content-height
-    description="数据闭环 · 玩家分析"
-    title="玩家分析"
-  >
-    <ReportQueryCard title="查询条件">
-      <Input
-        v-model:value="filters.LoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 220px"
-        @blur="normalizeLoginAccount"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Select
-        v-model:value="filters.RegisterOrLogin"
-        :options="REGISTER_OR_LOGIN_OPTIONS"
-        placeholder="注册/登录用户"
-        style="min-width: 130px"
-      />
-      <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
-      <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
-      <Select
-        v-model:value="filters.PackageId"
-        allow-clear
-        :options="packageSelectOptions"
-        placeholder="产品"
-        style="min-width: 160px"
-        show-search
-        option-filter-prop="label"
-      />
-      <Select
-        v-model:value="filters.DataSearchType"
-        :options="DATA_TYPE_OPTIONS"
-        placeholder="数据类型"
-        style="min-width: 120px"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filters.dateRange"
-        :disabled-date="disabledDate"
-        :placeholder="['开始日期', '结束日期']"
-        style="width: 260px"
-      />
-      <template #actions>
-        <Button type="primary" :loading="loading" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button
-          v-if="canExport"
-          type="primary"
-          ghost
-          :loading="exportLoading"
-          @click="handleExport"
+  <Page v-if="canView" auto-content-height description="数据闭环 · 玩家分析" title="玩家分析">
+    <Card>
+      <ReportQueryCard title="查询条件">
+        <Input
+          v-model:value="filters.LoginAccount"
+          allow-clear
+          placeholder="游戏账号"
+          style="width: 220px"
+          @blur="normalizeLoginAccount"
+          @press-enter="handleSearch"
         >
-          导出 Excel
-        </Button>
-      </template>
-      <template #extra>
-        <div class="text-xs text-gray-500">
-          默认近 7 天至今天，最长 7 天
-        </div>
-      </template>
-    </ReportQueryCard>
+          <template #addonBefore>游戏账号</template>
+        </Input>
+        <Select
+          v-model:value="filters.RegisterOrLogin"
+          :options="REGISTER_OR_LOGIN_OPTIONS"
+          placeholder="注册/登录用户"
+          style="min-width: 130px"
+        />
+        <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
+        <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
+        <Select
+          v-model:value="filters.PackageId"
+          allow-clear
+          :options="packageSelectOptions"
+          placeholder="产品"
+          style="min-width: 160px"
+          show-search
+          option-filter-prop="label"
+        />
+        <Select
+          v-model:value="filters.DataSearchType"
+          :options="DATA_TYPE_OPTIONS"
+          placeholder="数据类型"
+          style="min-width: 120px"
+        />
+        <DatePicker.RangePicker
+          v-model:value="filters.dateRange"
+          :disabled-date="disabledDate"
+          :placeholder="['开始日期', '结束日期']"
+          style="width: 260px"
+        />
+        <template #actions>
+          <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button
+            v-if="canExport"
+            type="primary"
+            ghost
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
+        </template>
+        <template #extra>
+          <div class="text-xs text-gray-500">默认近 7 天至今天，最长 7 天</div>
+        </template>
+      </ReportQueryCard>
 
-    <Row :gutter="16">
-      <Col :xs="24" :md="6" :lg="5">
-        <div class="mb-3 rounded border border-gray-100 bg-white p-3">
-          <div class="text-gray-500">用户数量</div>
-          <div class="text-xl font-medium">{{ total }}</div>
-        </div>
-        <div class="mb-3">
-          <div class="mb-1 text-sm text-gray-500">充值情况</div>
-          <Select
-            v-model:value="filters.Recharged"
-            class="w-full"
-            :options="RECHARGE_OPTIONS"
-            @change="handleSideFilterChange"
-          />
-        </div>
-        <div class="mb-3">
-          <div class="mb-1 text-sm text-gray-500">盈利情况</div>
-          <Select
-            v-model:value="filters.ProfitStatus"
-            class="w-full"
-            :options="PROFIT_OPTIONS"
-            @change="handleSideFilterChange"
-          />
-        </div>
-        <div class="mb-3">
-          <div class="mb-1 text-sm text-gray-500">离线情况</div>
-          <Select
-            v-model:value="filters.Offline"
-            class="w-full"
-            :options="OFFLINE_OPTIONS"
-            @change="handleSideFilterChange"
-          />
-        </div>
-      </Col>
+      <Row :gutter="16">
+        <Col :xs="24" :md="6" :lg="5">
+          <div class="mb-3 rounded border border-gray-100 bg-white p-3">
+            <div class="text-gray-500">用户数量</div>
+            <div class="text-xl font-medium">{{ total }}</div>
+          </div>
+          <div class="mb-3">
+            <div class="mb-1 text-sm text-gray-500">充值情况</div>
+            <Select
+              v-model:value="filters.Recharged"
+              class="w-full"
+              :options="RECHARGE_OPTIONS"
+              @change="handleSideFilterChange"
+            />
+          </div>
+          <div class="mb-3">
+            <div class="mb-1 text-sm text-gray-500">盈利情况</div>
+            <Select
+              v-model:value="filters.ProfitStatus"
+              class="w-full"
+              :options="PROFIT_OPTIONS"
+              @change="handleSideFilterChange"
+            />
+          </div>
+          <div class="mb-3">
+            <div class="mb-1 text-sm text-gray-500">离线情况</div>
+            <Select
+              v-model:value="filters.Offline"
+              class="w-full"
+              :options="OFFLINE_OPTIONS"
+              @change="handleSideFilterChange"
+            />
+          </div>
+        </Col>
 
-      <Col :xs="24" :md="18" :lg="19">
-        <Table
-          :columns="columns"
-          :data-source="tableData"
-          :loading="loading"
-          :pagination="false"
-          :scroll="{ x: 'max-content' }"
-          bordered
-          row-key="PlayerId"
-          size="small"
-          @change="handleTableChange"
-        >
-          <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'LoginAccount'">
-              <PlayerAccountLink
-                v-if="canDetail"
-                :login-account="String(record.LoginAccount || '')"
-                :permission-id="10525"
-                :player-id="record.PlayerId as number | string"
-              />
-              <span v-else>{{ record.LoginAccount || '-' }}</span>
+        <Col :xs="24" :md="18" :lg="19">
+          <Table
+            :columns="columns"
+            :data-source="tableData"
+            :loading="loading"
+            :pagination="false"
+            :scroll="{ x: 'max-content' }"
+            bordered
+            row-key="PlayerId"
+            size="small"
+            @change="handleTableChange"
+          >
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.key === 'LoginAccount'">
+                <PlayerAccountLink
+                  v-if="canDetail"
+                  :login-account="String(record.LoginAccount || '')"
+                  :permission-id="10525"
+                  :player-id="record.PlayerId as number | string"
+                />
+                <span v-else>{{ record.LoginAccount || '-' }}</span>
+              </template>
+              <template v-else-if="column.key === 'ChannelId'">
+                {{ record.ChannelName || record.ChannelId || '-' }}
+              </template>
+              <template v-else-if="column.key === 'Status'">
+                <Tag v-if="Number(record.Status) !== 0" :color="statusTagColor(record.Status)">
+                  {{ formatPlayerStatus(record.Status as number) }}
+                </Tag>
+                <span v-else>{{ formatPlayerStatus(0) }}</span>
+              </template>
+              <template v-else-if="column.key === 'Profit'">
+                <span
+                  :style="{
+                    color: Number(record.Profit) < 0 ? '#f5222d' : '#52c41a',
+                  }"
+                >
+                  {{ formatAmountFromCent(record.Profit) }}
+                </span>
+              </template>
+              <template v-else-if="column.key === 'actions'">
+                <Dropdown>
+                  <Button size="small" type="link">操作</Button>
+                  <template #overlay>
+                    <Menu>
+                      <Menu.Item
+                        v-for="action in STATUS_ACTIONS"
+                        :key="action.value"
+                        :disabled="Number(record.Status) === action.value"
+                        @click="switchStatus(record, action.value)"
+                      >
+                        {{ action.label }}
+                      </Menu.Item>
+                    </Menu>
+                  </template>
+                </Dropdown>
+              </template>
             </template>
-            <template v-else-if="column.key === 'ChannelId'">
-              {{ record.ChannelName || record.ChannelId || '-' }}
-            </template>
-            <template v-else-if="column.key === 'Status'">
-              <Tag
-                v-if="Number(record.Status) !== 0"
-                :color="statusTagColor(record.Status)"
-              >
-                {{ formatPlayerStatus(record.Status as number) }}
-              </Tag>
-              <span v-else>{{ formatPlayerStatus(0) }}</span>
-            </template>
-            <template v-else-if="column.key === 'Profit'">
-              <span
-                :style="{
-                  color: Number(record.Profit) < 0 ? '#f5222d' : '#52c41a',
-                }"
-              >
-                {{ formatAmountFromCent(record.Profit) }}
-              </span>
-            </template>
-            <template v-else-if="column.key === 'actions'">
-              <Dropdown>
-                <Button size="small" type="link">操作</Button>
-                <template #overlay>
-                  <Menu>
-                    <Menu.Item
-                      v-for="action in STATUS_ACTIONS"
-                      :key="action.value"
-                      :disabled="Number(record.Status) === action.value"
-                      @click="switchStatus(record, action.value)"
-                    >
-                      {{ action.label }}
-                    </Menu.Item>
-                  </Menu>
-                </template>
-              </Dropdown>
-            </template>
-          </template>
-        </Table>
+          </Table>
 
-        <div v-if="total > 0" class="mt-4 flex justify-end">
-          <Pagination
-            :current="page.current"
-            :page-size="page.pageSize"
-            :total="total"
-            show-size-changer
-            show-quick-jumper
-            @change="handlePageChange"
-            @show-size-change="handlePageChange"
-          />
-        </div>
-      </Col>
-    </Row>
+          <div v-if="total > 0" class="mt-4 flex justify-end">
+            <Pagination
+              :current="page.current"
+              :page-size="page.pageSize"
+              :total="total"
+              show-size-changer
+              show-quick-jumper
+              @change="handlePageChange"
+              @show-size-change="handlePageChange"
+            />
+          </div>
+        </Col>
+      </Row>
+    </Card>
   </Page>
   <Result v-else status="403" sub-title="无玩家分析查看权限" title="403" />
 </template>

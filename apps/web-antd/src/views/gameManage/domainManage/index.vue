@@ -448,7 +448,7 @@ async function exportDomains() {
       </div>
 
       <div class="query-panel">
-        <Space wrap :size="[12, 12]">
+        <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
           <Input
             v-model:value="filters.Keyword"
             allow-clear
@@ -470,7 +470,7 @@ async function exportDomains() {
           />
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
-        </Space>
+        </div>
       </div>
 
       <Alert

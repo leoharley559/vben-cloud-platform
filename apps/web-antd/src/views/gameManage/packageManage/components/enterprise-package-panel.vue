@@ -413,7 +413,7 @@ void loadGames();
     />
     <template v-else>
       <div class="query-panel">
-        <Space wrap>
+        <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
           <Input
             v-model:value="gameQuery.PackageName"
             allow-clear
@@ -427,7 +427,7 @@ void loadGames();
             查询
           </Button>
           <Button @click="resetGames">重置</Button>
-        </Space>
+        </div>
       </div>
 
       <section class="section-card">

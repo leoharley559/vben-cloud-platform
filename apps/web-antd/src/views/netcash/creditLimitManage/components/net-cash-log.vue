@@ -7,7 +7,6 @@ import {
   Input,
   Pagination,
   Select,
-  Space,
   Table,
 } from 'ant-design-vue';
 
@@ -110,7 +109,7 @@ onMounted(load);
 
 <template>
   <div>
-    <Space class="mb-4" wrap>
+    <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
       <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
         <template #addonBefore>代理账号</template>
       </Input>
@@ -118,7 +117,7 @@ onMounted(load);
       <DatePicker.RangePicker v-model:value="transferRange" />
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
-    </Space>
+    </div>
     <SummaryCards :items="summaryItems" />
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1250 }" size="small">
       <template #bodyCell="{ column, record, index }">

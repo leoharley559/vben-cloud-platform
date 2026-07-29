@@ -545,7 +545,7 @@ function handleReset() {
 <template>
   <div>
     <div class="query-panel">
-      <Space wrap>
+      <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
         <Input
           v-model:value="filterName"
           allow-clear
@@ -557,7 +557,7 @@ function handleReset() {
         </Input>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-      </Space>
+      </div>
     </div>
 
     <div class="venue-grid">

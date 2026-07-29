@@ -10,7 +10,6 @@ import {
   Modal,
   Pagination,
   Select,
-  Space,
   Table,
   Tag,
 } from 'ant-design-vue';
@@ -193,7 +192,7 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
 
 <template>
   <div>
-    <Space class="mb-4" wrap>
+    <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
       <Tag color="blue">平台可用额度：{{ amount(platformCredit) }}</Tag>
       <Button @click="loadPlatformCredit">刷新额度</Button>
       <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
@@ -209,7 +208,7 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
       <Button @click="reset">重置</Button>
       <Button v-if="canApprove" :disabled="selectedKeys.length === 0" type="primary" @click="batchReview(true)">批量通过</Button>
       <Button v-if="canReject" :disabled="selectedKeys.length === 0" danger @click="batchReview(false)">批量拒绝</Button>
-    </Space>
+    </div>
 
     <SummaryCards :items="summaryItems" />
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" :row-selection="canApprove || canReject ? rowSelection : undefined" row-key="Id" :scroll="{ x: 1350 }" size="small">

@@ -9,6 +9,7 @@ import { Page } from '@vben/common-ui';
 
 import {
   Button,
+  Card,
   DatePicker,
   Input,
   message,
@@ -24,18 +25,15 @@ import {
   fetchPlayerStatisticsListApi,
 } from '#/api/dataClose/player-report';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatDevicePlatform } from '#/utils/everyday-report-format';
-import {
-  formatAmount,
-  formatAmountFromCent,
-} from '#/utils/format-amount';
+import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 import { formatPlayerStatus } from '#/utils/player-status';
 import { PLAYER_STATISTICS_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
-import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
 import {
   arrayToCsvParam,
@@ -158,9 +156,7 @@ const filters = reactive({
 
 const page = reactive({ current: 1, pageSize: 20 });
 
-const visibleColumns = ref<string[]>(
-  COLUMN_OPTIONS.map((item) => item.value),
-);
+const visibleColumns = ref<string[]>(COLUMN_OPTIONS.map((item) => item.value));
 
 function loadVisibleColumns() {
   try {
@@ -173,10 +169,16 @@ function loadVisibleColumns() {
       if (Array.isArray(parsed)) {
         keys = parsed.map(String).filter(Boolean);
       } else if (typeof parsed === 'string') {
-        keys = parsed.split(',').map((s) => s.trim()).filter(Boolean);
+        keys = parsed
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
       }
     } catch {
-      keys = raw.split(',').map((s) => s.trim()).filter(Boolean);
+      keys = raw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
     const allowed = new Set(COLUMN_OPTIONS.map((item) => item.value));
     const next = keys.filter((key) => allowed.has(key));
@@ -189,15 +191,11 @@ function loadVisibleColumns() {
 }
 
 function persistVisibleColumns() {
-  localStorage.setItem(
-    COLUMN_STORAGE_KEY,
-    JSON.stringify(visibleColumns.value),
-  );
+  localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(visibleColumns.value));
 }
 
 const deviceOptions = computed(() => {
-  const map =
-    (projectConfig.value?.DevicePlatformAll as Record<string, string>) || {};
+  const map = (projectConfig.value?.DevicePlatformAll as Record<string, string>) || {};
   const entries = Object.entries(map);
   if (entries.length > 0) {
     return entries.map(([value, label]) => ({ label, value }));
@@ -231,10 +229,7 @@ const packageSelectOptions = computed(() => [
   ...packageOptions.value,
 ]);
 
-const vipSelectOptions = computed(() => [
-  { label: '全部VIP', value: -1 },
-  ...vipOptions.value,
-]);
+const vipSelectOptions = computed(() => [{ label: '全部VIP', value: -1 }, ...vipOptions.value]);
 
 function num(value: unknown) {
   return Number(value || 0);
@@ -279,13 +274,9 @@ function buildQuery(searchType: 'list' | 'total') {
   const totalRange = rangeUnix(filters.totalRange);
   const firstPay = rangeUnix(filters.firstPayRange);
   const packageId =
-    filters.PackageId === undefined || filters.PackageId === null
-      ? -1
-      : filters.PackageId;
+    filters.PackageId === undefined || filters.PackageId === null ? -1 : filters.PackageId;
   const vipLevel =
-    filters.VipLevel === undefined || filters.VipLevel === null
-      ? -1
-      : filters.VipLevel;
+    filters.VipLevel === undefined || filters.VipLevel === null ? -1 : filters.VipLevel;
   const base: Record<string, unknown> = {
     LoginAccount: filters.LoginAccount.trim().toLowerCase() || undefined,
     PlayerId: filters.PlayerId.trim() || undefined,
@@ -610,8 +601,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     FirstWithDrawMoney: {
       align: 'center',
-      customRender: ({ record }) =>
-        formatAmountFromCent(record.FirstWithDrawMoney),
+      customRender: ({ record }) => formatAmountFromCent(record.FirstWithDrawMoney),
       key: 'FirstWithDrawMoney',
       title: '首提金额',
       width: 110,
@@ -632,8 +622,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     FirstWithDrawTime: {
       align: 'center',
-      customRender: ({ record }) =>
-        formatReportDateTime(record.FirstWithDrawTime),
+      customRender: ({ record }) => formatReportDateTime(record.FirstWithDrawTime),
       key: 'FirstWithDrawTime',
       title: '首提时间',
       width: 160,
@@ -661,9 +650,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
   };
 
-  return visibleColumns.value
-    .map((key) => map[key])
-    .filter(Boolean) as TableColumnType<Row>[];
+  return visibleColumns.value.map((key) => map[key]).filter(Boolean) as TableColumnType<Row>[];
 });
 
 function summaryValue(key: string) {
@@ -803,10 +790,7 @@ function handleReset() {
   filters.InviteSite = [];
   filters.BindPhone = '';
   filters.regRange = null;
-  filters.totalRange = [...resolveReportRange('statTodayToNow')] as [
-    Dayjs,
-    Dayjs,
-  ];
+  filters.totalRange = [...resolveReportRange('statTodayToNow')] as [Dayjs, Dayjs];
   filters.firstPayRange = null;
   sort.value = '';
   handleSearch();
@@ -837,12 +821,9 @@ async function handleCopy() {
   }
   const fields = visibleColumns.value;
   const headers = fields.map(
-    (field) =>
-      COLUMN_OPTIONS.find((item) => item.value === field)?.label || field,
+    (field) => COLUMN_OPTIONS.find((item) => item.value === field)?.label || field,
   );
-  const rows = tableData.value.map((row) =>
-    fields.map((field) => cellText(field, row)),
-  );
+  const rows = tableData.value.map((row) => fields.map((field) => cellText(field, row)));
   try {
     await copyTableText(headers, rows);
     message.success('复制成功');
@@ -852,12 +833,7 @@ async function handleCopy() {
 }
 
 function buildExportParams() {
-  const {
-    SearchType: _st,
-    Page: _page,
-    PageSize: _size,
-    ...params
-  } = buildQuery('list');
+  const { SearchType: _st, Page: _page, PageSize: _size, ...params } = buildQuery('list');
   return params;
 }
 
@@ -913,201 +889,246 @@ onMounted(() => {
     description="数据闭环 · 玩家统计报表"
     title="玩家统计报表"
   >
-    <ReportQueryCard title="查询条件">
-      <Input
-        v-model:value="filters.LoginAccount"
-        allow-clear
-        placeholder="玩家账号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>玩家账号</template>
-      </Input>
-      <Input
-        v-model:value="filters.PlayerId"
-        allow-clear
-        placeholder="玩家Id"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>玩家ID</template>
-      </Input>
-      <Select
-        v-model:value="filters.Status"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="playerStatusOptions"
-        placeholder="玩家状态"
-        style="min-width: 160px"
-      />
-      <Input
-        v-model:value="filters.Promoter"
-        allow-clear
-        placeholder="代理账号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>代理账号</template>
-      </Input>
-      <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
-      <Select
-        v-model:value="filters.PackageId"
-        allow-clear
-        :options="packageSelectOptions"
-        placeholder="产品名称"
-        style="min-width: 160px"
-        show-search
-        option-filter-prop="label"
-      />
-      <Select
-        v-model:value="filters.VipLevel"
-        allow-clear
-        :options="vipSelectOptions"
-        placeholder="VIP等级"
-        style="min-width: 120px"
-      />
-      <Select
-        v-model:value="filters.UserSource"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="USER_SOURCE_OPTIONS"
-        placeholder="用户来源"
-        style="min-width: 160px"
-      />
-      <Select
-        v-model:value="filters.DevicePlatform"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="deviceOptions"
-        placeholder="注册来源"
-        style="min-width: 160px"
-      />
-      <Select
-        v-model:value="filters.AppUrl"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="appStoreOptions"
-        placeholder="上架包"
-        style="min-width: 160px"
-      />
-      <Select
-        v-model:value="filters.StatisticType"
-        :options="STATISTIC_TYPE_OPTIONS"
-        placeholder="统计类型"
-        style="min-width: 140px"
-      />
-      <Select
-        v-model:value="filters.InviteSite"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="inviteOptions"
-        placeholder="邀请站点"
-        style="min-width: 160px"
-      />
-      <Input
-        v-model:value="filters.BindPhone"
-        allow-clear
-        placeholder="会员手机号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>会员手机号</template>
-      </Input>
-      <DatePicker.RangePicker
-        v-model:value="filters.regRange"
-        show-time
-        :placeholder="['注册开始', '注册结束']"
-        style="width: 340px"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filters.totalRange"
-        show-time
-        :placeholder="['统计开始', '统计结束']"
-        style="width: 340px"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filters.firstPayRange"
-        show-time
-        :placeholder="['首存开始', '首存结束']"
-        style="width: 340px"
-      />
-      <Select
-        v-model:value="visibleColumns"
-        mode="multiple"
-        :max-tag-count="1"
-        :options="COLUMN_OPTIONS"
-        placeholder="显示列"
-        style="min-width: 180px"
-        @change="persistVisibleColumns"
-      />
-      <template #actions>
-        <Button type="primary" :loading="loading" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button @click="handleCopy">复制</Button>
-        <Button
-          v-if="canExport"
-          type="primary"
-          ghost
-          :loading="exportLoading"
-          @click="handleExportClick"
-        >
-          导出 CSV
-        </Button>
-      </template>
-    </ReportQueryCard>
-
-    <ReportSummaryCards :items="summaryItems" />
-
-    <Table
-      :columns="columns"
-      :data-source="tableData"
-      :loading="loading"
-      :pagination="false"
-      :scroll="{ x: 'max-content' }"
-      bordered
-      row-key="PlayerId"
-      size="small"
-      @change="handleTableChange"
-    >
-      <template #summary>
-        <Table.Summary fixed>
-          <Table.Summary.Row>
-            <Table.Summary.Cell
-              v-for="cell in getSummary()"
-              :key="cell.index"
-              :index="cell.index"
+    <Card>
+      <OpsListPanel>
+        <template #filters>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.LoginAccount"
+              allow-clear
+              placeholder="玩家账号"
+              style="width: 220px"
+              @press-enter="handleSearch"
             >
-              <span class="text-red-500">{{ cell.value }}</span>
-            </Table.Summary.Cell>
-          </Table.Summary.Row>
-        </Table.Summary>
-      </template>
-    </Table>
+              <template #addonBefore>玩家账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.PlayerId"
+              allow-clear
+              placeholder="玩家Id"
+              style="width: 220px"
+              @press-enter="handleSearch"
+            >
+              <template #addonBefore>玩家ID</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">玩家状态</span>
+            <Select
+              v-model:value="filters.Status"
+              allow-clear
+              mode="multiple"
+              :max-tag-count="1"
+              :options="playerStatusOptions"
+              placeholder="请选择"
+              style="min-width: 160px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.Promoter"
+              allow-clear
+              placeholder="代理账号"
+              style="width: 220px"
+              @press-enter="handleSearch"
+            >
+              <template #addonBefore>代理账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">渠道号</span>
+            <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">产品名称</span>
+            <Select
+              v-model:value="filters.PackageId"
+              allow-clear
+              :options="packageSelectOptions"
+              placeholder="请选择"
+              style="min-width: 160px"
+              show-search
+              option-filter-prop="label"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">VIP等级</span>
+            <Select
+              v-model:value="filters.VipLevel"
+              allow-clear
+              :options="vipSelectOptions"
+              placeholder="请选择"
+              style="min-width: 120px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">用户来源</span>
+            <Select
+              v-model:value="filters.UserSource"
+              allow-clear
+              mode="multiple"
+              :max-tag-count="1"
+              :options="USER_SOURCE_OPTIONS"
+              placeholder="请选择"
+              style="min-width: 160px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">注册来源</span>
+            <Select
+              v-model:value="filters.DevicePlatform"
+              allow-clear
+              mode="multiple"
+              :max-tag-count="1"
+              :options="deviceOptions"
+              placeholder="请选择"
+              style="min-width: 160px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">上架包</span>
+            <Select
+              v-model:value="filters.AppUrl"
+              allow-clear
+              mode="multiple"
+              :max-tag-count="1"
+              :options="appStoreOptions"
+              placeholder="请选择"
+              style="min-width: 160px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">统计类型</span>
+            <Select
+              v-model:value="filters.StatisticType"
+              :options="STATISTIC_TYPE_OPTIONS"
+              placeholder="请选择"
+              style="min-width: 140px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">邀请站点</span>
+            <Select
+              v-model:value="filters.InviteSite"
+              allow-clear
+              mode="multiple"
+              :max-tag-count="1"
+              :options="inviteOptions"
+              placeholder="请选择"
+              style="min-width: 160px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.BindPhone"
+              allow-clear
+              placeholder="会员手机号"
+              style="width: 220px"
+              @press-enter="handleSearch"
+            >
+              <template #addonBefore>会员手机号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">注册时间</span>
+            <DatePicker.RangePicker
+              v-model:value="filters.regRange"
+              show-time
+              :placeholder="['开始', '结束']"
+              style="width: 340px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">统计时间</span>
+            <DatePicker.RangePicker
+              v-model:value="filters.totalRange"
+              show-time
+              :placeholder="['开始', '结束']"
+              style="width: 340px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">首存时间</span>
+            <DatePicker.RangePicker
+              v-model:value="filters.firstPayRange"
+              show-time
+              :placeholder="['开始', '结束']"
+              style="width: 340px"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-gray-500">显示列</span>
+            <Select
+              v-model:value="visibleColumns"
+              mode="multiple"
+              :max-tag-count="1"
+              :options="COLUMN_OPTIONS"
+              placeholder="请选择"
+              style="min-width: 180px"
+              @change="persistVisibleColumns"
+            />
+          </div>
+          <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button @click="handleCopy">复制</Button>
+          <Button
+            v-if="canExport"
+            type="primary"
+            ghost
+            :loading="exportLoading"
+            @click="handleExportClick"
+          >
+            导出 CSV
+          </Button>
+        </template>
 
-    <div v-if="total > 0" class="mt-4 flex justify-end">
-      <Pagination
-        :current="page.current"
-        :page-size="page.pageSize"
-        :total="total"
-        show-size-changer
-        show-quick-jumper
-        @change="handlePageChange"
-        @show-size-change="handlePageChange"
-      />
-    </div>
+        <template #summary>
+          <ReportSummaryCards :items="summaryItems" />
+        </template>
 
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+        <Table
+          :columns="columns"
+          :data-source="tableData"
+          :loading="loading"
+          :pagination="false"
+          :scroll="{ x: 'max-content' }"
+          bordered
+          row-key="PlayerId"
+          size="small"
+          @change="handleTableChange"
+        >
+          <template #summary>
+            <Table.Summary fixed>
+              <Table.Summary.Row>
+                <Table.Summary.Cell
+                  v-for="cell in getSummary()"
+                  :key="cell.index"
+                  :index="cell.index"
+                >
+                  <span class="text-red-500">{{ cell.value }}</span>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            </Table.Summary>
+          </template>
+        </Table>
+
+        <div v-if="total > 0" class="mt-4 flex justify-end">
+          <Pagination
+            :current="page.current"
+            :page-size="page.pageSize"
+            :total="total"
+            show-size-changer
+            show-quick-jumper
+            @change="handlePageChange"
+            @show-size-change="handlePageChange"
+          />
+        </div>
+      </OpsListPanel>
+    </Card>
+
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </Page>
   <Result v-else status="403" sub-title="无玩家统计报表查看权限" title="403" />
 </template>

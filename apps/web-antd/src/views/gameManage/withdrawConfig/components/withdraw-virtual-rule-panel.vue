@@ -582,7 +582,7 @@ onMounted(loadMain);
     title="虚拟币限制白名单"
     width="950px"
   >
-    <Space class="mb-3" wrap>
+    <div class="mb-3 flex flex-wrap items-end gap-x-3 gap-y-2">
       <Input
         v-model:value="whitelistQuery.Account"
         allow-clear
@@ -609,7 +609,7 @@ onMounted(loadMain);
       <Button type="primary" @click="loadWhitelist">查询</Button>
       <Button type="primary" @click="openWhitelistAdd">新增白名单</Button>
       <Button @click="openBatch">Excel/批量导入</Button>
-    </Space>
+    </div>
     <Table
       :columns="whitelistColumns"
       :data-source="whitelistRows"

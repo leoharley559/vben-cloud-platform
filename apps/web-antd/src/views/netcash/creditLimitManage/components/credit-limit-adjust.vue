@@ -11,7 +11,6 @@ import {
   Modal,
   Pagination,
   Select,
-  Space,
   Table,
 } from 'ant-design-vue';
 
@@ -280,7 +279,7 @@ onMounted(load);
 
 <template>
   <div>
-    <Space class="mb-4" wrap>
+    <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
       <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
         <template #addonBefore>代理账号</template>
       </Input>
@@ -294,7 +293,7 @@ onMounted(load);
       <Button v-if="checkPermission(11_802)" :loading="exporting" @click="handleExport">导出</Button>
       <Button v-if="checkPermission(11_753)" @click="openTransferLimit">转账限额设置</Button>
       <Button v-if="checkPermission(11_754)" type="primary" @click="openAdjust()">批量调整代理</Button>
-    </Space>
+    </div>
 
     <SummaryCards :items="summaryItems" />
 

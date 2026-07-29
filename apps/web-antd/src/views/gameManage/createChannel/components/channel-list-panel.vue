@@ -565,7 +565,7 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-      <Space wrap>
+      <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
         <Input
           v-model:value="filters.ChannelId"
           allow-clear
@@ -624,7 +624,7 @@ onBeforeUnmount(() => {
         />
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-      </Space>
+      </div>
       <Space wrap>
         <Button v-if="canBatch && canList" @click="openBatch">批量设置</Button>
         <Button v-if="canCreate" type="primary" @click="openCreate()"

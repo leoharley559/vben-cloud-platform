@@ -4,7 +4,7 @@ import type { RecordQueryBaseQuery, RecordQueryListResult } from '#/types/netcas
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, DatePicker, Input, message, Select, Space } from 'ant-design-vue';
+import { Button, DatePicker, Input, message, Select } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -371,7 +371,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <Space class="mb-4 flex flex-wrap" wrap>
+    <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
       <template v-if="kind === 'standard'">
         <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" style="width: 220px" @press-enter="search">
           <template #addonBefore>代理账号</template>
@@ -431,7 +431,7 @@ onMounted(() => {
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
       <Button v-if="config.exportPermission" :loading="exporting" type="primary" ghost @click="exportExcel">导出 Excel</Button>
-    </Space>
+    </div>
     <SummaryCards :items="summaryCards" />
     <Grid>
       <template

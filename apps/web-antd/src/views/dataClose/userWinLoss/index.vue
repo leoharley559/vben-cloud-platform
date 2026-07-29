@@ -8,6 +8,7 @@ import { Page } from '@vben/common-ui';
 
 import {
   Button,
+  Card,
   DatePicker,
   Input,
   message,
@@ -31,10 +32,7 @@ import { formatAmountFromCent } from '#/utils/format-amount';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import {
-  arrayToCsvParam,
-  resolveReportRange,
-} from '#/views/dataClose/shared/report-utils';
+import { arrayToCsvParam, resolveReportRange } from '#/views/dataClose/shared/report-utils';
 
 defineOptions({ name: 'UserWinLoss' });
 
@@ -49,8 +47,7 @@ const VIEW_BY_OPTIONS = [
 ];
 
 const { checkPermission, projectConfig } = useCloudPermission();
-const { ensureGameConfig, packageOptions, platformGameTypeMap } =
-  useReportOptions();
+const { ensureGameConfig, packageOptions, platformGameTypeMap } = useReportOptions();
 
 const canView = computed(() => checkPermission(10_492));
 const canExport = computed(() => checkPermission(10_493));
@@ -195,9 +192,7 @@ const summaryItems = computed(() => {
     { title: '有效投注总计', value: formatAmountFromCent(m.SumValidWater) },
     {
       title: '玩家盈亏总计',
-      value: formatAmountFromCent(
-        num(m.SumWinGold) - num(m.SumProfitGold) - num(m.SumBetGold),
-      ),
+      value: formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold) - num(m.SumBetGold)),
     },
   ];
 });
@@ -282,9 +277,7 @@ function getSummary() {
     String(m.SumBetCount ?? '-'),
     formatAmountFromCent(m.SumValidWater),
     formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold)),
-    formatAmountFromCent(
-      num(m.SumWinGold) - num(m.SumProfitGold) - num(m.SumBetGold),
-    ),
+    formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold) - num(m.SumBetGold)),
   ];
 }
 
@@ -426,152 +419,150 @@ onMounted(async () => {
     description="数据闭环 · 玩家盈亏报表"
     title="玩家盈亏报表"
   >
-    <ReportQueryCard title="查询条件">
-      <Select
-        v-model:value="filters.VenuesTemp"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="gameGroupOptions"
-        placeholder="场馆模版"
-        style="min-width: 180px"
-      />
-      <Input
-        v-model:value="filters.LoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 220px"
-        @blur="normalizeLoginAccount"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
-      <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
-      <Select
-        v-model:value="filters.PackageId"
-        allow-clear
-        :options="packageSelectOptions"
-        placeholder="产品"
-        style="min-width: 160px"
-        show-search
-        option-filter-prop="label"
-      />
-      <Select
-        v-model:value="filters.AppUrl"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="appStoreOptions"
-        placeholder="上架包"
-        style="min-width: 160px"
-      />
-      <Select
-        v-model:value="filters.ViewBy"
-        :options="VIEW_BY_OPTIONS"
-        placeholder="数据显示模式"
-        style="min-width: 150px"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filters.dateRange"
-        :disabled-date="disabledDate"
-        :placeholder="['开始日期', '结束日期']"
-        style="width: 260px"
-      />
-      <template #actions>
-        <Button type="primary" :loading="loading" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button
-          v-if="canExport"
-          type="primary"
-          ghost
-          :loading="exportLoading"
-          @click="handleExport"
+    <Card>
+      <ReportQueryCard title="查询条件">
+        <Select
+          v-model:value="filters.VenuesTemp"
+          allow-clear
+          mode="multiple"
+          :max-tag-count="1"
+          :options="gameGroupOptions"
+          placeholder="场馆模版"
+          style="min-width: 180px"
+        />
+        <Input
+          v-model:value="filters.LoginAccount"
+          allow-clear
+          placeholder="游戏账号"
+          style="width: 220px"
+          @blur="normalizeLoginAccount"
+          @press-enter="handleSearch"
         >
-          导出 Excel
-        </Button>
-      </template>
-      <template #extra>
-        <div class="text-xs text-gray-500">
-          默认今天，最长 30 天；今天的数据将每小时更新一次
-        </div>
-      </template>
-    </ReportQueryCard>
-
-    <ReportSummaryCards :items="summaryItems" />
-
-    <Table
-      :columns="columns"
-      :data-source="tableData"
-      :loading="loading"
-      :pagination="false"
-      :scroll="{ x: 'max-content' }"
-      bordered
-      :row-key="rowKey"
-      size="small"
-      @change="handleTableChange"
-    >
-      <template #headerCell="{ column }">
-        <template v-if="column.key === 'SumBetGold'">
-          <Tooltip title="投注额为玩家在游戏中的总投注金额">
-            <span>投注额</span>
-          </Tooltip>
-        </template>
-        <template v-else-if="column.key === 'DeliveryGold'">
-          <Tooltip title="实际派送金币=玩家在游戏中实际赢取的金币数量">
-            <span>实际派送</span>
-          </Tooltip>
-        </template>
-      </template>
-      <template #bodyCell="{ column, record }">
-        <PlayerAccountLink
-          v-if="column.key === 'LoginAccount'"
-          :login-account="String(record.LoginAccount || '')"
-          :player-id="record.PlayerId as number | string | undefined"
+          <template #addonBefore>游戏账号</template>
+        </Input>
+        <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
+        <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
+        <Select
+          v-model:value="filters.PackageId"
+          allow-clear
+          :options="packageSelectOptions"
+          placeholder="产品"
+          style="min-width: 160px"
+          show-search
+          option-filter-prop="label"
         />
-        <AgencyAccountLink
-          v-else-if="column.key === 'Username'"
-          :admin-id="resolveAgencyAdminId(record)"
-          :username="record.Username"
+        <Select
+          v-model:value="filters.AppUrl"
+          allow-clear
+          mode="multiple"
+          :max-tag-count="1"
+          :options="appStoreOptions"
+          placeholder="上架包"
+          style="min-width: 160px"
         />
-        <template v-else-if="column.key === 'SumBetWin'">
-          <span
-            :style="{
-              color: playerWinLoss(record) < 0 ? '#f5222d' : '#52c41a',
-            }"
+        <Select
+          v-model:value="filters.ViewBy"
+          :options="VIEW_BY_OPTIONS"
+          placeholder="数据显示模式"
+          style="min-width: 150px"
+        />
+        <DatePicker.RangePicker
+          v-model:value="filters.dateRange"
+          :disabled-date="disabledDate"
+          :placeholder="['开始日期', '结束日期']"
+          style="width: 260px"
+        />
+        <template #actions>
+          <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button
+            v-if="canExport"
+            type="primary"
+            ghost
+            :loading="exportLoading"
+            @click="handleExport"
           >
-            {{ formatAmountFromCent(playerWinLoss(record)) }}
-          </span>
+            导出 Excel
+          </Button>
         </template>
-      </template>
-      <template #summary>
-        <Table.Summary fixed>
-          <Table.Summary.Row>
-            <Table.Summary.Cell
-              v-for="(value, index) in getSummary()"
-              :key="index"
-              :index="index"
-            >
-              <span class="text-red-500">{{ value }}</span>
-            </Table.Summary.Cell>
-          </Table.Summary.Row>
-        </Table.Summary>
-      </template>
-    </Table>
+        <template #extra>
+          <div class="text-xs text-gray-500">默认今天，最长 30 天；今天的数据将每小时更新一次</div>
+        </template>
+      </ReportQueryCard>
 
-    <div v-if="total > 0" class="mt-4 flex justify-end">
-      <Pagination
-        :current="page.current"
-        :page-size="page.pageSize"
-        :total="total"
-        show-size-changer
-        show-quick-jumper
-        @change="handlePageChange"
-        @show-size-change="handlePageChange"
-      />
-    </div>
+      <ReportSummaryCards :items="summaryItems" />
+
+      <Table
+        :columns="columns"
+        :data-source="tableData"
+        :loading="loading"
+        :pagination="false"
+        :scroll="{ x: 'max-content' }"
+        bordered
+        :row-key="rowKey"
+        size="small"
+        @change="handleTableChange"
+      >
+        <template #headerCell="{ column }">
+          <template v-if="column.key === 'SumBetGold'">
+            <Tooltip title="投注额为玩家在游戏中的总投注金额">
+              <span>投注额</span>
+            </Tooltip>
+          </template>
+          <template v-else-if="column.key === 'DeliveryGold'">
+            <Tooltip title="实际派送金币=玩家在游戏中实际赢取的金币数量">
+              <span>实际派送</span>
+            </Tooltip>
+          </template>
+        </template>
+        <template #bodyCell="{ column, record }">
+          <PlayerAccountLink
+            v-if="column.key === 'LoginAccount'"
+            :login-account="String(record.LoginAccount || '')"
+            :player-id="record.PlayerId as number | string | undefined"
+          />
+          <AgencyAccountLink
+            v-else-if="column.key === 'Username'"
+            :admin-id="resolveAgencyAdminId(record)"
+            :username="record.Username"
+          />
+          <template v-else-if="column.key === 'SumBetWin'">
+            <span
+              :style="{
+                color: playerWinLoss(record) < 0 ? '#f5222d' : '#52c41a',
+              }"
+            >
+              {{ formatAmountFromCent(playerWinLoss(record)) }}
+            </span>
+          </template>
+        </template>
+        <template #summary>
+          <Table.Summary fixed>
+            <Table.Summary.Row>
+              <Table.Summary.Cell
+                v-for="(value, index) in getSummary()"
+                :key="index"
+                :index="index"
+              >
+                <span class="text-red-500">{{ value }}</span>
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          </Table.Summary>
+        </template>
+      </Table>
+
+      <div v-if="total > 0" class="mt-4 flex justify-end">
+        <Pagination
+          :current="page.current"
+          :page-size="page.pageSize"
+          :total="total"
+          show-size-changer
+          show-quick-jumper
+          @change="handlePageChange"
+          @show-size-change="handlePageChange"
+        />
+      </div>
+    </Card>
   </Page>
   <Result v-else status="403" sub-title="无玩家盈亏报表查看权限" title="403" />
 </template>

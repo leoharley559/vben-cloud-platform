@@ -7,7 +7,6 @@ import {
   Input,
   Result,
   Select,
-  Space,
   Table,
 } from 'ant-design-vue';
 import dayjs, { type Dayjs } from 'dayjs';
@@ -186,7 +185,7 @@ onMounted(load);
 <template>
   <div v-if="canView" class="space-y-3">
     <div class="mb-3">
-      <Space wrap>
+      <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
         <Input v-model:value="orderId" allow-clear placeholder="订单号" style="width: 220px">
           <template #addonBefore>订单号</template>
         </Input>
@@ -196,7 +195,7 @@ onMounted(load);
         <Button type="primary" @click="load">查询</Button>
         <Button @click="reset">重置</Button>
         <Button :loading="exporting" @click="exportAll">导出全部</Button>
-      </Space>
+      </div>
     </div>
     <SummaryCards :items="summaryItems" />
     <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="{

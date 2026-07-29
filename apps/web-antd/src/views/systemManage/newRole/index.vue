@@ -7,14 +7,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
 
-import {
-  Dropdown,
-  Menu,
-  message,
-  Modal,
-  Result,
-  Tag,
-} from 'ant-design-vue';
+import { Card, Dropdown, Menu, message, Modal, Result, Tag } from 'ant-design-vue';
 
 import { getProjectConfigApi, getUserInfoApi } from '#/api';
 import {
@@ -38,9 +31,7 @@ const userStore = useUserStore();
 const roleFormModalRef = ref<InstanceType<typeof RoleFormModal>>();
 const searchLoading = ref(false);
 
-const canViewList = computed(
-  () => checkPermission(10_005) || checkPermission(10_006),
-);
+const canViewList = computed(() => checkPermission(10_005) || checkPermission(10_006));
 const canViewTable = computed(() => checkPermission(10_005));
 const canAdd = computed(() => checkPermission(10_006));
 const canEdit = computed(() => checkPermission(10_007));
@@ -136,10 +127,7 @@ function handleResetSearch() {
 }
 
 async function refreshSessionAfterRoleChange() {
-  const [userInfo] = await Promise.all([
-    getUserInfoApi(),
-    getProjectConfigApi(),
-  ]);
+  const [userInfo] = await Promise.all([getUserInfoApi(), getProjectConfigApi()]);
   userStore.setUserInfo(userInfo);
 }
 
@@ -183,10 +171,7 @@ function handleDelete(row: RoleListItem) {
   });
 }
 
-async function handleFormSubmit(payload: {
-  form: RoleFormModel;
-  mode: 'create' | 'update';
-}) {
+async function handleFormSubmit(payload: { form: RoleFormModel; mode: 'create' | 'update' }) {
   const data = {
     ...payload.form,
     Description: payload.form.Description || '',
@@ -218,69 +203,62 @@ onMounted(() => {
 </script>
 
 <template>
-  <Page
-    v-if="canViewList"
-    auto-content-height
-    description="系统管理 · 角色管理"
-    title="角色管理"
-  >
-    <div v-if="canViewTable" class="bg-card rounded-md p-4">
-      <ListSearchBar
-        :loading="searchLoading"
-        :options="searchOptions"
-        :show-add="canAdd"
-        :show-date-time="false"
-        add-text="新建角色"
-        keyword-placeholder="请输入"
-        @add="handleCreate"
-        @reset="handleResetSearch"
-        @search="handleSearch"
+  <Page v-if="canViewList" auto-content-height description="系统管理 · 角色管理" title="角色管理">
+    <Card>
+      <div v-if="canViewTable" class="bg-card rounded-md p-4">
+        <ListSearchBar
+          :loading="searchLoading"
+          :options="searchOptions"
+          :show-add="canAdd"
+          :show-date-time="false"
+          add-text="新建角色"
+          keyword-placeholder="请输入"
+          @add="handleCreate"
+          @reset="handleResetSearch"
+          @search="handleSearch"
+        />
+
+        <Grid>
+          <template #type="{ row }">
+            <Tag :color="isSystemBuiltinRole(row) ? 'blue' : 'default'">
+              {{ isSystemBuiltinRole(row) ? '系统内置' : '自定义' }}
+            </Tag>
+          </template>
+
+          <template #action="{ row }">
+            <Dropdown :trigger="['click']">
+              <a class="text-primary">操作</a>
+              <template #overlay>
+                <Menu>
+                  <Menu.Item v-if="canOpenEditor(row)" @click="handleEdit(row)">
+                    {{ getEditorLabel(row) }}
+                  </Menu.Item>
+                  <Menu.Item
+                    v-if="canDelete && !isSystemBuiltinRole(row)"
+                    danger
+                    @click="handleDelete(row)"
+                  >
+                    删除
+                  </Menu.Item>
+                </Menu>
+              </template>
+            </Dropdown>
+          </template>
+        </Grid>
+      </div>
+
+      <Result
+        v-else
+        status="403"
+        sub-title="您有菜单权限但无列表查看权限（10005）"
+        title="无权限"
       />
 
-      <Grid>
-        <template #type="{ row }">
-          <Tag :color="isSystemBuiltinRole(row) ? 'blue' : 'default'">
-            {{ isSystemBuiltinRole(row) ? '系统内置' : '自定义' }}
-          </Tag>
-        </template>
-
-        <template #action="{ row }">
-          <Dropdown :trigger="['click']">
-            <a class="text-primary">操作</a>
-            <template #overlay>
-              <Menu>
-                <Menu.Item v-if="canOpenEditor(row)" @click="handleEdit(row)">
-                  {{ getEditorLabel(row) }}
-                </Menu.Item>
-                <Menu.Item
-                  v-if="canDelete && !isSystemBuiltinRole(row)"
-                  danger
-                  @click="handleDelete(row)"
-                >
-                  删除
-                </Menu.Item>
-              </Menu>
-            </template>
-          </Dropdown>
-        </template>
-      </Grid>
-    </div>
-
-    <Result
-      v-else
-      status="403"
-      sub-title="您有菜单权限但无列表查看权限（10005）"
-      title="无权限"
-    />
-
-    <RoleFormModal ref="roleFormModalRef" @submit="handleFormSubmit" />
+      <RoleFormModal ref="roleFormModalRef" @submit="handleFormSubmit" />
+    </Card>
   </Page>
 
   <Page v-else auto-content-height title="角色管理">
-    <Result
-      status="403"
-      sub-title="需要权限 10005 或 10006 才能访问此页面"
-      title="无权限"
-    />
+    <Result status="403" sub-title="需要权限 10005 或 10006 才能访问此页面" title="无权限" />
   </Page>
 </template>

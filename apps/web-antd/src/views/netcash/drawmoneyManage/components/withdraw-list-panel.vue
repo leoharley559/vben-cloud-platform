@@ -700,11 +700,10 @@ onUnmounted(() => {
 <template>
   <Result v-if="!canView" status="403" sub-title="无提款列表查看权限" title="403" />
   <div v-else>
-    <div class="mb-3">
-      <Space class="mb-3 flex flex-wrap" wrap>
-        <Input v-model:value="withdrawQuery.Applicant" placeholder="代理账号" style="width: 220px">
-          <template #addonBefore>代理账号</template>
-        </Input>
+    <div class="mb-3 flex flex-wrap items-end gap-x-3 gap-y-2">
+      <Input v-model:value="withdrawQuery.Applicant" placeholder="代理账号" style="width: 220px">
+        <template #addonBefore>代理账号</template>
+      </Input>
         <Input v-model:value="withdrawQuery.OrderId" placeholder="订单号" style="width: 220px">
           <template #addonBefore>订单号</template>
         </Input>
@@ -758,8 +757,7 @@ onUnmounted(() => {
         <Button danger :disabled="selected.length === 0" @click="batchRefuse">
           批量拒绝出款
         </Button>
-      </Space>
-    </div>
+      </div>
 
     <SummaryCards :items="withdrawSummaryItems" />
     <Space v-if="Number(withdrawTotal.PendingCountNum) > 0" class="mb-3">

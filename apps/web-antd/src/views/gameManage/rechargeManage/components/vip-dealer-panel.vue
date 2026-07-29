@@ -760,7 +760,7 @@ onMounted(() => {
     </Alert>
 
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <Space wrap>
+      <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
         <Input
           v-model:value="query.Keyword"
           allow-clear
@@ -783,7 +783,7 @@ onMounted(() => {
         />
         <Button type="primary" @click="search">查询</Button>
         <Button @click="resetSearch">重置</Button>
-      </Space>
+      </div>
       <Space wrap>
         <span class="text-sm text-gray-500">客服分配：</span>
         <Radio.Group
