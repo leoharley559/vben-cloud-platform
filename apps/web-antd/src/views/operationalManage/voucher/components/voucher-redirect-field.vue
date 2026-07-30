@@ -8,6 +8,7 @@ import {
   fetchAdNoticeJumpListApi,
 } from '#/api/operationManage/game-notice';
 import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 
 import { REDIRECT_TYPE, REDIRECT_TYPE_OPTIONS } from './voucher-shared';
 
@@ -40,8 +41,8 @@ const activityOptions = ref<Array<{ label: string; value: number | string }>>(
 const { ensureGameConfig, gameConfig } = useGameConfig();
 
 const venueOptions = computed(() =>
-  Object.entries(gameConfig.value.platformGameList).map(([gameId, game]) => ({
-    label: game.gameName || gameId,
+  Object.entries(gameConfig.value.platformGameList).map(([gameId]) => ({
+    label: formatVenueName(gameId, gameConfig.value),
     value: Number(gameId),
   })),
 );

@@ -21,11 +21,11 @@ import {
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { formatOperationDateTime } from '#/utils/operation-status';
-import { formatPlayerStatus } from '#/utils/player-status';
 import { REWARD_EXCHANGE_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import { resolveProductName } from './reward-goods-shared';
@@ -248,8 +248,11 @@ async function handleExport(payload: Record<string, unknown>) {
             :login-account="String(row.LoginAccount || '')"
             :player-id="row.PlayerId as number | string | undefined"
           />
-          <div v-if="row.LoginAccount" class="text-xs text-gray-400">
-            ({{ formatPlayerStatus(row.PlayerStatus as number) }})
+          <div class="mt-1">
+            <PlayerStatusTag
+              :status="row.PlayerStatus as number | string | null"
+              hide-normal
+            />
           </div>
         </div>
       </template>

@@ -4,6 +4,7 @@ import { computed, onMounted } from 'vue';
 import { Input, Radio, Select } from 'ant-design-vue';
 
 import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 
 import { VENUE_PICK_MODE_OPTIONS } from './voucher-shared';
 
@@ -79,15 +80,15 @@ const venuesCsvFallback = computed<string>({
 });
 
 const categoryOptions = computed(() =>
-  Object.entries(gameConfig.value.platformGameType).map(([value, label]) => ({
-    label,
+  Object.entries(gameConfig.value.platformGameType).map(([value]) => ({
+    label: formatVenueName(value, gameConfig.value),
     value: Number(value),
   })),
 );
 
 const venueOptions = computed(() =>
-  Object.entries(gameConfig.value.platformGameList).map(([gameId, game]) => ({
-    label: game.gameName || gameId,
+  Object.entries(gameConfig.value.platformGameList).map(([gameId]) => ({
+    label: formatVenueName(gameId, gameConfig.value),
     value: Number(gameId),
   })),
 );

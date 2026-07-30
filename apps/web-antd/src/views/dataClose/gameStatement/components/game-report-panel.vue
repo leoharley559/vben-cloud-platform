@@ -24,6 +24,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { formatVenueName } from '#/utils/game-config';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
@@ -98,7 +99,7 @@ const venueOptions = computed(() => {
     projectConfig.value?.MyPlatformGameType,
   );
   return keys.map((value) => ({
-    label: gameConfig.value.platformGameType[String(value)] || String(value),
+    label: formatVenueName(value, gameConfig.value),
     value,
   }));
 });
@@ -242,7 +243,7 @@ async function handleExport() {
     ],
     '游戏报表',
     (row) => [
-      gameConfig.value.platformGameType[String(row.GameType)] || row.GameType,
+      formatVenueName(row.GameType, gameConfig.value),
       row.CountBetNum,
       row.CountNum,
       cents(row.SumBet),
@@ -260,6 +261,13 @@ function openDetail(row: GameStatementRow) {
   showDetails.value = true;
 }
 
+function venueLabel(gameType: unknown) {
+  return formatVenueName(
+    gameType as number | string | null | undefined,
+    gameConfig.value,
+  );
+}
+
 watch(adminSearchType, (type) => {
   adminSearch.value = type === 0 ? [] : '';
 });
@@ -268,7 +276,7 @@ watch(channelSearchType, (type) => {
 });
 
 onMounted(async () => {
-  await ensureGameConfig();
+  await ensureGameConfig(true);
   await loadVenueTemplates();
   await loadList();
 });
@@ -418,10 +426,7 @@ onMounted(async () => {
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'GameType'">
           <a @click="openDetail(record)">
-            {{
-              gameConfig.platformGameType[String(record.GameType)] ||
-              record.GameType
-            }}
+            {{ venueLabel(record.GameType) }}
           </a>
         </template>
         <template v-else-if="column.key === 'SumBet'">

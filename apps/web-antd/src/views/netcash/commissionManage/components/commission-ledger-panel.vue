@@ -42,6 +42,7 @@ import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 
 import {
   cent,
@@ -475,10 +476,7 @@ async function openDetail(row: Record<string, any>) {
       ApiFeeTotal:
         item.ApiFeeTotal ??
         Math.floor((Number(item.SumWinLoseGold || 0) * Number(item.Fee || 0)) / 100),
-      GameName:
-        gameConfig.value.platformGameType[String(item.GameType ?? '')] ||
-        item.GameType ||
-        '-',
+      GameName: formatVenueName(item.GameType, gameConfig.value),
     }));
     if (isTeam.value) {
       detailTotal.ActivityUserNum = detailRows.value.reduce((sum, item) => sum + Number(item.ActivityUserNum || 0), 0);

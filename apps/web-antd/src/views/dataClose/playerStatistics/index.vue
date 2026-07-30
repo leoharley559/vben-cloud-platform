@@ -27,6 +27,7 @@ import {
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
@@ -52,6 +53,7 @@ const COLUMN_OPTIONS = [
   { label: '玩家账号', value: 'LoginAccount' },
   { label: '玩家Id', value: 'PlayerId' },
   { label: '所属产品', value: 'PackageName' },
+  { label: '所属代理', value: 'PromoterUserName' },
   { label: '所属渠道', value: 'ChannelId' },
   { label: '注册时间', value: 'CreateTime' },
   { label: '注册域名', value: 'RegisterDomain' },
@@ -61,16 +63,13 @@ const COLUMN_OPTIONS = [
   { label: '充值金额', value: 'PayMoney' },
   { label: '兑换数量', value: 'WithDrawNum' },
   { label: '兑换金额', value: 'WithDrawMoney' },
-  { label: '有效投注额', value: 'BetValidMoney' },
   { label: '投注金额', value: 'BetMoney' },
+  { label: '有效投注额', value: 'BetValidMoney' },
   { label: '派彩金额', value: 'WinMoney' },
-  { label: '输赢', value: 'WinLose' },
   { label: '公司输赢', value: 'CompanyWinLoss' },
   { label: '红利', value: 'RedMoney' },
   { label: '返水', value: 'BackWaterMoney' },
   { label: '账户调整', value: 'ChangeMoney' },
-  { label: '推广收入', value: 'PromoteIncome' },
-  { label: '所属代理', value: 'PromoterUserName' },
   { label: '注册来源', value: 'DevicePlatform' },
   { label: 'VIP等级', value: 'VipLevel' },
   { label: '会员手机号', value: 'BindPhone' },
@@ -133,7 +132,7 @@ const total = ref(0);
 const totalData = ref<Row>({});
 const sort = ref('');
 
-const defaultStatRange = resolveReportRange('statTodayToNow');
+const defaultStatRange = resolveReportRange('currentMonth');
 
 const filters = reactive({
   LoginAccount: '',
@@ -180,8 +179,10 @@ function loadVisibleColumns() {
         .map((s) => s.trim())
         .filter(Boolean);
     }
-    const allowed = new Set(COLUMN_OPTIONS.map((item) => item.value));
-    const next = keys.filter((key) => allowed.has(key));
+    const order = COLUMN_OPTIONS.map((item) => item.value);
+    const allowed = new Set(order);
+    const selected = new Set(keys.filter((key) => allowed.has(key)));
+    const next = order.filter((key) => selected.has(key));
     if (next.length > 0) {
       visibleColumns.value = next;
     }
@@ -244,7 +245,15 @@ function winLose(row: Row) {
 }
 
 function companyWinLoss(row: Row) {
-  return num(row.BetMoney) - num(row.WinMoney);
+  return -num(row.WinMoney);
+}
+
+function signedAmountNode(value: number) {
+  return h(
+    'span',
+    { class: signedClass(value) },
+    formatAmountFromCent(value),
+  );
 }
 
 function promoteIncome(row: Row) {
@@ -392,7 +401,6 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     PlayerId: {
       align: 'center',
       dataIndex: 'PlayerId',
-      fixed: 'left',
       key: 'PlayerId',
       title: '玩家Id',
       width: 120,
@@ -494,14 +502,14 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     WinLose: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(winLose(record)),
+      customRender: ({ record }) => signedAmountNode(winLose(record)),
       key: 'WinLose',
       title: '输赢',
       width: 110,
     },
     CompanyWinLoss: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(companyWinLoss(record)),
+      customRender: ({ record }) => signedAmountNode(companyWinLoss(record)),
       key: 'CompanyWinLoss',
       title: '公司输赢',
       width: 110,
@@ -580,7 +588,8 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     Status: {
       align: 'center',
-      customRender: ({ record }) => formatPlayerStatus(record.Status as number),
+      customRender: ({ record }) =>
+        h(PlayerStatusTag, { status: record.Status as number | string }),
       key: 'Status',
       title: '玩家状态',
       width: 100,
@@ -650,68 +659,100 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
   };
 
-  return visibleColumns.value.map((key) => map[key]).filter(Boolean) as TableColumnType<Row>[];
+  return COLUMN_OPTIONS.map((item) => item.value)
+    .filter((key) => visibleColumns.value.includes(key))
+    .map((key) => map[key])
+    .filter(Boolean) as TableColumnType<Row>[];
 });
+
+function summaryRaw(key: string): null | number {
+  const t = totalData.value;
+  switch (key) {
+    case 'AccBalance': {
+      return num(t.SumWalletBalance) + num(t.SumGold);
+    }
+    case 'BackWaterMoney': {
+      return num(t.SumBackWaterMoney);
+    }
+    case 'BetMoney': {
+      return num(t.SumBetMoney);
+    }
+    case 'BetValidMoney': {
+      return num(t.SumBetValidMoney);
+    }
+    case 'ChangeMoney': {
+      return num(t.SumChangeMoney);
+    }
+    case 'CompanyWinLoss': {
+      return -num(t.SumWinMoney);
+    }
+    case 'FirstBetGold': {
+      return num(t.SumFirstBetGold);
+    }
+    case 'FirstPayMoney': {
+      return num(t.SumFirstPayMoney);
+    }
+    case 'FirstWithDrawMoney': {
+      return num(t.SumFirstWithDrawMoney);
+    }
+    case 'PayMoney': {
+      return num(t.SumPayMoney);
+    }
+    case 'PromoteIncome': {
+      return (
+        num(t.SumBetMoney) -
+        num(t.SumWinMoney) -
+        num(t.SumRedMoney) -
+        num(t.SumBackWaterMoney) -
+        num(t.SumChangeMoney)
+      );
+    }
+    case 'RedMoney': {
+      return num(t.SumRedMoney);
+    }
+    case 'WinLose': {
+      return num(t.SumWinMoney) - num(t.SumBetMoney);
+    }
+    case 'WinMoney': {
+      return num(t.SumWinMoney);
+    }
+    case 'WithDrawMoney': {
+      return num(t.SumWithDrawMoney);
+    }
+    default: {
+      return null;
+    }
+  }
+}
 
 function summaryValue(key: string) {
   const t = totalData.value;
   switch (key) {
-    case 'AccBalance': {
-      return formatAmountFromCent(num(t.SumWalletBalance) + num(t.SumGold));
-    }
-    case 'BackWaterMoney': {
-      return formatAmountFromCent(t.SumBackWaterMoney);
-    }
-    case 'BetMoney': {
-      return formatAmountFromCent(t.SumBetMoney);
-    }
-    case 'BetValidMoney': {
-      return formatAmountFromCent(t.SumBetValidMoney);
-    }
-    case 'ChangeMoney': {
-      return formatAmountFromCent(t.SumChangeMoney);
-    }
-    case 'CompanyWinLoss': {
-      return formatAmountFromCent(num(t.SumBetMoney) - num(t.SumWinMoney));
-    }
-    case 'FirstBetGold': {
-      return formatAmountFromCent(t.SumFirstBetGold);
+    case 'AccBalance':
+    case 'BackWaterMoney':
+    case 'BetMoney':
+    case 'BetValidMoney':
+    case 'ChangeMoney':
+    case 'CompanyWinLoss':
+    case 'FirstBetGold':
+    case 'FirstWithDrawMoney':
+    case 'PayMoney':
+    case 'PromoteIncome':
+    case 'RedMoney':
+    case 'WinLose':
+    case 'WinMoney':
+    case 'WithDrawMoney': {
+      const raw = summaryRaw(key);
+      return raw === null ? '-' : formatAmountFromCent(raw);
     }
     case 'FirstPayMoney': {
       return formatAmount(t.SumFirstPayMoney);
     }
-    case 'FirstWithDrawMoney': {
-      return formatAmountFromCent(t.SumFirstWithDrawMoney);
-    }
     case 'LoginAccount': {
       return '合计';
     }
-    case 'PayMoney': {
-      return formatAmountFromCent(t.SumPayMoney);
-    }
     case 'PayNum': {
       return String(t.SumPayNum ?? '-');
-    }
-    case 'PromoteIncome': {
-      return formatAmountFromCent(
-        num(t.SumBetMoney) -
-          num(t.SumWinMoney) -
-          num(t.SumRedMoney) -
-          num(t.SumBackWaterMoney) -
-          num(t.SumChangeMoney),
-      );
-    }
-    case 'RedMoney': {
-      return formatAmountFromCent(t.SumRedMoney);
-    }
-    case 'WinLose': {
-      return formatAmountFromCent(num(t.SumWinMoney) - num(t.SumBetMoney));
-    }
-    case 'WinMoney': {
-      return formatAmountFromCent(t.SumWinMoney);
-    }
-    case 'WithDrawMoney': {
-      return formatAmountFromCent(t.SumWithDrawMoney);
     }
     case 'WithDrawNum': {
       return String(t.SumWithDrawNum ?? '-');
@@ -722,15 +763,21 @@ function summaryValue(key: string) {
   }
 }
 
+function signedClass(value: number) {
+  return value < 0 ? 'text-red-500' : 'text-green-600';
+}
+
 function getSummary() {
-  const cells = columns.value.map((col, index) => {
+  return columns.value.map((col, index) => {
     const key = String(col.key || '');
+    const value = index === 0 ? '合计' : summaryValue(key);
+    const raw = index === 0 ? null : summaryRaw(key);
     return {
+      className: raw === null ? undefined : signedClass(raw),
       index,
-      value: index === 0 ? '合计' : summaryValue(key),
+      value,
     };
   });
-  return cells;
 }
 
 function validateFilters() {
@@ -790,7 +837,7 @@ function handleReset() {
   filters.InviteSite = [];
   filters.BindPhone = '';
   filters.regRange = null;
-  filters.totalRange = [...resolveReportRange('statTodayToNow')] as [Dayjs, Dayjs];
+  filters.totalRange = [...resolveReportRange('currentMonth')] as [Dayjs, Dayjs];
   filters.firstPayRange = null;
   sort.value = '';
   handleSearch();
@@ -1107,7 +1154,7 @@ onMounted(() => {
                   :key="cell.index"
                   :index="cell.index"
                 >
-                  <span class="text-red-500">{{ cell.value }}</span>
+                  <span :class="cell.className">{{ cell.value }}</span>
                 </Table.Summary.Cell>
               </Table.Summary.Row>
             </Table.Summary>

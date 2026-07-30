@@ -7,7 +7,7 @@ import { Card, Modal, Table } from 'ant-design-vue';
 
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGameName } from '#/utils/game-config';
+import { formatGameName, formatVenueName } from '#/utils/game-config';
 
 defineOptions({ name: 'StreamingCurrentTurnoverModal' });
 
@@ -48,7 +48,7 @@ function formatGameTypeLabel(rawKey: string) {
   try {
     const types = JSON.parse(rawKey) as Array<number | string>;
     return types
-      .map((type) => gameConfig.value.platformGameType[String(type)] || type)
+      .map((type) => formatVenueName(type, gameConfig.value))
       .join(', ');
   } catch {
     return rawKey;

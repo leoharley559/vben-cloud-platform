@@ -29,6 +29,7 @@ import {
   remarkGiftApi,
 } from '#/api/operationManage/gift-manage';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
@@ -49,7 +50,6 @@ import {
   formatGiftDeliverStatus,
   formatGiftType,
   formatLuckyBonusCategory,
-  formatPlayerStatus,
   giftListTotal,
   giftNameText,
   parseGiftNames,
@@ -738,8 +738,8 @@ onMounted(() => {
             :login-account="String(row.LoginAccount || '')"
             :player-id="row.PlayerId"
           />
-          <div class="text-xs text-gray-500">
-            ({{ formatPlayerStatus(row.PlayerStatus) }})
+          <div class="mt-1">
+            <PlayerStatusTag :status="row.PlayerStatus" hide-normal />
           </div>
         </div>
       </template>

@@ -25,7 +25,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
-import { formatGameName } from '#/utils/game-config';
+import { formatGameName, formatVenueName } from '#/utils/game-config';
 import { buildPlayerDetailPath } from '#/utils/player-detail-route';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
@@ -92,7 +92,7 @@ const venueOptions = computed(() => {
     projectConfig.value?.MyPlatformGameType,
   );
   return keys.map((value) => ({
-    label: gameConfig.value.platformGameType[String(value)] || String(value),
+    label: formatVenueName(value, gameConfig.value),
     value,
   }));
 });
@@ -223,7 +223,7 @@ async function handleExport() {
     '子游戏报表',
     (row) => [
       formatGameName(row.SubGameId, gameConfig.value.games),
-      gameConfig.value.platformGameType[String(row.GameType)] || row.GameType,
+      formatVenueName(row.GameType, gameConfig.value),
       row.CountBetNum,
       row.CountNum,
       cents(row.SumBet),
@@ -270,7 +270,7 @@ watch(channelSearchType, (type) => {
 });
 
 onMounted(async () => {
-  await ensureGameConfig();
+  await ensureGameConfig(true);
   await loadList();
 });
 </script>
@@ -414,8 +414,10 @@ onMounted(async () => {
         </template>
         <template v-else-if="column.key === 'GameType'">
           {{
-            gameConfig.platformGameType[String(record.GameType)] ||
-            record.GameType
+            formatVenueName(
+              record.GameType as number | string,
+              gameConfig,
+            )
           }}
         </template>
         <template v-else-if="column.key === 'CountBetNum'">

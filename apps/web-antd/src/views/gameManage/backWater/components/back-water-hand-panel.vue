@@ -25,7 +25,11 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGameName, formatPercentFromStorage } from '#/utils/game-config';
+import {
+  formatGameName,
+  formatPercentFromStorage,
+  formatVenueName,
+} from '#/utils/game-config';
 
 defineOptions({ name: 'BackWaterHandPanel' });
 
@@ -98,8 +102,7 @@ const venueColumns = [
   },
   {
     customRender: ({ record }: { record: VenueRow }) =>
-      gameConfig.value.platformGameType[String(record.GameType)] ||
-      String(record.GameType ?? '-'),
+      formatVenueName(record.GameType, gameConfig.value),
     key: 'venue',
     title: '场馆',
   },

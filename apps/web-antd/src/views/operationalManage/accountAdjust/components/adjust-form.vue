@@ -30,7 +30,7 @@ import { useOperationOptions } from '#/composables/use-operation-options';
 import { createRequestHash } from '#/utils/crypto';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatPlayerStatus } from '#/utils/player-status';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 
 defineOptions({ name: 'AdjustFormPanel' });
 
@@ -514,7 +514,10 @@ function exportFailItems() {
         >
           <div>玩家 ID：{{ playerId }}</div>
           <div>账户余额：{{ formatAmountFromCent(playerGold) }}</div>
-          <div>玩家状态：{{ formatPlayerStatus(playerStatus) }}</div>
+          <div class="flex items-center gap-1">
+            玩家状态：
+            <PlayerStatusTag :status="playerStatus" />
+          </div>
         </div>
       </template>
 

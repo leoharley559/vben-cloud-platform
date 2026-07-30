@@ -21,7 +21,6 @@ import {
   Row,
   Select,
   Table,
-  Tag,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -32,6 +31,7 @@ import {
 import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
@@ -193,26 +193,6 @@ function offlineText(row: Row) {
   if (!row.LastTime) return '-';
   const seconds = Math.floor(Date.now() / 1000) - Number(row.LastTime || 0);
   return formatOfflineDuration(seconds);
-}
-
-function statusTagColor(status: unknown) {
-  switch (Number(status)) {
-    case 1: {
-      return 'success';
-    }
-    case 2: {
-      return 'error';
-    }
-    case 3: {
-      return 'default';
-    }
-    case 4: {
-      return 'warning';
-    }
-    default: {
-      return 'processing';
-    }
-  }
 }
 
 const columns = computed<TableColumnType<Row>[]>(() => {
@@ -621,10 +601,7 @@ onMounted(() => {
                 {{ record.ChannelName || record.ChannelId || '-' }}
               </template>
               <template v-else-if="column.key === 'Status'">
-                <Tag v-if="Number(record.Status) !== 0" :color="statusTagColor(record.Status)">
-                  {{ formatPlayerStatus(record.Status as number) }}
-                </Tag>
-                <span v-else>{{ formatPlayerStatus(0) }}</span>
+                <PlayerStatusTag :status="record.Status as number | string" />
               </template>
               <template v-else-if="column.key === 'Profit'">
                 <span

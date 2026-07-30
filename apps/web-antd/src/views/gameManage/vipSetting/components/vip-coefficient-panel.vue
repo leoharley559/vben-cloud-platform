@@ -21,6 +21,7 @@ import {
 } from '#/api/gameManage/vip-setting';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 
 defineOptions({ name: 'VipCoefficientPanel' });
 
@@ -86,15 +87,15 @@ const categoryOptions = computed(() => [
 ]);
 const platformOptions = computed(() => [
   { label: '全部平台', value: '' },
-  ...Object.entries(gameConfig.value.platformGameList).map(([value, item]) => ({
-    label: item.gameName || value,
+  ...Object.entries(gameConfig.value.platformGameList).map(([value]) => ({
+    label: formatVenueName(value, gameConfig.value),
     value,
   })),
 ]);
 const leftPlatforms = computed(() => [
   { label: '全部', value: 'all' },
-  ...Object.entries(gameConfig.value.platformGameList).map(([value, item]) => ({
-    label: item.gameName || value,
+  ...Object.entries(gameConfig.value.platformGameList).map(([value]) => ({
+    label: formatVenueName(value, gameConfig.value),
     value,
   })),
 ]);

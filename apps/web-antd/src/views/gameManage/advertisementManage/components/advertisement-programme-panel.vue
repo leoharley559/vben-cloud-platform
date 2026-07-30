@@ -48,6 +48,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useProjectConfig } from '#/composables/use-project-config';
+import { formatVenueName } from '#/utils/game-config';
 import { getServiceImageUrl } from '#/utils/media';
 
 import VoucherImageField from '../../../operationalManage/voucher/components/voucher-image-field.vue';
@@ -276,7 +277,10 @@ const channelNameMap = computed(
 const gameOptions = computed(() =>
   Object.entries(gameConfig.value.games)
     .filter(([, item]) => Number(item.ParentId || 0) === 0)
-    .map(([value, item]) => ({ label: item.gameName || value, value })),
+    .map(([value]) => ({
+      label: formatVenueName(value, gameConfig.value),
+      value,
+    })),
 );
 const openTypeOptions = [
   { label: '网址', value: 1 },

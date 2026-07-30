@@ -32,6 +32,7 @@ import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -265,15 +266,6 @@ function formatDateTime(value?: number | string) {
   return parsed.isValid()
     ? parsed.format('YYYY-MM-DD HH:mm:ss')
     : String(value);
-}
-
-function statusColor(status?: number) {
-  if (status === 1) return 'success';
-  if (status === 2) return 'warning';
-  if (status === 3 || status === 6) return 'error';
-  if (status === 4) return 'orange';
-  if (status === 8) return 'processing';
-  return 'default';
 }
 
 function showColumn(field: string) {
@@ -1092,9 +1084,7 @@ onMounted(async () => {
             <span v-else>-</span>
           </template>
           <template #status="{ row }">
-            <Tag :color="statusColor(Number(row.Status))">
-              {{ formatPlayerStatus(row.Status) }}
-            </Tag>
+            <PlayerStatusTag :status="row.Status" />
           </template>
           <template #actions="{ row }">
             <Dropdown>

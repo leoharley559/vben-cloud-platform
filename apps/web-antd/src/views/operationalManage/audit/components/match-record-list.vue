@@ -25,6 +25,7 @@ import {
   updateActivityMatchBonusRemarkApi,
 } from '#/api/operationManage/activity-match-bonus';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -601,8 +602,8 @@ onMounted(() => {
             :login-account="String(row.LoginAccount || '')"
             :player-id="row.PlayerId as number | string | undefined"
           />
-          <div class="text-xs text-gray-500">
-            ({{ formatPlayerStatus(row.PlayerStatus) }})
+          <div class="mt-1">
+            <PlayerStatusTag :status="row.PlayerStatus" hide-normal />
           </div>
         </div>
       </template>

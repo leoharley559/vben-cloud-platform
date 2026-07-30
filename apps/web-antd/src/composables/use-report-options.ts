@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
 
 export type ReportOption = { label: string; value: number | string };
@@ -86,18 +87,30 @@ export function useReportOptions() {
     { label: '全部', value: 2 },
   ];
 
-  const platformGameTypeOptions = computed<ReportOption[]>(() =>
-    Object.entries(gameConfig.value.platformGameType || {}).map(
-      ([value, label]) => ({
-        label: String(label),
-        value: Number.isNaN(Number(value)) ? value : Number(value),
-      }),
-    ),
-  );
+  const platformGameTypeOptions = computed<ReportOption[]>(() => {
+    const keys = new Set([
+      ...Object.keys(gameConfig.value.platformGameTypeAll || {}),
+      ...Object.keys(gameConfig.value.platformGameType || {}),
+      ...Object.keys(gameConfig.value.platformGameList || {}),
+    ]);
+    return [...keys].map((value) => ({
+      label: formatVenueName(value, gameConfig.value),
+      value: Number.isNaN(Number(value)) ? value : Number(value),
+    }));
+  });
 
-  const platformGameTypeMap = computed(
-    () => gameConfig.value.platformGameType || {},
-  );
+  const platformGameTypeMap = computed(() => {
+    const keys = new Set([
+      ...Object.keys(gameConfig.value.platformGameTypeAll || {}),
+      ...Object.keys(gameConfig.value.platformGameType || {}),
+      ...Object.keys(gameConfig.value.platformGameList || {}),
+    ]);
+    const map: Record<string, string> = {};
+    for (const key of keys) {
+      map[key] = formatVenueName(key, gameConfig.value);
+    }
+    return map;
+  });
 
   return {
     dataSearchTypeOptions,

@@ -50,6 +50,7 @@ import {
 } from '#/api/netcash/commission-manage';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 
 import {
   cent,
@@ -269,13 +270,22 @@ async function loadRows() {
       if (props.mode === 'venue') {
         const accountInfo = (projectConfig.value?.AccountInfo || {}) as Record<string, unknown>;
         const serviceRates = parseServiceRates(accountInfo.ServiceRateV2);
-        const venueNames = gameConfig.value.platformGameType;
-        const hasVenueNames = Object.keys(venueNames).length > 0;
+        const knownKeys = new Set([
+          ...Object.keys(gameConfig.value.platformGameTypeAll || {}),
+          ...Object.keys(gameConfig.value.platformGameType || {}),
+        ]);
+        const hasVenueNames = knownKeys.size > 0;
         rows.value = normalizedRows
-          .filter((row) => !hasVenueNames || Boolean(venueNames[String(row.ApiName ?? '')]))
+          .filter(
+            (row) =>
+              !hasVenueNames || knownKeys.has(String(row.ApiName ?? '')),
+          )
           .map((row) => ({
             ...row,
-            Name: venueNames[String(row.ApiName ?? '')] || row.ApiName || '-',
+            Name: formatVenueName(
+              row.ApiName as number | string,
+              gameConfig.value,
+            ),
             Rate: serviceRates[String(row.ApiName ?? '')] ?? 0,
           }));
       } else {

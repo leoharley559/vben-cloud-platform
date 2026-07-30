@@ -12,7 +12,7 @@ import {
   fetchSubGameDetailReportApi,
 } from '#/api/dataClose/game-statement';
 import { useGameConfig } from '#/composables/use-game-config';
-import { formatGameName } from '#/utils/game-config';
+import { formatGameName, formatVenueName } from '#/utils/game-config';
 import { cents } from '#/views/dataClose/shared/report-utils';
 
 import {
@@ -56,10 +56,7 @@ const dimLabel = computed(() => {
     );
   }
   if (props.reportType === 'gameStatement') {
-    return (
-      gameConfig.value.platformGameType[String(props.dimValue)] ||
-      String(props.dimValue)
-    );
+    return formatVenueName(props.dimValue, gameConfig.value);
   }
   return formatGameName(props.dimValue, gameConfig.value.games);
 });

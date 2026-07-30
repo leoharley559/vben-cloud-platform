@@ -8,7 +8,7 @@ import { Card, Table } from 'ant-design-vue';
 import { fetchPlayerSettleListApi } from '#/api/operationManage/player';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGameName } from '#/utils/game-config';
+import { formatVenueName } from '#/utils/game-config';
 
 defineOptions({ name: 'PlayerCoinSettlePanel' });
 
@@ -94,7 +94,7 @@ onMounted(async () => {
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'GameId'">
-          {{ formatGameName(record.GameId, gameConfig.games) }}
+          {{ formatVenueName(record.GameId, gameConfig) }}
         </template>
         <template v-else-if="column.key === 'Total'">
           <span

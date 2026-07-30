@@ -46,6 +46,7 @@ export function venueName(
   platformGameType: unknown,
 ) {
   const key = String(platformGameType ?? '');
+  if (!key) return '-';
   return map[key] || '-';
 }
 

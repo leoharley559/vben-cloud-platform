@@ -26,6 +26,7 @@ import {
 } from '#/api/operationManage/gift-manage';
 import { queryPlayerByAccountApi } from '#/api/operationManage/player';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -38,7 +39,6 @@ import {
   formatAmountFromCent,
   formatGiftAuditStatus,
   formatGiftDateTime,
-  formatPlayerStatus,
   formatVipLevel,
   giftListTotal,
   giftNameText,
@@ -631,13 +631,9 @@ onMounted(() => {
             :login-account="String(row.LoginAccount || '')"
             :player-id="row.PlayerId as number | string | undefined"
           />
-          <Tag
-            v-if="row.PlayerStatus && Number(row.PlayerStatus) !== 0"
-            class="mt-1"
-            size="small"
-          >
-            {{ formatPlayerStatus(row.PlayerStatus) }}
-          </Tag>
+          <div class="mt-1">
+            <PlayerStatusTag :status="row.PlayerStatus" hide-normal />
+          </div>
         </div>
       </template>
       <template #status="{ row }">

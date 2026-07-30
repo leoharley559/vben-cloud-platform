@@ -27,7 +27,7 @@ import {
 } from '#/api/gameManage';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
-import { findGameIdByApiFee } from '#/utils/game-config';
+import { findGameIdByApiFee, formatVenueName } from '#/utils/game-config';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'VenueManagePanel' });
@@ -200,10 +200,7 @@ function serializeLangMap(map: Record<string, LangEntry>) {
 
 function venueName(row: VenueRow) {
   return (
-    row.ApiFeeName ||
-    gameConfig.value.platformGameType[String(row.ApiFee)] ||
-    row.ApiFee ||
-    '-'
+    row.ApiFeeName || formatVenueName(row.ApiFee, gameConfig.value)
   );
 }
 

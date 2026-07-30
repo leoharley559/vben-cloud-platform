@@ -19,6 +19,7 @@ import { fetchBonusRecordListApi } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -665,8 +666,8 @@ onMounted(() => {
             :login-account="String(row.Account || row.LoginAccount || '')"
             :player-id="row.PlayerId as number | string | undefined"
           />
-          <div class="text-xs text-gray-500">
-            ({{ formatPlayerStatus(row.PlayerStatus) }})
+          <div class="mt-1">
+            <PlayerStatusTag :status="row.PlayerStatus" hide-normal />
           </div>
         </div>
       </template>

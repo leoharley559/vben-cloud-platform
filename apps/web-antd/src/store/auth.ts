@@ -19,6 +19,10 @@ import {
   loginByPhoneApi,
   logoutApi,
 } from '#/api';
+import {
+  resetGameConfigCache,
+  useGameConfig,
+} from '#/composables/use-game-config';
 import { $t } from '#/locales';
 import { generateAccessRoutes } from '#/router/generate-access-routes';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
@@ -44,13 +48,19 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * 对齐旧站 permission.js：
-   * `Promise.all([fnGetProjectConfig, GetUserInfo])` 后再 GenerateRoutes
+   * 对齐旧站 permission.js + loginWeb：
+   * - `Promise.all([fnGetProjectConfig, GetUserInfo])` 后再 GenerateRoutes
+   * - 登录成功另调 `fnGetGameConfig`（/api/game/info → platformGameTypeAll）
+   * 刷新时旧站读 localStorage；此处一并拉取，避免场馆全称缺失。
    */
   async function initSession() {
+    const { ensureGameConfig } = useGameConfig();
     const [, userInfo] = await Promise.all([
       getProjectConfigApi(),
       fetchUserInfo(),
+      ensureGameConfig(true).catch((error) => {
+        console.error('[initSession] ensureGameConfig failed', error);
+      }),
     ]);
     const accessCodes = await getAccessCodesApi();
     accessStore.setAccessCodes(accessCodes);
@@ -177,6 +187,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     removeCloudToken();
     removeAuthToken();
+    resetGameConfigCache();
     cloudStore.$reset();
     resetAllStores();
     accessStore.setLoginExpired(false);

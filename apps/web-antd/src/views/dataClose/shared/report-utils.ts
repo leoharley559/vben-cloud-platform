@@ -6,6 +6,7 @@ import BigNumber from 'bignumber.js';
 import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 
 export type ReportDatePreset =
+  | 'currentMonth'
   | 'dayBeforeYesterday'
   | 'last7Days'
   | 'last7ToToday'
@@ -38,6 +39,10 @@ export function resolveReportRange(
     }
     case 'previousDayToToday': {
       return [yesterday, today.endOf('day')];
+    }
+    case 'currentMonth': {
+      // 当月 1 日 00:00 → 当前时刻
+      return [dayjs().startOf('month'), dayjs()];
     }
     case 'statTodayToNow': {
       // 对齐旧站玩家统计：今天 00:00 → 当前时刻

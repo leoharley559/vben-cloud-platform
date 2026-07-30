@@ -1,9 +1,13 @@
+import venueConfig from '#/config/venue-config.json';
+
 export interface GameConfigItem {
   Type?: string;
   Value?: string;
 }
 
 export interface GameInfo {
+  apiId?: number | string;
+  ApiFee?: number | string;
   gameCode?: number | string;
   gameName?: string;
   ParentId?: number | string;
@@ -41,6 +45,8 @@ export interface ParsedGameConfig {
   GroupPlatformGameType: Record<string, GroupPlatformGameTypeItem>;
   games: Record<string, GameInfo>;
   goldSource: GoldSourceItem[];
+  /** 全部场馆键值（含已关闭），对齐旧站 platformGameTypeAll */
+  platformGameTypeAll: Record<string, string>;
   platformGameList: Record<string, GameInfo>;
   platformGameType: Record<string, string>;
 }
@@ -51,6 +57,7 @@ export function parseGameConfig(data: GameConfigItem[] | null | undefined) {
     GroupPlatformGameType: {},
     games: {},
     goldSource: [],
+    platformGameTypeAll: {},
     platformGameList: {},
     platformGameType: {},
   };
@@ -130,6 +137,202 @@ export function formatGameName(
   return game?.gameName || String(gameId);
 }
 
+function isVenueAbbreviation(name: string) {
+  return /^[A-Za-z0-9_.-]{1,16}$/.test(name.trim());
+}
+
+/** 对齐旧站 gamePlatform：val == key 宽松匹配 */
+function lookupPlatformName(
+  map: Record<string, string> | undefined,
+  key: string,
+) {
+  if (!map) return '';
+  if (map[key]) return map[key];
+  for (const [mapKey, value] of Object.entries(map)) {
+    if (mapKey == key) return value;
+  }
+  return '';
+}
+
+/** venue-config Description：本环境中文全称（VenueName 多为 TY/PG） */
+function lookupVenueDescription(
+  key: string,
+  shortName = '',
+  gameId = '',
+) {
+  const venues = venueConfig.venues || [];
+  const upperShort = shortName.toUpperCase();
+  const hit = venues.find(
+    (item) =>
+      String(item.GameId) === key ||
+      String(item.GameId) === gameId ||
+      String(item.VenueName).toUpperCase() === upperShort ||
+      String(item.VenueCode).toUpperCase() === upperShort ||
+      String(item.VenueName).toUpperCase() === key.toUpperCase() ||
+      String(item.VenueCode).toUpperCase() === key.toUpperCase(),
+  );
+  return String(hit?.Description || '').trim();
+}
+
+/**
+ * 场馆名称展示。
+ *
+ * 注意：games.gameName / platformGameType 在本环境多为简写（如 TY、PG），
+ * 游戏记录列表的「场馆名称」来自列表接口 VendorCode（全称），不是本地字典。
+ * 报表 GameType 为 ApiFee 编码，对齐旧站 gamePlatform：
+ * platformGameTypeAll（/api/game/info）→ Group.gamename → venue-config Description →
+ * games.gameName → platformGameType。
+ */
+export function formatVenueName(
+  gameType?: number | string | null,
+  config?: null | ParsedGameConfig,
+) {
+  if (gameType === undefined || gameType === null || gameType === '') {
+    return '-';
+  }
+  if (Number(gameType) === 0) {
+    return '-';
+  }
+  if (Number(gameType) === -1) {
+    return '线下';
+  }
+
+  const key = String(gameType);
+  const cfg = config || {
+    GameTypeLangGroup: {},
+    GroupPlatformGameType: {},
+    games: {},
+    goldSource: [],
+    platformGameTypeAll: {},
+    platformGameList: {},
+    platformGameType: {},
+  };
+
+  const shortName = lookupPlatformName(cfg.platformGameType, key);
+  const byApi = findGameByApiFee(key, cfg);
+  const gameId = String(
+    (byApi ? findGameIdOf(byApi, cfg) : '') ||
+      findGameIdByApiFee(gameType, cfg) ||
+      '',
+  );
+
+  // 1. 旧站 gamePlatform：platformGameTypeAll（全称，含已关闭场馆）
+  const fromAll = lookupPlatformName(cfg.platformGameTypeAll, key);
+  if (fromAll && !isVenueAbbreviation(fromAll)) return fromAll;
+
+  // 2. venue-config Description（本环境中文全称）
+  const fromDesc = lookupVenueDescription(
+    key,
+    shortName || fromAll,
+    gameId,
+  );
+  if (fromDesc) return fromDesc;
+
+  if (fromAll) return fromAll;
+
+  // 3. GroupPlatformGameType.gamename
+  const groupHit = findGroupVenue(key, cfg);
+  if (groupHit?.gamename && !isVenueAbbreviation(groupHit.gamename)) {
+    return groupHit.gamename;
+  }
+
+  // 4. 按 apiId 找到 gameId 后，再用 Group / Description
+  if (gameId) {
+    const byGameId = findGroupVenue(gameId, cfg);
+    if (byGameId?.gamename && !isVenueAbbreviation(byGameId.gamename)) {
+      return byGameId.gamename;
+    }
+    const descById = lookupVenueDescription(gameId, shortName, gameId);
+    if (descById) return descById;
+  }
+
+  // 5. ApiFee → platformGameType 简写 → 反查 Group 更长名称
+  if (shortName) {
+    for (const group of Object.values(cfg.GroupPlatformGameType || {})) {
+      for (const item of group.gametypes || []) {
+        const name = String(item.gamename ?? '').trim();
+        if (
+          name &&
+          (name === shortName ||
+            name.includes(shortName) ||
+            shortName.includes(name)) &&
+          name.length >= shortName.length
+        ) {
+          return name;
+        }
+      }
+    }
+  }
+
+  // 6. games / platformGameList（可能仍是简写）
+  const fromGames = cfg.games[key]?.gameName || '';
+  const fromPlatformList = cfg.platformGameList[key]?.gameName || '';
+  const fromApiName = byApi?.gameName || '';
+  for (const name of [fromApiName, fromGames, fromPlatformList]) {
+    if (name && !isVenueAbbreviation(name)) return name;
+  }
+
+  if (gameId) {
+    const name =
+      cfg.games[gameId]?.gameName ||
+      cfg.platformGameList[gameId]?.gameName ||
+      '';
+    if (name) {
+      const desc = lookupVenueDescription(gameId, name, gameId);
+      if (desc) return desc;
+      return name;
+    }
+  }
+
+  // 7. 简写兜底
+  return shortName || fromApiName || fromGames || fromPlatformList || groupHit?.gamename || key;
+}
+
+function findGroupVenue(key: string, config: ParsedGameConfig) {
+  for (const group of Object.values(config.GroupPlatformGameType || {})) {
+    for (const item of group.gametypes || []) {
+      if (
+        String(item.gamecode ?? '') === key ||
+        String(item.gameid ?? '') === key ||
+        String(item.apiId ?? '') === key ||
+        String(item.ApiFee ?? '') === key
+      ) {
+        const gamename = String(item.gamename ?? '').trim();
+        if (gamename) {
+          return { gamename, gameid: item.gameid };
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+function findGameIdOf(target: GameInfo, config: ParsedGameConfig) {
+  for (const [gameId, game] of Object.entries(config.platformGameList || {})) {
+    if (game === target) return gameId;
+  }
+  for (const [gameId, game] of Object.entries(config.games || {})) {
+    if (game === target) return gameId;
+  }
+  return '';
+}
+
+function findGameByApiFee(apiFeeKey: string, config: ParsedGameConfig) {
+  const pools = [config.platformGameList, config.games];
+  for (const pool of pools) {
+    for (const game of Object.values(pool || {})) {
+      if (
+        String(game.apiId ?? '') === apiFeeKey ||
+        String(game.ApiFee ?? '') === apiFeeKey ||
+        String(game.gameCode ?? '') === apiFeeKey
+      ) {
+        return game;
+      }
+    }
+  }
+  return undefined;
+}
+
 export function formatGoldReason(
   reasonId?: number | string,
   goldSource: GoldSourceItem[] = [],
@@ -182,9 +385,29 @@ export function findGameIdByApiFee(
     return '';
   }
   const apiFeeKey = String(apiFee);
-  const name = config.platformGameType[apiFeeKey] || '';
+
+  // 直接按 apiId 反查
+  const byApi = findGameByApiFee(apiFeeKey, config);
+  if (byApi) {
+    for (const [gameId, game] of Object.entries(config.platformGameList || {})) {
+      if (game === byApi) return gameId;
+    }
+    for (const [gameId, game] of Object.entries(config.games || {})) {
+      if (game === byApi) return gameId;
+    }
+  }
+
+  const name =
+    config.platformGameTypeAll?.[apiFeeKey] ||
+    config.platformGameType[apiFeeKey] ||
+    '';
   if (name) {
     for (const [gameId, game] of Object.entries(config.games)) {
+      if (game.gameName === name) {
+        return gameId;
+      }
+    }
+    for (const [gameId, game] of Object.entries(config.platformGameList || {})) {
       if (game.gameName === name) {
         return gameId;
       }
@@ -197,6 +420,7 @@ export function findGameIdByApiFee(
       const itemName = String(item.gamename ?? '');
       if (
         code === apiFeeKey ||
+        String(item.apiId ?? '') === apiFeeKey ||
         (name && itemName === name) ||
         itemName === apiFeeKey
       ) {

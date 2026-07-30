@@ -11,6 +11,7 @@ import {
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { formatVenueName } from '#/utils/game-config';
 
 defineOptions({ name: 'DashboardProfitPanels' });
 
@@ -29,8 +30,7 @@ function asRows(value: unknown) {
 }
 
 function resolveGameName(gameId: unknown) {
-  const id = String(gameId ?? '');
-  return gameConfig.value.games[id]?.gameName || id || '-';
+  return formatVenueName(gameId as number | string, gameConfig.value);
 }
 
 function amountCell(value: number, color: string) {

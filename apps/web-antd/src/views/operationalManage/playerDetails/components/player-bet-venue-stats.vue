@@ -17,6 +17,7 @@ import {
 } from '#/utils/bet-detail';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { formatVenueName } from '#/utils/game-config';
 
 defineOptions({ name: 'PlayerBetVenueStats' });
 
@@ -45,8 +46,8 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 ]);
 
 const platformGameOptions = computed(() =>
-  Object.entries(gameConfig.value.platformGameList).map(([value, game]) => ({
-    label: game.gameName || value,
+  Object.entries(gameConfig.value.platformGameList).map(([value]) => ({
+    label: formatVenueName(value, gameConfig.value),
     value,
   })),
 );
@@ -71,8 +72,7 @@ const gridOptions: VxeTableGridOptions<PlayerBetVenueStatItem> = {
     {
       field: 'GameType',
       formatter: ({ cellValue }) =>
-        gameConfig.value.platformGameType[String(cellValue)] ||
-        String(cellValue ?? '-'),
+        formatVenueName(cellValue as number | string, gameConfig.value),
       minWidth: 140,
       title: '场馆名称',
     },

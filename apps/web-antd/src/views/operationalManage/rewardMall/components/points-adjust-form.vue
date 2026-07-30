@@ -28,7 +28,7 @@ import {
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { exportRowsToCsv } from '#/utils/export-csv';
-import { formatPlayerStatus } from '#/utils/player-status';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 
 defineOptions({ name: 'PointsAdjustFormPanel' });
 
@@ -417,7 +417,7 @@ function exportFailItems() {
           </Form.Item>
           <div v-if="playerId" class="mb-4 text-sm text-gray-600">
             玩家ID：{{ playerId }} · 当前积分：{{ playerPoint || 0 }} · 状态：
-            {{ formatPlayerStatus(playerStatus) }}
+            <PlayerStatusTag :status="playerStatus" />
           </div>
           <Form.Item label="调整积分（正整数）" required>
             <InputNumber

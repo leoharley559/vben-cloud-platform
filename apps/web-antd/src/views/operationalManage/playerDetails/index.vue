@@ -20,7 +20,6 @@ import {
   Space,
   Spin,
   Tabs,
-  Tag,
 } from 'ant-design-vue';
 
 import {
@@ -28,13 +27,13 @@ import {
   queryPlayerByAccountApi,
   updatePlayerExtApi,
 } from '#/api/operationManage/player';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   buildPlayerDetailPath,
   parsePlayerDetailRouteId,
 } from '#/utils/player-detail-route';
-import { formatPlayerStatus } from '#/utils/player-status';
 
 import PlayerAdjustListPanel from './components/player-adjust-list.vue';
 import PlayerBasicInfoPanel from './components/player-basic-info.vue';
@@ -386,7 +385,7 @@ onMounted(async () => {
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-gray-500">状态：</span>
             <template v-if="!statusEditing">
-              <Tag>{{ formatPlayerStatus(playerInfo?.Status) }}</Tag>
+              <PlayerStatusTag :status="playerInfo?.Status" />
               <Button
                 v-if="canEditStatus && playerInfo"
                 size="small"

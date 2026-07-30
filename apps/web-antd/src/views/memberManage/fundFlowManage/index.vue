@@ -210,7 +210,7 @@ const gridOptions: VxeTableGridOptions<FundFlowListItem> = {
         const items = enrichFundFlowItems(
           (result.Items || []) as FundFlowListItem[],
           templates,
-          gameConfig.value.platformGameType,
+          gameConfig.value,
         );
         summary.value = {
           SumAddGold: Number(result.MoreItems?.SumAddGold || 0),

@@ -19,12 +19,14 @@ import {
 } from '#/api/netcash/record-inquire';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 import { formatNetcashDateTime } from '#/utils/netcash';
 import { formatPlayerStatus } from '#/utils/player-status';
 
 import RecordQueryPanel from './components/record-query-panel.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 
 defineOptions({ name: 'RecordInquire' });
@@ -333,8 +335,7 @@ const tabs = computed(() =>
           {
             field: 'GameType',
             formatter: (value: unknown) =>
-              gameConfig.value.platformGameType[String(value)] ||
-              String(value ?? '-'),
+              formatVenueName(value as number | string, gameConfig.value),
             title: '场馆',
           },
           { field: 'AddGold', formatter: cash, title: '变更金额' },
@@ -452,18 +453,18 @@ onMounted(() => {
               />
             </template>
             <template #loginAccount="{ row }">
-              <span v-if="Number(row.PlayerStatus)">
+              <div>
                 <PlayerAccountLink
                   :login-account="String(row.LoginAccount || '')"
                   :player-id="row.PlayerId as number | string | undefined"
                 />
-                （{{ formatPlayerStatus(Number(row.PlayerStatus)) }}）
-              </span>
-              <PlayerAccountLink
-                v-else
-                :login-account="String(row.LoginAccount || '')"
-                :player-id="row.PlayerId as number | string | undefined"
-              />
+                <div class="mt-1">
+                  <PlayerStatusTag
+                    :status="row.PlayerStatus as number | string | null"
+                    hide-normal
+                  />
+                </div>
+              </div>
             </template>
           </RecordQueryPanel>
           <Result

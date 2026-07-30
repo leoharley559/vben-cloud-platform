@@ -5,6 +5,7 @@ import { Form, Input, Modal, Select, message } from 'ant-design-vue';
 
 import { updatePlayerWithdrawWaterApi } from '#/api/operationManage/player-detail-extra';
 import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 import { WITHDRAW_WATER_TYPE_OPTIONS } from '#/utils/player-detail-maps';
 
 defineOptions({ name: 'StreamingAddTurnoverModal' });
@@ -26,15 +27,15 @@ const waterType = ref(0);
 const waterValList = ref<string[]>([]);
 
 const platformTypeOptions = computed(() =>
-  Object.entries(gameConfig.value.platformGameType).map(([value, label]) => ({
-    label,
+  Object.entries(gameConfig.value.platformGameType).map(([value]) => ({
+    label: formatVenueName(value, gameConfig.value),
     value,
   })),
 );
 
 const venueOptions = computed(() =>
-  Object.entries(gameConfig.value.platformGameList).map(([value, game]) => ({
-    label: game.gameName || value,
+  Object.entries(gameConfig.value.platformGameList).map(([value]) => ({
+    label: formatVenueName(value, gameConfig.value),
     value,
   })),
 );

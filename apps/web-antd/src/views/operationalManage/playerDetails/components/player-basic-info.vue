@@ -46,7 +46,8 @@ import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
-import { formatMemberType, formatPlayerStatus } from '#/utils/player-status';
+import { formatMemberType } from '#/utils/player-status';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 
 import PlayerAlipayList from './player-alipay-list.vue';
 import PlayerBankCardList from './player-bank-card-list.vue';
@@ -894,7 +895,7 @@ onMounted(() => {
         {{ formatMemberType(info.DataFlag) }}
       </Descriptions.Item>
       <Descriptions.Item label="玩家状态">
-        {{ formatPlayerStatus(info.Status) }}
+        <PlayerStatusTag :status="info.Status" />
       </Descriptions.Item>
       <Descriptions.Item label="VIP 等级">
         <Space>

@@ -24,6 +24,7 @@ import {
   remarkGiftApi,
 } from '#/api/operationManage/gift-manage';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { exportRowsToCsv } from '#/utils/export-csv';
@@ -34,7 +35,6 @@ import { GIFT_DELIVER_STATUS_MAP } from '#/utils/operation-status';
 import {
   formatGiftDateTime,
   formatGiftDeliverStatus,
-  formatPlayerStatus,
   formatVipLevel,
   giftListTotal,
   giftNameText,
@@ -575,13 +575,9 @@ onMounted(() => {
             :login-account="String(row.LoginAccount || '')"
             :player-id="row.PlayerId"
           />
-          <Tag
-            v-if="row.PlayerStatus && Number(row.PlayerStatus) !== 0"
-            class="mt-1"
-            size="small"
-          >
-            {{ formatPlayerStatus(row.PlayerStatus) }}
-          </Tag>
+          <div class="mt-1">
+            <PlayerStatusTag :status="row.PlayerStatus" hide-normal />
+          </div>
         </div>
       </template>
       <template #status="{ row }">

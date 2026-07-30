@@ -22,6 +22,7 @@ import dayjs from 'dayjs';
 import { fetchEvoSideBetListApi } from '#/api/memberManage/game-record';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -152,8 +153,8 @@ const gridOptions: VxeTableGridOptions<EvoSideBetListItem> = {
     },
     {
       field: 'PlayerStatus',
-      formatter: ({ cellValue }) => formatPlayerStatus(cellValue),
       minWidth: 90,
+      slots: { default: 'playerStatus' },
       title: '玩家状态',
     },
     { field: 'Username', minWidth: 110, title: '代理账号' },
@@ -505,6 +506,9 @@ onMounted(async () => {
             :player-id="row.PlayerId"
           />
           <span v-else>{{ row.LoginAccount || '-' }}</span>
+        </template>
+        <template #playerStatus="{ row }">
+          <PlayerStatusTag :status="row.PlayerStatus" />
         </template>
         <template #winLoss="{ row }">
           {{ formatAmountFromCent(calcBetWinLoss(row.Status, row.WinGold, row.BetGold)) }}

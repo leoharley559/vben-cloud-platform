@@ -29,6 +29,7 @@ import {
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { createRequestHash } from '#/utils/crypto';
+import { formatVenueName } from '#/utils/game-config';
 import { formatBrokerageGameName } from '#/utils/promotion';
 
 defineOptions({ name: 'BrokerageSet' });
@@ -70,7 +71,10 @@ function buildGameTree(
     const row: BrokerageSetItem = {
       Desc: '',
       GameId: Number.isNaN(Number(id)) ? id : Number(id),
-      Name: game.gameName || id,
+      Name:
+        Number(game.ParentId || 0) === 0
+          ? formatVenueName(id, gameConfig.value)
+          : game.gameName || id,
       ParentId: game.ParentId,
       Rate: defaultRate,
       Type: 'create',

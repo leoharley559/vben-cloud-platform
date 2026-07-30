@@ -19,6 +19,7 @@ import {
 } from 'ant-design-vue';
 
 import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 import VoucherImageField from '#/views/operationalManage/voucher/components/voucher-image-field.vue';
 
 defineOptions({ name: 'PackageVenuePanel' });
@@ -247,7 +248,7 @@ async function hydrate(detail: Record<string, unknown>) {
       ...game,
       classifications: classifications(game),
       id,
-      name: String(game.gameName || id),
+      name: formatVenueName(id, config.value),
     }));
   loadedIds.forEach((id) => {
     if (!games.value.some((game) => game.id === id)) {

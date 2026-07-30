@@ -25,12 +25,12 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatOperationDateTime } from '#/utils/operation-status';
-import { formatPlayerStatus } from '#/utils/player-status';
 import { REWARD_EXCHANGE_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import {
@@ -422,8 +422,8 @@ onMounted(() => {
             :login-account="String(row.LoginAccount || '')"
             :player-id="row.PlayerId"
           />
-          <div class="text-xs text-gray-400">
-            ({{ formatPlayerStatus(row.PlayerStatus) }})
+          <div class="mt-1">
+            <PlayerStatusTag :status="row.PlayerStatus" hide-normal />
           </div>
         </div>
       </template>

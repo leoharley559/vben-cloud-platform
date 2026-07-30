@@ -1,4 +1,7 @@
 import type { FundFlowListItem } from '#/types/fund-flow';
+import type { ParsedGameConfig } from '#/utils/game-config';
+
+import { formatVenueName } from '#/utils/game-config';
 
 export interface GoldLogTemplateItem {
   LangEn?: string;
@@ -43,7 +46,7 @@ function applyTemplate(template: string, row: Record<string, unknown>) {
 export function enrichFundFlowItems(
   items: FundFlowListItem[],
   templates: GoldLogTemplateItem[] = [],
-  platformGameType: Record<string, string> = {},
+  gameConfig?: null | ParsedGameConfig,
 ) {
   return items.map((raw) => {
     const row: FundFlowListItem = { ...raw };
@@ -58,7 +61,11 @@ export function enrichFundFlowItems(
     row.WalletType = exInfo.WalletType ?? '';
     row.WithdrawWaterMultiply = exInfo.WithdrawWaterMultiply ?? '';
     row.GameType =
-      platformGameType[String(row.GameType ?? '')] || row.GameType || '';
+      row.GameType === undefined ||
+      row.GameType === null ||
+      row.GameType === ''
+        ? ''
+        : formatVenueName(row.GameType as number | string, gameConfig);
 
     let langZh = '';
     let langTw = '';

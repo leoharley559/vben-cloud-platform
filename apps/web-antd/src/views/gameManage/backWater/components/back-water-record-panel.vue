@@ -38,7 +38,11 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGameName, formatPercentFromStorage } from '#/utils/game-config';
+import {
+  formatGameName,
+  formatPercentFromStorage,
+  formatVenueName,
+} from '#/utils/game-config';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'BackWaterRecordPanel' });
@@ -199,8 +203,8 @@ const vipOptions = computed(() => [
   })),
 ]);
 const venueOptions = computed(() =>
-  Object.entries(gameConfig.value.platformGameType).map(([value, label]) => ({
-    label,
+  Object.entries(gameConfig.value.platformGameType).map(([value]) => ({
+    label: formatVenueName(value, gameConfig.value),
     value,
   })),
 );
@@ -376,7 +380,7 @@ const detailColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
   {
     field: 'GameType',
     formatter: ({ cellValue }) =>
-      gameConfig.value.platformGameType[String(cellValue)] || String(cellValue),
+      formatVenueName(cellValue as number | string, gameConfig.value),
     minWidth: 120,
     title: '场馆',
   },
@@ -734,8 +738,7 @@ onMounted(async () => {
             title: '场馆',
             key: 'venue',
             customRender: ({ record }) =>
-              gameConfig.platformGameType[String(record.GameType)] ||
-              record.GameType,
+              formatVenueName(record.GameType, gameConfig),
           },
           {
             title: '游戏',

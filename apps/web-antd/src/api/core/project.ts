@@ -29,8 +29,12 @@ export async function getSystemConfigApi() {
 /**
  * 获取游戏相关配置（场馆/游戏字典等）
  *
- * @returns 游戏配置原始响应
+ * 对齐旧站 getGameConfig：`/api/game/info`
+ * Data 含 GameSetting + platformGameTypeAll（场馆全称，含已关闭）
+ *
+ * @returns Data 对象（含 GameSetting / platformGameTypeAll）
  */
 export async function getGameConfigApi() {
-  return requestClient.get('/api/game/info');
+  // 默认拦截器已解包 Data；与旧站 response.data.Data 一致
+  return requestClient.get<Record<string, unknown>>('/api/game/info');
 }

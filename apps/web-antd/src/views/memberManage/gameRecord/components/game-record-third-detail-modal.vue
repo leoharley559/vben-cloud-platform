@@ -4,7 +4,8 @@ import { computed, ref, watch } from 'vue';
 import { Descriptions, Modal, Spin, Tag, message } from 'ant-design-vue';
 
 import { fetchGameRecordThirdDetailApi } from '#/api/memberManage/game-record';
-import { formatGameName } from '#/utils/game-config';
+import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 import type { GameInfo } from '#/utils/game-config';
 import {
   buildDetailSections,
@@ -50,6 +51,7 @@ const props = defineProps<{
   row?: BetRow | null;
 }>();
 
+const { gameConfig } = useGameConfig();
 const loading = ref(false);
 const displayMode = ref<'legacy' | 'structured'>('legacy');
 const detailMode = ref('default');
@@ -57,7 +59,10 @@ const detailSections = ref<DetailSection[]>([]);
 const extraDetails = ref<LegacyItem[]>([]);
 
 const titleText = computed(() => {
-  const gameName = formatGameName(props.row?.GameId, props.games || {});
+  const gameName = formatVenueName(props.row?.GameId, {
+    ...gameConfig.value,
+    games: props.games || gameConfig.value.games,
+  });
   return `${gameName} - 三方详情`;
 });
 

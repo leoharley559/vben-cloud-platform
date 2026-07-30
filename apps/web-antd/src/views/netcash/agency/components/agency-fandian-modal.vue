@@ -6,6 +6,8 @@ import { computed } from 'vue';
 import { Empty, Modal, Table } from 'ant-design-vue';
 
 import venueConfig from '#/config/venue-config.json';
+import { useGameConfig } from '#/composables/use-game-config';
+import { formatVenueName } from '#/utils/game-config';
 import {
   formatAgentFanDianRebate,
   getAgentFanDianLines,
@@ -23,6 +25,7 @@ const emit = defineEmits<{
   'update:open': [value: boolean];
 }>();
 
+const { gameConfig } = useGameConfig();
 const GRADE_ORDER = ['grade_S', 'grade_A', 'grade_B', 'grade_C'];
 
 const visible = computed({
@@ -32,10 +35,6 @@ const visible = computed({
 
 const config = computed(() =>
   parseAgentFanDianConfig(props.row?.AgentFanDianConfig),
-);
-
-const venueByGameId = new Map(
-  venueConfig.venues.map((item) => [Number(item.GameId), item]),
 );
 
 /** grade_S → S级 */
@@ -62,7 +61,11 @@ function formatFlowDisplay(effectiveFlow?: number | string) {
 /** 分类下的场馆中文名（熊猫体育、DB棋牌…） */
 function resolveVenueNames(gameIdList: number[]) {
   return gameIdList
-    .map((gameId) => venueByGameId.get(Number(gameId))?.Description)
+    .map((gameId) => {
+      const name = formatVenueName(gameId, gameConfig.value);
+      if (!name || name === '-' || name === String(gameId)) return '';
+      return name;
+    })
     .filter(Boolean)
     .join('、');
 }

@@ -29,7 +29,7 @@ import { useGameConfig } from '#/composables/use-game-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGameName } from '#/utils/game-config';
+import { formatVenueName } from '#/utils/game-config';
 import {
   formatTransferAccount,
   formatVenueTransferState,
@@ -113,14 +113,14 @@ function formatOutAccount(row: PlayerVenueTransferItem) {
   if (Number(row.Type) === 1) {
     return formatTransferAccount(1);
   }
-  return formatGameName(row.GameId, gameConfig.value.games);
+  return formatVenueName(row.GameId, gameConfig.value);
 }
 
 function formatInAccount(row: PlayerVenueTransferItem) {
   if (Number(row.Type) !== 1) {
     return formatTransferAccount(1);
   }
-  return formatGameName(row.GameId, gameConfig.value.games);
+  return formatVenueName(row.GameId, gameConfig.value);
 }
 
 function getStateColor(state?: number | string) {

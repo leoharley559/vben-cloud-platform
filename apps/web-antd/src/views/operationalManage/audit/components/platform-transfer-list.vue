@@ -29,7 +29,7 @@ import { useGameConfig } from '#/composables/use-game-config';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGameName } from '#/utils/game-config';
+import { formatVenueName } from '#/utils/game-config';
 import {
   formatPlatformTransferState,
   getPlatformTransferStateColor,
@@ -61,11 +61,9 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 
 const gameOptions = computed(() => {
   const options = [{ label: '全部', value: '' }];
-  for (const [gameId, game] of Object.entries(
-    gameConfig.value.platformGameList,
-  )) {
+  for (const [gameId] of Object.entries(gameConfig.value.platformGameList)) {
     options.push({
-      label: game.gameName || String(gameId),
+      label: formatVenueName(gameId, gameConfig.value),
       value: gameId,
     });
   }
@@ -120,12 +118,12 @@ function formatGameAccount(
     if (transferType === 1) {
       return '中心钱包';
     }
-    return formatGameName(gameId, gameConfig.value.games);
+    return formatVenueName(gameId, gameConfig.value);
   }
   if (transferType !== 1) {
     return '中心钱包';
   }
-  return formatGameName(gameId, gameConfig.value.games);
+  return formatVenueName(gameId, gameConfig.value);
 }
 
 const gridOptions: VxeTableGridOptions<PlatformTransferItem> = {

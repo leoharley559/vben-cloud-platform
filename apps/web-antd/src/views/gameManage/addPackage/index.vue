@@ -10,6 +10,7 @@ import type {
   PackageResourceItem,
 } from '#/types/package-config';
 import type { GameInfo } from '#/utils/game-config';
+import { formatVenueName } from '#/utils/game-config';
 
 import {
   computed,
@@ -443,8 +444,8 @@ function initializeGames(detail?: PackageDetail) {
   const platformKeys = parseComma(projectConfig.value?.MyPlatformGameType);
   const allowedPlatformNames = new Set(
     platformKeys
-      .map((key) => config?.platformGameType[String(key)])
-      .filter(Boolean),
+      .map((key) => formatVenueName(key, config))
+      .filter((name) => name && name !== '-'),
   );
   const normalized = Object.entries(config?.games || {})
     .filter(

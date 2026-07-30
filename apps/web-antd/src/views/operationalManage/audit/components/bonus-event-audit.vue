@@ -23,6 +23,7 @@ import {
 } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -218,8 +219,8 @@ const gridOptions: VxeTableGridOptions<BonusAuditListItem> = {
     },
     {
       field: 'PlayerStatus',
-      formatter: ({ cellValue }) => formatPlayerStatus(cellValue),
       minWidth: 90,
+      slots: { default: 'playerStatus' },
       title: '玩家状态',
     },
     {
@@ -608,6 +609,9 @@ onMounted(() => {
           :login-account="String(row.LoginAccount || '')"
           :player-id="row.PlayerId as number | string | undefined"
         />
+      </template>
+      <template #playerStatus="{ row }">
+        <PlayerStatusTag :status="row.PlayerStatus" />
       </template>
       <template #actions="{ row }">
         <Space v-if="!canOperateRow(row)" :size="0" wrap>

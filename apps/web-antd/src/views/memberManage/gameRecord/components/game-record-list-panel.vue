@@ -31,6 +31,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -55,7 +56,7 @@ import {
 } from '#/utils/date-range';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGameName } from '#/utils/game-config';
+import { formatGameName, formatVenueName } from '#/utils/game-config';
 import {
   formatPlayerStatus,
   PLAYER_STATUS_OPTIONS,
@@ -195,15 +196,15 @@ const platformGameOptions = computed(() =>
       ([, game]) =>
         Number((game as { IsVirtualGame?: number }).IsVirtualGame) === 0,
     )
-    .map(([value, game]) => ({
-      label: game.gameName || value,
+    .map(([value]) => ({
+      label: formatVenueName(value, gameConfig.value),
       value,
     })),
 );
 
 const venueTypeOptions = computed(() =>
-  Object.entries(gameConfig.value.platformGameType).map(([value, label]) => ({
-    label: String(label),
+  Object.entries(gameConfig.value.platformGameType).map(([value]) => ({
+    label: formatVenueName(value, gameConfig.value),
     value,
   })),
 );
@@ -409,8 +410,8 @@ const gridOptions: VxeTableGridOptions<PlayerBetRecordItem> = {
     },
     {
       field: 'PlayerStatus',
-      formatter: ({ cellValue }) => formatPlayerStatus(cellValue),
       minWidth: 90,
+      slots: { default: 'playerStatus' },
       title: '玩家状态',
     },
     {
@@ -434,7 +435,7 @@ const gridOptions: VxeTableGridOptions<PlayerBetRecordItem> = {
       formatter: ({ cellValue, row }) =>
         String(
           cellValue ||
-            formatGameName(row.GameId, gameConfig.value.games) ||
+            formatVenueName(row.GameId, gameConfig.value) ||
             '-',
         ),
       minWidth: 120,
@@ -721,7 +722,7 @@ async function handleCopy() {
         `VIP ${item.VipLevel ?? ''}`,
         item.Username,
         item.PackageName,
-        formatGameName(item.GameId, gameConfig.value.games),
+        formatVenueName(item.GameId, gameConfig.value),
         item.GameId,
         betAmt,
         formatAmountFromCent(item.ValidWater),
@@ -1041,6 +1042,9 @@ onMounted(async () => {
             :player-id="row.PlayerId"
           />
           <span v-else>{{ row.LoginAccount || '-' }}</span>
+        </template>
+        <template #playerStatus="{ row }">
+          <PlayerStatusTag :status="row.PlayerStatus" />
         </template>
         <template #extra="{ row }">
           <Button size="small" type="primary" @click="openThirdDetail(row)">

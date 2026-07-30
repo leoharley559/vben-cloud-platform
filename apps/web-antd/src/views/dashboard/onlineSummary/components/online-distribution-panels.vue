@@ -4,7 +4,8 @@ import { computed } from 'vue';
 import { Card, Table } from 'ant-design-vue';
 
 import { useGameConfig } from '#/composables/use-game-config';
-import { formatGameId, toNumber } from '#/utils/dashboard';
+import { toNumber } from '#/utils/dashboard';
+import { formatVenueName } from '#/utils/game-config';
 
 import OnlinePieChart from './online-pie-chart.vue';
 import OnlineWorldMap from './online-world-map.vue';
@@ -26,10 +27,13 @@ function resolveVenueGameId(row: Record<string, unknown>) {
 /** 对齐旧站 formatGameId(LastGameId)；优先接口自带名称 */
 function resolveVenueName(row: Record<string, unknown>) {
   const direct = row.GameName || row.VenueName || row.ShowName;
-  if (direct) {
+  if (direct && !/^[A-Za-z0-9_.-]{1,16}$/.test(String(direct).trim())) {
     return String(direct);
   }
-  return formatGameId(resolveVenueGameId(row), gameConfig.value.games);
+  return formatVenueName(
+    resolveVenueGameId(row) as number | string,
+    gameConfig.value,
+  );
 }
 
 function resolveRegionName(row: Record<string, unknown>) {

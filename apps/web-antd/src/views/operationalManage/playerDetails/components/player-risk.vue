@@ -17,7 +17,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGameName } from '#/utils/game-config';
+import { formatVenueName } from '#/utils/game-config';
 import {
   RISK_BEHAVIOR_TYPE_MAP,
   RISK_WARN_LEVEL_MAP,
@@ -111,7 +111,7 @@ const gameGridOptions: VxeTableGridOptions<PlayerRiskAnalysisGameItem> = {
     {
       field: 'GameId',
       formatter: ({ cellValue }) =>
-        formatGameName(cellValue, gameConfig.value.games),
+        formatVenueName(cellValue, gameConfig.value),
       minWidth: 140,
       title: '场馆名称',
     },
