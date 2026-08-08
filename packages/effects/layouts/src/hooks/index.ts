@@ -73,18 +73,15 @@ export function useLayoutHook() {
     }
 
     // 标签页未启用或者未开启缓存，则使用全局配置动画
-    if (!tabbar.enable || !keepAlive) {
+    if (!tabbar.enable || !keepAlive.value) {
       return transitionName;
     }
 
-    // 如果页面已经加载过，则不使用动画
-    // if (route.meta.loaded) {
-    //   return;
-    // }
-    // 已经打开且已经加载过的页面不使用动画
-    // const inTabs = getCachedTabs.value.includes(route.name as string);
-
-    // return inTabs && route.meta.loaded ? undefined : transitionName;
+    // 已缓存页再切入时不做过渡，减轻 Tabs/Table ResizeObserver
+    // 在 KeepAlive 激活切换时“Slot invoked outside render”告警与空白风险
+    if (_route.meta?.loaded) {
+      return;
+    }
     return transitionName;
   }
 

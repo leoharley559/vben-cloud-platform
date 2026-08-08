@@ -656,21 +656,16 @@ onMounted(async () => {
             { label: '手动', value: 1 },
           ]"
         />
-        <DatePicker.RangePicker
-          v-if="activeType === 'summary'"
-          v-model:value="generationRange"
-          show-time
-          :placeholder="['返水生成开始', '返水生成结束']"
-        />
-        <DatePicker.RangePicker
-          v-model:value="awardRange"
-          show-time
-          :placeholder="
-            activeType === 'summary'
-              ? ['发放开始时间', '发放结束时间']
-              : ['游戏开始时间', '游戏结束时间']
-          "
-        />
+        <div v-if="activeType === 'summary'" class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">返水生成时间</span>
+          <DatePicker.RangePicker v-model:value="generationRange" />
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">{{
+            activeType === 'summary' ? '发放时间' : '游戏时间'
+          }}</span>
+          <DatePicker.RangePicker v-model:value="awardRange" />
+        </div>
       </div>
       <Space>
         <Button type="primary" @click="search">查询</Button>

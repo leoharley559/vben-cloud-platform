@@ -477,7 +477,7 @@ onMounted(load);
           ]"
           style="width: 150px"
         />
-        <DatePicker.RangePicker v-model:value="bonusDateRange" show-time />
+        <DatePicker.RangePicker v-model:value="bonusDateRange" />
       </template>
       <template v-else>
         <Select
@@ -485,7 +485,7 @@ onMounted(load);
           :options="transferOptions"
           style="width: 180px"
         />
-        <DatePicker.RangePicker v-model:value="logDateRange" show-time />
+        <DatePicker.RangePicker v-model:value="logDateRange" />
       </template>
       <Button type="primary" @click="load">查询</Button>
       <Button @click="resetFilters">重置</Button>

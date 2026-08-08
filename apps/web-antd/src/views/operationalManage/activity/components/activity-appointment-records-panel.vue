@@ -162,12 +162,10 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <DatePicker.RangePicker
           v-model:value="withdrawTimeRange"
           :placeholder="['取款开始', '取款结束']"
-          show-time
         />
         <DatePicker.RangePicker
           v-model:value="awardTimeRange"
           :placeholder="['派奖开始', '派奖结束']"
-          show-time
         />
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button

@@ -95,8 +95,8 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     AdminUserName: filterAdminUserName.value || '',
-    BeginTime: begin?.unix() || '',
-    EndTime: end?.unix() || '',
+    BeginTime: begin?.startOf('day').unix() || '',
+    EndTime: end?.endOf('day').unix() || '',
     OrderId: filterOrderId.value || '',
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -414,8 +414,7 @@ onMounted(() => {
         />
         <DatePicker.RangePicker
           v-model:value="filterDateRange"
-          format="YYYY-MM-DD HH:mm:ss"
-          show-time
+          format="YYYY-MM-DD"
         />
         <Select
           v-model:value="moreColumns"

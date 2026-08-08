@@ -146,6 +146,8 @@ export interface WithdrawListQuery {
   RealName?: string;
   Reserve?: number;
   RiskAuditorName?: string;
+  /** 风控状态筛选（挂起订单等，对齐旧站 RiskStatus） */
+  RiskStatus?: number | string;
   SelectTimeType?: number;
   ShowName?: string;
   Sort?: string;

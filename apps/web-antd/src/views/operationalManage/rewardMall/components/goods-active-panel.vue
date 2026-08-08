@@ -321,7 +321,7 @@ async function handleSort(
   <div>
     <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
       <div class="flex flex-wrap items-end gap-2">
-        <DatePicker.RangePicker v-model:value="filterDateRange" show-time />
+        <DatePicker.RangePicker v-model:value="filterDateRange" />
         <Input
           v-model:value="filterName"
           allow-clear

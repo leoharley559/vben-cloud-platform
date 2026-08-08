@@ -99,8 +99,8 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
   return {
     Auto: autoRefresh.value,
     // 保留 RangePicker 时分秒，勿强制 startOf/endOf('day')（非自动刷新时）
-    BeginTime: begin ? begin.unix() : '',
-    EndTime: end ? end.unix() : '',
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     Id: filterId.value.trim(),
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -374,7 +374,6 @@ onUnmounted(() => {
           v-model:value="filterDateRange"
           :disabled="autoRefresh"
           :placeholder="['发起开始', '发起结束']"
-          show-time
         />
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="resetFilters">重置</Button>

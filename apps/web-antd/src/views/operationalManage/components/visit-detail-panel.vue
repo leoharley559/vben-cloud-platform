@@ -113,13 +113,13 @@ function buildQuery(page?: { currentPage: number; pageSize: number }) {
     Group: props.group,
     Key: props.titleId,
     // 对齐旧站 SearchTypeTwo/monthRangeDate：保留 RangePicker 时分秒
-    LeaveBeginTime: leave?.[0] ? leave[0].unix() : '',
-    LeaveEndTime: leave?.[1] ? leave[1].unix() : '',
+    LeaveBeginTime: leave?.[0] ? leave[0].startOf('day').unix() : '',
+    LeaveEndTime: leave?.[1] ? leave[1].endOf('day').unix() : '',
     PlayerId:
       filterPlayerId.value.trim() === '' ? '-1' : filterPlayerId.value.trim(),
     SubGroup: filterSubGroup.value,
-    VisitBeginTime: visitBegin ? visitBegin.unix() : fallback.BeginTime,
-    VisitEndTime: visitEnd ? visitEnd.unix() : fallback.EndTime,
+    VisitBeginTime: visitBegin ? visitBegin.startOf('day').unix() : fallback.BeginTime,
+    VisitEndTime: visitEnd ? visitEnd.endOf('day').unix() : fallback.EndTime,
   };
   if (page) {
     query.Page = page.currentPage;
@@ -285,17 +285,15 @@ async function handleExport(payload: Record<string, unknown>) {
         <span class="text-xs text-gray-500">访问时间</span>
         <DatePicker.RangePicker
           v-model:value="filterVisitRange"
-          show-time
-          format="YYYY-MM-DD HH:mm:ss"
+          format="YYYY-MM-DD"
         />
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">离开时间</span>
         <DatePicker.RangePicker
           v-model:value="filterLeaveRange"
-          show-time
           allow-clear
-          format="YYYY-MM-DD HH:mm:ss"
+          format="YYYY-MM-DD"
         />
       </div>
       <div class="flex flex-col gap-1">

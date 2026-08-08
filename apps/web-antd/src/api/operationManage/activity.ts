@@ -75,19 +75,6 @@ export function fetchActivityTypeListApi(query: Record<string, unknown>) {
 }
 
 /**
- * 查询邀请活动参与明细列表
- * @param query 筛选条件（邀请人、被邀请人及分页）
- * @returns 邀请活动明细列表 Items 及 Pagination
- * @see views/operationalManage/activity/components/activity-invite-detail-panel.vue
- */
-export function fetchInviteActivityListApi(query: Record<string, unknown>) {
-  return requestClient.get<CloudListResult<Record<string, unknown>>>(
-    '/backend/playerinvitefunc/listdetail',
-    { params: trimSpace(query) },
-  );
-}
-
-/**
  * 查询充值优惠方案规则列表
  * @param query 筛选条件及分页参数
  * @returns 充值优惠方案列表 Items 及 Pagination

@@ -484,6 +484,11 @@ overrides:
   pinia: ^3.0.4
   vue: ^3.5.32
 
+patchedDependencies:
+  ant-design-vue@4.2.6:
+    hash: 40c6c0946dbd1d78425c9e61f5079c7fe7d88812c4739d80eedfc2175404cf2d
+    path: patches/ant-design-vue@4.2.6.patch
+
 importers:
 
   .:
@@ -642,7 +647,7 @@ importers:
         version: 14.2.1(vue@3.5.33(typescript@6.0.3))
       ant-design-vue:
         specifier: 'catalog:'
-        version: 4.2.6(vue@3.5.33(typescript@6.0.3))
+        version: 4.2.6(patch_hash=40c6c0946dbd1d78425c9e61f5079c7fe7d88812c4739d80eedfc2175404cf2d)(vue@3.5.33(typescript@6.0.3))
       bignumber.js:
         specifier: ^9.3.1
         version: 9.3.1
@@ -12996,7 +13001,7 @@ snapshots:
 
   ansis@4.2.0: {}
 
-  ant-design-vue@4.2.6(vue@3.5.33(typescript@6.0.3)):
+  ant-design-vue@4.2.6(patch_hash=40c6c0946dbd1d78425c9e61f5079c7fe7d88812c4739d80eedfc2175404cf2d)(vue@3.5.33(typescript@6.0.3)):
     dependencies:
       '@ant-design/colors': 6.0.0
       '@ant-design/icons-vue': 7.0.1(vue@3.5.33(typescript@6.0.3))

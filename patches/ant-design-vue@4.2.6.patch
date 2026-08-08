@@ -1,0 +1,246 @@
+diff --git a/es/vc-picker/panels/DatePanel/DateHeader.js b/es/vc-picker/panels/DatePanel/DateHeader.js
+index 1bf1ba5b4c87645e1c44bf94e130c67a5ac07ded..bca6f25431ee310f649484b8eae44d98bc493297 100644
+--- a/es/vc-picker/panels/DatePanel/DateHeader.js
++++ b/es/vc-picker/panels/DatePanel/DateHeader.js
+@@ -21,7 +21,7 @@ function DateHeader(_props) {
+   const {
+     hideHeader
+   } = useInjectPanel();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const headerPrefixCls = `${prefixCls}-header`;
+diff --git a/es/vc-picker/panels/Header.js b/es/vc-picker/panels/Header.js
+index 85233114b05d97352aed65530405bf38400aa059..dd54199ee76f3e1f6f7fed713e97e7f5673731cf 100644
+--- a/es/vc-picker/panels/Header.js
++++ b/es/vc-picker/panels/Header.js
+@@ -32,13 +32,13 @@ function Header(_props, _ref) {
+     "onClick": onSuperPrev,
+     "tabindex": -1,
+     "class": `${prefixCls}-super-prev-btn`,
+-    "style": hidePrevBtn.value ? HIDDEN_STYLE : {}
++    "style": hidePrevBtn?.value ? HIDDEN_STYLE : {}
+   }, [superPrevIcon]), onPrev && _createVNode("button", {
+     "type": "button",
+     "onClick": onPrev,
+     "tabindex": -1,
+     "class": `${prefixCls}-prev-btn`,
+-    "style": hidePrevBtn.value ? HIDDEN_STYLE : {}
++    "style": hidePrevBtn?.value ? HIDDEN_STYLE : {}
+   }, [prevIcon]), _createVNode("div", {
+     "class": `${prefixCls}-view`
+   }, [(_a = slots.default) === null || _a === void 0 ? void 0 : _a.call(slots)]), onNext && _createVNode("button", {
+@@ -46,13 +46,13 @@ function Header(_props, _ref) {
+     "onClick": onNext,
+     "tabindex": -1,
+     "class": `${prefixCls}-next-btn`,
+-    "style": hideNextBtn.value ? HIDDEN_STYLE : {}
++    "style": hideNextBtn?.value ? HIDDEN_STYLE : {}
+   }, [nextIcon]), onSuperNext && _createVNode("button", {
+     "type": "button",
+     "onClick": onSuperNext,
+     "tabindex": -1,
+     "class": `${prefixCls}-super-next-btn`,
+-    "style": hideNextBtn.value ? HIDDEN_STYLE : {}
++    "style": hideNextBtn?.value ? HIDDEN_STYLE : {}
+   }, [superNextIcon])]);
+ }
+ Header.displayName = 'Header';
+diff --git a/es/vc-picker/panels/MonthPanel/MonthHeader.js b/es/vc-picker/panels/MonthPanel/MonthHeader.js
+index e4c8414251a382909935f8d8bbb046cd16e5de92..1c9c77a5e27380565977f2244cce2d9c01e2f82e 100644
+--- a/es/vc-picker/panels/MonthPanel/MonthHeader.js
++++ b/es/vc-picker/panels/MonthPanel/MonthHeader.js
+@@ -18,7 +18,7 @@ function MonthHeader(_props) {
+   const {
+     hideHeader
+   } = useInjectPanel();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const headerPrefixCls = `${prefixCls}-header`;
+diff --git a/es/vc-picker/panels/QuarterPanel/QuarterHeader.js b/es/vc-picker/panels/QuarterPanel/QuarterHeader.js
+index 2cc24d2db38258a2a6b37c1c23745eb9c39dd5d7..dede1140c09d7d333e10a2189de42fe64a076b17 100644
+--- a/es/vc-picker/panels/QuarterPanel/QuarterHeader.js
++++ b/es/vc-picker/panels/QuarterPanel/QuarterHeader.js
+@@ -18,7 +18,7 @@ function QuarterHeader(_props) {
+   const {
+     hideHeader
+   } = useInjectPanel();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const headerPrefixCls = `${prefixCls}-header`;
+diff --git a/es/vc-picker/panels/TimePanel/TimeHeader.js b/es/vc-picker/panels/TimePanel/TimeHeader.js
+index 93c26d504fa4fe0e374e79735f4a4d79783e5c6c..fff673293d211a05b4a443ee867b8968a6a0830e 100644
+--- a/es/vc-picker/panels/TimePanel/TimeHeader.js
++++ b/es/vc-picker/panels/TimePanel/TimeHeader.js
+@@ -8,7 +8,7 @@ function TimeHeader(_props) {
+   const {
+     hideHeader
+   } = useInjectPanel();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const {
+diff --git a/es/vc-picker/panels/TimePanel/TimeUnitColumn.js b/es/vc-picker/panels/TimePanel/TimeUnitColumn.js
+index 1740c13846b7d9df9a0a799d781be7a61a5c93d4..ef9d31fa48c48513df8e1fd772c4e76f40fd88ab 100644
+--- a/es/vc-picker/panels/TimePanel/TimeUnitColumn.js
++++ b/es/vc-picker/panels/TimePanel/TimeUnitColumn.js
+@@ -15,7 +15,7 @@ export default defineComponent({
+     const scrollRef = ref();
+     watch(() => props.value, () => {
+       const li = liRefs.value.get(props.value);
+-      if (li && open.value !== false) {
++      if (li && open?.value !== false) {
+         scrollTo(ulRef.value, li.offsetTop, 120);
+       }
+     });
+@@ -27,7 +27,7 @@ export default defineComponent({
+       var _a;
+       (_a = scrollRef.value) === null || _a === void 0 ? void 0 : _a.call(scrollRef);
+       nextTick(() => {
+-        if (open.value) {
++        if (open?.value) {
+           const li = liRefs.value.get(props.value);
+           if (li) {
+             scrollRef.value = waitElementReady(li, () => {
+diff --git a/es/vc-picker/panels/YearPanel/YearHeader.js b/es/vc-picker/panels/YearPanel/YearHeader.js
+index 9e444902f9ef6683286e34283ca83ab111073444..4b9ff8c42a608ef78f9abb566bd0a9939dc7a678 100644
+--- a/es/vc-picker/panels/YearPanel/YearHeader.js
++++ b/es/vc-picker/panels/YearPanel/YearHeader.js
+@@ -17,7 +17,7 @@ function YearHeader(_props) {
+   const {
+     hideHeader
+   } = useInjectPanel();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const headerPrefixCls = `${prefixCls}-header`;
+diff --git a/lib/vc-picker/panels/DatePanel/DateHeader.js b/lib/vc-picker/panels/DatePanel/DateHeader.js
+index 54204ca4688368fde895f86e3bf6412c6ad5b778..3fab0365a2c3093c0bbcd53e7c5e92c6531191a7 100644
+--- a/lib/vc-picker/panels/DatePanel/DateHeader.js
++++ b/lib/vc-picker/panels/DatePanel/DateHeader.js
+@@ -28,7 +28,7 @@ function DateHeader(_props) {
+   const {
+     hideHeader
+   } = (0, _PanelContext.useInjectPanel)();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const headerPrefixCls = `${prefixCls}-header`;
+diff --git a/lib/vc-picker/panels/Header.js b/lib/vc-picker/panels/Header.js
+index d19040cac54ddedff119071c2e93ab7ef34c0b10..fb4cdfd6b26283114fd1a8b846e1e9201b8e2839 100644
+--- a/lib/vc-picker/panels/Header.js
++++ b/lib/vc-picker/panels/Header.js
+@@ -39,13 +39,13 @@ function Header(_props, _ref) {
+     "onClick": onSuperPrev,
+     "tabindex": -1,
+     "class": `${prefixCls}-super-prev-btn`,
+-    "style": hidePrevBtn.value ? HIDDEN_STYLE : {}
++    "style": hidePrevBtn?.value ? HIDDEN_STYLE : {}
+   }, [superPrevIcon]), onPrev && (0, _vue.createVNode)("button", {
+     "type": "button",
+     "onClick": onPrev,
+     "tabindex": -1,
+     "class": `${prefixCls}-prev-btn`,
+-    "style": hidePrevBtn.value ? HIDDEN_STYLE : {}
++    "style": hidePrevBtn?.value ? HIDDEN_STYLE : {}
+   }, [prevIcon]), (0, _vue.createVNode)("div", {
+     "class": `${prefixCls}-view`
+   }, [(_a = slots.default) === null || _a === void 0 ? void 0 : _a.call(slots)]), onNext && (0, _vue.createVNode)("button", {
+@@ -53,13 +53,13 @@ function Header(_props, _ref) {
+     "onClick": onNext,
+     "tabindex": -1,
+     "class": `${prefixCls}-next-btn`,
+-    "style": hideNextBtn.value ? HIDDEN_STYLE : {}
++    "style": hideNextBtn?.value ? HIDDEN_STYLE : {}
+   }, [nextIcon]), onSuperNext && (0, _vue.createVNode)("button", {
+     "type": "button",
+     "onClick": onSuperNext,
+     "tabindex": -1,
+     "class": `${prefixCls}-super-next-btn`,
+-    "style": hideNextBtn.value ? HIDDEN_STYLE : {}
++    "style": hideNextBtn?.value ? HIDDEN_STYLE : {}
+   }, [superNextIcon])]);
+ }
+ Header.displayName = 'Header';
+diff --git a/lib/vc-picker/panels/MonthPanel/MonthHeader.js b/lib/vc-picker/panels/MonthPanel/MonthHeader.js
+index c54edb9745427f0fa2a04b75904a43cc4df31478..a8af39270dd142824bed3d03fa5a6dc7e8acd4cc 100644
+--- a/lib/vc-picker/panels/MonthPanel/MonthHeader.js
++++ b/lib/vc-picker/panels/MonthPanel/MonthHeader.js
+@@ -25,7 +25,7 @@ function MonthHeader(_props) {
+   const {
+     hideHeader
+   } = (0, _PanelContext.useInjectPanel)();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const headerPrefixCls = `${prefixCls}-header`;
+diff --git a/lib/vc-picker/panels/QuarterPanel/QuarterHeader.js b/lib/vc-picker/panels/QuarterPanel/QuarterHeader.js
+index cb9b6137ffb9cb8e7478ccc0e65caeb04ddb6178..ae6901d4d88701083d6c0def6a16639f839396a8 100644
+--- a/lib/vc-picker/panels/QuarterPanel/QuarterHeader.js
++++ b/lib/vc-picker/panels/QuarterPanel/QuarterHeader.js
+@@ -25,7 +25,7 @@ function QuarterHeader(_props) {
+   const {
+     hideHeader
+   } = (0, _PanelContext.useInjectPanel)();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const headerPrefixCls = `${prefixCls}-header`;
+diff --git a/lib/vc-picker/panels/TimePanel/TimeHeader.js b/lib/vc-picker/panels/TimePanel/TimeHeader.js
+index 9a7282ed23176f9076cf5a7ead7a7eb21f69215f..3745481a2585f402aa5afa51acb0d9f51da9c61d 100644
+--- a/lib/vc-picker/panels/TimePanel/TimeHeader.js
++++ b/lib/vc-picker/panels/TimePanel/TimeHeader.js
+@@ -15,7 +15,7 @@ function TimeHeader(_props) {
+   const {
+     hideHeader
+   } = (0, _PanelContext.useInjectPanel)();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const {
+diff --git a/lib/vc-picker/panels/TimePanel/TimeUnitColumn.js b/lib/vc-picker/panels/TimePanel/TimeUnitColumn.js
+index 63da764e8f5c25259a6265672112a186e89f4c53..efdb279633795452b8e054c535cfde4fdcec1614 100644
+--- a/lib/vc-picker/panels/TimePanel/TimeUnitColumn.js
++++ b/lib/vc-picker/panels/TimePanel/TimeUnitColumn.js
+@@ -21,7 +21,7 @@ var _default = exports.default = (0, _vue.defineComponent)({
+     const scrollRef = (0, _vue.ref)();
+     (0, _vue.watch)(() => props.value, () => {
+       const li = liRefs.value.get(props.value);
+-      if (li && open.value !== false) {
++      if (li && open?.value !== false) {
+         (0, _uiUtil.scrollTo)(ulRef.value, li.offsetTop, 120);
+       }
+     });
+@@ -33,7 +33,7 @@ var _default = exports.default = (0, _vue.defineComponent)({
+       var _a;
+       (_a = scrollRef.value) === null || _a === void 0 ? void 0 : _a.call(scrollRef);
+       (0, _vue.nextTick)(() => {
+-        if (open.value) {
++        if (open?.value) {
+           const li = liRefs.value.get(props.value);
+           if (li) {
+             scrollRef.value = (0, _uiUtil.waitElementReady)(li, () => {
+diff --git a/lib/vc-picker/panels/YearPanel/YearHeader.js b/lib/vc-picker/panels/YearPanel/YearHeader.js
+index 0769651d6d76318d73c47c363d22cc329bab5485..6c8f15880ab66211e5a07d99a18fa41db97be14f 100644
+--- a/lib/vc-picker/panels/YearPanel/YearHeader.js
++++ b/lib/vc-picker/panels/YearPanel/YearHeader.js
+@@ -24,7 +24,7 @@ function YearHeader(_props) {
+   const {
+     hideHeader
+   } = (0, _PanelContext.useInjectPanel)();
+-  if (hideHeader.value) {
++  if (hideHeader?.value) {
+     return null;
+   }
+   const headerPrefixCls = `${prefixCls}-header`;

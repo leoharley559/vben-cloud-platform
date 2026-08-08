@@ -23,6 +23,7 @@ import {
 } from '#/api/operationManage/recharge';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -74,6 +75,43 @@ const reviewRow = ref<RechargeListItem | null>(null);
 const replaceOpen = ref(false);
 const replaceRow = ref<RechargeListItem | null>(null);
 const blankOpen = ref(false);
+
+/** 列表上方统计，对齐旧站 aisleRecharge Total */
+const totalData = ref({
+  AdminAmount: 0,
+  Amount: 0,
+  FailAmount: 0,
+  PayNum: 0,
+  PlatformAmount: 0,
+  SumAmount: 0,
+});
+
+const summaryItems = computed(() => [
+  {
+    label: '总充值金额',
+    value: formatAmountFromCent(totalData.value.SumAmount),
+  },
+  {
+    label: '实际到账金额',
+    value: formatAmountFromCent(totalData.value.Amount),
+  },
+  {
+    label: '第三方充值金额',
+    value: formatAmountFromCent(totalData.value.PlatformAmount),
+  },
+  {
+    label: '币商充值金额',
+    value: formatAmountFromCent(totalData.value.AdminAmount),
+  },
+  {
+    label: '成功充值人数',
+    value: totalData.value.PayNum,
+  },
+  {
+    label: '未成功充值金额',
+    value: formatAmountFromCent(totalData.value.FailAmount),
+  },
+]);
 
 const defaultRange = getLast3CalendarDaysRangeSeconds();
 const filterOrderId = ref('');
@@ -215,6 +253,16 @@ const gridOptions: VxeTableGridOptions<RechargeListItem> = {
           PageSize: page.pageSize,
           Sort: sortParam,
         });
+
+        const total = (result?.Total || {}) as Record<string, unknown>;
+        totalData.value = {
+          AdminAmount: Number(total.AdminAmount || 0),
+          Amount: Number(total.Amount || 0),
+          FailAmount: Number(total.FailAmount || 0),
+          PayNum: Number(total.PayNum || 0),
+          PlatformAmount: Number(total.PlatformAmount || 0),
+          SumAmount: Number(total.SumAmount || 0),
+        };
 
         return {
           items: result?.Items || [],
@@ -397,6 +445,8 @@ defineExpose({
         <Button v-if="canBlankOrder" @click="blankOpen = true">补空单</Button>
       </Space>
     </div>
+
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #loginAccount="{ row }">

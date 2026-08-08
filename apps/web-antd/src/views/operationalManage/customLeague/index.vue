@@ -306,8 +306,7 @@ function handlePreview(path?: string) {
           <DatePicker.RangePicker
             v-model:value="filterDateRange"
             allow-clear
-            show-time
-            value-format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD"
           />
         </div>
         <Space>

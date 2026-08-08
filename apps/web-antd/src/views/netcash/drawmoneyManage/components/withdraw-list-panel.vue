@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import {
@@ -20,7 +20,7 @@ import {
   Space,
   Switch,
 } from 'ant-design-vue';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -69,10 +69,12 @@ const defaultQuery = () => ({
 });
 
 const withdrawQuery = reactive(defaultQuery());
-const withdrawRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+/** allowClear 后可能为 null，需与 RangePicker 类型对齐，避免面板更新异常 */
+const withdrawRange = ref<[Dayjs, Dayjs] | null>([
   dayjs().subtract(1, 'day').startOf('day'),
   dayjs().endOf('day'),
 ]);
+const withdrawRangeOpen = ref(false);
 const withdrawTotal = reactive<Record<string, number>>({});
 const selected = ref<Record<string, unknown>[]>([]);
 const agreeChannels = ref<Record<string, unknown>[]>([]);
@@ -121,8 +123,8 @@ function withdrawalParams(
     AmountMax: Number(withdrawQuery.AmountMax || 0) * 100,
     AmountMin: Number(withdrawQuery.AmountMin || 0) * 100,
     Auto: autoRefreshStatus.value === 1,
-    BeginTime: withdrawRange.value?.[0]?.unix() || '',
-    EndTime: withdrawRange.value?.[1]?.unix() || '',
+    BeginTime: withdrawRange.value?.[0]?.startOf('day').unix() || '',
+    EndTime: withdrawRange.value?.[1]?.endOf('day').unix() || '',
     IsExp: exp,
     Page: exp ? 1 : page.currentPage,
     PageSize: exp ? 99_999 : page.pageSize,
@@ -527,6 +529,7 @@ async function toggleAutoRefresh(checked: boolean) {
 
 function resetWithdraw() {
   Object.assign(withdrawQuery, defaultQuery());
+  withdrawRangeOpen.value = false;
   withdrawRange.value = [
     dayjs().subtract(1, 'day').startOf('day'),
     dayjs().endOf('day'),
@@ -692,6 +695,11 @@ onMounted(() => {
   if (checkPermission(12_749)) loadAutoRefresh();
 });
 
+onBeforeUnmount(() => {
+  // 切换 Tab 卸载前先关面板，避免 DateHeader inject 空上下文崩溃
+  withdrawRangeOpen.value = false;
+});
+
 onUnmounted(() => {
   clearAutoTimer();
 });
@@ -730,7 +738,11 @@ onUnmounted(() => {
           { label: '结束时间', value: 2 },
           { label: '财务响应时间', value: 3 },
         ]" />
-        <DatePicker.RangePicker v-model:value="withdrawRange" show-time />
+        <DatePicker.RangePicker
+          v-model:value="withdrawRange"
+          v-model:open="withdrawRangeOpen"
+          :get-popup-container="(node) => node.parentElement || document.body"
+        />
         <InputNumber v-model:value="withdrawQuery.AmountMin" placeholder="最小金额" />
         <InputNumber v-model:value="withdrawQuery.AmountMax" placeholder="最大金额" />
         <Select v-model:value="withdrawQuery.WithdrawStatus" allow-clear placeholder="状态" :options="[

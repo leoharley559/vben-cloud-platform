@@ -117,13 +117,17 @@ export const useTabbarStore = defineStore('core-tabbar', {
      * @param router
      */
     async _goToTab(tab: TabDefinition, router: Router) {
-      const { params, path, query } = tab;
-      const toParams = {
-        params: params || {},
+      const { fullPath, path, query } = tab;
+      // 与标签点击一致：优先 fullPath（已含动态参数）。
+      // 禁止 path + params 同传，否则 Vue Router 会告警并忽略 params。
+      if (fullPath) {
+        await router.replace(fullPath);
+        return;
+      }
+      await router.replace({
         path,
         query: query || {},
-      };
-      await router.replace(toParams);
+      });
     },
     /**
      * @zh_CN 添加标签页

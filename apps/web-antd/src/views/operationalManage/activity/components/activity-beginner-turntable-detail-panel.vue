@@ -137,12 +137,10 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       />
       <DatePicker.RangePicker
         v-model:value="drawTimeRange"
-        show-time
         :placeholder="['抽奖开始', '抽奖结束']"
       />
       <DatePicker.RangePicker
         v-model:value="applyTimeRange"
-        show-time
         :placeholder="['领奖开始', '领奖结束']"
       />
       <Button type="primary" @click="gridApi.reload()">查询</Button>

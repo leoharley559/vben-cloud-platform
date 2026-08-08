@@ -12,6 +12,12 @@ export default defineConfig(async (config) => {
     vite: {
       server: {
         proxy: {
+          // resource 上传/列表需保留 /api 前缀（对齐旧站 UPLOAD_MD5_IMG）
+          '/api/resource': {
+            changeOrigin: true,
+            target: proxyTarget,
+            ws: true,
+          },
           '/api': {
             changeOrigin: true,
             rewrite: (path) => path.replace(/^\/api/, ''),

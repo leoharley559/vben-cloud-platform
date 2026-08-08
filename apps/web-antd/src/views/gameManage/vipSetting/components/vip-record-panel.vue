@@ -44,10 +44,13 @@ function defaultDateRange(): [Dayjs, Dayjs] {
   return [dayjs.unix(BeginTime), dayjs.unix(EndTime)];
 }
 
-function toUnix(value: Dayjs | string | undefined) {
+function toUnix(value: Dayjs | string | undefined, bound?: 'end' | 'start') {
   if (!value) return undefined;
   const parsed = dayjs.isDayjs(value) ? value : dayjs(value);
-  return parsed.isValid() ? parsed.unix() : undefined;
+  if (!parsed.isValid()) return undefined;
+  if (bound === 'start') return parsed.startOf('day').unix();
+  if (bound === 'end') return parsed.endOf('day').unix();
+  return parsed.unix();
 }
 
 const { checkPermission } = useCloudPermission();
@@ -98,8 +101,8 @@ const moneyKeys = new Set([
 ]);
 
 function queryParams(isExport = false) {
-  const begin = toUnix(dateRange.value?.[0]);
-  const end = toUnix(dateRange.value?.[1]);
+  const begin = toUnix(dateRange.value?.[0], 'start');
+  const end = toUnix(dateRange.value?.[1], 'end');
   return {
     BeginTime: begin,
     EndTime: end,
@@ -301,8 +304,7 @@ onMounted(() => {
         />
         <DatePicker.RangePicker
           v-model:value="dateRange"
-          :show-time="true"
-          format="YYYY-MM-DD HH:mm:ss"
+          format="YYYY-MM-DD"
         />
         <Space>
           <Button type="primary" @click="search">查询</Button>

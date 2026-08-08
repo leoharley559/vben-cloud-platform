@@ -140,17 +140,17 @@ function memberQuery(extra: Record<string, unknown> = {}) {
   return {
     ActiveStatus: filters.ActiveStatus ?? -1,
     AlgorithmTemplateId: filters.AlgorithmTemplateId ?? '',
-    BeginTime: statistics?.[0]?.unix() ?? '',
-    EndTime: statistics?.[1]?.unix() ?? '',
-    FirstPayBeginTime: filters.FirstPayTime?.[0]?.unix() ?? '',
-    FirstPayEndTime: filters.FirstPayTime?.[1]?.unix() ?? '',
+    BeginTime: statistics?.[0]?.startOf('day').unix() ?? '',
+    EndTime: statistics?.[1]?.endOf('day').unix() ?? '',
+    FirstPayBeginTime: filters.FirstPayTime?.[0]?.startOf('day').unix() ?? '',
+    FirstPayEndTime: filters.FirstPayTime?.[1]?.endOf('day').unix() ?? '',
     LoginAccount: filters.LoginAccount.trim().toLowerCase(),
     PackageId: filters.PackageId ?? '',
     Page: page.value,
     PageSize: pageSize.value,
     Promoter: filters.Promoter.trim(),
-    RegBeginTime: filters.RegTime?.[0]?.unix() ?? '',
-    RegEndTime: filters.RegTime?.[1]?.unix() ?? '',
+    RegBeginTime: filters.RegTime?.[0]?.startOf('day').unix() ?? '',
+    RegEndTime: filters.RegTime?.[1]?.endOf('day').unix() ?? '',
     Sort: '',
     Status: filters.Status ?? '',
     VipLevel: filters.VipLevel ?? '',
@@ -572,17 +572,14 @@ onMounted(async () => {
       />
       <DatePicker.RangePicker
         v-model:value="filters.RegTime"
-        show-time
         :placeholder="['注册开始时间', '注册结束时间']"
       />
       <DatePicker.RangePicker
         v-model:value="filters.FirstPayTime"
-        show-time
         :placeholder="['首存开始时间', '首存结束时间']"
       />
       <DatePicker.RangePicker
         v-model:value="filters.StatisticsTime"
-        show-time
         :placeholder="['统计开始时间', '统计结束时间']"
       />
       <Button type="primary" @click="searchMembers">查询</Button>

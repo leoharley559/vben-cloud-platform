@@ -40,11 +40,12 @@ const showComponent = (route: RouteLocationNormalizedLoadedGeneric) => {
         :route="route"
         v-if="route.meta.domCached"
       />
+      <!-- 不用 mode=out-in：与 KeepAlive + ant-design-vue ResizeObserver 叠加时，
+           离场未完成会导致进场永不渲染（切换页空白）。 -->
       <Transition
         v-if="getEnabledTransition"
         :name="getTransitionName(route)"
         appear
-        mode="out-in"
       >
         <KeepAlive
           v-if="keepAlive"

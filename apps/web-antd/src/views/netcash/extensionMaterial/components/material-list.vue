@@ -177,8 +177,8 @@ async function loadList() {
 
 function search() {
   if (dateRange.value?.length === 2) {
-    query.BeginTime = dateRange.value[0].unix();
-    query.EndTime = dateRange.value[1].unix();
+    query.BeginTime = dateRange.value[0].startOf('day').unix();
+    query.EndTime = dateRange.value[1].endOf('day').unix();
   } else {
     query.BeginTime = undefined;
     query.EndTime = undefined;
@@ -528,7 +528,7 @@ onMounted(async () => {
           ]"
           placeholder="状态"
         />
-        <DatePicker.RangePicker v-model:value="dateRange" show-time />
+        <DatePicker.RangePicker v-model:value="dateRange" />
         <Select
           v-model:value="query.Sort"
           :options="[

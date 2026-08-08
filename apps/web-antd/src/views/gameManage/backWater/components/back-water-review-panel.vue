@@ -612,11 +612,10 @@ onMounted(async () => {
           placeholder="最大申请金额"
           class="!w-full"
         />
-        <DatePicker.RangePicker
-          v-model:value="dateRange"
-          show-time
-          :placeholder="['返水生成开始', '返水生成结束']"
-        />
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">返水生成时间</span>
+          <DatePicker.RangePicker v-model:value="dateRange" />
+        </div>
       </div>
       <Space>
         <Button type="primary" @click="search">查询</Button>

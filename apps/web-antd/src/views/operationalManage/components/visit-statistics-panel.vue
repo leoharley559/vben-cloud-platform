@@ -136,8 +136,8 @@ async function loadData() {
       Group: props.group,
       Key: props.titleId,
       SubGroup: filterSubGroup.value,
-      VisitBeginTime: begin ? begin.unix() : fallback.BeginTime,
-      VisitEndTime: end ? end.unix() : fallback.EndTime,
+      VisitBeginTime: begin ? begin.startOf('day').unix() : fallback.BeginTime,
+      VisitEndTime: end ? end.endOf('day').unix() : fallback.EndTime,
     });
     deviceList.value = (result.DeviceList || []) as StatRow[];
     userTypeList.value = (result.UserTypeList || []) as StatRow[];
@@ -189,8 +189,7 @@ onMounted(() => {
         <span class="text-xs text-gray-500">统计时间</span>
         <DatePicker.RangePicker
           v-model:value="filterVisitRange"
-          show-time
-          format="YYYY-MM-DD HH:mm:ss"
+          format="YYYY-MM-DD"
         />
       </div>
       <Button type="primary" :loading="loading" @click="handleSearch">

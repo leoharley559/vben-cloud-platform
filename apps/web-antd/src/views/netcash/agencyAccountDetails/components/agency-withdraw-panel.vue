@@ -191,7 +191,7 @@ onMounted(load);
         </Input>
         <Select v-model:value="status" allow-clear mode="multiple" :options="statusOptions" placeholder="全部状态"
           style="min-width: 180px" />
-        <DatePicker.RangePicker v-model:value="dateRange" show-time />
+        <DatePicker.RangePicker v-model:value="dateRange" />
         <Button type="primary" @click="load">查询</Button>
         <Button @click="reset">重置</Button>
         <Button :loading="exporting" @click="exportAll">导出全部</Button>

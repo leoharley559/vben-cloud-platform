@@ -423,8 +423,8 @@ async function loadRows() {
       params.Status = filters.Status;
     }
     if (isCarousel.value) {
-      params.BeginTime = filters.Time[0]?.unix() ?? '';
-      params.EndTime = filters.Time[1]?.unix() ?? '';
+      params.BeginTime = filters.Time[0]?.startOf('day').unix() ?? '';
+      params.EndTime = filters.Time[1]?.endOf('day').unix() ?? '';
     }
     rows.value = normalizeRows(
       await fetchAdvertisementListApi(params),
@@ -1012,7 +1012,6 @@ onMounted(async () => {
         <DatePicker.RangePicker
           v-if="isCarousel"
           v-model:value="filters.Time as [Dayjs, Dayjs]"
-          show-time
         />
         <Space>
           <Button type="primary" @click="loadRows">查询</Button>

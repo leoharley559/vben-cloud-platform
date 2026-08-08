@@ -360,7 +360,7 @@ onMounted(async () => {
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-gray-500">获得时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" show-time />
+        <DatePicker.RangePicker v-model:value="filterDateRange" />
       </div>
       <Space wrap>
         <Button type="primary" @click="handleSearch">查询</Button>

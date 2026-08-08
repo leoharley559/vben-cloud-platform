@@ -101,8 +101,9 @@ export function buildUnixRangeQuery(
 ) {
   const query: Record<string, unknown> = {};
   if (range?.[0] && range?.[1]) {
-    query[beginKey] = range[0].unix();
-    query[endKey] = range[1].unix();
+    // 列表筛选统一按自然日边界，与无 show-time 的日期范围选择器一致
+    query[beginKey] = range[0].startOf('day').unix();
+    query[endKey] = range[1].endOf('day').unix();
   }
   return query;
 }

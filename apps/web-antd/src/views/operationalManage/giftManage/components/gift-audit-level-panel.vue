@@ -170,10 +170,10 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
   const [applyBegin, applyEnd] = filterApplyDateRange.value || [];
   const [approveBegin, approveEnd] = filterApproveDateRange.value || [];
   return {
-    ApplyBeginTime: applyBegin ? applyBegin.unix() : '',
+    ApplyBeginTime: applyBegin ? applyBegin.startOf('day').unix() : '',
     ApplyEndTime: applyEnd ? applyEnd.endOf('day').unix() : '',
     ApplyType: '4',
-    ApproveBeginTime: approveBegin ? approveBegin.unix() : '',
+    ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
     ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
     Contact: filterContact.value.trim(),
     GiftName: filterGiftName.value.trim(),
@@ -585,12 +585,10 @@ onMounted(() => {
       <DatePicker.RangePicker
         v-model:value="filterApplyDateRange"
         :placeholder="['申请开始', '申请结束']"
-        show-time
       />
       <DatePicker.RangePicker
         v-model:value="filterApproveDateRange"
         :placeholder="['审核开始', '审核结束']"
-        show-time
       />
       <Input
         v-model:value="filterContact"

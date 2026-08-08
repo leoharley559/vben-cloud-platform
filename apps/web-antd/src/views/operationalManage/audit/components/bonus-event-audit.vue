@@ -555,14 +555,12 @@ onMounted(() => {
         <span class="whitespace-nowrap text-sm text-gray-500">申请时间</span>
         <DatePicker.RangePicker
           v-model:value="filterApplyDateRange"
-          show-time
         />
       </div>
       <div class="flex items-center gap-1">
         <span class="whitespace-nowrap text-sm text-gray-500">审核时间</span>
         <DatePicker.RangePicker
           v-model:value="filterApproveDateRange"
-          show-time
         />
       </div>
       <Button :loading="loading" type="primary" @click="gridApi.reload()">

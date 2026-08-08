@@ -222,12 +222,10 @@ function handleOffshelf(row: OngoingActivityRow) {
         />
         <DatePicker.RangePicker
           v-model:value="showTimeRange"
-          show-time
           :placeholder="['预热时间', '下架时间']"
         />
         <DatePicker.RangePicker
           v-model:value="activityTimeRange"
-          show-time
           :placeholder="['开始时间', '结束时间']"
         />
         <Button type="primary" @click="handleSearch">查询</Button>

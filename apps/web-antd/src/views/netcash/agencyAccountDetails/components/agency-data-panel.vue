@@ -37,6 +37,19 @@ const venueByGameId = new Map(
   venueConfig.venues.map((item) => [Number(item.GameId), item]),
 );
 
+const venueByCode = new Map(
+  venueConfig.venues.flatMap((item) => {
+    const entries: Array<[string, (typeof venueConfig.venues)[number]]> = [];
+    if (item.VenueCode) {
+      entries.push([String(item.VenueCode).toLowerCase(), item]);
+    }
+    if (item.VenueName) {
+      entries.push([String(item.VenueName).toLowerCase(), item]);
+    }
+    return entries;
+  }),
+);
+
 const loading = ref(false);
 const personal = ref<Row[]>([]);
 const members = ref<Row[]>([]);
@@ -94,17 +107,80 @@ function matchFanDianLine(
   gameId: number,
   typeCode: string,
 ) {
+  const normalizedType = String(typeCode || '').trim().toLowerCase();
   return (
     lines.find((line) => {
       const id = Number(line.id);
-      const type = String(line.type || '').trim();
+      const type = String(line.type || '').trim().toLowerCase();
       return (
-        (!Number.isNaN(id) && id === gameId) ||
-        (typeCode && type === typeCode) ||
+        (!Number.isNaN(id) && id > 0 && id === gameId) ||
+        (normalizedType && type === normalizedType) ||
         (type && type === String(gameId))
       );
     }) || null
   );
+}
+
+/**
+ * 解析场馆元信息：
+ * GameTypeStats 可能给数字 GameId，也可能给 VenueCode（如 by_qp / db_qp）。
+ * 返水配置按 fanDianCategories.type（棋牌=qp）匹配，需把 VenueCode 归到对应类型。
+ */
+function resolveVenueMeta(rawGameId: number | string, rawTypeCode: string) {
+  const numericId = Number(rawGameId);
+  const codeHint = String(rawTypeCode || '').trim();
+  const codeFromId =
+    typeof rawGameId === 'string' && Number.isNaN(Number(rawGameId))
+      ? rawGameId.trim()
+      : '';
+
+  let venue =
+    Number.isFinite(numericId) && numericId > 0
+      ? venueByGameId.get(numericId)
+      : undefined;
+
+  if (!venue) {
+    const code = (codeHint || codeFromId).toLowerCase();
+    if (code) {
+      venue = venueByCode.get(code);
+    }
+  }
+
+  let gameId = 0;
+  if (venue) {
+    gameId = Number(venue.GameId);
+  } else if (Number.isFinite(numericId) && numericId > 0) {
+    gameId = numericId;
+  }
+
+  const category =
+    venueConfig.fanDianCategories.find((cat) => {
+      if (gameId > 0 && cat.gameIdList.map(Number).includes(gameId)) {
+        return true;
+      }
+      const type = String(cat.type || '').toLowerCase();
+      const name = String(cat.name || '').toLowerCase();
+      const hint = (codeHint || codeFromId).toLowerCase();
+      return (
+        (hint && (type === hint || name === hint)) ||
+        // by_qp / db_qp 等 VenueCode 后缀归到类型（如 *_qp → qp）
+        (hint && hint.endsWith(`_${type}`)) ||
+        (hint && hint === type)
+      );
+    }) || undefined;
+
+  const typeCode = String(category?.type || codeHint || codeFromId || '').trim();
+  const venueLabel =
+    venue?.Description || category?.name || (gameId > 0 ? String(gameId) : '') ||
+    codeHint ||
+    codeFromId ||
+    '-';
+
+  return {
+    gameId,
+    typeCode,
+    venueLabel,
+  };
 }
 
 /** 兼容数组 / 对象两种 GameTypeStats */
@@ -127,12 +203,20 @@ function normalizeGameTypeStats(raw: unknown) {
 
   return list
     .map((item) => {
-      const gameId = Number(
-        item.GameId ?? item.Id ?? item.gameId ?? item.ApiId ?? 0,
-      );
-      const typeCode = String(
-        item.Type ?? item.GameType ?? item.VenueCode ?? '',
+      const rawGameId = item.GameId ?? item.Id ?? item.gameId ?? item.ApiId ?? '';
+      const rawTypeCode = String(
+        item.Type ??
+          item.GameType ??
+          item.VenueCode ??
+          item.ApiType ??
+          '',
       ).trim();
+      // 对象键为 by_qp 这类 VenueCode 时，补进 typeCode
+      const typeCode =
+        rawTypeCode ||
+        (typeof rawGameId === 'string' && Number.isNaN(Number(rawGameId))
+          ? String(rawGameId).trim()
+          : '');
       const bet = Number(
         item.SumBetGameMoney ??
           item.BetGold ??
@@ -152,29 +236,22 @@ function normalizeGameTypeStats(raw: unknown) {
       const winGold = Number(
         item.SumWinGold ?? item.WinGold ?? item.SumWinMoney ?? 0,
       );
-      return { bet, gameId, typeCode, validBet, winGold };
+      const meta = resolveVenueMeta(rawGameId as number | string, typeCode);
+      return {
+        bet,
+        gameId: meta.gameId,
+        typeCode: meta.typeCode,
+        venueLabel: meta.venueLabel,
+        validBet,
+        winGold,
+      };
     })
     .filter((item) => item.gameId > 0 || item.typeCode);
 }
 
-function resolveVenueLabel(gameId: number, typeCode: string) {
-  if (gameId > 0) {
-    const venue = venueByGameId.get(gameId);
-    if (venue?.Description) return venue.Description;
-  }
-  if (typeCode) {
-    const category = venueConfig.fanDianCategories.find(
-      (item) => item.type === typeCode || item.name === typeCode,
-    );
-    if (category) {
-      const names = category.gameIdList
-        .map((id) => venueByGameId.get(Number(id))?.Description)
-        .filter(Boolean);
-      if (names.length > 0) return names.join('、');
-      return category.name;
-    }
-  }
-  return gameId > 0 ? String(gameId) : typeCode || '-';
+function resolveVenueLabel(gameId: number, typeCode: string, fallback = '') {
+  if (fallback) return fallback;
+  return resolveVenueMeta(gameId, typeCode).venueLabel;
 }
 
 const venueDetailRows = computed(() => {
@@ -193,15 +270,8 @@ const venueDetailRows = computed(() => {
       (item) => item.bet !== 0 || item.validBet !== 0 || item.winGold !== 0,
     )
     .map((item, index) => {
-      let typeCode = item.typeCode;
-      if (!typeCode && item.gameId > 0) {
-        const category = venueConfig.fanDianCategories.find((cat) =>
-          cat.gameIdList.map(Number).includes(item.gameId),
-        );
-        typeCode = category?.type || '';
-      }
       const line = grade
-        ? matchFanDianLine(grade.lines, item.gameId, typeCode)
+        ? matchFanDianLine(grade.lines, item.gameId, item.typeCode)
         : null;
       const rebateRatio = Number(line?.rebate);
       const rebateAmount =
@@ -213,14 +283,14 @@ const venueDetailRows = computed(() => {
 
       return {
         bet: item.bet,
-        key: `${item.gameId || typeCode}-${index}`,
+        key: `${item.gameId || item.typeCode}-${index}`,
         levelRate: grade
           ? `${grade.label}/${formatAgentFanDianRebate(line?.rebate)}`
           : '-',
         platformPnL,
         rebateAmount,
         validBet: item.validBet,
-        venue: resolveVenueLabel(item.gameId, typeCode),
+        venue: resolveVenueLabel(item.gameId, item.typeCode, item.venueLabel),
       };
     });
 });

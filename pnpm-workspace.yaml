@@ -183,3 +183,5 @@ overrides:
   clsx: 'catalog:'
   pinia: 'catalog:'
   vue: 'catalog:'
+patchedDependencies:
+  ant-design-vue@4.2.6: patches/ant-design-vue@4.2.6.patch

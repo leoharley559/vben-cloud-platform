@@ -3,8 +3,11 @@ import type { UploadChangeParam } from 'ant-design-vue';
 
 import { computed } from 'vue';
 
+import { useAccessStore } from '@vben/stores';
 import { Button, Upload, message } from 'ant-design-vue';
 
+import { getAuthToken, getCloudToken } from '#/utils/auth-token';
+import { ensureAuthToken } from '#/utils/ensure-auth-token';
 import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
 
 defineOptions({ name: 'VoucherImageField' });
@@ -27,8 +30,23 @@ const props = withDefaults(
 );
 
 const modelValue = defineModel<string>({ default: '' });
+const accessStore = useAccessStore();
 
 const previewUrl = computed(() => getServiceImageUrl(modelValue.value));
+
+/** 对齐旧站 el-upload：字段名 upfile，并带登录态请求头 */
+const uploadHeaders = computed(() => {
+  const headers: Record<string, string> = {};
+  const token = getCloudToken() || accessStore.accessToken;
+  if (token) {
+    headers.Token = token;
+  }
+  const authToken = ensureAuthToken() || getAuthToken();
+  if (authToken) {
+    headers.AuthToken = authToken;
+  }
+  return headers;
+});
 
 function beforeUpload(file: File) {
   if (props.maxSizeKb && file.size > props.maxSizeKb * 1024) {
@@ -38,19 +56,59 @@ function beforeUpload(file: File) {
   return true;
 }
 
+function resolveUploadUrl(response: unknown): string {
+  const data = response as
+    | {
+        Code?: number | string;
+        Data?: string | { url?: string };
+        Msg?: string;
+        message?: string;
+        respond?: string | { url?: string };
+        status?: number | string;
+      }
+    | undefined;
+  const ok = String(data?.Code ?? data?.status ?? '') === '200';
+  if (!ok) {
+    return '';
+  }
+  if (typeof data?.Data === 'string' && data.Data) {
+    return data.Data;
+  }
+  if (data?.Data && typeof data.Data === 'object' && data.Data.url) {
+    return data.Data.url;
+  }
+  if (typeof data?.respond === 'string' && data.respond) {
+    return data.respond;
+  }
+  if (data?.respond && typeof data.respond === 'object' && data.respond.url) {
+    return data.respond.url;
+  }
+  return '';
+}
+
 function handleChange(info: UploadChangeParam) {
   if (info.file.status === 'uploading') {
     return;
   }
   if (info.file.status === 'done') {
     const response = info.file.response as
-      | { Code?: number | string; Data?: { url?: string }; Msg?: string }
+      | { Msg?: string; message?: string }
       | undefined;
-    if (String(response?.Code ?? '') === '200' && response?.Data?.url) {
-      modelValue.value = response.Data.url;
+    const url = resolveUploadUrl(info.file.response);
+    if (url) {
+      modelValue.value = url;
       return;
     }
-    message.error(response?.Msg || '图片上传失败');
+    const status = String(
+      (info.file.response as { status?: number } | undefined)?.status ?? '',
+    );
+    const errMsg =
+      response?.Msg ||
+      response?.message ||
+      (status === '10010'
+        ? '上传失败：权限不足（请重启本地服务后重试，确认请求走 /api/resource/...）'
+        : '图片上传失败');
+    message.error(errMsg);
   } else if (info.file.status === 'error') {
     message.error('图片上传失败');
   }
@@ -80,8 +138,10 @@ function handleRemove() {
         :action="getUploadMd5ImageUrl()"
         :before-upload="beforeUpload"
         :disabled="disabled"
+        :headers="uploadHeaders"
         :show-upload-list="false"
         accept="image/*"
+        name="upfile"
         @change="handleChange"
       >
         <Button :disabled="disabled" size="small">
@@ -99,6 +159,9 @@ function handleRemove() {
       </Button>
       <div v-if="dimensionHint" class="text-xs text-gray-400">
         {{ dimensionHint }}
+      </div>
+      <div v-else class="text-xs text-gray-400">
+        不超过 {{ maxSizeKb }}K
       </div>
     </div>
   </div>

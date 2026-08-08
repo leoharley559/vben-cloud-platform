@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 export interface SummaryCardItem {
+  /** 卡片整体样式，如未处理订单高亮 */
+  cardClass?: string;
   label: string;
+  /** 可点击筛选时传入 */
+  onClick?: () => void;
   /** 需要着色时传入，如输赢正负 */
   valueClass?: string;
   /** 展示文案，金额请先格式化 */
@@ -15,9 +19,18 @@ defineProps<{ items: SummaryCardItem[] }>();
 <template>
   <div
     v-if="items.length > 0"
-    class="mb-2 grid grid-cols-2 gap-2 text-sm md:grid-cols-5"
+    class="mb-2 grid grid-cols-2 gap-2 text-sm md:grid-cols-3 lg:grid-cols-6"
   >
-    <div v-for="item in items" :key="item.label" class="rounded border p-2">
+    <div
+      v-for="item in items"
+      :key="item.label"
+      class="rounded border p-2"
+      :class="[
+        item.cardClass,
+        item.onClick ? 'cursor-pointer hover:border-blue-400' : '',
+      ]"
+      @click="item.onClick?.()"
+    >
       {{ item.label }}：
       <span :class="item.valueClass">{{ item.value }}</span>
     </div>

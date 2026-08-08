@@ -81,8 +81,8 @@ const payPeriod = computed(() => {
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin?.unix() || '',
-    EndTime: end?.unix() || '',
+    BeginTime: begin?.startOf('day').unix() || '',
+    EndTime: end?.endOf('day').unix() || '',
     // allow-clear 后可能为 undefined，需兜底避免 join 崩溃
     MoneyType: (filterMoneyType.value || []).join(','),
     Page: page.currentPage,
@@ -290,8 +290,7 @@ onMounted(async () => {
         />
         <DatePicker.RangePicker
           v-model:value="filterDateRange"
-          format="YYYY-MM-DD HH:mm:ss"
-          show-time
+          format="YYYY-MM-DD"
         />
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button @click="handleReset">重置</Button>

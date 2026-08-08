@@ -174,8 +174,8 @@ function build(
       IsExp: exp,
       Page: base.Page,
       PageSize: base.PageSize,
-      TransferEndTime: end?.unix() || '',
-      TransferStartTime: begin?.unix() || '',
+      TransferEndTime: end?.endOf('day').unix() || '',
+      TransferStartTime: begin?.startOf('day').unix() || '',
       TransferType: base.TransferType,
       WalletType: base.WalletType,
     };
@@ -183,22 +183,22 @@ function build(
   if (kind.value === 'bonus') {
     return {
       ...base,
-      ApplyBeginTime: begin?.unix() || '',
-      ApplyEndTime: end?.unix() || '',
+      ApplyBeginTime: begin?.startOf('day').unix() || '',
+      ApplyEndTime: end?.endOf('day').unix() || '',
       BonusType: Array.isArray(base.BonusType)
         ? base.BonusType.join(',')
         : base.BonusType,
-      FinishBeginTime: finishRange.value?.[0]?.unix() || '',
-      FinishEndTime: finishRange.value?.[1]?.unix() || '',
+      FinishBeginTime: finishRange.value?.[0]?.startOf('day').unix() || '',
+      FinishEndTime: finishRange.value?.[1]?.endOf('day').unix() || '',
     };
   }
   return {
     AgentAccount: base.AgentAccount,
-    BeginTime: begin?.unix() || '',
+    BeginTime: begin?.startOf('day').unix() || '',
     DataSearchType: props.config.showDataType
       ? base.DataSearchType
       : undefined,
-    EndTime: end?.unix() || '',
+    EndTime: end?.endOf('day').unix() || '',
     IsExp: exp,
     LoginAccount: base.LoginAccount,
     PackageId: base.PackageId,
@@ -423,10 +423,10 @@ onMounted(() => {
       </template>
 
       <span>{{ kind === 'bonus' ? '申请时间' : kind === 'transaction' ? '账变时间' : '日期' }}</span>
-      <DatePicker.RangePicker v-model:value="primaryRange" :disabled-date="disableStandardDate" show-time />
+      <DatePicker.RangePicker v-model:value="primaryRange" :disabled-date="disableStandardDate" />
       <template v-if="kind === 'bonus'">
         <span>审核时间</span>
-        <DatePicker.RangePicker v-model:value="finishRange" show-time />
+        <DatePicker.RangePicker v-model:value="finishRange" />
       </template>
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>

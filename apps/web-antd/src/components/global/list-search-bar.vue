@@ -30,13 +30,13 @@ const props = withDefaults(
     showAdd?: boolean;
     /** 对齐旧站 SearchTypeTwo show-date-time，默认 true */
     showDateTime?: boolean;
-    /** datetimerange | daterange */
+    /** datetimerange | daterange，列表筛选默认仅日期 */
     dateTimeType?: 'daterange' | 'datetimerange';
   }>(),
   {
     addText: '新增',
     dateLabel: '时间',
-    dateTimeType: 'datetimerange',
+    dateTimeType: 'daterange',
     keywordPlaceholder: '请输入',
     loading: false,
     options: () => [

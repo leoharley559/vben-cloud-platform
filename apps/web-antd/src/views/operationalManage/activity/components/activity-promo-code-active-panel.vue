@@ -105,7 +105,6 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       </Input>
       <DatePicker.RangePicker
         v-model:value="activeTimeRange"
-        show-time
         :placeholder="['生效开始', '生效结束']"
       />
       <Button type="primary" @click="gridApi.reload()">查询</Button>

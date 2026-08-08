@@ -162,10 +162,10 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
   const [approveBegin, approveEnd] = filterApproveDateRange.value || [];
   return {
     ActivityType: filterActivityType.value,
-    ApplyBeginTime: applyBegin ? applyBegin.unix() : '',
+    ApplyBeginTime: applyBegin ? applyBegin.startOf('day').unix() : '',
     ApplyEndTime: applyEnd ? applyEnd.endOf('day').unix() : '',
     ApplyType: '5,6,7,8',
-    ApproveBeginTime: approveBegin ? approveBegin.unix() : '',
+    ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
     ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
     AuditDeliverStatus: filterAuditStatus.value,
     BonusCategory:
@@ -567,12 +567,10 @@ onMounted(() => {
       <DatePicker.RangePicker
         v-model:value="filterApplyDateRange"
         :placeholder="['申请开始', '申请结束']"
-        show-time
       />
       <DatePicker.RangePicker
         v-model:value="filterApproveDateRange"
         :placeholder="['审核开始', '审核结束']"
-        show-time
       />
       <Input
         v-model:value="filterContact"

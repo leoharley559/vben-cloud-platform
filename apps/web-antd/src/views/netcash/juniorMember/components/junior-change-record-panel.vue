@@ -46,8 +46,8 @@ const recordColumns: Column[] = [
 
 function recordQuery(extra: Record<string, unknown> = {}) {
   return {
-    BeginTime: recordFilters.Time?.[0]?.unix() ?? '',
-    EndTime: recordFilters.Time?.[1]?.unix() ?? '',
+    BeginTime: recordFilters.Time?.[0]?.startOf('day').unix() ?? '',
+    EndTime: recordFilters.Time?.[1]?.endOf('day').unix() ?? '',
     LoginAccount: recordFilters.LoginAccount.trim().toLowerCase(),
     PackageId: recordFilters.PackageId ?? '',
     Page: recordPage.value,
@@ -125,7 +125,6 @@ onMounted(() => {
     />
     <DatePicker.RangePicker
       v-model:value="recordFilters.Time"
-      show-time
       :placeholder="['开始时间', '结束时间']"
     />
     <Button type="primary" @click="recordPage = 1; loadRecords()">查询</Button>

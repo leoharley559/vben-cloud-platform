@@ -135,9 +135,9 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   const query: Record<string, unknown> = {
     // 对齐旧站 SearchTypeTwo：保留 RangePicker 时分秒
-    BeginTime: begin ? begin.unix() : fallback.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : fallback.BeginTime,
     Creator: '',
-    EndTime: end ? end.unix() : fallback.EndTime,
+    EndTime: end ? end.endOf('day').unix() : fallback.EndTime,
     Keyword: '',
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -340,8 +340,7 @@ function handleHelp(row: HelpOrderRow) {
         <span class="text-xs text-gray-500">创建日期</span>
         <DatePicker.RangePicker
           v-model:value="filterDateRange"
-          show-time
-          format="YYYY-MM-DD HH:mm:ss"
+          format="YYYY-MM-DD"
         />
       </div>
       <Button type="primary" @click="handleSearch">查询</Button>

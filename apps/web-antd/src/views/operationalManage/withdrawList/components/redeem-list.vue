@@ -30,6 +30,7 @@ import {
 } from '#/api/operationManage/withdraw';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -99,10 +100,60 @@ const filterShowName = ref('');
 const filterChannelIds = ref<Array<number | string>>([]);
 const filterPackageId = ref<number | string>('');
 const filterWithdrawStatus = ref<number | string>('');
+const filterRiskStatus = ref<number | string>('');
 const filterSelectTimeType = ref(1);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
+]);
+
+/** 列表上方统计，对齐旧站 withdrawList/list Total */
+const totalData = ref({
+  Amount: 0,
+  HangupCount: 0,
+  PendingCount: 0,
+  RefundAmount: 0,
+  ReserveCount: 0,
+  WithdrawAmount: 0,
+});
+
+const summaryItems = computed(() => [
+  {
+    label: '总出款',
+    value: formatAmountFromCent(totalData.value.Amount),
+  },
+  {
+    label: '实际出款',
+    value: formatAmountFromCent(totalData.value.WithdrawAmount),
+  },
+  {
+    label: '退回金额',
+    value: formatAmountFromCent(totalData.value.RefundAmount),
+  },
+  {
+    cardClass:
+      totalData.value.PendingCount > 0
+        ? 'border-red-400 bg-red-50 text-red-600'
+        : '',
+    label: '未处理订单数量',
+    onClick: filterUntreatedOrders,
+    value: totalData.value.PendingCount,
+    valueClass: totalData.value.PendingCount > 0 ? 'font-semibold' : '',
+  },
+  {
+    cardClass:
+      totalData.value.HangupCount > 0
+        ? 'border-red-400 bg-red-50 text-red-600'
+        : '',
+    label: '挂起订单数量',
+    onClick: filterHangupOrders,
+    value: totalData.value.HangupCount,
+    valueClass: totalData.value.HangupCount > 0 ? 'font-semibold' : '',
+  },
+  {
+    label: '30分钟结束预约单量',
+    value: totalData.value.ReserveCount,
+  },
 ]);
 
 function formatDateTime(value?: number | string) {
@@ -130,6 +181,7 @@ function getQueryParams() {
     PlayerId: filterPlayerId.value,
     RealName: filterRealName.value,
     RiskAuditorName: filterRiskAuditorName.value,
+    RiskStatus: filterRiskStatus.value,
     SelectTimeType: filterSelectTimeType.value,
     ShowName: filterShowName.value,
     WithdrawStatus: filterWithdrawStatus.value,
@@ -281,6 +333,16 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
           PageSize: page.pageSize,
           Sort: sortParam,
         });
+
+        const total = (result?.Total || {}) as Record<string, unknown>;
+        totalData.value = {
+          Amount: Number(total.Amount || 0),
+          HangupCount: Number(total.HangupCount || 0),
+          PendingCount: Number(total.PendingCount || 0),
+          RefundAmount: Number(total.RefundAmount || 0),
+          ReserveCount: Number(total.ReserveCount || 0),
+          WithdrawAmount: Number(total.WithdrawAmount || 0),
+        };
 
         return {
           items: result?.Items || [],
@@ -474,6 +536,20 @@ function handleSearch() {
   gridApi.reload();
 }
 
+/** 对齐旧站 untreated：筛选未处理订单 */
+function filterUntreatedOrders() {
+  filterRiskStatus.value = '';
+  filterWithdrawStatus.value = '1,5,6';
+  gridApi.reload();
+}
+
+/** 对齐旧站 fnHangUp：筛选挂起订单 */
+function filterHangupOrders() {
+  filterWithdrawStatus.value = '';
+  filterRiskStatus.value = 3;
+  gridApi.reload();
+}
+
 function handleReset() {
   filterLoginAccount.value = '';
   filterPlayerId.value = '';
@@ -486,6 +562,7 @@ function handleReset() {
   filterChannelIds.value = [];
   filterPackageId.value = '';
   filterWithdrawStatus.value = '';
+  filterRiskStatus.value = '';
   filterSelectTimeType.value = 1;
   filterDateRange.value = [
     dayjs.unix(defaultRange.BeginTime),
@@ -635,6 +712,8 @@ onMounted(() => {
         <Button @click="handleReset">重置</Button>
       </Space>
     </div>
+
+    <SummaryCards :items="summaryItems" />
 
     <div
       v-if="canBatchManual || canBatchReject"

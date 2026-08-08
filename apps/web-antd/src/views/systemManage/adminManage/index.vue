@@ -351,7 +351,6 @@ onMounted(() => {
           :show-add="canAdd"
           add-text="新建账号"
           date-label="创建时间"
-          date-time-type="datetimerange"
           keyword-placeholder="请输入"
           show-date-time
           @add="handleCreate"

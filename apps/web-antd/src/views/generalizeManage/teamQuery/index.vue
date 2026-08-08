@@ -97,8 +97,8 @@ function getQueryParams(page?: { currentPage?: number; pageSize?: number }) {
   return {
     AdminId: filterAdminId.value ?? '',
     AdminUsername: filterAdminUsername.value.trim(),
-    BeginTime: begin ? begin.unix() : defaultBegin.unix(),
-    EndTime: end ? end.unix() : defaultEnd.unix(),
+    BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
+    EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
     Page: page?.currentPage || 1,
     PageSize: page?.pageSize || 20,
     Sort: '',
@@ -313,8 +313,7 @@ onMounted(() => {
           <DatePicker.RangePicker
             v-model:value="filterDateRange"
             :disabled-date="disabledDate"
-            format="YYYY-MM-DD HH:mm:ss"
-            show-time
+            format="YYYY-MM-DD"
             @calendar-change="onCalendarChange"
             @open-change="(open) => !open && (rangeSelecting = undefined)"
           />

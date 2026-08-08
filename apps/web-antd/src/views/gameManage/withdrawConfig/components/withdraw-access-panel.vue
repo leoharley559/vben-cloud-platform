@@ -180,13 +180,13 @@ function detailQuery(withPage = true) {
     Group: 'Withdraw',
     IsDownload: '',
     Key: detailKey.value,
-    LeaveBeginTime: leaveRange.value?.[0]?.unix() || '',
-    LeaveEndTime: leaveRange.value?.[1]?.unix() || '',
+    LeaveBeginTime: leaveRange.value?.[0]?.startOf('day').unix() || '',
+    LeaveEndTime: leaveRange.value?.[1]?.endOf('day').unix() || '',
     PlayerId: playerId.value.trim() || '-1',
     Sort: detailSort.value,
     SubGroup: 'Enter',
-    VisitBeginTime: visitRange.value[0].unix(),
-    VisitEndTime: visitRange.value[1].unix(),
+    VisitBeginTime: visitRange.value[0].startOf('day').unix(),
+    VisitEndTime: visitRange.value[1].endOf('day').unix(),
   };
   if (withPage) {
     query.Page = detailPage.value;
@@ -360,8 +360,8 @@ async function loadStatistics() {
       Group: 'Withdraw',
       Key: statisticsKey.value,
       SubGroup: 'Enter',
-      VisitBeginTime: statisticsRange.value[0].unix(),
-      VisitEndTime: statisticsRange.value[1].unix(),
+      VisitBeginTime: statisticsRange.value[0].startOf('day').unix(),
+      VisitEndTime: statisticsRange.value[1].endOf('day').unix(),
     });
     deviceList.value = result.DeviceList as StatisticsRow[];
     userTypeList.value = result.UserTypeList as StatisticsRow[];
@@ -420,8 +420,7 @@ onMounted(() => {
               <DatePicker.RangePicker
                 v-model:value="visitRange"
                 :allow-clear="false"
-                show-time
-                format="YYYY-MM-DD HH:mm:ss"
+                format="YYYY-MM-DD"
               />
             </div>
             <div class="flex flex-col gap-1">
@@ -429,8 +428,7 @@ onMounted(() => {
               <DatePicker.RangePicker
                 v-model:value="leaveRange"
                 allow-clear
-                show-time
-                format="YYYY-MM-DD HH:mm:ss"
+                format="YYYY-MM-DD"
               />
             </div>
             <div class="flex flex-col gap-1">
@@ -536,8 +534,7 @@ onMounted(() => {
               <DatePicker.RangePicker
                 v-model:value="statisticsRange"
                 :allow-clear="false"
-                show-time
-                format="YYYY-MM-DD HH:mm:ss"
+                format="YYYY-MM-DD"
               />
             </div>
             <Button
