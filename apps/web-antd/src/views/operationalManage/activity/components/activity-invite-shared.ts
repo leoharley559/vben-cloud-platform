@@ -15,7 +15,7 @@ export const INVITE_RELATION_STATUS_OPTIONS = Object.entries(
   INVITE_RELATION_STATUS_MAP,
 ).map(([value, label]) => ({ label, value: Number(value) }));
 
-/** 发奖记录 RewardStatus */
+/** 发放记录 RewardStatus */
 export const INVITE_REWARD_STATUS_MAP: Record<number, string> = {
   1: '待发放',
   2: '已发放',
@@ -50,6 +50,16 @@ export const INVITE_RISK_DIMENSION_OPTIONS = [
   { label: '邮箱', value: 'email' },
   { label: '银行卡', value: 'bankcard' },
 ];
+
+/** RiskReason 命中原因（对接文档 2.4） */
+export const INVITE_RISK_REASON_MAP: Record<string, string> = {
+  same_bankcard: '同一银行卡号',
+  same_device: '同一设备',
+  same_email: '同一邮箱',
+  same_ip: '同一IP',
+  same_name: '同一姓名',
+  same_phone: '同一手机号',
+};
 
 export const INVITE_RISK_ACTION_OPTIONS = [
   { label: '拒绝发奖', value: 1 },
@@ -94,6 +104,21 @@ export function formatInviteSource(value?: string) {
   if (!value) return '-';
   const found = INVITE_SOURCE_OPTIONS.find((item) => item.value === value);
   return found?.label || value;
+}
+
+/** 风控原因：支持单值、逗号分隔或多个命中原因 */
+export function formatInviteRiskReason(value?: string | string[] | null) {
+  if (value === undefined || value === null || value === '') return '-';
+  const list = Array.isArray(value)
+    ? value
+    : String(value)
+        .split(/[,，;；|]/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+  if (!list.length) return '-';
+  return list
+    .map((code) => INVITE_RISK_REASON_MAP[code] || code)
+    .join('、');
 }
 
 export function formatRiskDimensions(values?: string[] | string) {

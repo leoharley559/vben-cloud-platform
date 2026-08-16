@@ -29,23 +29,38 @@ function mapCloudUserToUserInfo(data: CloudUserData): UserInfo {
   cloudStore.setSessionData(data);
   setCloudToken(data.Token);
 
-  // 后端 Account/AdminName 可能是 number，Avatar 的 alt 必须是 string
+  // 与旧 Navbar 一致：优先展示 Admin.Username
+  const adminUsername = toDisplayName(
+    data.Admin && typeof data.Admin === 'object'
+      ? data.Admin.Username
+      : undefined,
+  );
   const account =
-    typeof data.Account === 'object'
-      ? toDisplayName(data.Account.AdminId ?? data.Account.Id)
+    data.Account !== null && typeof data.Account === 'object'
+      ? toDisplayName(
+          data.Account.Username ?? data.Account.AdminId ?? data.Account.Id,
+        )
       : toDisplayName(data.Account);
-  const displayName = toDisplayName(data.AdminName, account) || '管理员';
+  const displayName =
+    toDisplayName(data.AdminName, adminUsername || account) || '管理员';
+  const username = adminUsername || account || displayName;
+  const avatar = toDisplayName(
+    (data.Admin && typeof data.Admin === 'object'
+      ? data.Admin.Avatar
+      : undefined) ?? data.Avatar,
+  );
 
   return {
-    avatar: '',
+    // 空字符串由布局侧 || defaultAvatar 回退
+    avatar,
     desc: displayName,
     // 登录后进入数据总览
     homePath: '/dashboard/index',
     realName: displayName,
     roles: (data.Role || []).map((role) => String(role.Name || role.Id || '')),
     token: data.Token,
-    userId: account,
-    username: account,
+    userId: account || username,
+    username,
   };
 }
 

@@ -49,15 +49,20 @@ export interface CloudUserData {
     | {
         [key: string]: unknown;
         AdminId?: number | string;
+        CloudCoin?: number | string;
         Id?: number | string;
+        Username?: string;
       };
   Admin?: {
     [key: string]: unknown;
     AdminId?: number | string;
     AdminType?: number | string;
+    Avatar?: string;
     Id?: number | string;
     Languages?: string;
+    Username?: string;
   };
+  Avatar?: string;
   Token: string;
   Nav: CloudNavItem[];
   Role: CloudRole[];

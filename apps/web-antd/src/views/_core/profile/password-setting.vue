@@ -1,26 +1,34 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type { VbenFormSchema } from '#/adapter/form';
 
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import { ProfilePasswordSetting, z } from '@vben/common-ui';
 
 import { message } from 'ant-design-vue';
 
+import { updateAccountPasswordApi } from '#/api/core/account-login';
+import { useAuthStore } from '#/store';
+
+const authStore = useAuthStore();
+const submitting = ref(false);
+
 const formSchema = computed((): VbenFormSchema[] => {
   return [
     {
       fieldName: 'oldPassword',
-      label: '旧密码',
+      label: '原密码',
       component: 'VbenInputPassword',
+      rules: z.string().min(1, { message: '请输入原密码' }),
       componentProps: {
-        placeholder: '请输入旧密码',
+        placeholder: '请输入原密码',
       },
     },
     {
       fieldName: 'newPassword',
       label: '新密码',
       component: 'VbenInputPassword',
+      rules: z.string().min(1, { message: '请输入新密码' }),
       componentProps: {
         passwordStrength: true,
         placeholder: '请输入新密码',
@@ -50,13 +58,26 @@ const formSchema = computed((): VbenFormSchema[] => {
   ];
 });
 
-function handleSubmit() {
-  message.success('密码修改成功');
+async function handleSubmit(values: Record<string, any>) {
+  if (submitting.value) return;
+  submitting.value = true;
+  try {
+    await updateAccountPasswordApi({
+      ConfirmPassword: String(values.confirmPassword || ''),
+      NewPassword: String(values.newPassword || ''),
+      OldPassword: String(values.oldPassword || ''),
+    });
+    message.success('密码修改成功，请重新登录');
+    await authStore.logout(false);
+  } finally {
+    submitting.value = false;
+  }
 }
 </script>
+
 <template>
   <ProfilePasswordSetting
-    class="w-1/3"
+    class="w-1/2 max-w-xl"
     :form-schema="formSchema"
     @submit="handleSubmit"
   />

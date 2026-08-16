@@ -5,9 +5,7 @@ import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { AuthenticationLoginExpiredModal } from '@vben/common-ui';
-import { VBEN_DOC_URL, VBEN_GITHUB_URL } from '@vben/constants';
 import { useWatermark } from '@vben/hooks';
-import { BookOpenText, CircleHelp, SvgGithubIcon } from '@vben/icons';
 import {
   BasicLayout,
   LockScreen,
@@ -16,10 +14,9 @@ import {
 } from '@vben/layouts';
 import { preferences, usePreferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
-import { openWindow } from '@vben/utils';
 
 import { $t } from '#/locales';
-import { useAuthStore } from '#/store';
+import { useAuthStore, useCloudPlatformStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
 
 const notifications = ref<NotificationItem[]>([
@@ -79,13 +76,34 @@ const router = useRouter();
 const userStore = useUserStore();
 const authStore = useAuthStore();
 const accessStore = useAccessStore();
+const cloudStore = useCloudPlatformStore();
 const { destroyWatermark, updateWatermark } = useWatermark();
 const { isDark } = usePreferences();
 const showDot = computed(() =>
   notifications.value.some((item) => !item.isRead),
 );
 
+const cloudCoin = computed(() => {
+  const account = cloudStore.adminInfo?.Account;
+  if (account && typeof account === 'object') {
+    const value = account.CloudCoin;
+    return value === undefined || value === null || value === ''
+      ? '0'
+      : String(value);
+  }
+  return '0';
+});
+
+const firstRole = computed(
+  () => String(userStore.userInfo?.roles?.[0] || '').trim() || '暂无角色',
+);
+
 const menus = computed(() => [
+  {
+    handler: () => {},
+    icon: 'lucide:coins',
+    text: `云币: ${cloudCoin.value}`,
+  },
   {
     handler: () => {
       router.push({ name: 'Profile' });
@@ -93,37 +111,11 @@ const menus = computed(() => [
     icon: 'lucide:user',
     text: $t('page.auth.profile'),
   },
-  {
-    handler: () => {
-      openWindow(VBEN_DOC_URL, {
-        target: '_blank',
-      });
-    },
-    icon: BookOpenText,
-    text: $t('ui.widgets.document'),
-  },
-  {
-    handler: () => {
-      openWindow(VBEN_GITHUB_URL, {
-        target: '_blank',
-      });
-    },
-    icon: SvgGithubIcon,
-    text: 'GitHub',
-  },
-  {
-    handler: () => {
-      openWindow(`${VBEN_GITHUB_URL}/issues`, {
-        target: '_blank',
-      });
-    },
-    icon: CircleHelp,
-    text: $t('ui.widgets.qa'),
-  },
 ]);
 
 const avatar = computed(() => {
-  return userStore.userInfo?.avatar ?? preferences.app.defaultAvatar;
+  // 空字符串也要回退默认头像（?? 只处理 null/undefined）
+  return userStore.userInfo?.avatar || preferences.app.defaultAvatar;
 });
 
 async function handleLogout() {
@@ -229,8 +221,7 @@ watch(
               '管理员',
           )
         "
-        description="ann.vben@gmail.com"
-        tag-text="Pro"
+        :description="firstRole"
         @logout="handleLogout"
       />
     </template>

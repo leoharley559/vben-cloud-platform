@@ -21,10 +21,9 @@ import {
   fetchPlayerAuthRecordApi,
 } from '#/api/memberManage/player-authentication';
 import AccountSelect from '#/components/global/account-select.vue';
-import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';

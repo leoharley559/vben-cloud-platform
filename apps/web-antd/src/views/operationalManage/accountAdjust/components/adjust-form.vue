@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import {
   Button,
-  Card,
+  Descriptions,
   Form,
   Input,
   InputNumber,
@@ -25,12 +25,13 @@ import {
   queryPlayerByAccountApi,
   queryPlayerByExcelApi,
 } from '#/api/operationManage/player';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { createRequestHash } from '#/utils/crypto';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import { formatMemberType } from '#/utils/player-status';
 
 defineOptions({ name: 'AdjustFormPanel' });
 
@@ -61,15 +62,15 @@ const submitting = ref(false);
 const lookupLoading = ref(false);
 
 const loginAccount = ref('');
-const packageName = ref(
-  packageOptions.value.find((item) => item.PackageName)?.PackageName || '',
-);
+const packageName = ref('');
 const playerId = ref<number | string>('');
 const playerGold = ref<number | string>('');
 const playerStatus = ref<number | string>('');
+const playerDataFlag = ref<number | string>('');
+const playerRemark = ref('');
 
-const handleType = ref<number | string>('');
-const reason = ref<number | string>('');
+const handleType = ref<number | undefined>(undefined);
+const reason = ref<number | undefined>(undefined);
 const amount = ref<number | undefined>();
 const handleDesc = ref('');
 const waterType = ref(1);
@@ -98,13 +99,24 @@ const reasonOptions = [
   { label: '充值调整', value: 111 },
 ];
 
+/** 对齐老站：账户调整产品列表不含「全部产品」，默认选中第一个真实产品 */
 const packageSelectOptions = computed(() =>
   packageOptions.value
-    .filter((item) => item.PackageName)
+    .filter((item) => item.PackageId && item.PackageName)
     .map((item) => ({
-      label: item.PackageName,
-      value: item.PackageName,
+      label: String(item.PackageName),
+      value: String(item.PackageName),
     })),
+);
+
+watch(
+  packageSelectOptions,
+  (options) => {
+    if (!packageName.value && options[0]?.value) {
+      packageName.value = options[0].value;
+    }
+  },
+  { immediate: true },
 );
 
 const validBatchCount = computed(
@@ -115,6 +127,8 @@ function resetPlayerInfo() {
   playerId.value = '';
   playerGold.value = '';
   playerStatus.value = '';
+  playerDataFlag.value = '';
+  playerRemark.value = '';
 }
 
 function onHandleTypeChange() {
@@ -162,6 +176,8 @@ async function lookupPlayer() {
     const info = await fetchPlayerBasicInfoApi(first.PlayerId);
     playerGold.value = info?.Gold ?? '';
     playerStatus.value = info?.Status ?? '';
+    playerDataFlag.value = info?.DataFlag ?? '';
+    playerRemark.value = String(info?.Remark ?? '');
   } finally {
     lookupLoading.value = false;
   }
@@ -296,10 +312,6 @@ function validateSharedFields() {
     message.warning('请选择调整方式和调整类型');
     return false;
   }
-  if (!handleDesc.value.trim()) {
-    message.warning('请填写备注');
-    return false;
-  }
   if (Number(handleType.value) === 1 || Number(handleType.value) === 2) {
     if (waterType.value === 1) {
       if (
@@ -323,8 +335,8 @@ function validateSharedFields() {
 }
 
 function resetFormFields() {
-  handleType.value = '';
-  reason.value = '';
+  handleType.value = undefined;
+  reason.value = undefined;
   amount.value = undefined;
   handleDesc.value = '';
   waterType.value = 1;
@@ -483,13 +495,14 @@ function exportFailItems() {
       </Radio.Group>
     </div>
 
-    <Card class="mb-4" title="玩家信息">
+    <div class="mb-6">
+      <div class="mb-3 text-base font-medium">玩家信息</div>
       <template v-if="saveType === 'single'">
         <div class="mb-4 flex flex-wrap items-end gap-2">
           <Input
             v-model:value="loginAccount"
             allow-clear
-            placeholder="请输入"
+            placeholder="请输入游戏账号"
             style="width: 260px"
             @blur="lookupPlayer"
           >
@@ -508,17 +521,46 @@ function exportFailItems() {
             查询玩家
           </Button>
         </div>
-        <div
-          v-if="playerId"
-          class="rounded border bg-gray-50 px-3 py-2 text-sm"
+        <Descriptions
+          bordered
+          class="mb-2 max-w-md player-info-desc"
+          :column="1"
+          size="small"
+          :label-style="{ width: '96px', whiteSpace: 'nowrap' }"
+          :content-style="{ width: 'auto' }"
         >
-          <div>玩家 ID：{{ playerId }}</div>
-          <div>账户余额：{{ formatAmountFromCent(playerGold) }}</div>
-          <div class="flex items-center gap-1">
-            玩家状态：
-            <PlayerStatusTag :status="playerStatus" />
-          </div>
-        </div>
+          <Descriptions.Item label="玩家 ID">
+            {{ playerId || '-' }}
+          </Descriptions.Item>
+          <Descriptions.Item label="玩家状态">
+            <PlayerStatusTag
+              v-if="playerStatus !== '' && playerStatus !== null && playerStatus !== undefined"
+              :status="playerStatus"
+            />
+            <span v-else>-</span>
+          </Descriptions.Item>
+          <Descriptions.Item label="会员类型">
+            {{
+              playerDataFlag === '' ||
+              playerDataFlag === null ||
+              playerDataFlag === undefined
+                ? '-'
+                : formatMemberType(playerDataFlag)
+            }}
+          </Descriptions.Item>
+          <Descriptions.Item label="账户余额">
+            {{
+              playerGold === '' ||
+              playerGold === null ||
+              playerGold === undefined
+                ? '-'
+                : formatAmountFromCent(playerGold)
+            }}
+          </Descriptions.Item>
+          <Descriptions.Item label="备注信息">
+            {{ playerRemark || '-' }}
+          </Descriptions.Item>
+        </Descriptions>
       </template>
 
       <template v-else>
@@ -570,42 +612,45 @@ function exportFailItems() {
           ]"
         />
       </template>
-    </Card>
+    </div>
 
-    <Card title="账号调整">
-      <Form layout="vertical" class="max-w-3xl">
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <Form.Item label="调整方式" required>
-            <Select
-              v-model:value="handleType"
-              :options="handleTypeOptions"
-              placeholder="请选择"
-              @change="onHandleTypeChange"
-            />
-          </Form.Item>
-          <Form.Item label="调整类型" required>
-            <Select
-              v-model:value="reason"
-              :options="reasonOptions"
-              placeholder="请选择"
-            />
-          </Form.Item>
-          <Form.Item v-if="saveType === 'single'" label="调整金额(元)" required>
-            <InputNumber
-              v-model:value="amount"
-              :min="0.01"
-              class="w-full"
-              :precision="2"
-              placeholder="请输入调整金额"
-            />
-          </Form.Item>
-          <Form.Item label="备注" required>
-            <Input v-model:value="handleDesc" placeholder="请输入备注" />
-          </Form.Item>
-        </div>
+    <div>
+      <div class="mb-3 text-base font-medium">账号调整</div>
+      <Form
+        class="max-w-xl"
+        :label-col="{ span: 5 }"
+        :wrapper-col="{ span: 16 }"
+      >
+        <Form.Item label="调整方式" required>
+          <Select
+            v-model:value="handleType"
+            :options="handleTypeOptions"
+            placeholder="请选择调整方式"
+            @change="onHandleTypeChange"
+          />
+        </Form.Item>
+        <Form.Item label="调整类型" required>
+          <Select
+            v-model:value="reason"
+            :options="reasonOptions"
+            placeholder="请选择调整类型"
+          />
+        </Form.Item>
+        <Form.Item v-if="saveType === 'single'" label="调整金额" required>
+          <InputNumber
+            v-model:value="amount"
+            :min="0.01"
+            :precision="2"
+            placeholder="请输入调整金额"
+            style="width: 100%"
+          />
+        </Form.Item>
+        <Form.Item label="备注">
+          <Input v-model:value="handleDesc" placeholder="请输入备注" />
+        </Form.Item>
 
         <template v-if="handleType === 1 || handleType === 2">
-          <Form.Item label="流水要求类型">
+          <Form.Item label="流水类型">
             <Radio.Group v-model:value="waterType" @change="resetWaterFields">
               <Radio :value="1">
                 {{ handleType === 1 ? '增加倍数' : '减少倍数' }}
@@ -615,33 +660,40 @@ function exportFailItems() {
               </Radio>
             </Radio.Group>
           </Form.Item>
-          <Form.Item v-if="waterType === 1" label="流水倍数" required>
+          <Form.Item v-if="waterType === 1" label="流水调整" required>
             <InputNumber
               v-model:value="water"
               :min="0"
-              class="w-60"
               placeholder="请输入流水倍数"
+              style="width: 100%"
             />
           </Form.Item>
-          <Form.Item v-else label="流水金额(元)" required>
+          <Form.Item v-else label="流水调整" required>
             <InputNumber
               v-model:value="waterAmount"
               :min="0.01"
-              class="w-60"
               :precision="2"
               placeholder="请输入流水金额"
+              style="width: 100%"
             />
           </Form.Item>
         </template>
 
-        <Space>
-          <Button :loading="submitting" type="primary" @click="handleSubmit">
-            申请调整
-          </Button>
-          <Button @click="handleReset">重置</Button>
-        </Space>
+        <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
+          <Space>
+            <Button
+              :loading="submitting"
+              class="w-28"
+              type="primary"
+              @click="handleSubmit"
+            >
+              申请调整
+            </Button>
+            <Button class="w-28" @click="handleReset">重置</Button>
+          </Space>
+        </Form.Item>
       </Form>
-    </Card>
+    </div>
 
     <Modal
       v-model:open="batchResultOpen"

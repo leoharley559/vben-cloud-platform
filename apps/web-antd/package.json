@@ -48,6 +48,7 @@
     "echarts": "catalog:",
     "js-cookie": "^3.0.5",
     "pinia": "catalog:",
+    "qrcode": "catalog:",
     "qs": "catalog:",
     "vue": "catalog:",
     "vue-router": "catalog:",
@@ -56,6 +57,7 @@
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
     "@types/js-cookie": "^3.0.6",
+    "@types/qrcode": "catalog:",
     "@types/qs": "^6.9.18",
     "axios": "catalog:"
   }

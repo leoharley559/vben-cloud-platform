@@ -22,7 +22,7 @@ const activeSubTab = ref<'config' | 'relations' | 'rewards'>('config');
       >
         <Radio.Button value="config">活动配置</Radio.Button>
         <Radio.Button value="relations">邀请关系</Radio.Button>
-        <Radio.Button value="rewards">发奖记录</Radio.Button>
+        <Radio.Button value="rewards">发放记录</Radio.Button>
       </Radio.Group>
     </div>
 
