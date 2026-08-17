@@ -138,9 +138,9 @@ function normalizeLoginAccount(value: string) {
 function getQueryParams(extra?: Record<string, unknown>) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     InGameId: filterInGameId.value,
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value),
     OrderId: filterOrderId.value.trim(),

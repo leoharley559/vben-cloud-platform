@@ -128,9 +128,9 @@ const columns = [
 function buildQuery() {
   return {
     Account: account.value.trim(),
-    BeginTime: dateRange.value[0].startOf('day').unix(),
+    BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
     DataSearchType: dataSearchType.value,
-    EndTime: dateRange.value[1].endOf('day').unix(),
+    EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
     Keyword: '',
     Page: page.value,
     PageSize: pageSize.value,

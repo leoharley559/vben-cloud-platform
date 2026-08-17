@@ -299,11 +299,11 @@ function convertToUtcTimezone(localTimestamp: number, targetUtcOffset: string) {
 
 function getTimeRange() {
   const [begin, end] = filterDateRange.value || [];
-  let beginTime = begin ? begin.startOf('day').unix() : defaultBegin.unix();
-  let endTime = end ? end.endOf('day').unix() : defaultEnd.unix();
-  if (filterTimeZone.value !== '') {
-    beginTime = convertToUtcTimezone(beginTime, filterTimeZone.value);
-    endTime = convertToUtcTimezone(endTime, filterTimeZone.value);
+  let beginTime: number | string = begin ? begin.startOf('day').unix() : '';
+  let endTime: number | string = end ? end.endOf('day').unix() : '';
+  if (filterTimeZone.value !== '' && beginTime !== '' && endTime !== '') {
+    beginTime = convertToUtcTimezone(Number(beginTime), filterTimeZone.value);
+    endTime = convertToUtcTimezone(Number(endTime), filterTimeZone.value);
   }
   return { beginTime, endTime };
 }

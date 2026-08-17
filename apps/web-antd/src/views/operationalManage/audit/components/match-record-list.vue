@@ -120,7 +120,7 @@ function getQueryParams() {
     ApplyNote: filterApplyNote.value.trim(),
     AuditStatus: filterAuditStatus.value ?? '',
     BonusTitle: filterBonusTitle.value.trim(),
-    EndApplyTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndApplyTime: end ? end.endOf('day').unix() : '',
     IsExp: false,
     LoginAccount: filterLoginAccount.value
       .trim()
@@ -133,7 +133,7 @@ function getQueryParams() {
     ReviewNote: filterReviewNote.value,
     StartApplyTime: begin
       ? begin.startOf('day').unix()
-      : defaultRange.BeginTime,
+      : '',
     VipLevel: filterVipLevel.value,
   };
 }

@@ -130,6 +130,11 @@ function handleDelete(row: Record<string, unknown>) {
   });
 }
 
+function resetFilters() {
+  filterKey.value = 'h4_ios';
+  void loadList();
+}
+
 onMounted(() => {
   void loadList();
 });
@@ -147,6 +152,7 @@ onMounted(() => {
         <Button :loading="loading" type="primary" @click="loadList">
           查询
         </Button>
+        <Button @click="resetFilters">重置</Button>
         <Button v-if="canCreate" type="primary" @click="openCreate">
           新增
         </Button>

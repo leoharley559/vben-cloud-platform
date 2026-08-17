@@ -187,9 +187,9 @@ async function loadReport() {
   reportLoading.value = true;
   try {
     const result = await fetchRegisterOtpDailyApi({
-      BeginTime: reportRange.value[0].startOf('day').unix(),
+      BeginTime: reportRange.value?.[0]?.startOf('day').unix() || '',
       ChannelIds: reportFilters.ChannelIds,
-      EndTime: reportRange.value[1].endOf('day').unix(),
+      EndTime: reportRange.value?.[1]?.endOf('day').unix() || '',
       PackageIds: reportFilters.PackageIds,
       Page: 1,
       PageSize: 9999,
@@ -240,9 +240,9 @@ const detailGridOptions: VxeTableGridOptions<OtpRow> = {
     ajax: {
       query: async ({ page }) => {
         const result = await fetchRegisterOtpDetailApi({
-          BeginTime: detailRange.value[0].startOf('day').unix(),
+          BeginTime: detailRange.value?.[0]?.startOf('day').unix() || '',
           ChannelIds: detailFilters.ChannelIds,
-          EndTime: detailRange.value[1].endOf('day').unix(),
+          EndTime: detailRange.value?.[1]?.endOf('day').unix() || '',
           IsRegistered: detailFilters.IsRegistered,
           PackageIds: detailFilters.PackageIds,
           Page: page.currentPage,
@@ -353,9 +353,9 @@ function exportReport() {
 
 async function exportDetail() {
   const result = await fetchRegisterOtpDetailApi({
-    BeginTime: detailRange.value[0].startOf('day').unix(),
+    BeginTime: detailRange.value?.[0]?.startOf('day').unix() || '',
     ChannelIds: detailFilters.ChannelIds,
-    EndTime: detailRange.value[1].endOf('day').unix(),
+    EndTime: detailRange.value?.[1]?.endOf('day').unix() || '',
     IsRegistered: detailFilters.IsRegistered,
     PackageIds: detailFilters.PackageIds,
     Page: 1,

@@ -166,9 +166,9 @@ function reviewState(row: ReviewRow) {
 
 function queryParams(page: { currentPage: number; pageSize: number }) {
   const common = {
-    BeginTime: dateRange.value[0].startOf('day').unix(),
+    BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
     ChannelIds: filters.ChannelIds.join(','),
-    EndTime: dateRange.value[1].endOf('day').unix(),
+    EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
     LoginAccount: filters.LoginAccount.trim().toLowerCase(),
     OrderId: filters.OrderId.trim(),
     Page: page.currentPage,

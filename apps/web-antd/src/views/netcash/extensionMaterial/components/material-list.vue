@@ -177,8 +177,8 @@ async function loadList() {
 
 function search() {
   if (dateRange.value?.length === 2) {
-    query.BeginTime = dateRange.value[0].startOf('day').unix();
-    query.EndTime = dateRange.value[1].endOf('day').unix();
+    query.BeginTime = dateRange.value?.[0]?.startOf('day').unix() || '';
+    query.EndTime = dateRange.value?.[1]?.endOf('day').unix() || '';
   } else {
     query.BeginTime = undefined;
     query.EndTime = undefined;

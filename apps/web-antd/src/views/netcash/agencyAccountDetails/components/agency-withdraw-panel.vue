@@ -99,8 +99,8 @@ function query(isExp = false) {
     PageSize: pager.pageSize,
   };
   if (dateRange.value?.length === 2) {
-    params.BeginTime = dateRange.value[0].startOf('day').unix();
-    params.EndTime = dateRange.value[1].endOf('day').unix();
+    params.BeginTime = dateRange.value?.[0]?.startOf('day').unix() || '';
+    params.EndTime = dateRange.value?.[1]?.endOf('day').unix() || '';
   }
   if (status.value.length > 0) {
     params.WithdrawStatus = status.value.join(',');

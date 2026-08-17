@@ -65,7 +65,7 @@ const defaultQuery = () => ({
   SelectTimeType: 1,
   ShowName: '',
   WithdrawAccount: '',
-  WithdrawStatus: '' as number | string,
+  WithdrawStatus: [] as Array<number | string>,
 });
 
 const withdrawQuery = reactive(defaultQuery());
@@ -128,7 +128,9 @@ function withdrawalParams(
     IsExp: exp,
     Page: exp ? 1 : page.currentPage,
     PageSize: exp ? 99_999 : page.pageSize,
-    WithdrawStatus: withdrawQuery.WithdrawStatus ?? '',
+    WithdrawStatus: Array.isArray(withdrawQuery.WithdrawStatus)
+      ? withdrawQuery.WithdrawStatus.join(',')
+      : withdrawQuery.WithdrawStatus || '',
   };
 }
 
@@ -538,7 +540,8 @@ function resetWithdraw() {
 }
 
 function filterPending() {
-  withdrawQuery.WithdrawStatus = '1,5,6';
+  // 对齐旧站：未处理 = 待处理/出款异常/处理中
+  withdrawQuery.WithdrawStatus = ['1', '5', '6'];
   withdrawGridApi.reload();
 }
 
@@ -745,14 +748,22 @@ onUnmounted(() => {
         />
         <InputNumber v-model:value="withdrawQuery.AmountMin" placeholder="最小金额" />
         <InputNumber v-model:value="withdrawQuery.AmountMax" placeholder="最大金额" />
-        <Select v-model:value="withdrawQuery.WithdrawStatus" allow-clear placeholder="状态" :options="[
-          { label: '待处理', value: '1' },
-          { label: '已出款', value: '2' },
-          { label: '退款驳回', value: '3' },
-          { label: '不退款驳回', value: '4' },
-          { label: '出款异常', value: '5' },
-          { label: '处理中', value: '6' },
-        ]" style="width: 130px" />
+        <Select
+          v-model:value="withdrawQuery.WithdrawStatus"
+          allow-clear
+          mode="multiple"
+          :max-tag-count="1"
+          placeholder="状态"
+          :options="[
+            { label: '待处理', value: '1' },
+            { label: '已出款', value: '2' },
+            { label: '退款驳回', value: '3' },
+            { label: '不退款驳回', value: '4' },
+            { label: '出款异常', value: '5' },
+            { label: '处理中', value: '6' },
+          ]"
+          style="min-width: 140px"
+        />
         <Button type="primary" @click="withdrawGridApi.reload()">查询</Button>
         <Button @click="resetWithdraw">重置</Button>
         <Button @click="exportWithdraw">导出 Excel</Button>

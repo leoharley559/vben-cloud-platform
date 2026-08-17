@@ -71,7 +71,7 @@ const auditFilters = reactive({
   Username: '',
   WalletType: '' as number | string,
 });
-const auditRange = ref<[Dayjs, Dayjs]>(todayRange());
+const auditRange = ref<[Dayjs, Dayjs] | null>(todayRange());
 const auditRows = ref<BonusManageItem[]>([]);
 const auditLoading = ref(false);
 const auditPage = ref(1);
@@ -89,11 +89,11 @@ const auditSummaryItems = computed(() => [
 ]);
 
 function auditQuery() {
-  const [begin, end] = auditRange.value || todayRange();
+  const [begin, end] = auditRange.value || [];
   return {
     ...auditFilters,
-    BeginTime: begin.startOf('day').unix(),
-    EndTime: end.endOf('day').unix(),
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     IsExp: false,
     Page: auditPage.value,
     PageSize: auditPageSize.value,

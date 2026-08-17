@@ -129,7 +129,7 @@ const filterTeamName = ref('');
 const filterDeveloperName = ref('');
 const filterMaintainerName = ref('');
 const filterStatus = ref<number | string>();
-const filterType = ref<number | string>();
+const filterType = ref<Array<number | string>>([]);
 const filterMobile = ref('');
 const filterRegistIP = ref('');
 const filterLastLoginIP = ref('');
@@ -243,8 +243,10 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
     RegistIP: filterRegistIP.value,
     Status: filterStatus.value || '',
     TeamName: filterTeamName.value,
-    // 旧站空筛选项默认传 1,2,3（普通/特殊/测试），避免仅靠空串依赖后端兜底
-    Type: filterType.value ? String(filterType.value) : '1,2,3',
+    // 对齐旧站：多选 Type；空选默认传 1,2,3（普通/特殊/测试）
+    Type: filterType.value.length
+      ? filterType.value.map(String).join(',')
+      : '1,2,3',
     Username: filterUsername.value,
     WithdrawAccName: filterWithdrawAccName.value,
     WithdrawAccNum: filterWithdrawAccNum.value,
@@ -430,7 +432,7 @@ function resetFilters() {
   filterDeveloperName.value = '';
   filterMaintainerName.value = '';
   filterStatus.value = undefined;
-  filterType.value = undefined;
+  filterType.value = [];
   filterMobile.value = '';
   filterRegistIP.value = '';
   filterLastLoginIP.value = '';
@@ -714,13 +716,15 @@ onMounted(() => {
       <Select
         v-model:value="filterType"
         allow-clear
+        mode="multiple"
+        :max-tag-count="1"
         :options="[
           { label: '普通代理', value: 1 },
           { label: '特殊代理', value: 2 },
           { label: '测试代理', value: 3 },
         ]"
         placeholder="代理类型"
-        style="width: 130px"
+        style="min-width: 140px"
       />
       <Input
         v-model:value="filterMobile"
@@ -876,8 +880,8 @@ onMounted(() => {
           :admin-id="resolveAgencyAdminId(row)"
           :query="{
             Name: String(row.Name || row.Username || ''),
-            CountBeginTime: statisticsRange?.[0]?.startOf('day').unix(),
-            CountEndTime: statisticsRange?.[1]?.endOf('day').unix(),
+            CountBeginTime: statisticsRange?.[0]?.startOf('day').unix() || '',
+            CountEndTime: statisticsRange?.[1]?.endOf('day').unix() || '',
           }"
           :username="asDisplayText(row.Username)"
         />
@@ -941,8 +945,8 @@ onMounted(() => {
       v-model:open="memberDetailOpen"
       :active-only="memberDetailActiveOnly"
       :admin-id="resolveRowAdminId(memberDetailRow)"
-      :begin-time="statisticsRange?.[0]?.startOf('day').unix()"
-      :end-time="statisticsRange?.[1]?.endOf('day').unix()"
+      :begin-time="statisticsRange?.[0]?.startOf('day').unix() || ''"
+      :end-time="statisticsRange?.[1]?.endOf('day').unix() || ''"
       :username="
         memberDetailRow?.Username == null || memberDetailRow.Username === ''
           ? undefined

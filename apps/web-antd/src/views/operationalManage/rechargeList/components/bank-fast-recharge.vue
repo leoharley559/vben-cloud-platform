@@ -84,9 +84,9 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     GameOrderId: filterOrderId.value,
     LoginAccount: filterLoginAccount.value,
     PackageId: filterPackageId.value,

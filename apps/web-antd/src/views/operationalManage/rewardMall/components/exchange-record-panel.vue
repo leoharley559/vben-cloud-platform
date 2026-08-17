@@ -130,8 +130,8 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
     ChannelId: channelIdsParam(),
     ExchangeTimeBegin: begin
       ? begin.startOf('day').unix()
-      : defaultRange.BeginTime,
-    ExchangeTimeEnd: end ? end.endOf('day').unix() : defaultRange.EndTime,
+      : '',
+    ExchangeTimeEnd: end ? end.endOf('day').unix() : '',
     IsWater: filterIsWater.value,
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     OrderId: filterOrderId.value.trim(),

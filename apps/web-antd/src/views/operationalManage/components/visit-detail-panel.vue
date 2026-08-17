@@ -29,6 +29,7 @@ import { formatOperationDateTime } from '#/utils/operation-status';
 import { VISIT_STATISTIC_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import {
+  createRangeDayLimiter,
   formatVisitDurationSeconds,
   formatVisitSource,
   parseProjectConfigOptions,
@@ -63,6 +64,10 @@ const exportLoading = ref(false);
 const totalCount = ref(0);
 const tableRows = ref<VisitDetailRow[]>([]);
 
+/** 对齐旧站 noticeDetail/emailDetail：访问时间 limit-number=7 */
+const visitRangeLimit = createRangeDayLimiter(7);
+const leaveRangeLimit = createRangeDayLimiter(7);
+
 /**
  * 对齐旧站 noticeDetail/emailDetail：
  * getBeforeDateStr(1)～getBeforeDateStr(1,false)（GLOBAL days-1 → 今天）
@@ -75,9 +80,8 @@ const filterVisitRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
-const filterLeaveRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
-const filterDurationRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
-
+const filterLeaveRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+const filterDurationRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 const pageOptions = computed(() =>
   parseProjectConfigOptions(projectConfig.value, props.dropdownKey),
 );
@@ -102,7 +106,6 @@ const deviceSelectOptions = computed(() => [
 ]);
 
 function buildQuery(page?: { currentPage: number; pageSize: number }) {
-  const fallback = getTodayRangeSeconds();
   const [visitBegin, visitEnd] = filterVisitRange.value || [];
   const leave = filterLeaveRange.value;
   const duration = filterDurationRange.value;
@@ -112,20 +115,35 @@ function buildQuery(page?: { currentPage: number; pageSize: number }) {
     DurationMin: duration?.[0] ? duration[0].format('HH:mm:ss') : '',
     Group: props.group,
     Key: props.titleId,
-    // 对齐旧站 SearchTypeTwo/monthRangeDate：保留 RangePicker 时分秒
     LeaveBeginTime: leave?.[0] ? leave[0].startOf('day').unix() : '',
     LeaveEndTime: leave?.[1] ? leave[1].endOf('day').unix() : '',
     PlayerId:
       filterPlayerId.value.trim() === '' ? '-1' : filterPlayerId.value.trim(),
     SubGroup: filterSubGroup.value,
-    VisitBeginTime: visitBegin ? visitBegin.startOf('day').unix() : fallback.BeginTime,
-    VisitEndTime: visitEnd ? visitEnd.endOf('day').unix() : fallback.EndTime,
+    VisitBeginTime: visitBegin ? visitBegin.startOf('day').unix() : '',
+    VisitEndTime: visitEnd ? visitEnd.endOf('day').unix() : '',
   };
   if (page) {
     query.Page = page.currentPage;
     query.PageSize = page.pageSize;
   }
   return query;
+}
+
+function validateBeforeQuery() {
+  if (!filterVisitRange.value?.[0] || !filterVisitRange.value?.[1]) {
+    message.warning('请选择访问时间');
+    return false;
+  }
+  if (visitRangeLimit.isRangeTooLong(filterVisitRange.value)) {
+    message.warning('访问时间跨度不能超过 7 天');
+    return false;
+  }
+  if (leaveRangeLimit.isRangeTooLong(filterLeaveRange.value)) {
+    message.warning('离开时间跨度不能超过 7 天');
+    return false;
+  }
+  return true;
 }
 
 const gridOptions: VxeTableGridOptions<VisitDetailRow> = {
@@ -207,6 +225,9 @@ function handleSearch() {
     message.warning('无明细数据查询权限');
     return;
   }
+  if (!validateBeforeQuery()) {
+    return;
+  }
   gridApi.reload();
 }
 
@@ -214,8 +235,10 @@ function handleReset() {
   filterPlayerId.value = '';
   filterSubGroup.value = '';
   filterAppType.value = '';
-  filterLeaveRange.value = undefined;
-  filterDurationRange.value = undefined;
+  filterLeaveRange.value = null;
+  filterDurationRange.value = null;
+  visitRangeLimit.clearSelecting();
+  leaveRangeLimit.clearSelecting();
   const range = getTodayRangeSeconds();
   filterVisitRange.value = [
     dayjs.unix(range.BeginTime),
@@ -227,6 +250,9 @@ function handleReset() {
 function handleExportClick() {
   if (totalCount.value < 1) {
     message.warning('暂无数据可导出');
+    return;
+  }
+  if (!validateBeforeQuery()) {
     return;
   }
   passPopupRef.value?.validate(VISIT_STATISTIC_EXPORT_PAGE_ID, {
@@ -277,15 +303,25 @@ async function handleExport(payload: Record<string, unknown>) {
         <span class="text-xs text-gray-500">访问页面</span>
         <Select
           v-model:value="filterSubGroup"
+          show-search
           style="width: 160px"
           :options="pageSelectOptions"
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
         />
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">访问时间</span>
+        <span class="text-xs text-gray-500">访问时间（最多 7 天）</span>
         <DatePicker.RangePicker
           v-model:value="filterVisitRange"
           format="YYYY-MM-DD"
+          :disabled-date="visitRangeLimit.disabledDate"
+          @calendar-change="visitRangeLimit.onCalendarChange"
+          @open-change="(open) => !open && visitRangeLimit.clearSelecting()"
         />
       </div>
       <div class="flex flex-col gap-1">
@@ -294,6 +330,9 @@ async function handleExport(payload: Record<string, unknown>) {
           v-model:value="filterLeaveRange"
           allow-clear
           format="YYYY-MM-DD"
+          :disabled-date="leaveRangeLimit.disabledDate"
+          @calendar-change="leaveRangeLimit.onCalendarChange"
+          @open-change="(open) => !open && leaveRangeLimit.clearSelecting()"
         />
       </div>
       <div class="flex flex-col gap-1">
@@ -308,8 +347,15 @@ async function handleExport(payload: Record<string, unknown>) {
         <span class="text-xs text-gray-500">访问设备</span>
         <Select
           v-model:value="filterAppType"
+          show-search
           style="width: 140px"
           :options="deviceSelectOptions"
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
         />
       </div>
       <Button type="primary" @click="handleSearch">查询</Button>

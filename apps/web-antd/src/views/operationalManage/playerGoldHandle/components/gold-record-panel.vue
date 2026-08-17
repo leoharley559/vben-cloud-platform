@@ -27,6 +27,14 @@ import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'GoldRecordPanel' });
 
+const props = withDefaults(
+  defineProps<{
+    /** 1=发放记录（旧 saveRecord） 2=扣减记录（旧 takeRecord） */
+    handleType?: 1 | 2;
+  }>(),
+  { handleType: 1 },
+);
+
 interface RecordRow {
   Amount?: number;
   ApproveName?: string;
@@ -38,8 +46,11 @@ interface RecordRow {
   HandlerName?: string;
   LoginAccount?: string;
   OrderId?: string;
+  PackageId?: number | string;
   PackageName?: string;
   PlayerId?: number | string;
+  PlayerName?: string;
+  RealAmount?: number;
   RealApplyAmount?: number;
   Reason?: number;
   Title?: string;
@@ -48,14 +59,23 @@ interface RecordRow {
   WaterType?: number;
 }
 
-const DONE_MAP: Record<number, { color: string; text: string }> = {
+const isTake = computed(() => props.handleType === 2);
+
+const GRANT_DONE_MAP: Record<number, { color: string; text: string }> = {
   1: { color: 'default', text: '已发送' },
   2: { color: 'success', text: '已完成' },
   3: { color: 'error', text: '失败' },
   4: { color: 'error', text: '红利发送失败' },
 };
 
-const REASON_MAP: Record<number, string> = {
+const TAKE_DONE_MAP: Record<number, { color: string; text: string }> = {
+  1: { color: 'default', text: '已发送' },
+  2: { color: 'success', text: '已完成' },
+  3: { color: 'error', text: '已失败' },
+  4: { color: 'error', text: '发送失败' },
+};
+
+const GRANT_REASON_MAP: Record<number, string> = {
   1: '活动赠送',
   2: '异常补发',
   3: '平台红利',
@@ -70,14 +90,31 @@ const REASON_MAP: Record<number, string> = {
   12: '推荐红利',
 };
 
+const TAKE_REASON_MAP: Record<number, string> = {
+  1: '异常获取',
+  2: '人工提现',
+};
+
+const doneMap = computed(() =>
+  isTake.value ? TAKE_DONE_MAP : GRANT_DONE_MAP,
+);
+const reasonMap = computed(() =>
+  isTake.value ? TAKE_REASON_MAP : GRANT_REASON_MAP,
+);
+
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(10090));
-const canExport = computed(() => checkPermission(10091));
+const canViewTable = computed(() =>
+  checkPermission(isTake.value ? 10_092 : 10_090),
+);
+const canExport = computed(() =>
+  checkPermission(isTake.value ? 10_093 : 10_091),
+);
 
-/** 与旧站 listQuery 对齐，默认当前月；Done/Reason 支持多选 join(',') */
 const filterLoginAccount = ref('');
+const filterPlayerId = ref('');
+const filterPlayerName = ref('');
 const filterPackageId = ref<number | string>();
 const filterChannelIds = ref<Array<number | string> | number | string>();
 const filterOrderId = ref('');
@@ -91,7 +128,9 @@ function createDefaultDateRange(): [dayjs.Dayjs, dayjs.Dayjs] {
   return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
 }
 
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(createDefaultDateRange());
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(
+  createDefaultDateRange(),
+);
 
 const totalAmount = ref(0);
 const totalRealAmount = ref(0);
@@ -104,7 +143,7 @@ const summaryItems = computed(() => [
     valueClass: 'font-medium text-gray-900',
   },
   {
-    label: '实际金额总计',
+    label: isTake.value ? '实际扣除金额总计' : '实际金额总计',
     value: formatAmountFromCent(totalRealAmount.value),
     valueClass: 'font-medium text-gray-900',
   },
@@ -129,19 +168,23 @@ const dataSearchTypeOptions = [
   { label: '全部', value: 2 },
 ];
 
-const doneOptions = [
-  { label: '已发送', value: 1 },
-  { label: '已完成', value: 2 },
-  { label: '失败', value: 3 },
-  { label: '红利发送失败', value: 4 },
-];
+const doneOptions = computed(() =>
+  Object.entries(doneMap.value).map(([value, item]) => ({
+    label: item.text,
+    value: Number(value),
+  })),
+);
 
-const reasonOptions = Object.entries(REASON_MAP)
-  .filter(([value]) => Number(value) >= 3)
-  .map(([value, label]) => ({
+const reasonOptions = computed(() => {
+  const entries = Object.entries(reasonMap.value);
+  const filtered = isTake.value
+    ? entries
+    : entries.filter(([value]) => Number(value) >= 3);
+  return filtered.map(([value, label]) => ({
     label,
     value: Number(value),
   }));
+});
 
 function channelIdsParam() {
   const value = filterChannelIds.value;
@@ -151,7 +194,6 @@ function channelIdsParam() {
   return value || '';
 }
 
-/** 旧站 filter-change：多选 → join(',')；空=全部 */
 function multiFilterParam(values: Array<number | string>) {
   if (!values?.length) {
     return '';
@@ -166,23 +208,30 @@ function normalizeLoginAccount() {
 }
 
 function buildListQuery(page?: { currentPage: number; pageSize: number }) {
-  const [begin, end] = filterDateRange.value;
-  return {
-    BeginTime: begin.startOf('day').unix(),
+  const [begin, end] = filterDateRange.value || [];
+  const query: Record<string, unknown> = {
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelIds: channelIdsParam(),
-    DataSearchType: filterDataSearchType.value,
     Done: multiFilterParam(filterDone.value),
-    EndTime: end.endOf('day').unix(),
-    HandleType: 1,
+    EndTime: end ? end.endOf('day').unix() : '',
+    HandleType: props.handleType,
     LoginAccount: filterLoginAccount.value.trim(),
     OrderId: filterOrderId.value.trim(),
     PackageId: filterPackageId.value || '',
     Page: page?.currentPage ?? 1,
     PageSize: page?.pageSize ?? 20,
+    PlayerId: filterPlayerId.value.trim(),
+    PlayerName: filterPlayerName.value.trim(),
     Reason: multiFilterParam(filterReason.value),
     Sort: '',
-    WaterType: filterWaterType.value,
   };
+
+  if (!isTake.value) {
+    query.DataSearchType = filterDataSearchType.value;
+    query.WaterType = filterWaterType.value;
+  }
+
+  return query;
 }
 
 function formatWater(row: RecordRow) {
@@ -192,96 +241,204 @@ function formatWater(row: RecordRow) {
   return (Number(row.Water || 0) / 100).toFixed(2);
 }
 
+function realAmountOf(row: RecordRow) {
+  if (isTake.value) {
+    return Number(row.RealAmount ?? 0);
+  }
+  return Number(row.RealApplyAmount ?? row.RealAmount ?? 0);
+}
+
+const grantColumns: VxeTableGridOptions<RecordRow>['columns'] = [
+  {
+    field: 'Done',
+    minWidth: 110,
+    slots: { default: 'done' },
+    title: '状态',
+  },
+  {
+    field: 'CreateTime',
+    formatter: ({ cellValue }) =>
+      formatOperationDateTime(cellValue as string),
+    minWidth: 160,
+    title: '时间',
+  },
+  {
+    field: 'Title',
+    formatter: ({ cellValue }) => String(cellValue || '-'),
+    minWidth: 120,
+    title: '红利标题',
+  },
+  {
+    field: 'Reason',
+    formatter: ({ cellValue }) =>
+      reasonMap.value[Number(cellValue)] || String(cellValue ?? '-'),
+    minWidth: 110,
+    title: '类型',
+  },
+  { field: 'OrderId', minWidth: 180, title: '订单编号' },
+  {
+    field: 'LoginAccount',
+    minWidth: 120,
+    slots: { default: 'loginAccount' },
+    title: '游戏账号',
+  },
+  {
+    field: 'PlayerId',
+    minWidth: 100,
+    title: '玩家ID',
+  },
+  {
+    field: 'PlayerName',
+    formatter: ({ cellValue }) => String(cellValue || '-'),
+    minWidth: 100,
+    title: '玩家昵称',
+  },
+  { field: 'PackageName', minWidth: 100, title: '产品名称' },
+  {
+    field: 'ChannelName',
+    formatter: ({ row }) =>
+      row.ChannelName
+        ? `${row.ChannelName}${row.ChannelId ? `(${row.ChannelId})` : ''}`
+        : String(row.ChannelId || '-'),
+    minWidth: 140,
+    showOverflow: 'tooltip',
+    title: '渠道',
+  },
+  {
+    field: 'Amount',
+    formatter: ({ cellValue }) => formatAmountFromCent(Number(cellValue)),
+    minWidth: 110,
+    title: '申请金额',
+  },
+  {
+    field: 'RealApplyAmount',
+    formatter: ({ row }) => formatAmountFromCent(realAmountOf(row)),
+    minWidth: 110,
+    title: '实际金额',
+  },
+  {
+    field: 'WaterType',
+    formatter: ({ cellValue }) =>
+      Number(cellValue) === 2
+        ? '金额'
+        : Number(cellValue) === 1
+          ? '倍数'
+          : String(cellValue ?? '-'),
+    minWidth: 90,
+    title: '流水类型',
+  },
+  {
+    field: 'Water',
+    formatter: ({ row }) => formatWater(row),
+    minWidth: 100,
+    title: '流水要求',
+  },
+  {
+    field: 'HandleDesc',
+    formatter: ({ cellValue }) => String(cellValue || '-'),
+    minWidth: 120,
+    showOverflow: 'tooltip',
+    title: '备注',
+  },
+  {
+    field: 'HandlerName',
+    formatter: ({ cellValue }) => String(cellValue || '-'),
+    minWidth: 100,
+    title: '申请人',
+  },
+  {
+    field: 'ApproveName',
+    formatter: ({ cellValue }) => String(cellValue || '-'),
+    minWidth: 100,
+    title: '审核人',
+  },
+];
+
+const takeColumns: VxeTableGridOptions<RecordRow>['columns'] = [
+  {
+    field: 'Done',
+    minWidth: 110,
+    slots: { default: 'done' },
+    title: '状态',
+  },
+  {
+    field: 'CreateTime',
+    formatter: ({ cellValue }) =>
+      formatOperationDateTime(cellValue as string),
+    minWidth: 160,
+    title: '时间',
+  },
+  {
+    field: 'Reason',
+    formatter: ({ cellValue }) =>
+      reasonMap.value[Number(cellValue)] || String(cellValue ?? '-'),
+    minWidth: 110,
+    title: '类型',
+  },
+  { field: 'OrderId', minWidth: 180, title: '订单编号' },
+  {
+    field: 'LoginAccount',
+    minWidth: 120,
+    slots: { default: 'loginAccount' },
+    title: '游戏账号',
+  },
+  {
+    field: 'PlayerId',
+    minWidth: 100,
+    title: '玩家ID',
+  },
+  {
+    field: 'PlayerName',
+    formatter: ({ cellValue }) => String(cellValue || '-'),
+    minWidth: 100,
+    title: '玩家昵称',
+  },
+  { field: 'PackageName', minWidth: 100, title: '产品名称' },
+  {
+    field: 'ChannelName',
+    formatter: ({ row }) =>
+      row.ChannelName
+        ? `${row.ChannelName}${row.ChannelId ? `(${row.ChannelId})` : ''}`
+        : String(row.ChannelId || '-'),
+    minWidth: 140,
+    showOverflow: 'tooltip',
+    title: '所属渠道',
+  },
+  {
+    field: 'Amount',
+    formatter: ({ cellValue }) => formatAmountFromCent(Number(cellValue)),
+    minWidth: 110,
+    title: '申请金额',
+  },
+  {
+    field: 'RealAmount',
+    formatter: ({ row }) => formatAmountFromCent(realAmountOf(row)),
+    minWidth: 120,
+    title: '实际扣除金额',
+  },
+  {
+    field: 'HandleDesc',
+    formatter: ({ cellValue }) => String(cellValue || '-'),
+    minWidth: 120,
+    showOverflow: 'tooltip',
+    title: '备注',
+  },
+  {
+    field: 'HandlerName',
+    formatter: ({ cellValue }) => String(cellValue || '-'),
+    minWidth: 100,
+    title: '申请账号',
+  },
+  {
+    field: 'ApproveName',
+    formatter: ({ cellValue }) => String(cellValue || '-'),
+    minWidth: 100,
+    title: '审核账号',
+  },
+];
+
 const gridOptions: VxeTableGridOptions<RecordRow> = {
-  columns: [
-    {
-      field: 'Done',
-      minWidth: 110,
-      slots: { default: 'done' },
-      title: '状态',
-    },
-    {
-      field: 'CreateTime',
-      formatter: ({ cellValue }) =>
-        formatOperationDateTime(cellValue as string),
-      minWidth: 160,
-      title: '时间',
-    },
-    {
-      field: 'Title',
-      formatter: ({ cellValue }) => String(cellValue || '-'),
-      minWidth: 120,
-      title: '红利标题',
-    },
-    {
-      field: 'Reason',
-      formatter: ({ cellValue }) =>
-        REASON_MAP[Number(cellValue)] || String(cellValue ?? '-'),
-      minWidth: 110,
-      title: '类型',
-    },
-    { field: 'OrderId', minWidth: 180, title: '订单编号' },
-    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
-    { field: 'PackageName', minWidth: 100, title: '产品名称' },
-    {
-      field: 'ChannelName',
-      formatter: ({ row }) =>
-        row.ChannelName
-          ? `${row.ChannelName}${row.ChannelId ? `(${row.ChannelId})` : ''}`
-          : String(row.ChannelId || '-'),
-      minWidth: 140,
-      showOverflow: 'tooltip',
-      title: '渠道',
-    },
-    {
-      field: 'Amount',
-      formatter: ({ cellValue }) => formatAmountFromCent(Number(cellValue)),
-      minWidth: 110,
-      title: '申请金额',
-    },
-    {
-      field: 'RealApplyAmount',
-      formatter: ({ cellValue }) => formatAmountFromCent(Number(cellValue)),
-      minWidth: 110,
-      title: '实际金额',
-    },
-    {
-      field: 'WaterType',
-      formatter: ({ cellValue }) =>
-        Number(cellValue) === 2
-          ? '金额'
-          : Number(cellValue) === 1
-            ? '倍数'
-            : String(cellValue ?? '-'),
-      minWidth: 90,
-      title: '流水类型',
-    },
-    {
-      field: 'Water',
-      formatter: ({ row }) => formatWater(row),
-      minWidth: 100,
-      title: '流水要求',
-    },
-    {
-      field: 'HandleDesc',
-      formatter: ({ cellValue }) => String(cellValue || '-'),
-      minWidth: 120,
-      showOverflow: 'tooltip',
-      title: '备注',
-    },
-    {
-      field: 'HandlerName',
-      formatter: ({ cellValue }) => String(cellValue || '-'),
-      minWidth: 100,
-      title: '申请人',
-    },
-    {
-      field: 'ApproveName',
-      formatter: ({ cellValue }) => String(cellValue || '-'),
-      minWidth: 100,
-      title: '审核人',
-    },
-  ],
+  columns: isTake.value ? takeColumns : grantColumns,
   height: 'auto',
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
@@ -309,6 +466,8 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 function resetFilters() {
   filterLoginAccount.value = '';
+  filterPlayerId.value = '';
+  filterPlayerName.value = '';
   filterPackageId.value = undefined;
   filterChannelIds.value = undefined;
   filterOrderId.value = '';
@@ -332,55 +491,135 @@ async function handleExport() {
       message.warning('暂无数据可导出');
       return;
     }
+
+    const commonStart = [
+      {
+        header: '状态',
+        value: (row: RecordRow) =>
+          doneMap.value[Number(row.Done)]?.text || String(row.Done),
+      },
+      {
+        header: '时间',
+        value: (row: RecordRow) =>
+          formatOperationDateTime(row.CreateTime as string),
+      },
+    ];
+
+    const columns = isTake.value
+      ? [
+          ...commonStart,
+          {
+            header: '类型',
+            value: (row: RecordRow) =>
+              reasonMap.value[Number(row.Reason)] || String(row.Reason),
+          },
+          { header: '订单编号', value: (row: RecordRow) => row.OrderId || '-' },
+          {
+            header: '游戏账号',
+            value: (row: RecordRow) => row.LoginAccount || '-',
+          },
+          {
+            header: '玩家ID',
+            value: (row: RecordRow) => String(row.PlayerId ?? '-'),
+          },
+          {
+            header: '玩家昵称',
+            value: (row: RecordRow) => row.PlayerName || '-',
+          },
+          {
+            header: '产品名称',
+            value: (row: RecordRow) => row.PackageName || '-',
+          },
+          {
+            header: '所属渠道',
+            value: (row: RecordRow) =>
+              row.ChannelName
+                ? `${row.ChannelName}(${row.ChannelId || ''})`
+                : String(row.ChannelId || '-'),
+          },
+          {
+            header: '申请金额',
+            value: (row: RecordRow) => formatAmountFromCent(Number(row.Amount)),
+          },
+          {
+            header: '实际扣除金额',
+            value: (row: RecordRow) => formatAmountFromCent(realAmountOf(row)),
+          },
+          { header: '备注', value: (row: RecordRow) => row.HandleDesc || '-' },
+          {
+            header: '申请账号',
+            value: (row: RecordRow) => row.HandlerName || '-',
+          },
+          {
+            header: '审核账号',
+            value: (row: RecordRow) => row.ApproveName || '-',
+          },
+        ]
+      : [
+          ...commonStart,
+          { header: '红利标题', value: (row: RecordRow) => row.Title || '-' },
+          {
+            header: '类型',
+            value: (row: RecordRow) =>
+              reasonMap.value[Number(row.Reason)] || String(row.Reason),
+          },
+          { header: '订单编号', value: (row: RecordRow) => row.OrderId || '-' },
+          {
+            header: '游戏账号',
+            value: (row: RecordRow) => row.LoginAccount || '-',
+          },
+          {
+            header: '玩家ID',
+            value: (row: RecordRow) => String(row.PlayerId ?? '-'),
+          },
+          {
+            header: '玩家昵称',
+            value: (row: RecordRow) => row.PlayerName || '-',
+          },
+          {
+            header: '产品名称',
+            value: (row: RecordRow) => row.PackageName || '-',
+          },
+          {
+            header: '渠道',
+            value: (row: RecordRow) =>
+              row.ChannelName
+                ? `${row.ChannelName}(${row.ChannelId || ''})`
+                : String(row.ChannelId || '-'),
+          },
+          {
+            header: '申请金额',
+            value: (row: RecordRow) => formatAmountFromCent(Number(row.Amount)),
+          },
+          {
+            header: '实际金额',
+            value: (row: RecordRow) => formatAmountFromCent(realAmountOf(row)),
+          },
+          {
+            header: '流水类型',
+            value: (row: RecordRow) =>
+              Number(row.WaterType) === 2
+                ? '金额'
+                : Number(row.WaterType) === 1
+                  ? '倍数'
+                  : '-',
+          },
+          { header: '流水要求', value: (row: RecordRow) => formatWater(row) },
+          { header: '备注', value: (row: RecordRow) => row.HandleDesc || '-' },
+          {
+            header: '申请人',
+            value: (row: RecordRow) => row.HandlerName || '-',
+          },
+          {
+            header: '审核人',
+            value: (row: RecordRow) => row.ApproveName || '-',
+          },
+        ];
+
     exportRowsToCsv(
       rows,
-      [
-        {
-          header: '状态',
-          value: (row) => DONE_MAP[Number(row.Done)]?.text || String(row.Done),
-        },
-        {
-          header: '时间',
-          value: (row) => formatOperationDateTime(row.CreateTime as string),
-        },
-        { header: '红利标题', value: (row) => row.Title || '-' },
-        {
-          header: '类型',
-          value: (row) => REASON_MAP[Number(row.Reason)] || String(row.Reason),
-        },
-        { header: '订单编号', value: (row) => row.OrderId || '-' },
-        { header: '游戏账号', value: (row) => row.LoginAccount || '-' },
-        { header: '产品名称', value: (row) => row.PackageName || '-' },
-        {
-          header: '渠道',
-          value: (row) =>
-            row.ChannelName
-              ? `${row.ChannelName}(${row.ChannelId || ''})`
-              : String(row.ChannelId || '-'),
-        },
-        {
-          header: '申请金额',
-          value: (row) => formatAmountFromCent(Number(row.Amount)),
-        },
-        {
-          header: '实际金额',
-          value: (row) => formatAmountFromCent(Number(row.RealApplyAmount)),
-        },
-        {
-          header: '流水类型',
-          value: (row) =>
-            Number(row.WaterType) === 2
-              ? '金额'
-              : Number(row.WaterType) === 1
-                ? '倍数'
-                : '-',
-        },
-        { header: '流水要求', value: (row) => formatWater(row) },
-        { header: '备注', value: (row) => row.HandleDesc || '-' },
-        { header: '申请人', value: (row) => row.HandlerName || '-' },
-        { header: '审核人', value: (row) => row.ApproveName || '-' },
-      ],
-      `发放记录_${dayjs().format('YYYYMMDDHHmmss')}`,
+      columns,
+      `${isTake.value ? '扣减记录' : '发放记录'}_${dayjs().format('YYYYMMDDHHmmss')}`,
     );
   } finally {
     exportLoading.value = false;
@@ -390,7 +629,6 @@ async function handleExport() {
 
 <template>
   <div v-if="canViewTable">
-    <!-- 查询区与旧站 saveRecord.vue 对齐 -->
     <div class="mb-4 flex flex-wrap items-end gap-2">
       <Input
         v-model:value="filterLoginAccount"
@@ -400,6 +638,24 @@ async function handleExport() {
         @change="normalizeLoginAccount"
       >
         <template #addonBefore>游戏账号</template>
+      </Input>
+
+      <Input
+        v-model:value="filterPlayerId"
+        allow-clear
+        placeholder="请输入"
+        style="width: 180px"
+      >
+        <template #addonBefore>玩家ID</template>
+      </Input>
+
+      <Input
+        v-model:value="filterPlayerName"
+        allow-clear
+        placeholder="请输入"
+        style="width: 180px"
+      >
+        <template #addonBefore>玩家昵称</template>
       </Input>
 
       <Select
@@ -428,7 +684,7 @@ async function handleExport() {
         <template #addonBefore>订单编号</template>
       </Input>
 
-      <div class="flex items-center gap-1">
+      <div v-if="!isTake" class="flex items-center gap-1">
         <span class="whitespace-nowrap text-sm text-gray-500">流水类型</span>
         <Select
           v-model:value="filterWaterType"
@@ -463,7 +719,7 @@ async function handleExport() {
         />
       </div>
 
-      <div class="flex items-center gap-1">
+      <div v-if="!isTake" class="flex items-center gap-1">
         <span class="whitespace-nowrap text-sm text-gray-500">数据类型</span>
         <Select
           v-model:value="filterDataSearchType"
@@ -495,11 +751,13 @@ async function handleExport() {
         />
       </template>
       <template #done="{ row }">
-        <Tag :color="DONE_MAP[Number(row.Done)]?.color || 'default'">
-          {{ DONE_MAP[Number(row.Done)]?.text || String(row.Done ?? '-') }}
+        <Tag :color="doneMap[Number(row.Done)]?.color || 'default'">
+          {{ doneMap[Number(row.Done)]?.text || String(row.Done ?? '-') }}
         </Tag>
       </template>
     </Grid>
   </div>
-  <div v-else class="py-8 text-center text-gray-400">无发放记录查看权限</div>
+  <div v-else class="py-8 text-center text-gray-400">
+    {{ isTake ? '无扣减记录查看权限' : '无发放记录查看权限' }}
+  </div>
 </template>

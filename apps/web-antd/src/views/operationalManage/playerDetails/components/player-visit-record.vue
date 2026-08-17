@@ -101,11 +101,11 @@ function buildFilter() {
   const [begin, end] = filterDateRange.value || [];
   filters.push({
     key: 'BeginTime',
-    value: String(begin ? begin.startOf('day').unix() : defaultRange.BeginTime),
+    value: String(begin ? begin.startOf('day').unix() : ''),
   });
   filters.push({
     key: 'EndTime',
-    value: String(end ? end.endOf('day').unix() : defaultRange.EndTime),
+    value: String(end ? end.endOf('day').unix() : ''),
   });
   return filters;
 }

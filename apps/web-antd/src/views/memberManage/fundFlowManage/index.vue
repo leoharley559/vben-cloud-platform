@@ -69,6 +69,27 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.EndTime),
 ]);
 
+/** 对齐旧站 SearchTypeTwo limit-number=180：选中一端后限制另一端跨度 */
+let rangeSelecting: dayjs.Dayjs | undefined;
+function disabledDate(current: dayjs.Dayjs) {
+  if (!rangeSelecting) {
+    return false;
+  }
+  const min = rangeSelecting.subtract(MAX_RANGE_DAYS, 'day');
+  const max = rangeSelecting.add(MAX_RANGE_DAYS, 'day');
+  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
+}
+function onCalendarChange(
+  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
+) {
+  const first = dates?.[0];
+  rangeSelecting = first
+    ? dayjs.isDayjs(first)
+      ? first
+      : dayjs(first)
+    : undefined;
+}
+
 const reasonOptions = computed(() =>
   gameConfig.value.goldSource.map((item) => ({
     label: item.Name || String(item.Key),
@@ -107,9 +128,9 @@ function normalizeLoginAccount(value: string) {
 function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     LogId: filterLogId.value.trim(),
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value),
     PackageId: filterPackageId.value,
@@ -326,8 +347,13 @@ onMounted(async () => {
             />
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">时间范围</span>
-            <DatePicker.RangePicker v-model:value="filterDateRange" />
+            <span class="text-xs text-gray-500">时间范围（最多 180 天）</span>
+            <DatePicker.RangePicker
+              v-model:value="filterDateRange"
+              :disabled-date="disabledDate"
+              @calendar-change="onCalendarChange"
+              @open-change="(open) => !open && (rangeSelecting = undefined)"
+            />
           </div>
           <Button :loading="loading" type="primary" @click="handleSearch">
             查询

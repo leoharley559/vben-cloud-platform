@@ -21,6 +21,20 @@ const BONUS_REASON_MAP: Record<number, string> = {
   12: '推荐红利',
 };
 
+/** 红利发放审核「类型」筛选项（对齐老站表头 filters） */
+export const BONUS_AUDIT_REASON_OPTIONS = [
+  { label: '平台红利', value: 3 },
+  { label: 'VIP升级红利', value: 4 },
+  { label: '每月红包', value: 5 },
+  { label: '生日礼金', value: 6 },
+  { label: '代理红利', value: 7 },
+  { label: '推广红利', value: 8 },
+  { label: '存款优惠', value: 9 },
+  { label: '活动红利', value: 10 },
+  { label: '负数归零', value: 11 },
+  { label: '推荐红利', value: 12 },
+];
+
 const BONUS_WATER_TYPE_MAP: Record<number, string> = {
   0: '倍数',
   1: '倍数',

@@ -87,8 +87,8 @@ function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     BankCardNum: filterBankCardNum.value.trim() || undefined,
-    BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
-    EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     // 对齐旧站 keyup：账号转小写去空格
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value) || undefined,
     ...extra,

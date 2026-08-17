@@ -76,7 +76,7 @@ const filterLoginPlatform = ref('');
 const channelSearchType = ref(0);
 const filterChannelIds = ref<Array<number | string>>([]);
 const filterChannelExact = ref('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
@@ -123,12 +123,11 @@ function getChannelParams() {
 }
 
 function getQueryParams() {
-  const fallback = getTodayRangeSeconds();
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : fallback.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DeviceId: filterDeviceId.value.trim(),
-    EndTime: end ? end.endOf('day').unix() : fallback.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     InviterLoginAccount: filterInviterLoginAccount.value.trim(),
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value),
     LoginAddress: filterLoginAddress.value.trim(),
@@ -316,9 +315,16 @@ onMounted(() => {
             <Select
               v-model:value="filterPackageId"
               allow-clear
+              show-search
               placeholder="全部"
               style="width: 160px"
               :options="packageSelectOptions"
+              :filter-option="
+                (input, option) =>
+                  String(option?.label ?? '')
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+              "
             />
           </div>
           <div class="flex flex-col gap-1">
@@ -398,7 +404,10 @@ onMounted(() => {
           </div>
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-500">登录时间</span>
-            <DatePicker.RangePicker v-model:value="filterDateRange" />
+            <DatePicker.RangePicker
+              v-model:value="filterDateRange"
+              allow-clear
+            />
           </div>
           <Button :loading="loading" type="primary" @click="handleSearch">
             查询

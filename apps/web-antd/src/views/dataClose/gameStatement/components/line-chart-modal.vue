@@ -93,8 +93,8 @@ async function loadChart() {
   try {
     const query = {
       ...props.param,
-      BeginTime: dateRange.value?.[0]?.startOf('day').unix(),
-      EndTime: dateRange.value?.[1]?.endOf('day').unix(),
+      BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
+      EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
     };
     const data = await resolveFetcher()(query);
     const items = [...(data.Items || [])].sort(

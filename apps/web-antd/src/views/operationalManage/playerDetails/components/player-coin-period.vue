@@ -36,12 +36,12 @@ const summary = ref<PlayerGoldPeriodTotal>({});
 
 const beginTime = computed(() => {
   const [begin] = filterDateRange.value || [];
-  return begin ? begin.startOf('day').unix() : defaultRange.BeginTime;
+  return begin ? begin.startOf('day').unix() : '';
 });
 
 const endTime = computed(() => {
   const [, end] = filterDateRange.value || [];
-  return end ? end.endOf('day').unix() : defaultRange.EndTime;
+  return end ? end.endOf('day').unix() : '';
 });
 
 function formatWinLoss(row: PlayerGoldPeriodItem) {

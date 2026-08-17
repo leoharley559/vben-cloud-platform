@@ -57,10 +57,10 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     BonusType: filterBonusTypes.value,
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     OrderStatus: filterOrderStatus.value,
     PlayerId: String(props.playerId),
   };

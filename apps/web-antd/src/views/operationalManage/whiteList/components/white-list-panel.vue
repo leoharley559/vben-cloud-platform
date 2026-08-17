@@ -90,6 +90,7 @@ const filterWhiteIp = ref('');
 const filterWhiteUsername = ref('');
 const filterUserName = ref('');
 const filterStatus = ref<number | string>('');
+const sortValue = ref('');
 const modalOpen = ref(false);
 const remarkOpen = ref(false);
 const submitting = ref(false);
@@ -140,7 +141,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
     return {
       Page: page.currentPage,
       PageSize: page.pageSize,
-      Sort: '',
+      Sort: sortValue.value,
       Status: filterStatus.value,
       WhiteIp: filterWhiteIp.value.trim(),
       WhiteUsername: filterWhiteUsername.value.trim(),
@@ -151,7 +152,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
     Name: filterUserName.value.trim(),
     Page: page.currentPage,
     PageSize: page.pageSize,
-    Sort: '',
+    Sort: sortValue.value,
     Status: filterStatus.value,
   };
 }
@@ -231,6 +232,7 @@ const gridOptions: VxeTableGridOptions<WhiteRow> = {
           formatter: ({ cellValue }) =>
             formatOperationDateTime(cellValue as string),
           minWidth: 160,
+          sortable: true,
           title: '创建时间',
         },
         {
@@ -251,7 +253,16 @@ const gridOptions: VxeTableGridOptions<WhiteRow> = {
   pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
-      query: async ({ page }) => {
+      query: async ({ page, sorts }) => {
+        const sortItem = sorts?.[0];
+        if (sortItem?.field) {
+          sortValue.value =
+            sortItem.order === 'desc'
+              ? `-${sortItem.field}`
+              : String(sortItem.field);
+        } else {
+          sortValue.value = '';
+        }
         const result = isIp.value
           ? await fetchWhiteListApi(buildQuery(page))
           : await fetchWhiteListUsersApi(buildQuery(page));
@@ -262,6 +273,10 @@ const gridOptions: VxeTableGridOptions<WhiteRow> = {
         };
       },
     },
+    sort: true,
+  },
+  sortConfig: {
+    remote: true,
   },
 };
 
@@ -291,6 +306,7 @@ function handleReset() {
   filterWhiteUsername.value = '';
   filterUserName.value = '';
   filterStatus.value = '';
+  sortValue.value = '';
   gridApi.reload();
 }
 

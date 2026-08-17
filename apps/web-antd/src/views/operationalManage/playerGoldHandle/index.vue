@@ -14,9 +14,13 @@ defineOptions({ name: 'PlayerGoldHandle' });
 
 const { checkPermission } = useCloudPermission();
 
-const canGrant = computed(() => checkPermission(10081));
-const canRecord = computed(() => checkPermission(10086));
-const canViewPage = computed(() => canGrant.value || canRecord.value);
+const canGrant = computed(() => checkPermission(10_081));
+const canRecord = computed(() => checkPermission(10_086));
+/** 对齐旧站 takeRecord：表格查看权限 10092 */
+const canTakeRecord = computed(() => checkPermission(10_092));
+const canViewPage = computed(
+  () => canGrant.value || canRecord.value || canTakeRecord.value,
+);
 
 const activeTab = ref('save');
 
@@ -25,6 +29,8 @@ onMounted(() => {
     activeTab.value = 'save';
   } else if (canRecord.value) {
     activeTab.value = 'record';
+  } else if (canTakeRecord.value) {
+    activeTab.value = 'takeRecord';
   }
 });
 </script>
@@ -42,7 +48,16 @@ onMounted(() => {
           <GoldGrantPanel v-if="activeTab === 'save'" />
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canRecord" key="record" tab="发放记录">
-          <GoldRecordPanel v-if="activeTab === 'record'" />
+          <GoldRecordPanel
+            v-if="activeTab === 'record'"
+            :handle-type="1"
+          />
+        </Tabs.TabPane>
+        <Tabs.TabPane v-if="canTakeRecord" key="takeRecord" tab="扣减记录">
+          <GoldRecordPanel
+            v-if="activeTab === 'takeRecord'"
+            :handle-type="2"
+          />
         </Tabs.TabPane>
       </Tabs>
     </Card>

@@ -409,8 +409,8 @@ function columns(kind: 'agent' | 'member' | 'personal') {
 function query(page: number, pageSize: number) {
   return {
     AdminId: props.adminId,
-    BeginTime: dateRange.value[0].startOf('day').unix(),
-    EndTime: dateRange.value[1].endOf('day').unix(),
+    BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
+    EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
     Page: page,
     PageSize: pageSize,
   };
@@ -737,8 +737,8 @@ watch(
           <AgencyAccountLink v-if="column.key === 'account'" :admin-id="record.AdminId as number | string | undefined"
             :query="{
               Name: String(record.Username || ''),
-              CountBeginTime: dateRange[0].startOf('day').unix(),
-              CountEndTime: dateRange[1].endOf('day').unix(),
+              CountBeginTime: dateRange?.[0]?.startOf('day').unix() || '',
+              CountEndTime: dateRange?.[1]?.endOf('day').unix() || '',
             }" :username="record.Username" />
           <template v-else-if="amountFields.some((item) => item.dataIndex === column.key)">
             <span

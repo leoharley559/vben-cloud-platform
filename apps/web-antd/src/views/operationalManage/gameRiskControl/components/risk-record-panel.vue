@@ -60,7 +60,7 @@ const canDelete = computed(() => checkPermission(permissionMap.value.delete));
 
 const filterKeyword = ref('');
 const filterLoginAccount = ref('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs().subtract(1, 'month').startOf('day'),
   dayjs().endOf('day'),
 ]);
@@ -90,8 +90,8 @@ const fetchApi = computed(() =>
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : undefined,
-    EndTime: end ? end.endOf('day').unix() : undefined,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     Keyword: filterKeyword.value.trim(),
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     Page: page.currentPage,
@@ -273,7 +273,10 @@ defineExpose({ reload: () => gridApi.reload() });
       >
         <template #addonBefore>游戏账号</template>
       </Input>
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <DatePicker.RangePicker
+        v-model:value="filterDateRange"
+        allow-clear
+      />
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Space class="ml-auto">

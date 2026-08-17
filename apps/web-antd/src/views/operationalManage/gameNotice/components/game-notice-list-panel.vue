@@ -297,8 +297,8 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
           Title: filterTitle.value.trim(),
         };
         if (filterDateRange.value?.[0] && filterDateRange.value?.[1]) {
-          query.BeginTime = filterDateRange.value[0].startOf('day').unix();
-          query.EndTime = filterDateRange.value[1].endOf('day').unix();
+          query.BeginTime = filterDateRange.value?.[0]?.startOf('day').unix() || '';
+          query.EndTime = filterDateRange.value?.[1]?.endOf('day').unix() || '';
         }
         const result = await fetchGameNoticeListApi(query);
         const items = (result.Items || []) as unknown as NoticeRow[];

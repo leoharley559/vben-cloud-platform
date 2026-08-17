@@ -34,6 +34,7 @@ import {
   formatBonusWaterRequirement,
   formatBonusWaterType,
   getBonusApproveColor,
+  BONUS_AUDIT_REASON_OPTIONS,
 } from '#/utils/bonus-audit';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
@@ -80,7 +81,8 @@ const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>('');
 const filterChannelIds = ref<Array<number | string>>([]);
 const filterWaterType = ref(0);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterReason = ref<Array<number | string>>([]);
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
@@ -134,9 +136,9 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     Approve: '1,4',
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelIds: filterChannelIds.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     IsExp: false,
     LoginAccount: filterLoginAccount.value
       .trim()
@@ -144,6 +146,7 @@ function getQueryParams() {
       .replaceAll(/\s/g, ''),
     OrderId: filterOrderId.value.trim(),
     PackageId: filterPackageId.value || '',
+    Reason: filterReason.value.filter((item) => item !== '').join(','),
     WaterType: filterWaterType.value,
   };
 }
@@ -336,6 +339,7 @@ function resetFilters() {
   filterPackageId.value = '';
   filterChannelIds.value = [];
   filterWaterType.value = 0;
+  filterReason.value = [];
   filterDateRange.value = [
     dayjs.unix(defaultRange.BeginTime),
     dayjs.unix(defaultRange.EndTime),
@@ -437,6 +441,15 @@ onMounted(() => {
       />
       <ChannelSelect v-model="filterChannelIds" style="width: 220px" />
       <Select
+        v-model:value="filterReason"
+        allow-clear
+        mode="multiple"
+        :max-tag-count="1"
+        :options="BONUS_AUDIT_REASON_OPTIONS"
+        placeholder="类型"
+        style="width: 180px"
+      />
+      <Select
         v-model:value="filterWaterType"
         :options="[
           { label: '全部', value: 0 },
@@ -445,10 +458,14 @@ onMounted(() => {
         ]"
         style="width: 120px"
       />
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <DatePicker.RangePicker
+        v-model:value="filterDateRange"
+        allow-clear
+      />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>
+      <Button @click="resetFilters">重置</Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
         导出 CSV
       </Button>

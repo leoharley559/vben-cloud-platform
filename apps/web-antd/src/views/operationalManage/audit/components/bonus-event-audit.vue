@@ -16,6 +16,7 @@ import {
   message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
+import { storeToRefs } from 'pinia';
 
 import {
   disposeBonusAuditApi,
@@ -52,6 +53,7 @@ defineOptions({ name: 'BonusEventAudit' });
 
 const { checkPermission } = useCloudPermission();
 const cloudStore = useCloudPlatformStore();
+const { projectConfig } = storeToRefs(cloudStore);
 
 const canViewTable = computed(() => checkPermission(11969));
 const canApprove = computed(() => checkPermission(11971));
@@ -85,8 +87,20 @@ const filterPlayerStatus = ref(-1);
 const filterVipLevel = ref(-1);
 const filterApproveStatus = ref(1);
 const filterRiskStatus = ref('');
+const filterAppUrl = ref('');
 const filterApplyDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 const filterApproveDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+
+const appUrlOptions = computed(() => {
+  const list = (projectConfig.value?.IosAppStoreItems ||
+    projectConfig.value?.IosAppStoreList ||
+    projectConfig.value?.AppUrlList ||
+    []) as Array<{ AppName?: string; AppUrl?: string; Name?: string }>;
+  return list.map((item) => ({
+    label: item.AppName || item.Name || item.AppUrl || '-',
+    value: item.AppUrl || '',
+  }));
+});
 
 const playerStatusOptions = [
   { label: '全部', value: -1 },
@@ -162,6 +176,7 @@ function getQueryParams() {
     ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
     ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
     ApproveStatus: filterApproveStatus.value,
+    AppUrl: filterAppUrl.value,
     ChannelIds: filterChannelIds.value,
     IsExp: false,
     LoginAccount: filterLoginAccount.value
@@ -393,6 +408,7 @@ function resetFilters() {
   filterVipLevel.value = -1;
   filterApproveStatus.value = 1;
   filterRiskStatus.value = '';
+  filterAppUrl.value = '';
   filterApplyDateRange.value = null;
   filterApproveDateRange.value = null;
   gridApi.reload();
@@ -531,6 +547,20 @@ onMounted(() => {
         <template #addonBefore>订单号</template>
       </Input>
       <ChannelSelect v-model="filterChannelIds" style="width: 220px" />
+      <Select
+        v-model:value="filterAppUrl"
+        allow-clear
+        show-search
+        :options="appUrlOptions"
+        placeholder="上架包"
+        style="width: 180px"
+        :filter-option="
+          (input, option) =>
+            String(option?.label ?? '')
+              .toLowerCase()
+              .includes(input.toLowerCase())
+        "
+      />
       <Select
         v-model:value="filterPlayerStatus"
         :options="playerStatusOptions"

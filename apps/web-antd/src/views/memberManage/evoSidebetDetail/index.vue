@@ -103,10 +103,10 @@ function getQueryParams(extra?: {
 }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelIds: filterChannelIds.value,
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
+    EndTime: end ? end.endOf('day').unix() : '',
     IsBetTrade: filterIsBetTrade.value,
     LoginAccount: filterLoginAccount.value,
     PackageId: filterPackageId.value,
@@ -280,8 +280,11 @@ const summaryItems = computed(() => {
 
 function validateDateRange() {
   const [begin, end] = filterDateRange.value || [];
-  const beginTime = begin ? begin.startOf('day').unix() : defaultBegin.unix();
-  const endTime = end ? end.endOf('day').unix() : defaultEnd.unix();
+  if (!begin || !end) {
+    return true;
+  }
+  const beginTime = begin.startOf('day').unix();
+  const endTime = end.endOf('day').unix();
   if (endTime - beginTime > MAX_BET_QUERY_RANGE_SECONDS) {
     message.warning('查询时间范围不能超过 31 天');
     return false;

@@ -59,9 +59,9 @@ function parseExInfo(value?: string | Record<string, unknown>) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     LogId: filterLogId.value,
     PlayerId: String(props.playerId),
     Reason: filterReasons.value,

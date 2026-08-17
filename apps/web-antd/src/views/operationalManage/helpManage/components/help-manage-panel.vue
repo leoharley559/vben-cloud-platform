@@ -58,7 +58,7 @@ function todayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
 }
 
 const filterHelperAccount = ref('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(todayRange());
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(todayRange());
 /** 对齐旧站 el-table 列筛选：客户端过滤当前页 */
 const filterStatus = ref<number | string>('');
 const sortValue = ref('');
@@ -174,12 +174,10 @@ const gridOptions: VxeTableGridOptions<HelpRow> = {
           sortValue.value = '';
         }
 
-        const fallback = getTodayRangeSeconds();
         const [begin, end] = filterDateRange.value || [];
-        // 对齐旧站 SearchTypeTwo：保留 RangePicker 时分秒，勿强制日边界
         const result = await fetchHelpManageListApi({
-          BeginTime: begin ? begin.startOf('day').unix() : fallback.BeginTime,
-          EndTime: end ? end.endOf('day').unix() : fallback.EndTime,
+          BeginTime: begin ? begin.startOf('day').unix() : '',
+          EndTime: end ? end.endOf('day').unix() : '',
           HelperAccount: filterHelperAccount.value.trim(),
           Page: page.currentPage,
           PageSize: page.pageSize,
@@ -278,6 +276,7 @@ function handleClose(row: HelpRow) {
         <span class="text-xs text-gray-500">申请时间</span>
         <DatePicker.RangePicker
           v-model:value="filterDateRange"
+          allow-clear
           format="YYYY-MM-DD"
         />
       </div>

@@ -47,9 +47,9 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AmountType: 1,
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DataSearchType: 0,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     GameOrderId: filterGameOrderId.value,
     LoginAccount: filterLoginAccount.value,
     OrderId: filterOrderId.value,

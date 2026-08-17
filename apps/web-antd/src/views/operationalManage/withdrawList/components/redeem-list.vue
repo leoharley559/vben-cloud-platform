@@ -171,9 +171,9 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AccountNum: filterAccountNum.value,
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelIds: filterChannelIds.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     HandlerName: filterHandlerName.value,
     LoginAccount: filterLoginAccount.value,
     OrderId: filterOrderId.value,

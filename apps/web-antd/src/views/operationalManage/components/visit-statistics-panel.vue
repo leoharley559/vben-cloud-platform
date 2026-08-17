@@ -9,7 +9,11 @@ import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 
-import { parseProjectConfigOptions, percentOf } from './visit-statistic-shared';
+import {
+  createRangeDayLimiter,
+  parseProjectConfigOptions,
+  percentOf,
+} from './visit-statistic-shared';
 
 defineOptions({ name: 'VisitStatisticsPanel' });
 
@@ -55,8 +59,9 @@ const deviceList = ref<StatRow[]>([]);
 const userTypeList = ref<StatRow[]>([]);
 const vipList = ref<StatRow[]>([]);
 
-/** 对齐旧站 noticeStatistics：默认今天 */
+/** 对齐旧站 noticeStatistics：默认今天；统计时间 limit-number=7 */
 const defaultRange = getTodayRangeSeconds();
+const visitRangeLimit = createRangeDayLimiter(7);
 const filterSubGroup = ref<number | string>('');
 const filterVisitRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
@@ -128,7 +133,6 @@ async function loadData() {
     vipList.value = [];
     return;
   }
-  const fallback = getTodayRangeSeconds();
   const [begin, end] = filterVisitRange.value || [];
   loading.value = true;
   try {
@@ -136,8 +140,8 @@ async function loadData() {
       Group: props.group,
       Key: props.titleId,
       SubGroup: filterSubGroup.value,
-      VisitBeginTime: begin ? begin.startOf('day').unix() : fallback.BeginTime,
-      VisitEndTime: end ? end.endOf('day').unix() : fallback.EndTime,
+      VisitBeginTime: begin ? begin.startOf('day').unix() : '',
+      VisitEndTime: end ? end.endOf('day').unix() : '',
     });
     deviceList.value = (result.DeviceList || []) as StatRow[];
     userTypeList.value = (result.UserTypeList || []) as StatRow[];
@@ -156,11 +160,20 @@ function handleSearch() {
     message.warning('无访问统计查询权限');
     return;
   }
+  if (!filterVisitRange.value?.[0] || !filterVisitRange.value?.[1]) {
+    message.warning('请选择统计时间');
+    return;
+  }
+  if (visitRangeLimit.isRangeTooLong(filterVisitRange.value)) {
+    message.warning('统计时间跨度不能超过 7 天');
+    return;
+  }
   loadData();
 }
 
 function handleReset() {
   filterSubGroup.value = '';
+  visitRangeLimit.clearSelecting();
   const range = getTodayRangeSeconds();
   filterVisitRange.value = [
     dayjs.unix(range.BeginTime),
@@ -181,15 +194,25 @@ onMounted(() => {
         <span class="text-xs text-gray-500">访问页面</span>
         <Select
           v-model:value="filterSubGroup"
+          show-search
           style="width: 160px"
           :options="pageSelectOptions"
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
         />
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">统计时间</span>
+        <span class="text-xs text-gray-500">统计时间（最多 7 天）</span>
         <DatePicker.RangePicker
           v-model:value="filterVisitRange"
           format="YYYY-MM-DD"
+          :disabled-date="visitRangeLimit.disabledDate"
+          @calendar-change="visitRangeLimit.onCalendarChange"
+          @open-change="(open) => !open && visitRangeLimit.clearSelecting()"
         />
       </div>
       <Button type="primary" :loading="loading" @click="handleSearch">

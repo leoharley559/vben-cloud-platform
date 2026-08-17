@@ -316,8 +316,8 @@ const gridOptions: VxeTableGridOptions<EmailRow> = {
           Username: usernameParam(),
         };
         if (filterDateRange.value?.[0] && filterDateRange.value?.[1]) {
-          query.BeginTime = filterDateRange.value[0].startOf('day').unix();
-          query.EndTime = filterDateRange.value[1].endOf('day').unix();
+          query.BeginTime = filterDateRange.value?.[0]?.startOf('day').unix() || '';
+          query.EndTime = filterDateRange.value?.[1]?.endOf('day').unix() || '';
         }
         const result = await fetchGameEmailListApi(query);
         const items = (result.Items || []) as unknown as EmailRow[];

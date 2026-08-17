@@ -53,8 +53,8 @@ async function loadStats() {
   try {
     const [begin, end] = filterDateRange.value || [];
     const result = await fetchSelfReviewStatisticsListApi({
-      BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
-      EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+      BeginTime: begin ? begin.startOf('day').unix() : '',
+      EndTime: end ? end.endOf('day').unix() : '',
       Group: 'Cash',
       SubGroup: 'Recharge_Appeal_Click',
     });

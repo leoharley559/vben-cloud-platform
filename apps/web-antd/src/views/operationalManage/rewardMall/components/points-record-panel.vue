@@ -114,8 +114,8 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
   return {
     ApplyTimeBegin: begin
       ? begin.startOf('day').unix()
-      : defaultRange.BeginTime,
-    ApplyTimeEnd: end ? end.endOf('day').unix() : defaultRange.EndTime,
+      : '',
+    ApplyTimeEnd: end ? end.endOf('day').unix() : '',
     BonusCategory: filterBonusCategory.value,
     BonusTitle: filterBonusTitle.value.trim(),
     BonusType: filterBonusType.value,

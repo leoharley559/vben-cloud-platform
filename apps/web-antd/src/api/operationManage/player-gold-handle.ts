@@ -7,6 +7,7 @@ import { trimSpace } from '#/utils/string';
  *
  * @param query 账号、时间、状态等筛选及分页参数
  * @returns 金币操作记录 Items 与 Pagination
+ * HandleType=1 发放记录；HandleType=2 扣减记录（旧 takeRecord）
  * @see views/operationalManage/playerGoldHandle/components/gold-record-panel.vue
  */
 export function fetchPlayerGoldHandleListApi(query: Record<string, unknown>) {

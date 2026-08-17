@@ -143,9 +143,9 @@ function getStateColor(state?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     OrderId: filterOrderId.value,
     PlayerId: String(props.playerId),
     State: filterState.value,

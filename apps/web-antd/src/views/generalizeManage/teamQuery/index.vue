@@ -97,8 +97,8 @@ function getQueryParams(page?: { currentPage?: number; pageSize?: number }) {
   return {
     AdminId: filterAdminId.value ?? '',
     AdminUsername: filterAdminUsername.value.trim(),
-    BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
-    EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     Page: page?.currentPage || 1,
     PageSize: page?.pageSize || 20,
     Sort: '',

@@ -114,8 +114,8 @@ const gridOptions: VxeTableGridOptions<DailyRow> = {
           return { items: [], total: 0 };
         }
         const result = await fetchSmsDailyListApi({
-          BeginTime: dateRange.value[0].startOf('day').unix(),
-          EndTime: dateRange.value[1].endOf('day').unix(),
+          BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
+          EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
           Page: page.currentPage,
           PageSize: page.pageSize,
         });

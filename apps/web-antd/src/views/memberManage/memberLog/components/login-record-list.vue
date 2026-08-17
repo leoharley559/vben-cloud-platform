@@ -100,9 +100,9 @@ function formatDevicePlatform(value?: string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelId: filterChannelId.value || '',
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     Ip: filterIp.value.trim(),
     LoginAccount: filterLoginAccount.value
       .trim()

@@ -85,9 +85,9 @@ function getQueryParams() {
   const fallback = getTodayRangeSeconds();
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : fallback.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     CreateAdminId: filterCreateAdminId.value || '',
-    EndTime: end ? end.endOf('day').unix() : fallback.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     LogTypeId: filterLogTypeId.value || '',
   };
 }

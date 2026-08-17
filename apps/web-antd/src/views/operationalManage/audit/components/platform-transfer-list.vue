@@ -54,7 +54,7 @@ const filterType = ref<number | string>('');
 const filterOutGameId = ref<number | string>('');
 const filterInGameId = ref<number | string>('');
 const filterState = ref(-2);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
@@ -90,8 +90,8 @@ function normalizeLoginAccount() {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     InGameId: filterInGameId.value,
     LoginAccount: filterLoginAccount.value
       .trim()
@@ -213,6 +213,20 @@ const gridOptions: VxeTableGridOptions<PlatformTransferItem> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 const loading = computed(() => gridApi.grid?.loading ?? false);
+
+function resetFilters() {
+  filterLoginAccount.value = '';
+  filterOrderId.value = '';
+  filterType.value = '';
+  filterOutGameId.value = '';
+  filterInGameId.value = '';
+  filterState.value = -2;
+  filterDateRange.value = [
+    dayjs.unix(defaultRange.BeginTime),
+    dayjs.unix(defaultRange.EndTime),
+  ];
+  gridApi.reload();
+}
 
 function handleManual(row: PlatformTransferItem) {
   if (!row.Id) {
@@ -341,6 +355,34 @@ onMounted(async () => {
         style="width: 120px"
       />
       <Select
+        v-model:value="filterOutGameId"
+        allow-clear
+        show-search
+        :options="gameOptions"
+        placeholder="转出账户"
+        style="width: 160px"
+        :filter-option="
+          (input, option) =>
+            String(option?.label ?? '')
+              .toLowerCase()
+              .includes(input.toLowerCase())
+        "
+      />
+      <Select
+        v-model:value="filterInGameId"
+        allow-clear
+        show-search
+        :options="gameOptions"
+        placeholder="转入账户"
+        style="width: 160px"
+        :filter-option="
+          (input, option) =>
+            String(option?.label ?? '')
+              .toLowerCase()
+              .includes(input.toLowerCase())
+        "
+      />
+      <Select
         v-model:value="filterState"
         :options="[
           { label: '全部', value: -2 },
@@ -351,9 +393,21 @@ onMounted(async () => {
         ]"
         style="width: 140px"
       />
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <DatePicker.RangePicker
+        v-model:value="filterDateRange"
+        allow-clear
+      />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
+      </Button>
+      <Button @click="resetFilters">重置</Button>
+      <Button
+        v-if="canExport"
+        :loading="exportLoading"
+        type="primary"
+        @click="handleExport"
+      >
+        导出
       </Button>
     </div>
 

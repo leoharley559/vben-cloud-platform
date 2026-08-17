@@ -142,10 +142,10 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AmountType: 1,
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelIds: filterChannelIds.value,
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     LoginAccount: filterLoginAccount.value,
     NickName: filterNickName.value,
     OrderId: filterOrderId.value,

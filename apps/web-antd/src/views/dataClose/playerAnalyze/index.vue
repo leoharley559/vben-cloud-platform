@@ -172,8 +172,8 @@ function buildQuery(excel: 1 | 2) {
   return {
     Page: page.current,
     PageSize: page.pageSize,
-    BeginTime: range?.[0]?.startOf('day').unix(),
-    EndTime: range?.[1]?.endOf('day').unix(),
+    BeginTime: range?.[0]?.startOf('day').unix() || '',
+    EndTime: range?.[1]?.endOf('day').unix() || '',
     AdminIds: arrayToCsvParam(filters.AdminIds),
     PackageId: filters.PackageId || undefined,
     LoginAccount: filters.LoginAccount || undefined,

@@ -67,9 +67,9 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AccountName: filterAccountName.value,
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     IsBO: 1,
     PackageId: filterPackageId.value,
     PlayerAccount: filterPlayerAccount.value,

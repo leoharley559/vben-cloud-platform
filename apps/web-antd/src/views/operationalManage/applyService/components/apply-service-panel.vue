@@ -109,7 +109,7 @@ const filterEndReasonType = ref<number | string>();
 /** 旧站多选；含 '' 表示全部 */
 const filterStatus = ref<Array<number | string>>(['']);
 const isAllStatus = ref(true);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(todayRange());
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(todayRange());
 
 const workQuestOptions = ref<OptionItem[]>([]);
 const endReasonOptions = ref<OptionItem[]>([]);
@@ -208,10 +208,10 @@ function buildStatusParam() {
 }
 
 function buildListQuery(page?: { currentPage: number; pageSize: number }) {
-  const [begin, end] = filterDateRange.value;
+  const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin.startOf('day').unix(),
-    EndTime: end.endOf('day').unix(),
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     LoginAccount: filterLoginAccount.value.trim(),
     OperatorUsername: filterOperatorUsername.value.trim(),
     OrderId: filterOrderId.value.trim(),
@@ -497,8 +497,8 @@ async function loadFilterOptions() {
     const [workRes, endRes] = await Promise.all([
       fetchWorkQuestionTypeListApi(),
       fetchEndReasonListApi({
-        BeginTime: filterDateRange.value[0].startOf('day').unix(),
-        EndTime: filterDateRange.value[1].endOf('day').unix(),
+        BeginTime: filterDateRange.value?.[0]?.startOf('day').unix() || '',
+        EndTime: filterDateRange.value?.[1]?.endOf('day').unix() || '',
       }),
     ]);
     const workItems = (workRes.Items || [])

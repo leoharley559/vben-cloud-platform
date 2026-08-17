@@ -32,10 +32,10 @@ const columns = [
 async function loadData() {
   loading.value = true;
   try {
-    const [begin, end] = dateRange.value;
+    const [begin, end] = dateRange.value || [];
     const result = await fetchTeamQueryListApi({
-      BeginTime: begin.startOf('day').unix(),
-      EndTime: end.endOf('day').unix(),
+      BeginTime: begin ? begin.startOf('day').unix() : '',
+      EndTime: end ? end.endOf('day').unix() : '',
       Page: 1,
       PageSize: 50,
     });

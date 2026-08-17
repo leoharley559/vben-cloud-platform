@@ -283,8 +283,8 @@ function applyDateRange() {
     query.GroupEndTime = '';
     return;
   }
-  query.GroupBeginTime = dateRange.value[0].startOf('day').unix();
-  query.GroupEndTime = dateRange.value[1].endOf('day').unix();
+  query.GroupBeginTime = dateRange.value?.[0]?.startOf('day').unix() || '';
+  query.GroupEndTime = dateRange.value?.[1]?.endOf('day').unix() || '';
 }
 
 async function search() {

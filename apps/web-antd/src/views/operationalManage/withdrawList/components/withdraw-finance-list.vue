@@ -97,8 +97,8 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     HandlerName: filterHandlerName.value,
     // 对齐旧站 withdrawListSon：订单编号走 OrderIds（非 Keyword）
     OrderIds: filterOrderId.value,

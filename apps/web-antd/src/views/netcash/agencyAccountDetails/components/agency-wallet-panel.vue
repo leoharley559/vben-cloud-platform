@@ -226,16 +226,16 @@ function query(isExp = false) {
   if (activeTab.value === 'bonus') {
     return {
       ...base,
-      ApplyEndTime: bonusDateRange.value[1].endOf('day').unix(),
-      ApplyStartTime: bonusDateRange.value[0].startOf('day').unix(),
+      ApplyEndTime: bonusDateRange.value?.[1]?.endOf('day').unix() || '',
+      ApplyStartTime: bonusDateRange.value?.[0]?.startOf('day').unix() || '',
       Approve: approve.value,
       BonusType: bonusType.value,
     };
   }
   return {
     ...base,
-    TransferEndTime: logDateRange.value[1].endOf('day').unix(),
-    TransferStartTime: logDateRange.value[0].startOf('day').unix(),
+    TransferEndTime: logDateRange.value?.[1]?.endOf('day').unix() || '',
+    TransferStartTime: logDateRange.value?.[0]?.startOf('day').unix() || '',
     TransferType: transferType.value,
     WalletType: isCommission.value ? 1 : 2,
   };

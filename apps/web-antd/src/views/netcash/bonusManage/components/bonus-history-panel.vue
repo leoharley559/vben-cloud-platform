@@ -50,8 +50,8 @@ const historyFilters = reactive({
   Username: '',
   WalletType: '' as number | string,
 });
-const historyApplyRange = ref<[Dayjs, Dayjs]>(todayRange());
-const historyApproveRange = ref<[Dayjs, Dayjs]>(todayRange());
+const historyApplyRange = ref<[Dayjs, Dayjs] | null>(todayRange());
+const historyApproveRange = ref<[Dayjs, Dayjs] | null>(todayRange());
 const historyRows = ref<BonusManageItem[]>([]);
 const historyLoading = ref(false);
 const historyExporting = ref(false);
@@ -75,14 +75,14 @@ const historySummaryItems = computed(() => [
 ]);
 
 function historyQuery(isExport = false) {
-  const [applyBegin, applyEnd] = historyApplyRange.value || todayRange();
-  const [approveBegin, approveEnd] = historyApproveRange.value || todayRange();
+  const [applyBegin, applyEnd] = historyApplyRange.value || [];
+  const [approveBegin, approveEnd] = historyApproveRange.value || [];
   return {
     ...historyFilters,
-    ApproveBeginTime: approveBegin.startOf('day').unix(),
-    ApproveEndTime: approveEnd.endOf('day').unix(),
-    BeginTime: applyBegin.startOf('day').unix(),
-    EndTime: applyEnd.endOf('day').unix(),
+    ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
+    ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
+    BeginTime: applyBegin ? applyBegin.startOf('day').unix() : '',
+    EndTime: applyEnd ? applyEnd.endOf('day').unix() : '',
     IsExp: isExport,
     Page: isExport ? 1 : historyPage.value,
     PageSize: isExport ? 9999 : historyPageSize.value,
@@ -264,9 +264,15 @@ onMounted(() => {
         <template #addonBefore>审核备注</template>
       </Input>
       <span class="text-gray-500">申请时间</span>
-      <DatePicker.RangePicker v-model:value="historyApplyRange" />
+      <DatePicker.RangePicker
+        v-model:value="historyApplyRange"
+        allow-clear
+      />
       <span class="text-gray-500">审核时间</span>
-      <DatePicker.RangePicker v-model:value="historyApproveRange" />
+      <DatePicker.RangePicker
+        v-model:value="historyApproveRange"
+        allow-clear
+      />
       <Button type="primary" @click="searchHistory">查询</Button>
       <Button @click="resetHistory">重置</Button>
     </div>

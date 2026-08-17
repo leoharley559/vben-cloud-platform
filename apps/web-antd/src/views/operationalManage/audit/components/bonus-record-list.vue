@@ -96,7 +96,7 @@ const filterSendType = ref(-1);
 const filterVipLevel = ref(-1);
 const filterBonusTypes = ref<Array<number | string>>([]);
 const filterPackageId = ref<number | string>('');
-const filterApplyDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterApplyDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
@@ -137,12 +137,8 @@ function getQueryParams() {
   const [finishBegin, finishEnd] = finishRange;
   return {
     ActivityType: filterActivityType.value,
-    ApplyBeginTime: applyBegin
-      ? applyBegin.startOf('day').unix()
-      : defaultRange.BeginTime,
-    ApplyEndTime: applyEnd
-      ? applyEnd.endOf('day').unix()
-      : defaultRange.EndTime,
+    ApplyBeginTime: applyBegin ? applyBegin.startOf('day').unix() : '',
+    ApplyEndTime: applyEnd ? applyEnd.endOf('day').unix() : '',
     BonusTitle: filterBonusTitle.value.trim(),
     BonusType: filterBonusTypes.value,
     ChannelIds: filterChannelIds.value,
@@ -636,11 +632,17 @@ onMounted(() => {
       />
       <div class="flex items-center gap-1">
         <span class="whitespace-nowrap text-sm text-gray-500">申请时间</span>
-        <DatePicker.RangePicker v-model:value="filterApplyDateRange" />
+        <DatePicker.RangePicker
+          v-model:value="filterApplyDateRange"
+          allow-clear
+        />
       </div>
       <div class="flex items-center gap-1">
         <span class="whitespace-nowrap text-sm text-gray-500">审核时间</span>
-        <DatePicker.RangePicker v-model:value="filterFinishDateRange" />
+        <DatePicker.RangePicker
+          v-model:value="filterFinishDateRange"
+          allow-clear
+        />
       </div>
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询

@@ -185,8 +185,8 @@ function detailQuery(withPage = true) {
     PlayerId: playerId.value.trim() || '-1',
     Sort: detailSort.value,
     SubGroup: 'Enter',
-    VisitBeginTime: visitRange.value[0].startOf('day').unix(),
-    VisitEndTime: visitRange.value[1].endOf('day').unix(),
+    VisitBeginTime: visitRange.value?.[0]?.startOf('day').unix() || '',
+    VisitEndTime: visitRange.value?.[1]?.endOf('day').unix() || '',
   };
   if (withPage) {
     query.Page = detailPage.value;
@@ -360,8 +360,8 @@ async function loadStatistics() {
       Group: 'Withdraw',
       Key: statisticsKey.value,
       SubGroup: 'Enter',
-      VisitBeginTime: statisticsRange.value[0].startOf('day').unix(),
-      VisitEndTime: statisticsRange.value[1].endOf('day').unix(),
+      VisitBeginTime: statisticsRange.value?.[0]?.startOf('day').unix() || '',
+      VisitEndTime: statisticsRange.value?.[1]?.endOf('day').unix() || '',
     });
     deviceList.value = result.DeviceList as StatisticsRow[];
     userTypeList.value = result.UserTypeList as StatisticsRow[];

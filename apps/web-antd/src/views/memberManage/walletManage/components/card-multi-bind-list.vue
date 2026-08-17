@@ -56,8 +56,8 @@ function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     BankAccount: filterBankAccount.value.trim() || undefined,
-    BeginTime: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
-    EndTime: end ? end.endOf('day').unix() : defaultEnd.unix(),
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     ...extra,
   };
 }

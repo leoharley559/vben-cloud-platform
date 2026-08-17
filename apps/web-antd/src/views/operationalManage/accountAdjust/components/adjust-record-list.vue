@@ -67,6 +67,8 @@ const summaryItems = computed(() => [
 
 const filterOrderId = ref('');
 const filterLoginAccount = ref('');
+const filterPlayerId = ref('');
+const filterPlayerName = ref('');
 const filterPackageId = ref<number | string>('');
 const filterChannelIds = ref<Array<number | string>>([]);
 const filterAdminUserName = ref('');
@@ -78,11 +80,11 @@ const filterHandlerName = ref('');
 const filterApproveName = ref('');
 const filterWaterTypeIncDec = ref<Array<number | string>>(['1,2,3,4']);
 const filterDataSearchType = ref(0);
-const filterCreateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterCreateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
-const filterApproveRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterApproveRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
@@ -118,21 +120,18 @@ function normalizeLoginAccount() {
 function getQueryParams(page?: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterCreateRange.value || [];
   const [approveBegin, approveEnd] = filterApproveRange.value || [];
+  // 置空时传空串（对齐老站 search-type-two），勿回退默认近 N 天，否则会与另一时间条件叠加成空结果
   return {
     AdminUserName: filterAdminUserName.value.trim(),
     Approve: filterApprove.value,
-    ApproveBeginTime: approveBegin
-      ? approveBegin.startOf('day').unix()
-      : defaultRange.BeginTime,
-    ApproveEndTime: approveEnd
-      ? approveEnd.endOf('day').unix()
-      : defaultRange.EndTime,
+    ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
+    ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
     ApproveName: filterApproveName.value.trim(),
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelIds: channelIdsParam(),
     DataSearchType: filterDataSearchType.value,
     Done: normalizeMultiFilterParam(filterDone.value, '0,1,2,3,4'),
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     HandleType: filterHandleType.value,
     HandlerName: filterHandlerName.value.trim(),
     IsApprove: 1,
@@ -144,6 +143,8 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
     PackageId: filterPackageId.value || '',
     Page: page?.currentPage ?? 1,
     PageSize: page?.pageSize ?? 20,
+    PlayerId: filterPlayerId.value.trim(),
+    PlayerName: filterPlayerName.value.trim(),
     Reason: filterReason.value,
     WaterTypeIncDec: normalizeMultiFilterParam(
       filterWaterTypeIncDec.value,
@@ -196,6 +197,17 @@ const gridOptions: VxeTableGridOptions<PlayerAdjustListItem> = {
       minWidth: 130,
       slots: { default: 'loginAccount' },
       title: '游戏账号',
+    },
+    {
+      field: 'PlayerId',
+      minWidth: 100,
+      title: '玩家ID',
+    },
+    {
+      field: 'PlayerName',
+      formatter: ({ cellValue }) => String(cellValue || '-'),
+      minWidth: 100,
+      title: '玩家昵称',
     },
     {
       field: 'AdminUserName',
@@ -289,6 +301,8 @@ const gridOptions: VxeTableGridOptions<PlayerAdjustListItem> = {
       '-',
       '-',
       '-',
+      '-',
+      '-',
       formatAmountFromCent(totalAmount.value),
       '-',
       '-',
@@ -308,6 +322,8 @@ const loading = computed(() => gridApi.grid?.loading ?? false);
 function resetFilters() {
   filterOrderId.value = '';
   filterLoginAccount.value = '';
+  filterPlayerId.value = '';
+  filterPlayerName.value = '';
   filterPackageId.value = '';
   filterChannelIds.value = [];
   filterAdminUserName.value = '';
@@ -363,6 +379,14 @@ async function handleExport() {
           value: (row) => formatAdjustHandleType(row.HandleType),
         },
         { header: '游戏账号', value: (row) => row.LoginAccount || '-' },
+        {
+          header: '玩家ID',
+          value: (row) => String(row.PlayerId ?? '-'),
+        },
+        {
+          header: '玩家昵称',
+          value: (row) => row.PlayerName || '-',
+        },
         { header: '代理账号', value: (row) => row.AdminUserName || '-' },
         { header: '所属产品', value: (row) => row.PackageName || '-' },
         { header: '所属渠道', value: (row) => formatChannel(row) },
@@ -424,6 +448,22 @@ onMounted(() => {
         @change="normalizeLoginAccount"
       >
         <template #addonBefore>游戏账号</template>
+      </Input>
+      <Input
+        v-model:value="filterPlayerId"
+        allow-clear
+        placeholder="请输入"
+        style="width: 180px"
+      >
+        <template #addonBefore>玩家ID</template>
+      </Input>
+      <Input
+        v-model:value="filterPlayerName"
+        allow-clear
+        placeholder="请输入"
+        style="width: 180px"
+      >
+        <template #addonBefore>玩家昵称</template>
       </Input>
       <Select
         v-model:value="filterPackageId"
@@ -507,11 +547,17 @@ onMounted(() => {
       />
       <div class="flex items-center gap-1">
         <span class="text-xs text-gray-500">创建时间</span>
-        <DatePicker.RangePicker v-model:value="filterCreateRange" />
+        <DatePicker.RangePicker
+          v-model:value="filterCreateRange"
+          allow-clear
+        />
       </div>
       <div class="flex items-center gap-1">
         <span class="text-xs text-gray-500">审核时间</span>
-        <DatePicker.RangePicker v-model:value="filterApproveRange" />
+        <DatePicker.RangePicker
+          v-model:value="filterApproveRange"
+          allow-clear
+        />
       </div>
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询

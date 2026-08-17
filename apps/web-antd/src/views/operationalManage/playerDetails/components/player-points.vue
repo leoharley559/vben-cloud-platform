@@ -49,8 +49,8 @@ function getQueryParams() {
   return {
     ApplyTimeBegin: begin
       ? begin.startOf('day').unix()
-      : defaultRange.BeginTime,
-    ApplyTimeEnd: end ? end.endOf('day').unix() : defaultRange.EndTime,
+      : '',
+    ApplyTimeEnd: end ? end.endOf('day').unix() : '',
     Full: true,
     PlayerId: String(props.playerId),
     PointType: filterPointType.value,

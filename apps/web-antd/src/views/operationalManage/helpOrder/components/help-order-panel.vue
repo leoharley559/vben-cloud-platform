@@ -135,9 +135,9 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   const query: Record<string, unknown> = {
     // 对齐旧站 SearchTypeTwo：保留 RangePicker 时分秒
-    BeginTime: begin ? begin.startOf('day').unix() : fallback.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     Creator: '',
-    EndTime: end ? end.endOf('day').unix() : fallback.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     Keyword: '',
     Page: page.currentPage,
     PageSize: page.pageSize,

@@ -1,8 +1,51 @@
+import type { Dayjs } from 'dayjs';
+
+import dayjs from 'dayjs';
+
 import type { CloudProjectConfig } from '#/types/cloud-platform';
 
 export interface ProjectConfigOption {
   Name: string;
   Value: number | string;
+}
+
+/** 对齐旧站 monthRangeDate limit-number：选中一端后限制另一端跨度 */
+export function createRangeDayLimiter(maxDays: number) {
+  let selecting: Dayjs | undefined;
+
+  function disabledDate(current: Dayjs) {
+    if (!selecting) {
+      return false;
+    }
+    const min = selecting.subtract(maxDays, 'day');
+    const max = selecting.add(maxDays, 'day');
+    return current.isBefore(min, 'day') || current.isAfter(max, 'day');
+  }
+
+  function onCalendarChange(
+    dates: [Dayjs, Dayjs] | [string, string] | null,
+  ) {
+    const first = dates?.[0];
+    selecting = first
+      ? dayjs.isDayjs(first)
+        ? first
+        : dayjs(first)
+      : undefined;
+  }
+
+  function clearSelecting() {
+    selecting = undefined;
+  }
+
+  /** 已选区间是否超过 maxDays（含起止共 maxDays+1 天时按旧站 secondNum=maxDays*86400000 卡控） */
+  function isRangeTooLong(range?: [Dayjs, Dayjs] | null) {
+    if (!range?.[0] || !range?.[1]) {
+      return false;
+    }
+    return range[1].startOf('day').diff(range[0].startOf('day'), 'day') > maxDays;
+  }
+
+  return { clearSelecting, disabledDate, isRangeTooLong, onCalendarChange };
 }
 
 /** 从 ProjectConfig 数组按 Key 解析 JSON 下拉 */

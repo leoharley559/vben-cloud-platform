@@ -55,9 +55,9 @@ const platformGameOptions = computed(() =>
 function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     GameIds: filterGameIds.value,
     LoginAccount: props.loginAccount || '',
     PlayerId: String(props.playerId),

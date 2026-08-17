@@ -105,9 +105,9 @@ function formatWaterStatus(status?: number) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelId: filterChannelId.value,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     HandlerName: filterHandlerName.value,
     LoginAccount: filterLoginAccount.value,
     PackageIds: filterPackageId.value,

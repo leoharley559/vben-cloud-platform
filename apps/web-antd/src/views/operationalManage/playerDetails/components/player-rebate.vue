@@ -90,8 +90,8 @@ function getQueryParams() {
     AwardStatus: filterAwardStatus.value,
     AwardTimeBegin: begin
       ? begin.startOf('day').unix()
-      : defaultRange.BeginTime,
-    AwardTimeEnd: end ? end.endOf('day').unix() : defaultRange.EndTime,
+      : '',
+    AwardTimeEnd: end ? end.endOf('day').unix() : '',
     DataSearchType: 2,
     OrderId: filterOrderId.value,
     PlayerId: String(props.playerId),

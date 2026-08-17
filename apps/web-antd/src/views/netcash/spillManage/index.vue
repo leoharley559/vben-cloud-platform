@@ -90,8 +90,8 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
     PageSize: page.pageSize,
     PlayerId: '',
     Status: status,
-    TimeBegin: begin ? begin.startOf('day').unix() : defaultBegin.unix(),
-    TimeEnd: end ? end.endOf('day').unix() : defaultEnd.unix(),
+    TimeBegin: begin ? begin.startOf('day').unix() : '',
+    TimeEnd: end ? end.endOf('day').unix() : '',
     VipLevel: filterVipLevel.value ?? -1,
   };
 }

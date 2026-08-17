@@ -109,9 +109,9 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
   return {
     AdjustType: 1,
     AdminUserName: filterAdminUserName.value.trim(),
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelIds: channelIdsParam(),
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     HandleType: filterHandleType.value,
     IsApprove: true,
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),

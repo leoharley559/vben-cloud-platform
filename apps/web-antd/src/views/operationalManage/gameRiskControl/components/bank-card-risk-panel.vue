@@ -46,7 +46,7 @@ const canWrite = computed(() => checkPermission(10048));
 const filterLoginAccount = ref('');
 const filterKeyword = ref('');
 const filterSourceType = ref<number | string>('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs().subtract(1, 'month').startOf('day'),
   dayjs().endOf('day'),
 ]);
@@ -112,8 +112,8 @@ function resolveOperator() {
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin?.startOf('day').unix(),
-    EndTime: end?.endOf('day').unix(),
+    BeginTime: begin?.startOf('day').unix() || '',
+    EndTime: end?.endOf('day').unix() || '',
     FilterKey: 'SourceType',
     FilterValue: filterSourceType.value,
     Keyword: filterKeyword.value.trim(),
@@ -354,7 +354,10 @@ onMounted(() => {
         placeholder="来源"
         style="width: 140px"
       />
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <DatePicker.RangePicker
+        v-model:value="filterDateRange"
+        allow-clear
+      />
       <Space>
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button @click="resetFilters">重置</Button>

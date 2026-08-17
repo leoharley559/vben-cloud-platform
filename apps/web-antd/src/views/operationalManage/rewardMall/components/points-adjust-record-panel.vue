@@ -92,11 +92,11 @@ const filterHandleType = ref<number>(-1);
 const filterApprove = ref<number | string>('2,3,4');
 const filterApplyName = ref('');
 const filterApproveName = ref('');
-const filterCreateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterCreateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
-const filterApproveRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+const filterApproveRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
 ]);
@@ -125,17 +125,13 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
     AdminUserName: filterAdminUserName.value.trim(),
     ApplyName: filterApplyName.value.trim(),
     Approve: filterApprove.value,
-    ApproveBeginTime: approveBegin
-      ? approveBegin.startOf('day').unix()
-      : defaultRange.BeginTime,
-    ApproveEndTime: approveEnd
-      ? approveEnd.endOf('day').unix()
-      : defaultRange.EndTime,
+    ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
+    ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
     ApproveName: filterApproveName.value.trim(),
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     ChannelIds: channelIdsParam(),
     Done: normalizeMultiParam(filterDone.value, '0,1,2,3,4'),
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     HandleType: filterHandleType.value,
     IsApprove: false,
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
@@ -441,11 +437,17 @@ onMounted(() => {
       </Input>
       <div class="flex items-center gap-1">
         <span class="text-xs text-gray-500">创建时间</span>
-        <DatePicker.RangePicker v-model:value="filterCreateRange" />
+        <DatePicker.RangePicker
+          v-model:value="filterCreateRange"
+          allow-clear
+        />
       </div>
       <div class="flex items-center gap-1">
         <span class="text-xs text-gray-500">审核时间</span>
-        <DatePicker.RangePicker v-model:value="filterApproveRange" />
+        <DatePicker.RangePicker
+          v-model:value="filterApproveRange"
+          allow-clear
+        />
       </div>
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询

@@ -48,8 +48,8 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.endOf('day').unix() : '',
     OrderId: filterOrderId.value,
     PlayerId: String(props.playerId),
     SelectTimeType: 1,

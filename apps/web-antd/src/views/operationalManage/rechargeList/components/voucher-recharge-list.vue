@@ -53,10 +53,10 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : defaultRange.BeginTime,
+    BeginTime: begin ? begin.startOf('day').unix() : '',
     DataSearchType: 0,
     DigitalDeliveryInfo: '',
-    EndTime: end ? end.endOf('day').unix() : defaultRange.EndTime,
+    EndTime: end ? end.endOf('day').unix() : '',
     ExchangeCode: filterExchangeCode.value,
     GameOrderId: filterGameOrderId.value,
     LoginAccount: filterLoginAccount.value,
