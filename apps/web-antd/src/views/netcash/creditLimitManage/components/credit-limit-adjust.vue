@@ -280,13 +280,13 @@ onMounted(load);
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="query.AgentAccount"
           allow-clear
           @press-enter="search"
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -294,18 +294,23 @@ onMounted(load);
       </div>
       <Space.Compact>
         <span class="query-field-addon">代理类型</span>
-        <Select v-model:value="query.AccountTypes" :options="accountTypeOptions.slice(1)" mode="multiple" style="min-width: 220px" placeholder="请选择代理类型" />
+        <Select v-model:value="query.AccountTypes" :options="accountTypeOptions.slice(1)" mode="multiple" placeholder="请选择代理类型" />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="agentCreateRange" />
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="agentCreateRange" />
+        </div>
       <InputNumber v-model:value="query.BeginCreditRange" :min="0" :precision="2" placeholder="请输入最小额度（元）" />
       <span>至</span>
       <InputNumber v-model:value="query.EndCreditRange" :min="0" :precision="2" placeholder="请输入最大额度（元）" />
-      <Button type="primary" @click="search">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
       <Button v-if="checkPermission(11_802)" :loading="exporting" @click="handleExport">导出</Button>
       <Button v-if="checkPermission(11_753)" @click="openTransferLimit">转账限额设置</Button>
       <Button v-if="checkPermission(11_754)" type="primary" @click="openAdjust()">批量调整代理</Button>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

@@ -189,17 +189,21 @@ onMounted(() => {
 <template>
   <div>
     <Card size="small" title="周期数据">
-      <div class="mb-4 flex flex-wrap items-end justify-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" />
         </div>
-        <Space>
+        <div class="query-filter-actions">
+          <Space>
           <Button :loading="loading" type="primary" @click="handleSearch">
             查询
           </Button>
           <Button @click="handleReset">重置</Button>
         </Space>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <Grid>
         <template #winLoss="{ row }">

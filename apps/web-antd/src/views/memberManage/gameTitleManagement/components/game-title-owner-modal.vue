@@ -394,12 +394,12 @@ watch(
     @cancel="closeModal"
   >
     <template v-if="canViewTable">
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterAccount"
             allow-clear
-            style="width: 240px"
             placeholder="请输入游戏账号"
           >
             <template #addonBefore>游戏账号</template>
@@ -408,7 +408,7 @@ watch(
         <Select
           v-model:value="filterPackageId"
           allow-clear
-          class="w-40"
+         
           :options="
             packageOptions.map((item) => ({
               label: item.PackageName,
@@ -417,7 +417,8 @@ watch(
           "
           placeholder="请选择产品"
         />
-        <Space wrap>
+        <div class="query-filter-actions">
+          <Space wrap>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button v-if="canIssue" type="primary" @click="issueOpen = true">
             发放称号
@@ -442,7 +443,9 @@ watch(
             导出
           </Button>
         </Space>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <Grid>
         <template #loginAccount="{ row }">

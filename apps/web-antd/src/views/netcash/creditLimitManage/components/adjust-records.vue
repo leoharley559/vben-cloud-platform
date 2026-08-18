@@ -119,13 +119,13 @@ onMounted(load);
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="query.AgentAccount"
           allow-clear
           @press-enter="search"
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -133,28 +133,28 @@ onMounted(load);
       </div>
       <Space.Compact>
         <span class="query-field-addon">代理类型</span>
-        <Select v-model:value="query.AccountType" :options="accountTypeOptions" style="width: 150px" placeholder="请选择代理类型" />
+        <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="请选择代理类型" />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">申请类型</span>
-        <Select v-model:value="query.TransferType" :options="transferTypeOptions" style="width: 150px" placeholder="请选择申请类型" />
+        <Select v-model:value="query.TransferType" :options="transferTypeOptions" placeholder="请选择申请类型" />
       </Space.Compact>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="query.ApplyAccount"
           allow-clear
-          style="width: 210px"
           placeholder="请输入申请人"
         >
           <template #addonBefore>申请人</template>
         </Input>
       </div>
-      <QueryDatetimeRangePicker v-model="applyRange" />
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="applyRange" />
+        </div>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="query.FinishAccount"
           allow-clear
-          style="width: 210px"
           placeholder="请输入审核人"
         >
           <template #addonBefore>审核人</template>
@@ -162,12 +162,17 @@ onMounted(load);
       </div>
       <Space.Compact>
         <span class="query-field-addon">审核结果</span>
-        <Select v-model:value="query.Status" :options="statusOptions" style="width: 150px" placeholder="请选择审核结果" />
+        <Select v-model:value="query.Status" :options="statusOptions" placeholder="请选择审核结果" />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="finishRange" />
-      <Button type="primary" @click="search">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="finishRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1850 }" size="small">

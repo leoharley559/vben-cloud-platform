@@ -543,22 +543,25 @@ function handleReset() {
 <template>
   <div>
     <div class="query-panel">
-      <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterName"
             allow-clear
             class="!w-[280px]"
             @press-enter="handleSearch"
-            style="width: 220px"
             placeholder="请输入场馆名称"
           >
             <template #addonBefore>场馆名称</template>
           </Input>
         </div>
-        <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-      </div>
+        </div>
+    </div>
+  </div>
     </div>
 
     <div class="venue-grid">
@@ -649,7 +652,7 @@ function handleReset() {
           </Radio.Group>
         </Form.Item>
         <Form.Item v-if="showTimedPicker" label="定时关闭时间" required>
-          <QueryDatetimeRangePicker v-model="switchRange" />
+        <QueryDatetimeRangePicker v-model="switchRange" />
         </Form.Item>
       </Form>
     </Modal>
@@ -672,7 +675,7 @@ function handleReset() {
           />
         </Form.Item>
         <Form.Item label="维护显示时间">
-          <QueryDatetimeRangePicker v-model="maintainRange" />
+        <QueryDatetimeRangePicker v-model="maintainRange" />
         </Form.Item>
         <Form.Item label="维护显示内容">
           <Input.TextArea

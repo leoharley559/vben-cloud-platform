@@ -216,9 +216,10 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col gap-4">
-    <div class="mb-1">
-      <Space wrap class="w-full">
-        <Space.Compact>
+    <div class="ops-query-scope mb-1">
+    <div class="ops-query-filters">
+              
+          <Space.Compact>
           <Select
             class="query-auto-select"
             :popup-match-select-width="false"
@@ -231,13 +232,11 @@ onMounted(() => {
           <AccountSelect
             v-if="adminSearchType === 0"
             v-model="adminSearch"
-            style="width: 220px"
           />
           <Input
             v-else
             v-model:value="adminSearch as string"
             allow-clear
-            style="width: 220px"
             placeholder="请输入账号"
             />
         </Space.Compact>
@@ -255,20 +254,17 @@ onMounted(() => {
           <ChannelSelect
             v-if="channelSearchType === 0"
             v-model="channelSearch"
-            style="width: 220px"
             placeholder="请输入渠道号"
           />
           <Input
             v-else
             v-model:value="channelSearch as string"
             allow-clear
-            style="width: 220px"
             placeholder="请输入渠道"
             />
         </Space.Compact>
 
-        <Space>
-          <Space.Compact>
+        <Space.Compact>
             <span class="query-field-addon">产品</span>
             <Select
               v-model:value="packageId"
@@ -279,37 +275,29 @@ onMounted(() => {
                 }))
               "
               allow-clear
-              style="width: 180px"
               placeholder="请选择产品"
             />
           </Space.Compact>
-        </Space>
 
-        <Space>
-          <Space.Compact>
+        <Space.Compact>
             <span class="query-field-addon">上架包</span>
             <Select
               v-model:value="appUrl"
               :options="appUrlOptions"
               allow-clear
               mode="multiple"
-              style="width: 220px"
               placeholder="请选择上架包"
             />
           </Space.Compact>
-        </Space>
 
-        <Space>
-          <Space.Compact>
+        <Space.Compact>
             <span class="query-field-addon">数据类型</span>
             <Select
               v-model:value="dataSearchType"
               :options="memberTypeOptions"
-              style="width: 120px"
               placeholder="请选择数据类型"
             />
           </Space.Compact>
-        </Space>
 
         <Select
           class="query-auto-select"
@@ -321,35 +309,23 @@ onMounted(() => {
           ]"
         />
 
-        <Space>
+        <div class="query-filter-wide">
           <Space.Compact>
             <span class="query-field-addon">日期</span>
             <DatePicker.RangePicker
               v-model:value="dateRange"
               :format="dateFormat"
               :picker="pickerMode"
-              style="width: 260px"
             />
           </Space.Compact>
-        </Space>
-
-        <Button type="primary" @click="handleSearch">查询</Button>
+        </div>
+        
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-      </Space>
-
-      <div class="mt-3 flex justify-end gap-2">
-        <Button
-          v-if="canExportToday"
-          :loading="todayExportLoading"
-          type="default"
-          @click="handleExportToday"
-        >
-          导出今日数据
-        </Button>
-        <Button v-if="canExport" type="primary" @click="handleExportHistory">
-          导出 Excel
-        </Button>
-      </div>
+        </div>
+    </div>
+  </div>
     </div>
 
     <Card v-if="canRealtime" size="small" title="实时数据">

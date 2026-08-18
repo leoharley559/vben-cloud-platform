@@ -224,8 +224,9 @@ async function submitEdit() {
     type="info"
   />
   <div class="query-panel">
-    <Space wrap>
-      <Select
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <Select
         v-model:value="status"
         class="!w-[160px]"
         :options="[
@@ -234,10 +235,15 @@ async function submitEdit() {
           { label: '停用', value: 2 },
         ]"
       />
-      <QueryDatetimeRangePicker v-model="dateRange" />
-      <Button type="primary" @click="search">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
-    </Space>
+        </div>
+    </div>
+  </div>
   </div>
   <div class="data-grid">
     <Grid>

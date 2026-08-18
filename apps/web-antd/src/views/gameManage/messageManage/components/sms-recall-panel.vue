@@ -358,7 +358,9 @@ async function exportDetail() {
     </Space>
   </div>
   <div class="query-panel">
-    <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+    <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+        </div>
     <Space>
       <Button type="primary" @click="reloadFirstPage">查询</Button>
       <Button @click="reset">重置</Button>

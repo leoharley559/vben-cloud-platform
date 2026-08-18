@@ -174,19 +174,20 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterDeviceId"
           allow-clear
-          style="width: 240px"
           @press-enter="gridApi.reload()"
           placeholder="请输入设备号"
         >
           <template #addonBefore>设备号</template>
         </Input>
       </div>
-      <Space wrap>
+        <div class="query-filter-actions">
+          <Space wrap>
         <Button :loading="loading" type="primary" @click="gridApi.reload()">
           查询
         </Button>
@@ -202,7 +203,9 @@ onMounted(() => {
           批量删除
         </Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #actions="{ row }">

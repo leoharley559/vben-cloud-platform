@@ -318,12 +318,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 220px"
           @press-enter="handleSearch"
           placeholder="请输入订单编号"
         >
@@ -335,7 +335,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 200px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -355,7 +354,6 @@ onMounted(() => {
                 value: item.PackageId,
               }))
           "
-          style="width: 160px"
           placeholder="请选择产品"
         />
       </Space.Compact>
@@ -366,7 +364,6 @@ onMounted(() => {
           v-model:value="filterStatus"
           allow-clear
           :options="EASY_RECHARGE_STATUS_OPTIONS"
-          style="width: 140px"
           placeholder="请选择状态"
         />
       </Space.Compact>
@@ -376,14 +373,15 @@ onMounted(() => {
         <Select
           v-model:value="filterDataSearchType"
           :options="memberTypeOptions"
-          style="width: 120px"
           placeholder="请选择数据类型"
         />
       </Space.Compact>
 
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
@@ -392,7 +390,9 @@ onMounted(() => {
           导出
         </Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <div class="mb-4 grid gap-3 md:grid-cols-4">
       <div class="rounded border p-3 text-sm">

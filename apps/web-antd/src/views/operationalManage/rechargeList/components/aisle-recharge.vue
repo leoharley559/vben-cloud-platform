@@ -352,12 +352,12 @@ defineExpose({
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 220px"
           @press-enter="handleSearch"
           placeholder="请输入订单编号"
         >
@@ -369,7 +369,6 @@ defineExpose({
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 200px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -381,7 +380,6 @@ defineExpose({
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          style="width: 180px"
           @press-enter="handleSearch"
           placeholder="请输入玩家ID"
         >
@@ -400,7 +398,6 @@ defineExpose({
                 value: item.PackageId,
               }))
             "
-            style="width: 180px"
             placeholder="请选择产品"
           />
         </Space.Compact>
@@ -409,7 +406,7 @@ defineExpose({
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">渠道</span>
-          <ChannelSelect v-model="filterChannelIds" style="width: 260px" placeholder="请输入渠道号" />
+          <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
         </Space.Compact>
       </div>
 
@@ -417,7 +414,6 @@ defineExpose({
         <Input
           v-model:value="filterNickName"
           allow-clear
-          style="width: 220px"
           @press-enter="handleSearch"
           placeholder="请输入通道名称"
         >
@@ -432,7 +428,6 @@ defineExpose({
             v-model:value="filterStatus"
             allow-clear
             :options="RECHARGE_STATUS_OPTIONS"
-            style="width: 140px"
             placeholder="请选择状态"
           />
         </Space.Compact>
@@ -444,24 +439,25 @@ defineExpose({
           <Select
             v-model:value="filterDataSearchType"
             :options="memberTypeOptions"
-            style="width: 120px"
             placeholder="请选择数据类型"
           />
         </Space.Compact>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
-      </div>
-
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
         <Button @click="handleReset">重置</Button>
         <Button v-if="canBlankOrder" @click="blankOpen = true">补空单</Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

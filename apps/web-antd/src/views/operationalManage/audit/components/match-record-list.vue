@@ -478,12 +478,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 200px"
           @change="normalizeLoginAccount"
           placeholder="请输入游戏账号"
         >
@@ -496,7 +496,6 @@ onMounted(() => {
           v-model:value="filterPackageId"
           allow-clear
           :options="packageSelectOptions"
-          style="width: 160px"
           show-search
           :filter-option="
             (input, option) =>
@@ -511,7 +510,6 @@ onMounted(() => {
         <Input
           v-model:value="filterBonusTitle"
           allow-clear
-          style="width: 180px"
           placeholder="请输入活动标题"
         >
           <template #addonBefore>活动标题</template>
@@ -521,7 +519,6 @@ onMounted(() => {
         <Input
           v-model:value="filterPageTitle"
           allow-clear
-          style="width: 180px"
           placeholder="请输入活动分页"
         >
           <template #addonBefore>活动分页</template>
@@ -531,7 +528,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 200px"
           placeholder="请输入订单号"
         >
           <template #addonBefore>订单号</template>
@@ -541,7 +537,6 @@ onMounted(() => {
         <Input
           v-model:value="filterApplyNote"
           allow-clear
-          style="width: 180px"
           placeholder="请输入申请信息"
         >
           <template #addonBefore>申请信息</template>
@@ -553,7 +548,6 @@ onMounted(() => {
           v-model:value="filterAuditStatus"
           allow-clear
           :options="auditStatusOptions"
-          style="width: 120px"
           placeholder="请选择审核状态"
         />
       </Space.Compact>
@@ -563,28 +557,30 @@ onMounted(() => {
           v-model:value="filterPlayerStatus"
           allow-clear
           :options="PLAYER_STATUS_OPTIONS"
-          style="width: 120px"
           placeholder="请选择玩家状态"
         />
       </Space.Compact>
       <Select
         v-model:value="filterVipLevel"
         :options="VIP_LEVEL_OPTIONS"
-        style="width: 100px"
       />
       <Select
         v-model:value="filterReviewNote"
         :options="reviewNoteOptions"
-        style="width: 120px"
       />
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button :loading="loading" type="primary" @click="gridApi.reload()">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
         导出 CSV
       </Button>
+        </div>
     </div>
+  </div>
 
     <div
       v-if="canBatchApprove || canBatchReject"

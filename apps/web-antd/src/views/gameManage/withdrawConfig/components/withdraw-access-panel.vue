@@ -404,7 +404,6 @@ onMounted(() => {
               <Input
                 v-model:value="playerId"
                 allow-clear
-                style="width: 230px"
                 @press-enter="searchDetail"
                 placeholder="请输入游戏账号"
               >
@@ -417,20 +416,16 @@ onMounted(() => {
                 <Select
                   v-model:value="detailKey"
                   :options="withdrawPageOptions"
-                  style="width: 160px"
                   placeholder="请选择访问页面"
                 />
               </Space.Compact>
-            
             </div>
-            <div class="flex flex-col gap-1">
-              <QueryDatetimeRangePicker v-model="visitRange" label="访问时间" />
-            
-            </div>
-            <div class="flex flex-col gap-1">
-              <QueryDatetimeRangePicker v-model="leaveRange" label="离开时间" />
-            
-            </div>
+            <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="visitRange" label="访问时间" />
+        </div>
+            <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="leaveRange" label="离开时间" />
+        </div>
             <div class="flex flex-col gap-1">
               <Space.Compact>
                 <span class="query-field-addon">访问时长</span>
@@ -440,7 +435,6 @@ onMounted(() => {
                   format="HH:mm:ss"
                 />
               </Space.Compact>
-            
             </div>
             <div class="flex flex-col gap-1">
               <Space.Compact>
@@ -448,13 +442,12 @@ onMounted(() => {
                 <Select
                   v-model:value="appType"
                   :options="deviceSelectOptions"
-                  style="width: 130px"
                   placeholder="请选择访问设备"
                 />
               </Space.Compact>
-            
             </div>
-            <Button
+        <div class="query-filter-actions">
+          <Button
               type="primary"
               :loading="detailLoading"
               @click="searchDetail"
@@ -469,7 +462,8 @@ onMounted(() => {
             >
               导出 CSV
             </Button>
-          </template>
+        </div>
+      </template>
 
           <Spin :spinning="detailLoading">
             <Table
@@ -534,17 +528,15 @@ onMounted(() => {
                 <Select
                   v-model:value="statisticsKey"
                   :options="withdrawPageOptions"
-                  style="width: 160px"
                   placeholder="请选择访问页面"
                 />
               </Space.Compact>
-            
             </div>
-            <div class="flex flex-col gap-1">
-              <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
-            
-            </div>
-            <Button
+            <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Button
               type="primary"
               :loading="statisticsLoading"
               @click="loadStatistics"
@@ -552,7 +544,7 @@ onMounted(() => {
               查询
             </Button>
             <Button @click="resetStatistics">重置</Button>
-          </template>
+        </div></template>
 
           <Spin :spinning="statisticsLoading">
             <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">

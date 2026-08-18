@@ -424,12 +424,12 @@ async function openReadPlayers(row: EmailRow) {
 <template>
   <div v-if="canViewTable || canCreate">
     <!-- 查询区与旧站 email.vue 对齐：发送人 / 代理推广账号 / 日期 / 查询重置 / 新增 -->
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterSender"
           allow-clear
-          style="width: 250px"
           placeholder="请输入发送人"
         >
           <template #addonBefore>发送人</template>
@@ -448,11 +448,16 @@ async function openReadPlayers(row: EmailRow) {
         </Space.Compact>
       </div>
 
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canCreate" type="primary" @click="openCreate">新增</Button>
+        </div>
     </div>
+  </div>
 
     <Grid v-if="canViewTable">
       <template #title="{ row }">

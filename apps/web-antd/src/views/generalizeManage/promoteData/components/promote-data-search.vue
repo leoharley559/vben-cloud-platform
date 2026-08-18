@@ -131,9 +131,9 @@ defineExpose({
         placeholder="请选择落地页"
       />
     </Space.Compact>
-    <div class="flex flex-col gap-1">
-      <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" :disabled-date="disabledDate" />
-    </div>
+    <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" :disabled-date="disabledDate" />
+        </div>
     <Space v-if="showSearchButton">
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>

@@ -115,12 +115,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mb-4 flex flex-wrap items-end gap-2">
-    <div class="flex flex-col gap-1">
+  <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
       <Input
         v-model:value="recordFilters.LoginAccount"
         allow-clear
-        style="width: 220px"
         @press-enter="loadRecords"
         placeholder="请输入游戏账号"
       >
@@ -133,12 +133,14 @@ onMounted(() => {
         v-model:value="recordFilters.PackageId"
         allow-clear
         :options="packageOptions"
-        style="width: 160px"
         placeholder="请选择产品包"
       />
     </Space.Compact>
-    <QueryDatetimeRangePicker v-model="recordFilters.Time" />
-    <Button type="primary" @click="recordPage = 1; loadRecords()">查询</Button>
+    <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="recordFilters.Time" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="recordPage = 1; loadRecords()">查询</Button>
     <Button
       @click="
         Object.assign(recordFilters, { LoginAccount: '', PackageId: undefined, Time: undefined });
@@ -149,6 +151,8 @@ onMounted(() => {
       重置
     </Button>
     <Button :loading="recordExportLoading" @click="exportRecords">导出</Button>
+        </div>
+    </div>
   </div>
   <Table
     :columns="recordColumns"

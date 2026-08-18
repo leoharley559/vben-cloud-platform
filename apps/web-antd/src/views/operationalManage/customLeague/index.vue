@@ -274,15 +274,15 @@ function handlePreview(path?: string) {
 <template>
   <Page auto-content-height description="运营管理 · 杯赛专题" title="杯赛专题">
     <Card>
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Space.Compact>
             <span class="query-field-addon">产品</span>
             <Select
               v-model:value="filterPackageId"
               :field-names="{ label: 'PackageName', value: 'PackageId' }"
               :options="packageOptions"
-              style="width: 180px"
               placeholder="请选择产品"
             />
           </Space.Compact>
@@ -294,7 +294,6 @@ function handlePreview(path?: string) {
             <Select
               v-model:value="filterIsActive"
               :options="ACTIVE_OPTIONS"
-              style="width: 120px"
               placeholder="请选择开关"
             />
           </Space.Compact>
@@ -304,22 +303,23 @@ function handlePreview(path?: string) {
           <Input
             v-model:value="filterLeagueShortName"
             allow-clear
-            style="width: 260px"
             placeholder="请输入联赛名称"
           >
             <template #addonBefore>联赛名称</template>
           </Input>
         </div>
-        <div class="flex flex-col gap-1">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="时间" />
-        
         </div>
-        <Space>
+        <div class="query-filter-actions">
+          <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
           <Button type="primary" ghost @click="openAdd">新增</Button>
         </Space>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <Grid>
         <template #activeSwitch="{ row }">

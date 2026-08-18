@@ -580,12 +580,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 200px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -597,7 +597,6 @@ onMounted(() => {
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          style="width: 180px"
           @press-enter="handleSearch"
           placeholder="请输入玩家ID"
         >
@@ -609,7 +608,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 220px"
           @press-enter="handleSearch"
           placeholder="请输入订单编号"
         >
@@ -621,7 +619,6 @@ onMounted(() => {
         <Input
           v-model:value="filterAccountNum"
           allow-clear
-          style="width: 240px"
           @press-enter="handleSearch"
           placeholder="请输入出款账号"
         >
@@ -633,7 +630,6 @@ onMounted(() => {
         <Input
           v-model:value="filterRealName"
           allow-clear
-          style="width: 180px"
           @press-enter="handleSearch"
           placeholder="请输入真实姓名"
         >
@@ -645,7 +641,6 @@ onMounted(() => {
         <Input
           v-model:value="filterHandlerName"
           allow-clear
-          style="width: 180px"
           @press-enter="handleSearch"
           placeholder="请输入操作人员"
         >
@@ -657,7 +652,6 @@ onMounted(() => {
         <Input
           v-model:value="filterRiskAuditorName"
           allow-clear
-          style="width: 180px"
           @press-enter="handleSearch"
           placeholder="请输入风控人员"
         >
@@ -669,7 +663,6 @@ onMounted(() => {
         <Input
           v-model:value="filterShowName"
           allow-clear
-          style="width: 200px"
           @press-enter="handleSearch"
           placeholder="请输入出款通道"
         >
@@ -680,7 +673,7 @@ onMounted(() => {
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">渠道</span>
-          <ChannelSelect v-model="filterChannelIds" style="width: 260px" placeholder="请输入渠道号" />
+          <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
         </Space.Compact>
       </div>
 
@@ -695,7 +688,6 @@ onMounted(() => {
                 value: item.PackageId,
               }))
             "
-            style="width: 180px"
             placeholder="请选择产品"
           />
         </Space.Compact>
@@ -708,7 +700,6 @@ onMounted(() => {
             v-model:value="filterWithdrawStatus"
             allow-clear
             :options="WITHDRAW_STATUS_OPTIONS"
-            style="width: 140px"
             placeholder="请选择状态"
           />
         </Space.Compact>
@@ -720,23 +711,24 @@ onMounted(() => {
           <Select
             v-model:value="filterSelectTimeType"
             :options="WITHDRAW_TIME_TYPE_OPTIONS"
-            style="width: 120px"
             placeholder="请选择时间类型"
           />
         </Space.Compact>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" />
-      </div>
-
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
         <Button @click="handleReset">重置</Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

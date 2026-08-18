@@ -12,10 +12,12 @@ defineProps<{
 </script>
 
 <template>
-  <div class="mb-2">
-    <div class="flex flex-wrap items-end gap-x-3 gap-y-2">
+  <div class="ops-query-scope mb-2">
+    <div class="ops-query-filters">
       <slot></slot>
-      <slot name="actions"></slot>
+      <div class="query-filter-actions">
+        <slot name="actions"></slot>
+      </div>
     </div>
     <div v-if="$slots.extra" class="mt-3">
       <slot name="extra"></slot>

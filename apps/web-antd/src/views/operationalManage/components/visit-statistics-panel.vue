@@ -203,7 +203,6 @@ onMounted(() => {
           <Select
             v-model:value="filterSubGroup"
             show-search
-            style="width: 160px"
             :options="pageSelectOptions"
             :filter-option="
               (input, option) =>
@@ -214,17 +213,16 @@ onMounted(() => {
             placeholder="请选择访问页面"
           />
         </Space.Compact>
-      
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterVisitRange" label="统计时间（最多 7 天）" precision="date" :disabled-date="visitRangeLimit.disabledDate" />
-      
-      </div>
-      <Button type="primary" :loading="loading" @click="handleSearch">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterVisitRange" label="统计时间（最多 7 天）" precision="date" :disabled-date="visitRangeLimit.disabledDate" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" :loading="loading" @click="handleSearch">
         查询
       </Button>
       <Button @click="handleReset">重置</Button>
-    </template>
+        </div></template>
 
     <div v-if="canLoad === false" class="py-10 text-center text-gray-400">
       无访问统计查询权限

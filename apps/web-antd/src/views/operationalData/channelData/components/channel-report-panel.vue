@@ -388,9 +388,10 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col gap-4">
-    <div class="mb-1">
-      <Space wrap class="w-full">
-        <Space.Compact>
+    <div class="ops-query-scope mb-1">
+    <div class="ops-query-filters">
+              
+          <Space.Compact>
           <Select
             class="query-auto-select"
             :popup-match-select-width="false"
@@ -403,13 +404,11 @@ onMounted(() => {
           <AccountSelect
             v-if="adminSearchType === 0"
             v-model="adminSearch"
-            style="width: 140px"
           />
           <Input
             v-else
             v-model:value="adminSearch as string"
             allow-clear
-            style="width: 140px"
             placeholder="请输入账号"
             />
         </Space.Compact>
@@ -427,20 +426,17 @@ onMounted(() => {
           <ChannelSelect
             v-if="channelSearchType === 0"
             v-model="channelSearch"
-            style="width: 140px"
             placeholder="请输入渠道号"
           />
           <Input
             v-else
             v-model:value="channelSearch as string"
             allow-clear
-            style="width: 140px"
             placeholder="请输入渠道"
             />
         </Space.Compact>
 
-        <Space>
-          <Space.Compact>
+        <Space.Compact>
             <span class="query-field-addon">产品</span>
             <Select
               v-model:value="packageId"
@@ -451,13 +447,11 @@ onMounted(() => {
                 }))
               "
               allow-clear
-              style="width: 120px"
               placeholder="请选择产品"
             />
           </Space.Compact>
-        </Space>
 
-        <Space v-if="dim === 'agent'">
+        <div v-if="dim === 'agent'">
           <Space.Compact>
             <span class="query-field-addon">代理类型</span>
             <Select
@@ -467,23 +461,19 @@ onMounted(() => {
                 { label: '普通', value: 1 },
                 { label: '官方', value: 2 },
               ]"
-              style="width: 110px"
               placeholder="请选择代理类型"
             />
           </Space.Compact>
-        </Space>
+        </div>
 
-        <Space>
-          <Space.Compact>
+        <Space.Compact>
             <span class="query-field-addon">数据类型</span>
             <Select
               v-model:value="dataSearchType"
               :options="memberTypeOptions"
-              style="width: 120px"
               placeholder="请选择数据类型"
             />
           </Space.Compact>
-        </Space>
 
         <template v-if="!isToday">
           <Select
@@ -496,23 +486,24 @@ onMounted(() => {
               { label: '区间', value: 3 },
             ]"
           />
-          <Space>
-            <Space.Compact>
+          <div class="query-filter-wide">
+          <Space.Compact>
               <span class="query-field-addon">日期</span>
               <DatePicker.RangePicker
                 v-model:value="dateRange"
                 :format="dateFormat"
                 :picker="pickerMode"
-                style="width: 260px"
               />
             </Space.Compact>
-          </Space>
+        </div>
+        
         </template>
-
-        <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-      </Space>
+        </div>
     </div>
+  </div>
 
     <Card size="small">
       <div class="mb-3 flex flex-wrap items-center justify-between gap-3">

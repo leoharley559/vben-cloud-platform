@@ -530,9 +530,13 @@ watch(
 <template>
   <div class="space-y-5">
     <div>
-      <Space wrap>
-        <QueryDatetimeRangePicker v-model="dateRange" />
-        <Button type="primary" @click="load">查询</Button>
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="load">查询</Button>
         <Button @click="
           dateRange = [
             dayjs().startOf('day'),
@@ -544,7 +548,9 @@ watch(
         </Button>
         <Button @click="exportData">导出当前数据</Button>
         <Button type="primary" @click="openFanDianModal">查看返水配置</Button>
-      </Space>
+        </div>
+    </div>
+  </div>
     </div>
     <AgencyFanDianModal v-model:open="fanDianOpen" :row="fanDianRow" />
     

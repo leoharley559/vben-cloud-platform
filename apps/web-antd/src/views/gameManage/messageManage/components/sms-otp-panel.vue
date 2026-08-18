@@ -427,7 +427,9 @@ void loadReport();
               <template #addonBefore>渠道号</template>
             </Input>
           </div>
+          <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="reportRange" />
+        </div>
         </div>
         <Space>
           <Button type="primary" :loading="reportLoading" @click="loadReport">
@@ -594,7 +596,9 @@ void loadReport();
               { label: '否', value: 2 },
             ]"
           />
+          <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="detailRange" />
+        </div>
         </div>
         <Space>
           <Button type="primary" @click="reloadDetail">查询</Button>

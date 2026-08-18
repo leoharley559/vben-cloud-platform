@@ -214,12 +214,12 @@ onMounted(async () => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterContentId"
           allow-clear
-          style="width: 160px"
           placeholder="请输入问题编号"
         >
           <template #addonBefore>问题编号</template>
@@ -231,7 +231,6 @@ onMounted(async () => {
           v-model:value="filterCategoryId"
           allow-clear
           :options="categoryOptions"
-          style="width: 180px"
           placeholder="请选择一级标题"
         />
       </Space.Compact>
@@ -239,7 +238,6 @@ onMounted(async () => {
         <Input
           v-model:value="filterTitle"
           allow-clear
-          style="width: 260px"
           placeholder="请输入二级标题"
         >
           <template #addonBefore>二级标题</template>
@@ -249,17 +247,21 @@ onMounted(async () => {
         <Input
           v-model:value="filterContent"
           allow-clear
-          style="width: 260px"
           placeholder="请输入三级内容"
         >
           <template #addonBefore>三级内容</template>
         </Input>
       </div>
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button :loading="loading" type="primary" @click="gridApi.reload()">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #content="{ row }">

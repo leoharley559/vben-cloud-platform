@@ -347,13 +347,13 @@ onUnmounted(() => {
     title="导出管理"
   >
     <Card>
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterId"
             allow-clear
             :maxlength="11"
-            style="width: 180px"
             @press-enter="handleSearch"
             placeholder="请输入任务编号"
           >
@@ -364,7 +364,6 @@ onUnmounted(() => {
           <Input
             v-model:value="filterPath"
             allow-clear
-            style="width: 260px"
             @press-enter="handleSearch"
             placeholder="请输入文件名称"
           >
@@ -374,10 +373,12 @@ onUnmounted(() => {
         <Select
           v-model:value="filterStatus"
           :options="statusOptions"
-          style="width: 120px"
         />
-        <QueryDatetimeRangePicker v-model="filterDateRange" />
-        <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="resetFilters">重置</Button>
         <div v-if="canAutoRefresh" class="flex items-center gap-2">
           <span class="text-sm text-gray-500">自动刷新</span>
@@ -386,7 +387,9 @@ onUnmounted(() => {
             <span class="cursor-help text-xs text-gray-400">说明</span>
           </Tooltip>
         </div>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <Grid>
         <template #status="{ row }">

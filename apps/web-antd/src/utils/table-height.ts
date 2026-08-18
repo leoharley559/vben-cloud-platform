@@ -1,19 +1,27 @@
-/** 兜底最小高度（窄屏 / 嵌入场景） */
-export const TABLE_LIST_MIN_HEIGHT = 420;
+/** 列表行高（与当前页面实测一致） */
+export const TABLE_ROW_HEIGHT = 40;
 
-/** 预留给顶栏、多页签、筛选区、页边距的默认偏移 */
-export const TABLE_LIST_VIEWPORT_OFFSET = 280;
+/** 默认每页条数 */
+export const TABLE_DEFAULT_PAGE_SIZE = 20;
+
+/** 列表高度先按 700 试看（默认 20 条） */
+export const TABLE_LIST_MIN_HEIGHT = 700;
+
+/** @deprecated 视口扣减规则已废弃，保留避免旧引用报错 */
+export const TABLE_LIST_VIEWPORT_OFFSET = 0;
 
 /**
  * 列表页表格高度（像素）。
- * vxe-table 的 height 只认 number / 'auto' / '100%' / 百分比，不支持 CSS calc。
+ * 默认 20 条用 700；其它 pageSize 按 700 / 21 折算。
  */
-export function getTableListHeightPx(extraOffset = 0): number {
-  const offset = TABLE_LIST_VIEWPORT_OFFSET + extraOffset;
-  if (typeof window === 'undefined') {
+export function getTableListHeightPx(
+  pageSize = TABLE_DEFAULT_PAGE_SIZE,
+): number {
+  if (pageSize === TABLE_DEFAULT_PAGE_SIZE) {
     return TABLE_LIST_MIN_HEIGHT;
   }
-  return Math.max(TABLE_LIST_MIN_HEIGHT, window.innerHeight - offset);
+  const rows = Math.max(1, pageSize);
+  return Math.round((TABLE_LIST_MIN_HEIGHT / 21) * (rows + 1));
 }
 
 /** @deprecated 使用 getTableListHeightPx；保留常量兼容旧引用 */
@@ -22,7 +30,10 @@ export const TABLE_LIST_HEIGHT = TABLE_LIST_MIN_HEIGHT;
 /** @deprecated 同 TABLE_LIST_HEIGHT */
 export const TABLE_LIST_MAX_HEIGHT = TABLE_LIST_MIN_HEIGHT;
 
-/** Ant Design Table 纵向滚动（像素高度，与 Vxe 列表策略一致） */
+/** Ant Design Table 表体滚动高度（不含表头） */
 export function antTableScrollY(extraOffset = 0) {
-  return getTableListHeightPx(extraOffset);
+  return Math.max(
+    TABLE_ROW_HEIGHT * 5,
+    TABLE_ROW_HEIGHT * TABLE_DEFAULT_PAGE_SIZE - extraOffset,
+  );
 }

@@ -103,10 +103,16 @@ onMounted(() => {
     title="无效用户"
   >
     <Card :loading="loading">
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" />
-        <Button type="primary" @click="loadData">查询</Button>
-      </div>
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="loadData">查询</Button>
+        </div>
+    </div>
+  </div>
 
       <Descriptions bordered :column="1" size="small" title="数量">
         <Descriptions.Item

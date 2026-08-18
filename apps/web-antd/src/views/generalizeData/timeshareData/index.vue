@@ -195,7 +195,9 @@ watch(visibleTabs, (tabs) => {
             <ChannelSelect v-model="filterChannelIds" style="width: 240px" placeholder="请输入渠道号" />
           </Space.Compact>
         </div>
-        <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" :disabled-date="disabledDate" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" :disabled-date="disabledDate" />
+        </div>
         <Button type="primary" @click="loadData">查询</Button>
         <Button @click="reset">重置</Button>
         <div class="ml-auto">

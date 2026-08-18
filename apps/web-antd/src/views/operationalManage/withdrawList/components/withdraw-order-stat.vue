@@ -171,12 +171,18 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button :loading="loading" type="primary" @click="gridApi.reload()">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid />
   </div>

@@ -343,7 +343,9 @@ onMounted(() => {
           placeholder="请选择产品名称"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+        </div>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
         <Button :disabled="loading" @click="reset">重置</Button>

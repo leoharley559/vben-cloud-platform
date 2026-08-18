@@ -320,14 +320,15 @@ async function handleSort(
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
-      <div class="flex flex-wrap items-end gap-2">
-        <QueryDatetimeRangePicker v-model="filterDateRange" />
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterName"
             allow-clear
-            style="width: 240px"
             placeholder="请输入商品名称"
           >
             <template #addonBefore>商品名称</template>
@@ -338,7 +339,7 @@ async function handleSort(
           <Select
             v-model:value="filterType"
             allow-clear
-            class="w-32"
+           
             :options="PRODUCT_TYPE_OPTIONS"
             placeholder="请选择商品类型"
           />
@@ -348,15 +349,15 @@ async function handleSort(
           <Select
             v-model:value="filterTag"
             allow-clear
-            class="w-32"
+           
             :options="tagOptions"
             placeholder="请选择商品页签"
           />
         </Space.Compact>
-        <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-      </div>
-      <Space wrap>
+        <Space wrap>
         <span v-if="canConfig" class="inline-flex items-center gap-2 text-sm">
           积分商城开关
           <Switch
@@ -370,7 +371,9 @@ async function handleSort(
         <Button @click="taskManageOpen = true">积分任务</Button>
         <Button type="primary" @click="openAdd">添加商品</Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #activeSwitch="{ row }">

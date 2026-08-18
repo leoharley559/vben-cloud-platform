@@ -130,7 +130,6 @@ function handleReset() {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -144,24 +143,22 @@ function handleReset() {
             v-model:value="filterPackageId"
             allow-clear
             :options="packageSelectOptions"
-            style="width: 160px"
             placeholder="请选择产品"
           />
         </Space.Compact>
-      
       </div>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterPhoneNum"
           allow-clear
-          style="width: 250px"
           @press-enter="handleSearch"
           placeholder="请输入手机号"
         >
           <template #addonBefore>手机号</template>
         </Input>
       </div>
-      <Button :loading="loading" type="primary" @click="handleSearch">
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="handleSearch">
         查询
       </Button>
       <Button @click="handleReset">重置</Button>
@@ -169,7 +166,8 @@ function handleReset() {
       <Button v-if="canWhitelist" type="primary" @click="whitelistOpen = true">
         白名单设置
       </Button>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #loginAccount="{ row }">

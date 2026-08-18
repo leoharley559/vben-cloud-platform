@@ -142,13 +142,14 @@ onMounted(() => {
 
 <template>
   <div v-if="canView">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Select
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <Select
         v-model:value="filterKey"
         :options="APP_STORE_KEY_OPTIONS"
-        style="width: 260px"
       />
-      <Space>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="loadList">
           查询
         </Button>
@@ -157,7 +158,9 @@ onMounted(() => {
           新增
         </Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Table
       bordered

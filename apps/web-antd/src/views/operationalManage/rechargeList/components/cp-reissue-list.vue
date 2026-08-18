@@ -223,12 +223,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 260px"
           placeholder="请输入订单编号"
         >
           <template #addonBefore>订单编号</template>
@@ -238,7 +238,6 @@ onMounted(() => {
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          style="width: 210px"
           placeholder="请输入玩家ID"
         >
           <template #addonBefore>玩家ID</template>
@@ -248,7 +247,6 @@ onMounted(() => {
         <Input
           v-model:value="filterGameOrderId"
           allow-clear
-          style="width: 260px"
           placeholder="请输入游戏订单号"
         >
           <template #addonBefore>游戏订单号</template>
@@ -265,13 +263,17 @@ onMounted(() => {
             }))
           "
           allow-clear
-          style="width: 160px"
           placeholder="请选择所属产品"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

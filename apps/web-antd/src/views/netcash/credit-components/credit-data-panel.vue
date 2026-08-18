@@ -272,8 +272,9 @@ defineExpose({
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-3">
-      <template v-for="filter in config.filters || []" :key="filter.label">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <template v-for="filter in config.filters || []" :key="filter.label">
         <div
           v-if="(!filter.type || filter.type === 'input') && filter.field"
           class="flex flex-col gap-1"
@@ -281,7 +282,6 @@ defineExpose({
           <Input
             v-model:value="filterValues[filter.field]"
             allow-clear
-            style="width: 220px"
             @press-enter="gridApi.reload()"
             :placeholder="`请输入${filter.label}`"
           >
@@ -289,6 +289,8 @@ defineExpose({
           </Input>
         </div>
         <div v-else class="flex flex-col gap-1">
+          
+          <div class="query-filter-wide">
           <Space.Compact>
             <span class="query-field-addon">{{ filter.label }}</span>
             <Select
@@ -297,7 +299,6 @@ defineExpose({
               allow-clear
               :options="filter.options"
               :placeholder="`请选择${filter.label}`"
-              style="width: 160px"
             />
             <Select
               v-else-if="filter.type === 'multiSelect' && filter.field"
@@ -306,7 +307,6 @@ defineExpose({
               mode="multiple"
               :options="filter.options"
               :placeholder="`请选择${filter.label}`"
-              style="min-width: 200px"
             />
             <DatePicker.RangePicker
               v-else-if="filter.type === 'dateRange' && filter.fields"
@@ -329,20 +329,21 @@ defineExpose({
               v-else-if="filter.type === 'amountRange' && filter.fields"
               v-model:value="rangeValues[filter.label][0]"
               :min="0"
-              style="width: 110px"
               placeholder="请输入起"
             />
             <InputNumber
               v-if="filter.type === 'amountRange' && filter.fields"
               v-model:value="rangeValues[filter.label][1]"
               :min="0"
-              style="width: 110px"
               placeholder="请输入止"
             />
           </Space.Compact>
         </div>
+        
+        </div>
       </template>
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="reset">重置</Button>
       <Button
         v-if="config.exportFileName"
@@ -352,7 +353,9 @@ defineExpose({
         导出
       </Button>
       <slot name="toolbar" :reload="gridApi.reload"></slot>
+        </div>
     </div>
+  </div>
 
     <SummaryCards v-if="hasSummary" :items="summaryItems" />
 

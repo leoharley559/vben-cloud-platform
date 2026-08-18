@@ -293,7 +293,9 @@ onMounted(async () => {
             placeholder="请选择资金类型"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="filterDateRange" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button @click="handleReset">重置</Button>
       </div>

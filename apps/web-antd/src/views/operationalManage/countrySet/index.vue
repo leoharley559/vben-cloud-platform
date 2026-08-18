@@ -288,19 +288,20 @@ onMounted(() => {
         </Space>
       </div>
 
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterName"
             allow-clear
-            style="width: 260px"
             @press-enter="handleSearch"
             placeholder="请输入国家名称"
           >
             <template #addonBefore>国家名称</template>
           </Input>
         </div>
-        <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="resetFilters">重置</Button>
         <div class="ml-auto flex flex-wrap gap-2">
           <Button
@@ -322,7 +323,9 @@ onMounted(() => {
             恢复默认配置
           </Button>
         </div>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <Table
         :columns="columns"

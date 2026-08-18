@@ -447,6 +447,7 @@ function getPopupContainer(node: HTMLElement) {
 .query-datetime-range-compact.ant-space-compact {
   display: inline-flex;
   align-items: stretch;
+  max-width: 100%;
 }
 
 .query-datetime-range-compact .query-field-addon {

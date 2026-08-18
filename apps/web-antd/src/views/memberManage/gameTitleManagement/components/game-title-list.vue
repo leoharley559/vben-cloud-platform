@@ -337,7 +337,6 @@ onMounted(async () => {
         <Input
           v-model:value="filterName"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入称号名称"
         >
@@ -349,7 +348,6 @@ onMounted(async () => {
           <span class="query-field-addon">称号类别</span>
           <Select
             v-model:value="filterCategoryId"
-            style="width: 160px"
             :options="[
               { label: '全部', value: 0 },
               ...groupOptions.map((item) => ({
@@ -360,13 +358,12 @@ onMounted(async () => {
             placeholder="请选择称号类别"
           />
         </Space.Compact>
-      
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="获得时间" />
-      
-      </div>
-      <Space wrap>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="获得时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Space wrap>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button v-if="canAdd" type="primary" @click="openCreate">
           新增称号
@@ -391,7 +388,8 @@ onMounted(async () => {
           </template>
         </Dropdown>
       </Space>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #switch="{ row }">

@@ -296,13 +296,14 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Space.Compact>
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <Space.Compact>
         <span class="query-field-addon">产品包</span>
         <Select
           v-model:value="filterPackageId"
           allow-clear
-          class="w-40"
+         
           :field-names="{ label: 'PackageName', value: 'PackageId' }"
           :options="packageOptions"
           placeholder="请选择产品包"
@@ -310,13 +311,12 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" style="width: 220px" placeholder="请输入渠道号" />
+        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
       </Space.Compact>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterActivityId"
           allow-clear
-          style="width: 200px"
           placeholder="请输入活动ID"
         >
           <template #addonBefore>活动ID</template>
@@ -326,7 +326,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           @change="
             filterLoginAccount = String(filterLoginAccount || '')
               .trim()
@@ -339,7 +338,7 @@ onMounted(() => {
       </div>
       <Select
         v-model:value="filterStatus"
-        class="w-28"
+       
         :options="[
           { label: '全部', value: -1 },
           { label: '未领取', value: 0 },
@@ -351,18 +350,21 @@ onMounted(() => {
         <Select
           v-model:value="filterActivityType"
           allow-clear
-          class="w-32"
+         
           :options="typeFilterOptions"
           placeholder="请选择活动类型"
         />
       </Space.Compact>
       <Select
         v-model:value="filterVipLevel"
-        class="w-28"
+       
         :options="VIP_LEVEL_OPTIONS"
       />
-      <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" />
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
         <Button
@@ -374,7 +376,9 @@ onMounted(() => {
         </Button>
         <Button v-else disabled title="需要权限 13436">导出 CSV</Button>
       </Space>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

@@ -106,13 +106,13 @@ onMounted(load);
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="query.AgentAccounts"
           allow-clear
           @press-enter="search"
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -120,16 +120,21 @@ onMounted(load);
       </div>
       <Space.Compact>
         <span class="query-field-addon">代理类型</span>
-        <Select v-model:value="query.Type" :options="accountTypeOptions" style="width: 150px" placeholder="请选择代理类型" />
+        <Select v-model:value="query.Type" :options="accountTypeOptions" placeholder="请选择代理类型" />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">还款类型</span>
-        <Select v-model:value="query.TransferType" :options="debtTypeOptions" style="width: 180px" placeholder="请选择还款类型" />
+        <Select v-model:value="query.TransferType" :options="debtTypeOptions" placeholder="请选择还款类型" />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="timeRange" />
-      <Button type="primary" @click="search">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="timeRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
+        </div>
     </div>
+  </div>
     <SummaryCards :items="summaryItems" />
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1400 }" size="small">
       <template #bodyCell="{ column, record, index }">

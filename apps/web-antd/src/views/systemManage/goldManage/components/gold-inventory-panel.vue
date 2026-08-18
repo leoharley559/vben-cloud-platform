@@ -315,7 +315,9 @@ onMounted(() => {
 
     <div v-if="canDetail">
       <ReportQueryCard title="库存明细">
-        <QueryDatetimeRangePicker v-model="dateRange" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
         <template #actions>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>

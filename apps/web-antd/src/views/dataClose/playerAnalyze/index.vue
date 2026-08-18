@@ -534,7 +534,9 @@ onMounted(() => {
             placeholder="请选择数据类型"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="filters.dateRange" precision="date" :disabled-date="disabledDate" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filters.dateRange" precision="date" :disabled-date="disabledDate" />
+        </div>
         <template #actions>
           <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
           <Button @click="handleReset">重置</Button>

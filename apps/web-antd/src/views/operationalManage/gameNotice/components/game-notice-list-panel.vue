@@ -397,12 +397,12 @@ function handleDelete(row: NoticeRow) {
 <template>
   <div v-if="canViewTable || canCreate">
     <!-- 查询区与旧站 notice.vue Filters 对齐：发布者 / 状态 / 公告标题 / 日期 / 查询重置 / 新增 -->
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterCreator"
           allow-clear
-          style="width: 250px"
           placeholder="请输入发布者"
         >
           <template #addonBefore>发布者</template>
@@ -414,7 +414,7 @@ function handleDelete(row: NoticeRow) {
         <Select
           v-model:value="filterStatus"
           allow-clear
-          class="w-44"
+         
           :options="NOTICE_FILTER_STATUS_OPTIONS"
           placeholder="请选择"
         />
@@ -424,18 +424,22 @@ function handleDelete(row: NoticeRow) {
         <Input
           v-model:value="filterTitle"
           allow-clear
-          style="width: 280px"
           placeholder="请输入公告标题"
         >
           <template #addonBefore>公告标题</template>
         </Input>
       </div>
 
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canCreate" type="primary" @click="openCreate">新增</Button>
+        </div>
     </div>
+  </div>
 
     <Grid v-if="canViewTable">
       <template #status="{ row }">

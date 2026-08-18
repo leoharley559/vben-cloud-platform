@@ -366,12 +366,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 250px"
           placeholder="请输入订单号"
         >
           <template #addonBefore>订单号</template>
@@ -381,7 +381,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -392,7 +391,7 @@ onMounted(() => {
         <Select
           v-model:value="filterPackageId"
           allow-clear
-          class="w-36"
+         
           :options="
             packageOptions.map((item) => ({
               label: item.PackageName,
@@ -405,13 +404,12 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model:value="filterChannelIds" style="width: 200px" placeholder="请输入渠道号" />
+        <ChannelSelect v-model:value="filterChannelIds" placeholder="请输入渠道号" />
       </Space.Compact>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterAdminUserName"
           allow-clear
-          style="width: 230px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -422,22 +420,27 @@ onMounted(() => {
         <Select
           v-model:value="filterHandleType"
           allow-clear
-          class="w-28"
+         
           :options="
             REWARD_ADJUST_HANDLE_TYPE_OPTIONS.filter((item) => item.value !== -1)
           "
           placeholder="请选择调整方式"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button :loading="exportLoading" type="primary" @click="handleExport">
         导出
       </Button>
       <Button type="primary" @click="handleBatchApprove">批量通过</Button>
       <Button danger @click="openReject()">批量拒绝</Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #approve="{ row }">

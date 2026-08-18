@@ -452,8 +452,9 @@ onMounted(load);
       :description="`无${activeTab === 'commission' ? '佣金' : activeTab === 'bonus' ? '红利' : '帐变'}查看权限`"
     />
     <template v-else>
-    <Space wrap>
-      <DatePicker
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <DatePicker
         v-if="activeTab === 'commission'"
         v-model:value="month"
         picker="month"
@@ -466,7 +467,6 @@ onMounted(load);
             { label: '全部红利类型', value: '' },
             { label: '代理红利', value: 1 },
           ]"
-          style="width: 150px"
         />
         <Select
           v-model:value="approve"
@@ -476,19 +476,22 @@ onMounted(load);
             { label: '已发放', value: 2 },
             { label: '已拒绝', value: 3 },
           ]"
-          style="width: 150px"
         />
-        <QueryDatetimeRangePicker v-model="bonusDateRange" label="申请时间" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="bonusDateRange" label="申请时间" />
+        </div>
       </template>
       <template v-else>
         <Select
           v-model:value="transferType"
           :options="transferOptions"
-          style="width: 180px"
         />
-        <QueryDatetimeRangePicker v-model="logDateRange" label="账变时间" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="logDateRange" label="账变时间" />
+        </div>
       </template>
-      <Button type="primary" @click="load">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="load">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button
         v-if="canExport()"
@@ -497,7 +500,9 @@ onMounted(load);
       >
         导出全部
       </Button>
-    </Space>
+        </div>
+    </div>
+  </div>
 
     <Table
       bordered

@@ -63,12 +63,12 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -78,7 +78,6 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <Input
           v-model:value="filterMainCode"
           allow-clear
-          style="width: 260px"
           placeholder="请输入代理线编号"
         >
           <template #addonBefore>代理线编号</template>
@@ -89,13 +88,16 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <Select
           v-model:value="filterPackageId"
           allow-clear
-          class="w-40"
+         
           :options="packageOptions"
           placeholder="请选择产品包"
         />
       </Space.Compact>
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

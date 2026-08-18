@@ -604,28 +604,28 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
     title="产品配置"
   >
     <Card>
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+                <div class="flex flex-col gap-1">
             <Input
               v-model:value="packageName"
               allow-clear
-              style="width: 240px"
               @press-enter="handleSearch"
               placeholder="请输入产品名称"
             >
               <template #addonBefore>产品名称</template>
             </Input>
           </div>
+        <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
           <span v-if="canViewList" class="text-sm text-gray-500">
             已创建 {{ total }} 个产品
+        </div>
             <template v-if="packageCapacity !== undefined">
               / 可创建 {{ packageCapacity }} 个
             </template>
           </span>
-        </div>
         <Space wrap>
           <Button
             v-if="canBuyQuota"
@@ -638,7 +638,8 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
             创建产品
           </Button>
         </Space>
-      </div>
+    </div>
+  </div>
 
       <Grid v-if="canViewList">
         <template #icon="{ row }">

@@ -419,7 +419,9 @@ onMounted(() => {
             placeholder="请选择状态"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="filterDateRange" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
         <Space.Compact>
           <span class="query-field-addon">显示更多列</span>
           <Select

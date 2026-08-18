@@ -1014,7 +1014,9 @@ onMounted(async () => {
             { label: '关闭', value: 2 },
           ]"
         />
-        <QueryDatetimeRangePicker v-model="filters.Time" precision="date" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filters.Time" precision="date" />
+        </div>
         <Space>
           <Button type="primary" @click="loadRows">查询</Button>
           <Button @click="resetFilters">重置</Button>

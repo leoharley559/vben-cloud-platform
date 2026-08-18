@@ -259,12 +259,12 @@ onMounted(() => {
     title="溢出管理"
   >
     <Card>
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
-            style="width: 230px"
             @press-enter="search"
             placeholder="请输入游戏账号"
           >
@@ -275,7 +275,6 @@ onMounted(() => {
           <Input
             v-model:value="filterAccount"
             allow-clear
-            style="width: 230px"
             @press-enter="search"
             placeholder="请输入申请代理"
           >
@@ -287,7 +286,7 @@ onMounted(() => {
           <Select
             v-model:value="filterPackageId"
             allow-clear
-            class="w-40"
+           
             :options="packageOptions"
             placeholder="请选择产品包"
           />
@@ -297,7 +296,7 @@ onMounted(() => {
           <Select
             v-model:value="filterStatus"
             allow-clear
-            class="w-32"
+           
             :options="[
               { label: '全部', value: 0 },
               { label: '申请中', value: 1 },
@@ -311,15 +310,20 @@ onMounted(() => {
           <span class="query-field-addon">VIP等级</span>
           <Select
             v-model:value="filterVipLevel"
-            class="w-28"
+           
             :options="[{ label: '全部 VIP', value: -1 }, ...Array.from({ length: 11 }, (_, value) => ({ label: `VIP${value}`, value }))]"
             placeholder="请选择VIP等级"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="filterDateRange" />
-        <Button type="primary" @click="search">查询</Button>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="search">查询</Button>
         <Button @click="resetQuery">重置</Button>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <SummaryCards :items="summaryItems" />
 

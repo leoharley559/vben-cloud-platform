@@ -814,7 +814,6 @@ onMounted(async () => {
                 v-model:value="filterStatus"
                 mode="multiple"
                 allow-clear
-                style="min-width: 160px"
                 :options="
                   PLAYER_STATUS_OPTIONS.filter((i) =>
                     [0, 1, 2, 3, 4, 6, 8].includes(i.value),
@@ -824,13 +823,11 @@ onMounted(async () => {
                 placeholder="请选择玩家状态"
               />
             </Space.Compact>
-          
           </div>
           <div v-if="canFilterLoginAccount" class="flex flex-col gap-1">
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
-              style="width: 260px"
               @press-enter="handleSearch"
               placeholder="请输入游戏账号"
             >
@@ -851,7 +848,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterPlayerPassword"
               allow-clear
-              style="width: 240px"
               placeholder="请输入同密码查重"
             >
               <template #addonBefore>同密码查重</template>
@@ -861,7 +857,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterPhoneNo"
               allow-clear
-              style="width: 210px"
               placeholder="请输入手机号"
             >
               <template #addonBefore>手机号</template>
@@ -871,7 +866,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterEmail"
               allow-clear
-              style="width: 210px"
               placeholder="请输入邮箱"
             >
               <template #addonBefore>邮箱</template>
@@ -881,7 +875,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterPromoter"
               allow-clear
-              style="width: 220px"
               placeholder="请输入推广账号"
             >
               <template #addonBefore>推广账号</template>
@@ -891,7 +884,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterPlayerIdsStr"
               allow-clear
-              style="width: 230px"
               placeholder="请输入玩家ID"
             >
               <template #addonBefore>玩家ID</template>
@@ -900,15 +892,13 @@ onMounted(async () => {
           <div v-if="canFilterChannel" class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">渠道</span>
-              <ChannelSelect v-model="filterChannelIds" style="width: 200px" placeholder="请输入渠道号" />
+              <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
             </Space.Compact>
-          
           </div>
           <div v-if="canFilterInviter" class="flex flex-col gap-1">
             <Input
               v-model:value="filterInviterLoginAccount"
               allow-clear
-              style="width: 220px"
               placeholder="请输入上级账号"
             >
               <template #addonBefore>上级账号</template>
@@ -918,7 +908,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterRegIp"
               allow-clear
-              style="width: 210px"
               placeholder="请输入注册IP"
             >
               <template #addonBefore>注册IP</template>
@@ -928,7 +917,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterLastIp"
               allow-clear
-              style="width: 240px"
               placeholder="请输入最后登录IP"
             >
               <template #addonBefore>最后登录IP</template>
@@ -938,7 +926,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterDeviceId"
               allow-clear
-              style="width: 230px"
               placeholder="请输入设备号"
             >
               <template #addonBefore>设备号</template>
@@ -948,7 +935,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterLastDevice"
               allow-clear
-              style="width: 260px"
               placeholder="请输入最后登录设备"
             >
               <template #addonBefore>最后登录设备</template>
@@ -958,7 +944,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterRealName"
               allow-clear
-              style="width: 200px"
               placeholder="请输入真实姓名"
             >
               <template #addonBefore>真实姓名</template>
@@ -968,7 +953,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterBank"
               allow-clear
-              style="width: 230px"
               placeholder="请输入银行卡"
             >
               <template #addonBefore>银行卡</template>
@@ -979,7 +963,6 @@ onMounted(async () => {
               <span class="query-field-addon">所属产品</span>
               <Select
                 v-model:value="filterPackageId"
-                style="width: 150px"
                 :options="[
                   { label: '全部', value: '' },
                   ...packageOptions.map((item) => ({
@@ -990,7 +973,6 @@ onMounted(async () => {
                 placeholder="请选择所属产品"
               />
             </Space.Compact>
-          
           </div>
           <div v-if="canFilterVip" class="flex flex-col gap-1">
             <Space.Compact>
@@ -998,43 +980,36 @@ onMounted(async () => {
               <Select
                 v-model:value="filterVipLevel"
                 allow-clear
-                style="width: 120px"
                 :options="vipOptions"
                 placeholder="请选择VIP等级"
               />
             </Space.Compact>
-          
           </div>
           <div v-if="canFilterPlayerLevel" class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">会员层级</span>
               <Select
                 v-model:value="filterPlayerLevelId"
-                style="width: 140px"
                 :options="levelFilterOptions"
                 placeholder="请选择会员层级"
               />
             </Space.Compact>
-          
           </div>
           <div v-if="canFilterMemberType" class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">会员类型</span>
               <Select
                 v-model:value="filterDataSearchType"
-                style="width: 120px"
                 :options="memberTypeOptions"
                 placeholder="请选择会员类型"
               />
             </Space.Compact>
-          
           </div>
           <div v-if="canFilterBindPhone" class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">绑定手机</span>
               <Select
                 v-model:value="filterBindPhone"
-                style="width: 120px"
                 :options="[
                   { label: '全部', value: -1 },
                   { label: '已绑定', value: 1 },
@@ -1043,26 +1018,22 @@ onMounted(async () => {
                 placeholder="请选择绑定手机"
               />
             </Space.Compact>
-          
           </div>
           <div v-if="canFilterTag" class="flex flex-col gap-1">
             <Input
               v-model:value="filterTagName"
               allow-clear
-              style="width: 200px"
               placeholder="请输入标签"
             >
               <template #addonBefore>标签</template>
             </Input>
           </div>
-          <div v-if="canFilterRegDate" class="flex flex-col gap-1">
-            <QueryDatetimeRangePicker v-model="filterDateRange" label="注册时间" />
-          
-          </div>
-          <div v-if="canFilterFirstPay" class="flex flex-col gap-1">
-            <QueryDatetimeRangePicker v-model="filterFirstPayRange" label="存款时间" />
-          
-          </div>
+          <div v-if="canFilterRegDate" class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="注册时间" />
+        </div>
+          <div v-if="canFilterFirstPay" class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterFirstPayRange" label="存款时间" />
+        </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">显示列</span>
@@ -1070,14 +1041,13 @@ onMounted(async () => {
                 v-model:value="visibleColumns"
                 mode="multiple"
                 :max-tag-count="1"
-                style="min-width: 180px"
                 :options="COLUMN_OPTIONS"
                 @change="persistColumns"
                 placeholder="请选择显示列"
               />
             </Space.Compact>
-          
           </div>
+        <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
           <Button type="default" @click="advancedOpen = true">高级搜索</Button>
@@ -1109,7 +1079,8 @@ onMounted(async () => {
               </Menu>
             </template>
           </Dropdown>
-        </template>
+        </div>
+      </template>
 
         <template #summary>
           <SummaryCards :items="summaryItems" />

@@ -109,12 +109,12 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       无历史活动查看权限 (10310)
     </div>
     <template v-else>
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterId"
             allow-clear
-            style="width: 210px"
             placeholder="请输入活动ID"
           >
             <template #addonBefore>活动ID</template>
@@ -124,7 +124,6 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           <Input
             v-model:value="filterName"
             allow-clear
-            style="width: 260px"
             placeholder="请输入活动名称"
           >
             <template #addonBefore>活动名称</template>
@@ -135,13 +134,16 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           <Select
             v-model:value="filterType"
             allow-clear
-            class="w-40"
+           
             :options="typeOptions"
             placeholder="请选择活动类型"
           />
         </Space.Compact>
-        <Button type="primary" @click="gridApi.reload()">查询</Button>
-      </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
+    </div>
+  </div>
       <Grid>
         <template #showTime="{ row }">
           <div class="whitespace-pre-line text-xs">

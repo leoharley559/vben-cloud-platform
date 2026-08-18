@@ -266,12 +266,12 @@ onMounted(() => {
     title="403"
   />
   <template v-else>
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="auditFilters.Username"
           allow-clear
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -279,19 +279,18 @@ onMounted(() => {
       </div>
       <Select
         v-model:value="auditFilters.WalletType"
-        class="w-36"
+       
         :options="walletOptions"
       />
       <Select
         v-model:value="auditFilters.BonusType"
-        class="w-36"
+       
         :options="bonusOptions"
       />
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="auditFilters.ApplyName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入申请账号"
         >
           <template #addonBefore>申请账号</template>
@@ -301,16 +300,20 @@ onMounted(() => {
         <Input
           v-model:value="auditFilters.ApplyDesc"
           allow-clear
-          style="width: 220px"
           placeholder="请输入申请备注"
         >
           <template #addonBefore>申请备注</template>
         </Input>
       </div>
-      <QueryDatetimeRangePicker v-model="auditRange" />
-      <Button type="primary" @click="searchAudit">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="auditRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="searchAudit">查询</Button>
       <Button @click="resetAudit">重置</Button>
+        </div>
     </div>
+  </div>
     <div class="mb-3 flex items-center justify-between">
       <SummaryCards :items="auditSummaryItems" />
       <Space>

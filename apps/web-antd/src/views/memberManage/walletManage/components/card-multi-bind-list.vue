@@ -155,25 +155,25 @@ onMounted(() => {
         <Input
           v-model:value="filterBankAccount"
           allow-clear
-          style="width: 250px"
           @press-enter="handleSearch"
           placeholder="请输入账号"
         >
           <template #addonBefore>账号</template>
         </Input>
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
-      
-      </div>
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
         <Button @click="handleReset">重置</Button>
         <Button type="primary" @click="openCreate">新增</Button>
       </Space>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #actions="{ row }">

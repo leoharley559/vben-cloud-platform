@@ -313,7 +313,9 @@ onMounted(async () => {
           placeholder="请选择上架包"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
+        </div>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
         <Button @click="handleReset">重置</Button>

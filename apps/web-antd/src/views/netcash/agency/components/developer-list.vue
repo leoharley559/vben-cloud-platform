@@ -130,22 +130,27 @@ onMounted(() => canView.value && gridApi.reload());
 
 <template>
   <div v-if="canView">
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="developerName"
           allow-clear
-          style="width: 250px"
           placeholder="请输入发展人名称"
         >
           <template #addonBefore>发展人名称</template>
         </Input>
       </div>
-      <QueryDatetimeRangePicker v-model="dateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="reset">重置</Button>
       <Button v-if="canCreate" type="primary" @click="openCreate">新增发展人</Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #actions="{ row }">
         <Space>

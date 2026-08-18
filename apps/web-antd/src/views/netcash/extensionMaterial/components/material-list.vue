@@ -544,7 +544,9 @@ onMounted(async () => {
             placeholder="请选择状态"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="dateRange" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
         <Select
           v-model:value="query.Sort"
           :options="[

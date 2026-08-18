@@ -301,7 +301,6 @@ onMounted(() => {
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
-              style="width: 260px"
               @press-enter="handleSearch"
               @blur="
                 filterLoginAccount = normalizeLoginAccount(filterLoginAccount)
@@ -318,7 +317,6 @@ onMounted(() => {
                 v-model:value="filterPackageId"
                 allow-clear
                 show-search
-                style="width: 160px"
                 :options="packageSelectOptions"
                 :filter-option="
                   (input, option) =>
@@ -329,13 +327,11 @@ onMounted(() => {
                 placeholder="请选择所属产品"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filterInviterLoginAccount"
               allow-clear
-              style="width: 240px"
               placeholder="请输入上级代理"
             >
               <template #addonBefore>上级代理</template>
@@ -345,7 +341,6 @@ onMounted(() => {
             <Input
               v-model:value="filterDeviceId"
               allow-clear
-              style="width: 250px"
               placeholder="请输入设备号"
             >
               <template #addonBefore>设备号</template>
@@ -355,7 +350,6 @@ onMounted(() => {
             <Input
               v-model:value="filterLoginIp"
               allow-clear
-              style="width: 220px"
               placeholder="请输入登录IP"
             >
               <template #addonBefore>登录IP</template>
@@ -375,14 +369,12 @@ onMounted(() => {
               <ChannelSelect
                 v-if="channelSearchType === 0"
                 v-model="filterChannelIds"
-                style="width: 220px"
                 placeholder="请输入渠道号"
               />
               <Input
                 v-else
                 v-model:value="filterChannelExact"
                 allow-clear
-                style="width: 180px"
                 placeholder="请输入渠道号"
               />
             </Space.Compact>
@@ -391,7 +383,6 @@ onMounted(() => {
             <Input
               v-model:value="filterLoginAddress"
               allow-clear
-              style="width: 240px"
               placeholder="请输入登录地址"
             >
               <template #addonBefore>登录地址</template>
@@ -401,16 +392,15 @@ onMounted(() => {
             <Input
               v-model:value="filterLoginPlatform"
               allow-clear
-              style="width: 220px"
               placeholder="请输入登录设备"
             >
               <template #addonBefore>登录设备</template>
             </Input>
           </div>
-          <div class="flex flex-col gap-1">
-            <QueryDatetimeRangePicker v-model="filterDateRange" label="登录时间" />
-          
-          </div>
+          <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="登录时间" />
+        </div>
+        <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="handleSearch">
             查询
           </Button>
@@ -418,7 +408,8 @@ onMounted(() => {
           <Button :loading="exportLoading" @click="handleExportClick">
             导出 CSV
           </Button>
-        </template>
+        </div>
+      </template>
 
         <template #summary>
           <SummaryCards :items="summaryItems" />

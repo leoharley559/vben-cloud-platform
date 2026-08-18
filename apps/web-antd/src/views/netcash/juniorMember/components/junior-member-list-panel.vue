@@ -516,12 +516,12 @@ onMounted(async () => {
 
 <template>
   <template v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filters.LoginAccount"
           allow-clear
-          style="width: 220px"
           @press-enter="searchMembers"
           placeholder="请输入游戏账号"
         >
@@ -532,7 +532,6 @@ onMounted(async () => {
         <Input
           v-model:value="filters.Promoter"
           allow-clear
-          style="width: 220px"
           @press-enter="searchMembers"
           placeholder="请输入归属代理"
         >
@@ -545,7 +544,6 @@ onMounted(async () => {
           v-model:value="filters.PackageId"
           allow-clear
           :options="packageOptions"
-          style="width: 150px"
           placeholder="请选择产品包"
         />
       </Space.Compact>
@@ -555,7 +553,6 @@ onMounted(async () => {
           v-model:value="filters.Status"
           allow-clear
           :options="Object.entries(statusMap).map(([value, label]) => ({ label, value: Number(value) }))"
-          style="width: 130px"
           placeholder="请选择玩家状态"
         />
       </Space.Compact>
@@ -565,7 +562,6 @@ onMounted(async () => {
           v-model:value="filters.ActiveStatus"
           allow-clear
           :options="[{ label: '不活跃', value: 0 }, { label: '活跃', value: 1 }]"
-          style="width: 130px"
           placeholder="请选择活跃状态"
         />
       </Space.Compact>
@@ -575,7 +571,6 @@ onMounted(async () => {
           v-model:value="filters.VipLevel"
           allow-clear
           :options="vipOptions"
-          style="width: 130px"
           placeholder="请选择VIP等级"
         />
       </Space.Compact>
@@ -585,16 +580,24 @@ onMounted(async () => {
           v-model:value="filters.AlgorithmTemplateId"
           allow-clear
           :options="algorithmOptions"
-          style="width: 170px"
           placeholder="请选择佣金算法"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="filters.RegTime" />
-      <QueryDatetimeRangePicker v-model="filters.FirstPayTime" />
-      <QueryDatetimeRangePicker v-model="filters.StatisticsTime" />
-      <Button type="primary" @click="searchMembers">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filters.RegTime" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filters.FirstPayTime" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filters.StatisticsTime" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="searchMembers">查询</Button>
       <Button @click="resetFilters">重置</Button>
+        </div>
     </div>
+  </div>
     <div class="mb-3 flex justify-end gap-2">
       <Button
         v-if="canBatchImport"

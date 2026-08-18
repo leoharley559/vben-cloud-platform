@@ -53,7 +53,9 @@ onMounted(loadData);
 <template>
   <Spin :spinning="loading">
     <MobileMvpTip />
-    <QueryDatetimeRangePicker v-model="dateRange" />
+    <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
     <Card size="small">
       <Table
         :columns="columns"

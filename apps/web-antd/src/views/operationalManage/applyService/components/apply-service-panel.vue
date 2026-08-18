@@ -543,12 +543,12 @@ onMounted(() => {
 <template>
   <div>
     <!-- 查询区与旧站 playerOrderPage Filters 逐项对齐 -->
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 250px"
           placeholder="请输入订单号"
         >
           <template #addonBefore>订单号</template>
@@ -559,7 +559,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 250px"
           @change="
             filterLoginAccount = filterLoginAccount
               .toLowerCase()
@@ -593,7 +592,6 @@ onMounted(() => {
         <Input
           v-model:value="filterSupporterUsername"
           allow-clear
-          style="width: 250px"
           placeholder="请输入申请人"
         >
           <template #addonBefore>申请人</template>
@@ -604,7 +602,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOperatorUsername"
           allow-clear
-          style="width: 250px"
           placeholder="请输入审核人"
         >
           <template #addonBefore>审核人</template>
@@ -616,7 +613,7 @@ onMounted(() => {
         <Select
           v-model:value="filterWorkQuestionType"
           allow-clear
-          class="w-40"
+         
           :options="workQuestOptions"
           placeholder="请选择"
           show-search
@@ -634,7 +631,7 @@ onMounted(() => {
         <Select
           v-model:value="filterEndReasonType"
           allow-clear
-          class="w-40"
+         
           :options="endReasonOptions"
           placeholder="请选择"
         />
@@ -645,7 +642,7 @@ onMounted(() => {
         <Select
           v-model:value="filterStatus"
           allow-clear
-          class="w-44"
+         
           :max-tag-count="1"
           mode="multiple"
           :options="statusOptions"
@@ -654,8 +651,11 @@ onMounted(() => {
         />
       </div>
 
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button
         v-if="canExport"
@@ -665,7 +665,9 @@ onMounted(() => {
       >
         导出Excel
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #status="{ row }">

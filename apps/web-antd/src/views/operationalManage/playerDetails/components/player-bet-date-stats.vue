@@ -167,8 +167,9 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">状态</span>
           <Select
@@ -176,7 +177,6 @@ onMounted(() => {
             allow-clear
             :options="BET_STATUS_OPTIONS"
             placeholder="请选择状态"
-            style="width: 120px"
           />
         </Space.Compact>
       </div>
@@ -187,23 +187,24 @@ onMounted(() => {
           <Select
             v-model:value="filterSelectTimeType"
             :options="BET_TIME_TYPE_OPTIONS"
-            style="width: 120px"
             placeholder="请选择时间类型"
           />
         </Space.Compact>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" />
-      </div>
-
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
         <Button @click="handleReset">重置</Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #winLoss="{ row }">

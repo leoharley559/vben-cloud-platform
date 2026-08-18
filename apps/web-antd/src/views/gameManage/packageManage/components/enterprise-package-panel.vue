@@ -413,24 +413,27 @@ void loadGames();
     />
     <template v-else>
       <div class="query-panel">
-        <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-          <div class="flex flex-col gap-1">
+        <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+                <div class="flex flex-col gap-1">
             <Input
               v-model:value="gameQuery.PackageName"
               allow-clear
               class="!w-[280px]"
               @press-enter="searchGames"
-              style="width: 220px"
               placeholder="请输入游戏名称"
             >
               <template #addonBefore>游戏名称</template>
             </Input>
           </div>
+        <div class="query-filter-actions">
           <Button type="primary" :loading="gameLoading" @click="searchGames">
             查询
           </Button>
           <Button @click="resetGames">重置</Button>
         </div>
+    </div>
+  </div>
       </div>
 
       <section class="section-card">

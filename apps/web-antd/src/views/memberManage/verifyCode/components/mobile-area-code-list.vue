@@ -252,7 +252,6 @@ onMounted(() => {
         <Input
           v-model:value="filterCountryName"
           allow-clear
-          style="width: 240px"
           @press-enter="handleSearch"
           placeholder="请输入国家名称"
         >
@@ -263,14 +262,14 @@ onMounted(() => {
         <Input
           v-model:value="filterDialingCode"
           allow-clear
-          style="width: 200px"
           @press-enter="handleSearch"
           placeholder="请输入区码"
         >
           <template #addonBefore>区码</template>
         </Input>
       </div>
-      <Space>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
@@ -295,7 +294,8 @@ onMounted(() => {
           恢复默认
         </Button>
       </Space>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #status="{ row }">

@@ -565,12 +565,12 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-      <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filters.ChannelId"
             allow-clear
-            style="width: 210px"
             @press-enter="handleSearch"
             placeholder="请输入渠道号"
           >
@@ -581,7 +581,6 @@ onBeforeUnmount(() => {
           <Input
             v-model:value="filters.ChannelName"
             allow-clear
-            style="width: 230px"
             @press-enter="handleSearch"
             placeholder="请输入渠道名称"
           >
@@ -592,7 +591,6 @@ onBeforeUnmount(() => {
           <Input
             v-model:value="filters.PromoterAdminUserName"
             allow-clear
-            style="width: 230px"
             @press-enter="handleSearch"
             placeholder="请输入推广账号"
           >
@@ -603,7 +601,6 @@ onBeforeUnmount(() => {
           <Input
             v-model:value="filters.PromoterAdminName"
             allow-clear
-            style="width: 230px"
             @press-enter="handleSearch"
             placeholder="请输入推广名称"
           >
@@ -614,7 +611,6 @@ onBeforeUnmount(() => {
           v-if="canVisibilityFilter"
           v-model:value="filters.IsHidden"
           :options="visibilityOptions"
-          style="width: 125px"
         />
         <Space.Compact>
           <span class="query-field-addon">打包状态</span>
@@ -622,7 +618,6 @@ onBeforeUnmount(() => {
             v-model:value="filters.PackStatus"
             allow-clear
             :options="packStatusOptions"
-            style="width: 125px"
             placeholder="请选择打包状态"
           />
         </Space.Compact>
@@ -632,13 +627,15 @@ onBeforeUnmount(() => {
             v-model:value="filters.Sort"
             allow-clear
             :options="sortOptions"
-            style="width: 150px"
             placeholder="请选择排序"
           />
         </Space.Compact>
-        <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-      </div>
+        </div>
+    </div>
+  </div>
       <Space wrap>
         <Button v-if="canBatch && canList" @click="openBatch">批量设置</Button>
         <Button v-if="canCreate" type="primary" @click="openCreate()"

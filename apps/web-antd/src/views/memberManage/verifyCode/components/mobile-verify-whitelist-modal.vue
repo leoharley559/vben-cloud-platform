@@ -181,11 +181,11 @@ function handleTableChange(pagination: {
     title="手机验证码白名单"
     width="860px"
   >
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <Input
         v-model:value="filterAccount"
         allow-clear
-        style="width: 220px"
         placeholder="请输入游戏账号"
       >
         <template #addonBefore>游戏账号</template>
@@ -200,33 +200,34 @@ function handleTableChange(pagination: {
             ...packageSelectOptions,
           ]"
           show-search
-          style="width: 160px"
           placeholder="请选择所属产品"
         />
       </Space.Compact>
       <Input
         v-model:value="filterChannelId"
         allow-clear
-        style="width: 210px"
         placeholder="请输入渠道ID"
       >
         <template #addonBefore>渠道ID</template>
       </Input>
-      <Space>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
         <Button @click="handleReset">重置</Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <div class="mb-4 rounded border p-3">
       <div class="mb-2 font-medium">新增白名单</div>
-      <div class="flex flex-wrap items-end gap-2">
-        <Input
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <Input
           v-model:value="addAccount"
           allow-clear
-          style="width: 200px"
           placeholder="请输入游戏账号"
         />
         <Space.Compact>
@@ -236,14 +237,15 @@ function handleTableChange(pagination: {
             :field-names="{ label: 'PackageName', value: 'PackageId' }"
             :options="packageSelectOptions"
             show-search
-            style="width: 180px"
             placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Button :loading="adding" type="primary" @click="handleAdd">
           添加
         </Button>
-      </div>
+      
+    </div>
+  </div>
     </div>
 
     <div class="mb-2 text-right">

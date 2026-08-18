@@ -711,12 +711,12 @@ onUnmounted(() => {
 <template>
   <Result v-if="!canView" status="403" sub-title="无提款列表查看权限" title="403" />
   <div v-else>
-    <div class="mb-3 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="withdrawQuery.Applicant"
           allow-clear
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -726,7 +726,6 @@ onUnmounted(() => {
         <Input
           v-model:value="withdrawQuery.OrderId"
           allow-clear
-          style="width: 220px"
           placeholder="请输入订单号"
         >
           <template #addonBefore>订单号</template>
@@ -736,7 +735,6 @@ onUnmounted(() => {
         <Input
           v-model:value="withdrawQuery.HandlerName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入操作人员"
         >
           <template #addonBefore>操作人员</template>
@@ -746,7 +744,6 @@ onUnmounted(() => {
         <Input
           v-model:value="withdrawQuery.ShowName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入出款通道"
         >
           <template #addonBefore>出款通道</template>
@@ -756,7 +753,6 @@ onUnmounted(() => {
         <Input
           v-model:value="withdrawQuery.WithdrawAccount"
           allow-clear
-          style="width: 220px"
           placeholder="请输入出款账号"
         >
           <template #addonBefore>出款账号</template>
@@ -766,7 +762,6 @@ onUnmounted(() => {
         <Input
           v-model:value="withdrawQuery.PayName"
           allow-clear
-          style="width: 210px"
           placeholder="请输入持卡人"
         >
           <template #addonBefore>持卡人</template>
@@ -775,19 +770,20 @@ onUnmounted(() => {
         <Space.Compact>
           <span class="query-field-addon">提款方式</span>
           <Select v-model:value="withdrawQuery.AccountType" mode="multiple" :options="PAY_TYPE_OPTIONS"
-            style="min-width: 150px"
             placeholder="请选择提款方式" />
         </Space.Compact>
         <Select v-model:value="withdrawQuery.AmountType" :options="[
           { label: '申请金额', value: 1 },
           { label: '实际出款', value: 2 },
-        ]" style="width: 120px" />
+        ]" />
         <Select v-model:value="withdrawQuery.SelectTimeType" :options="[
           { label: '申请时间', value: 1 },
           { label: '结束时间', value: 2 },
           { label: '财务响应时间', value: 3 },
         ]" />
-        <QueryDatetimeRangePicker v-model="withdrawRange" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="withdrawRange" />
+        </div>
         <InputNumber v-model:value="withdrawQuery.AmountMin" placeholder="请输入最小金额" />
         <InputNumber v-model:value="withdrawQuery.AmountMax" placeholder="请输入最大金额" />
         <Space.Compact>
@@ -805,11 +801,11 @@ onUnmounted(() => {
               { label: '出款异常', value: '5' },
               { label: '处理中', value: '6' },
             ]"
-            style="min-width: 140px"
             placeholder="请选择状态"
           />
         </Space.Compact>
-        <Button type="primary" @click="withdrawGridApi.reload()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="withdrawGridApi.reload()">查询</Button>
         <Button @click="resetWithdraw">重置</Button>
         <Button @click="exportWithdraw">导出 Excel</Button>
         <Button v-if="checkPermission(12032)" type="primary" ghost @click="openAuto">
@@ -825,7 +821,9 @@ onUnmounted(() => {
         <Button danger :disabled="selected.length === 0" @click="batchRefuse">
           批量拒绝出款
         </Button>
-      </div>
+        </div>
+    </div>
+  </div>
 
     <SummaryCards :items="withdrawSummaryItems" />
     <Space v-if="Number(withdrawTotal.PendingCountNum) > 0" class="mb-3">

@@ -625,7 +625,7 @@ onMounted(async () => {
           class="!w-full"
           placeholder="请输入最大申请金额"
         />
-        <div class="flex flex-col gap-1">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" label="返水生成时间" />
         </div>
       </div>

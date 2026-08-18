@@ -421,12 +421,12 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="teamQuery.TeamName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入团队名称"
         >
           <template #addonBefore>团队名称</template>
@@ -436,7 +436,6 @@ onMounted(() => {
         <Input
           v-model:value="teamQuery.Username"
           allow-clear
-          style="width: 220px"
           placeholder="请输入主线账号"
         >
           <template #addonBefore>主线账号</template>
@@ -446,7 +445,6 @@ onMounted(() => {
         <Input
           v-model:value="teamQuery.SubUserName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入副线账号"
         >
           <template #addonBefore>副线账号</template>
@@ -455,14 +453,18 @@ onMounted(() => {
       <Select
         v-model:value="teamQuery.Type"
         :options="[{ label: '全部类型', value: -1 }, { label: '普通团队', value: 1 }, { label: '正式团队', value: 2 }]"
-        style="width: 130px"
       />
-      <QueryDatetimeRangePicker v-model="teamDateRange" />
-      <Button type="primary" @click="searchTeams">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="teamDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="searchTeams">查询</Button>
       <Button @click="resetTeams">重置</Button>
       <Button v-if="canTransfer" @click="openTransfer">转移副线</Button>
       <Button v-if="canCreate" type="primary" @click="openCreateModal">新增团队</Button>
+        </div>
     </div>
+  </div>
     <Table
       v-if="canViewList"
       :columns="teamColumns"

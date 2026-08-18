@@ -106,12 +106,12 @@ onMounted(() => {
 
 <template>
   <template v-if="canViewRecordList">
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="recordQuery.TeamName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入团队名称"
         >
           <template #addonBefore>团队名称</template>
@@ -121,7 +121,6 @@ onMounted(() => {
         <Input
           v-model:value="recordQuery.Username"
           allow-clear
-          style="width: 220px"
           placeholder="请输入主线账号"
         >
           <template #addonBefore>主线账号</template>
@@ -131,7 +130,6 @@ onMounted(() => {
         <Input
           v-model:value="recordQuery.SubName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入副线账号"
         >
           <template #addonBefore>副线账号</template>
@@ -145,12 +143,16 @@ onMounted(() => {
           { label: '转移副线', value: 4 }, { label: '编辑团队', value: 5 },
           { label: '解散团队', value: 6 },
         ]"
-        style="width: 130px"
       />
-      <QueryDatetimeRangePicker v-model="recordDates" />
-      <Button type="primary" @click="searchRecords">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="recordDates" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="searchRecords">查询</Button>
       <Button @click="resetRecords">重置</Button>
+        </div>
     </div>
+  </div>
     <Table
       :columns="recordColumns"
       :data-source="recordRows"

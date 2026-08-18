@@ -104,8 +104,11 @@ const exportDisabled = computed(() => props.loading || props.exportLoading);
 </script>
 
 <template>
-  <div class="mb-4 flex flex-wrap items-center gap-2">
-    <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+  <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+          <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+        </div>
 
     <Space.Compact>
       <Select
@@ -120,13 +123,11 @@ const exportDisabled = computed(() => props.loading || props.exportLoading);
       <AccountSelect
         v-if="adminSearchType === 0"
         v-model="adminSearch"
-        style="width: 220px"
       />
       <Input
         v-else
         v-model:value="adminSearch as string"
         allow-clear
-        style="width: 220px"
         placeholder="请输入账号"
       />
     </Space.Compact>
@@ -144,14 +145,12 @@ const exportDisabled = computed(() => props.loading || props.exportLoading);
       <ChannelSelect
         v-if="channelSearchType === 0"
         v-model="channelSearch"
-        style="width: 220px"
         placeholder="请输入渠道号"
       />
       <Input
         v-else
         v-model:value="channelSearch as string"
         allow-clear
-        style="width: 220px"
         placeholder="请输入渠道"
       />
     </Space.Compact>
@@ -161,12 +160,11 @@ const exportDisabled = computed(() => props.loading || props.exportLoading);
       <Select
         v-model:value="dataSearchType"
         :options="dataSearchTypeOptions"
-        style="width: 120px"
         placeholder="请选择数据类型"
       />
     </Space.Compact>
-
-    <Space>
+        <div class="query-filter-actions">
+          <Space>
       <Button :loading="loading" type="primary" @click="handleSearch">
         查询
       </Button>
@@ -180,5 +178,7 @@ const exportDisabled = computed(() => props.loading || props.exportLoading);
         导出
       </Button>
     </Space>
+        </div>
+    </div>
   </div>
 </template>

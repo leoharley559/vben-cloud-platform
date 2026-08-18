@@ -178,13 +178,19 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable" class="space-y-4">
-    <div class="flex flex-wrap items-center gap-2">
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Space>
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

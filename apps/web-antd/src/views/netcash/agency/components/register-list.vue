@@ -137,12 +137,12 @@ onMounted(() => canView.value && gridApi.reload());
 
 <template>
   <div v-if="canView">
-    <div class="mb-3 flex flex-wrap items-center gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="username"
           allow-clear
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -152,7 +152,6 @@ onMounted(() => canView.value && gridApi.reload());
         <Input
           v-model:value="email"
           allow-clear
-          style="width: 220px"
           placeholder="请输入申请邮箱"
         >
           <template #addonBefore>申请邮箱</template>
@@ -162,7 +161,6 @@ onMounted(() => canView.value && gridApi.reload());
         <Input
           v-model:value="regIp"
           allow-clear
-          style="width: 210px"
           placeholder="请输入注册 IP"
         >
           <template #addonBefore>注册 IP</template>
@@ -172,7 +170,6 @@ onMounted(() => canView.value && gridApi.reload());
         <Input
           v-model:value="mobile"
           allow-clear
-          style="width: 210px"
           placeholder="请输入手机号"
         >
           <template #addonBefore>手机号</template>
@@ -184,14 +181,18 @@ onMounted(() => canView.value && gridApi.reload());
           v-model:value="approve"
           allow-clear
           :options="[{ label: '待审核', value: 1 }, { label: '已通过', value: 2 }, { label: '已拒绝', value: 3 }]"
-          style="width: 130px"
           placeholder="请选择审核状态"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="dateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="reset">重置</Button>
+        </div>
     </div>
+  </div>
     <div class="mb-3 flex flex-wrap items-center justify-end gap-2">
       <Button v-if="canApprove" type="primary" :disabled="!selectedRows.length" @click="audit(selectedRows, 2)">批量通过</Button>
       <Button v-if="canReject" danger :disabled="!selectedRows.length" @click="audit(selectedRows, 3)">批量拒绝</Button>

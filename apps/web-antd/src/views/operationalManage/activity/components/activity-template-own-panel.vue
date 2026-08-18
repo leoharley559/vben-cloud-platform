@@ -67,20 +67,24 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Space.Compact>
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <Space.Compact>
         <span class="query-field-addon">活动类型</span>
         <Select
           v-model:value="filterType"
           allow-clear
-          class="w-48"
+         
           :options="typeOptions"
           placeholder="请选择活动类型"
         />
       </Space.Compact>
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button disabled type="primary">添加模板</Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #action>
         <Button disabled size="small" type="link">编辑</Button>

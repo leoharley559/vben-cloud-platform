@@ -582,12 +582,12 @@ onMounted(loadMain);
     title="虚拟币限制白名单"
     width="950px"
   >
-    <div class="mb-3 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="whitelistQuery.Account"
           allow-clear
-          style="width: 220px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -597,7 +597,6 @@ onMounted(loadMain);
         <Input
           v-model:value="whitelistQuery.ChannelId"
           allow-clear
-          style="width: 210px"
           placeholder="请输入渠道号"
         >
           <template #addonBefore>渠道号</template>
@@ -609,14 +608,16 @@ onMounted(loadMain);
           v-model:value="whitelistQuery.PackageId"
           :options="productOptions"
           allow-clear
-          style="width: 180px"
           placeholder="请选择产品"
         />
       </Space.Compact>
-      <Button type="primary" @click="loadWhitelist">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="loadWhitelist">查询</Button>
       <Button type="primary" @click="openWhitelistAdd">新增白名单</Button>
       <Button @click="openBatch">Excel/批量导入</Button>
+        </div>
     </div>
+  </div>
     <Table
       :columns="whitelistColumns"
       :data-source="whitelistRows"

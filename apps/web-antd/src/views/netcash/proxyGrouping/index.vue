@@ -636,12 +636,12 @@ onMounted(async () => {
       </Card>
 
       <Card class="member-card" :body-style="{ padding: '16px' }">
-        <div class="mb-4 flex flex-wrap items-center gap-2">
-          <div class="flex flex-col gap-1">
+        <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+                <div class="flex flex-col gap-1">
             <Input
               v-model:value="query.Username"
               allow-clear
-              style="width: 220px"
               @press-enter="search"
               placeholder="请输入代理账号"
             >
@@ -652,14 +652,16 @@ onMounted(async () => {
             <Input
               v-model:value="query.DeveloperName"
               allow-clear
-              style="width: 240px"
               @press-enter="search"
               placeholder="请输入发展人编码"
             >
               <template #addonBefore>发展人编码</template>
             </Input>
           </div>
+          <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" :disabled-date="disabledDate" />
+        </div>
+        <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
           <Button @click="resetSearch">重置</Button>
           <Button
@@ -672,6 +674,8 @@ onMounted(async () => {
             导出 Excel
           </Button>
         </div>
+    </div>
+  </div>
 
         <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
           <Space wrap>

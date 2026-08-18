@@ -159,12 +159,12 @@ onMounted(() => props.playerId && gridApi.reload());
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 220px"
           @press-enter="gridApi.reload()"
           placeholder="请输入订单编号"
         >
@@ -174,10 +174,12 @@ onMounted(() => props.playerId && gridApi.reload());
       <Select
         v-model:value="filterWalletType"
         :options="CREDIT_WALLET_TYPE_OPTIONS"
-        style="width: 140px"
       />
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="gridApi.reload()">
           查询
         </Button>
@@ -195,7 +197,9 @@ onMounted(() => props.playerId && gridApi.reload());
           重置
         </Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

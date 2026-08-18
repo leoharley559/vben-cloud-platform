@@ -212,8 +212,9 @@ onMounted(() => {
   <div>
     <div v-show="!showDetails">
       <KeepQueryBar ref="queryBarRef" @search="handleSearch" />
-      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <Space.Compact>
+      <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+              <Space.Compact>
           <span class="query-field-addon">显示更多数据</span>
           <Select
             v-model:value="moreData"
@@ -225,10 +226,13 @@ onMounted(() => {
             placeholder="请选择显示更多数据"
           />
         </Space.Compact>
-        <Button v-if="canExport" type="primary" @click="handleExport">
+        <div class="query-filter-actions">
+          <Button v-if="canExport" type="primary" @click="handleExport">
           导出Excel
         </Button>
-      </div>
+        </div>
+    </div>
+  </div>
       <Table
         :columns="columns"
         :data-source="tableData"

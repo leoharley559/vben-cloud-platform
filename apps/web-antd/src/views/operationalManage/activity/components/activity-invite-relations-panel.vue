@@ -171,20 +171,19 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <!-- <InputNumber
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <!-- <InputNumber
         v-model:value="filterInviterId"
         :controls="false"
         :min="1"
         :precision="0"
         placeholder="邀请人玩家ID"
-        style="width: 150px"
       /> -->
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterInviterAccount"
           allow-clear
-          style="width: 180px"
           placeholder="请输入邀请人账号"
         >
           <template #addonBefore>邀请人账号</template>
@@ -196,13 +195,11 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         :min="1"
         :precision="0"
         placeholder="被邀请人玩家ID"
-        style="width: 160px"
       /> -->
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterInviteeAccount"
           allow-clear
-          style="width: 180px"
           placeholder="请输入被邀请人账号"
         >
           <template #addonBefore>被邀请人账号</template>
@@ -211,7 +208,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       <!-- <Select
         v-model:value="filterSource"
         allow-clear
-        class="w-32"
+       
         :options="INVITE_SOURCE_OPTIONS"
         placeholder="来源"
       /> -->
@@ -220,7 +217,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <Select
           v-model:value="filterRewardStatus"
           allow-clear
-          class="w-52"
+         
           :options="INVITE_RELATION_STATUS_OPTIONS"
           placeholder="请选择关系状态"
         />
@@ -229,16 +226,20 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <Input
           v-model:value="filterBusinessOrderId"
           allow-clear
-          style="width: 180px"
           placeholder="请输入业务单号"
         >
           <template #addonBefore>业务单号</template>
         </Input>
       </div>
-      <QueryDatetimeRangePicker v-model="bindTimeRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="bindTimeRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
+        </div>
     </div>
+  </div>
     <Grid />
   </div>
 </template>

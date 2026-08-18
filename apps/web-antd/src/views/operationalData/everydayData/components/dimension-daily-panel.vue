@@ -309,8 +309,10 @@ onMounted(() => {
         </Radio.Group>
       </div>
 
-      <Space wrap class="w-full">
-        <Space.Compact>
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              
+          <Space.Compact>
           <Select
             class="query-auto-select"
             :popup-match-select-width="false"
@@ -323,13 +325,11 @@ onMounted(() => {
           <AccountSelect
             v-if="adminSearchType === 0"
             v-model="adminSearch"
-            style="width: 220px"
           />
           <Input
             v-else
             v-model:value="adminSearch as string"
             allow-clear
-            style="width: 220px"
             placeholder="请输入账号"
             />
         </Space.Compact>
@@ -347,20 +347,17 @@ onMounted(() => {
           <ChannelSelect
             v-if="channelSearchType === 0"
             v-model="channelSearch"
-            style="width: 220px"
             placeholder="请输入渠道号"
           />
           <Input
             v-else
             v-model:value="channelSearch as string"
             allow-clear
-            style="width: 220px"
             placeholder="请输入渠道"
             />
         </Space.Compact>
 
-        <Space>
-          <Space.Compact>
+        <Space.Compact>
             <span class="query-field-addon">产品</span>
             <Select
               v-model:value="packageId"
@@ -371,13 +368,11 @@ onMounted(() => {
                 }))
               "
               allow-clear
-              style="width: 180px"
               placeholder="请选择产品"
             />
           </Space.Compact>
-        </Space>
 
-        <Space v-if="isDevice && isHistory">
+        <div v-if="isDevice && isHistory">
           <Space.Compact>
             <span class="query-field-addon">设备类型</span>
             <Select
@@ -385,13 +380,12 @@ onMounted(() => {
               :options="devicePlatformOptions"
               allow-clear
               mode="multiple"
-              style="width: 200px"
               placeholder="请选择设备类型"
             />
           </Space.Compact>
-        </Space>
+        </div>
 
-        <Space v-if="!isDevice && isHistory">
+        <div v-if="!isDevice && isHistory">
           <Space.Compact>
             <span class="query-field-addon">VIP等级</span>
             <Select
@@ -399,23 +393,21 @@ onMounted(() => {
               :options="vipLevelOptions"
               allow-clear
               mode="multiple"
-              style="width: 200px"
               placeholder="请选择VIP等级"
             />
           </Space.Compact>
-        </Space>
+        </div>
 
-        <Space v-if="isDevice">
+        <div v-if="isDevice">
           <Space.Compact>
             <span class="query-field-addon">数据类型</span>
             <Select
               v-model:value="dataSearchType"
               :options="memberTypeOptions"
-              style="width: 120px"
               placeholder="请选择数据类型"
             />
           </Space.Compact>
-        </Space>
+        </div>
 
         <Select
           class="query-auto-select"
@@ -428,19 +420,21 @@ onMounted(() => {
           ]"
         />
 
-        <Space v-if="isHistory">
+        <div v-if="isHistory">
+          <div class="query-filter-wide">
           <Space.Compact>
             <span class="query-field-addon">日期</span>
             <DatePicker.RangePicker
               v-model:value="dateRange"
               :format="dateFormat"
               :picker="pickerMode"
-              style="width: 260px"
             />
           </Space.Compact>
-        </Space>
-
-        <Button type="primary" @click="handleSearch">查询</Button>
+        </div>
+        </div>
+        
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
         <Button
           v-if="canExport"
@@ -450,7 +444,9 @@ onMounted(() => {
         >
           导出 Excel
         </Button>
-      </Space>
+        </div>
+    </div>
+  </div>
     </div>
 
     <Card size="small">

@@ -210,12 +210,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 200px"
           placeholder="请输入订单编号"
         >
           <template #addonBefore>订单编号</template>
@@ -225,7 +225,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 200px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -243,7 +242,6 @@ onMounted(() => {
                 value: item.PackageId,
               }))
           "
-          style="width: 160px"
           placeholder="请选择产品"
         />
       </Space.Compact>
@@ -253,7 +251,6 @@ onMounted(() => {
           v-model:value="filterStatus"
           allow-clear
           :options="EASY_RECHARGE_STATUS_OPTIONS"
-          style="width: 140px"
           placeholder="请选择状态"
         />
       </Space.Compact>
@@ -261,7 +258,6 @@ onMounted(() => {
         <Input
           v-model:value="filterRequestAddress"
           allow-clear
-          style="width: 260px"
           placeholder="请输入申请地址"
         >
           <template #addonBefore>申请地址</template>
@@ -271,7 +267,6 @@ onMounted(() => {
         <Input
           v-model:value="filterChannelAddress"
           allow-clear
-          style="width: 260px"
           placeholder="请输入收款地址"
         >
           <template #addonBefore>收款地址</template>
@@ -281,17 +276,21 @@ onMounted(() => {
         <Input
           v-model:value="filterCheckerName"
           allow-clear
-          style="width: 240px"
           placeholder="请输入审核人员"
         >
           <template #addonBefore>审核人员</template>
         </Input>
       </div>
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button :loading="loading" type="primary" @click="gridApi.reload()">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #status="{ row }">

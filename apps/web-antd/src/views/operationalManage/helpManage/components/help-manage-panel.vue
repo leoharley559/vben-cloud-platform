@@ -256,7 +256,6 @@ function handleClose(row: HelpRow) {
         <Input
           v-model:value="filterHelperAccount"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入协助账号"
         >
@@ -269,20 +268,19 @@ function handleClose(row: HelpRow) {
           <Select
             v-model:value="filterStatus"
             allow-clear
-            style="width: 140px"
             :options="statusOptions"
             placeholder="请选择状态"
           />
         </Space.Compact>
-      
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="申请时间" />
-      
-      </div>
-      <Button type="primary" @click="handleSearch">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="申请时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
-    </template>
+        </div>
+      </template>
     <Grid>
       <template #status="{ row }">
         <Tag :color="statusColor(row)">{{ statusLabel(row) }}</Tag>

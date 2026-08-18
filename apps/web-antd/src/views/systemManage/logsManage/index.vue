@@ -255,14 +255,14 @@ onMounted(async () => {
 <template>
   <Page v-if="canViewList" auto-content-height description="系统管理 · 日志管理" title="日志管理">
     <Card>
-      <div class="mb-4 flex flex-wrap items-center gap-2">
-        <Space.Compact>
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <Space.Compact>
           <span class="query-field-addon">操作人员</span>
           <Select
             v-model:value="filterCreateAdminId"
             :options="userOptions"
             show-search
-            style="width: 180px"
             placeholder="请选择操作人员"
           />
         </Space.Compact>
@@ -272,17 +272,21 @@ onMounted(async () => {
             v-model:value="filterLogTypeId"
             :options="logTypeOptions"
             show-search
-            style="width: 180px"
             placeholder="请选择日志类型"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="filterDateRange" />
-        <Space>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
           <Button v-if="canExport" :loading="exporting" @click="handleExport"> 导出 Excel </Button>
         </Space>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <Grid />
     </Card>

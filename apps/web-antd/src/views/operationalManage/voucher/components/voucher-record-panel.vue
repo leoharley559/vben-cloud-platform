@@ -319,13 +319,12 @@ function statusMeta(value?: number | string) {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
-      <div class="flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
-            style="width: 220px"
             placeholder="请输入玩家账号"
           >
             <template #addonBefore>玩家账号</template>
@@ -336,7 +335,7 @@ function statusMeta(value?: number | string) {
           <Select
             v-model:value="filterVipLevel"
             allow-clear
-            class="w-28"
+           
             :options="vipOptions"
             placeholder="请选择VIP等级"
           />
@@ -346,19 +345,23 @@ function statusMeta(value?: number | string) {
           <Select
             v-model:value="filterPackageId"
             allow-clear
-            class="w-36"
+           
             :options="packageFilterOptions"
             placeholder="请选择所属产品"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="filterRegDateRange" label="注册时间" />
-        <QueryDatetimeRangePicker v-model="filterReceiveDateRange" label="领取时间" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterRegDateRange" label="注册时间" />
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterReceiveDateRange" label="领取时间" />
+        </div>
         <Space.Compact>
           <span class="query-field-addon">活动类型</span>
           <Select
             v-model:value="filterActivityType"
             allow-clear
-            class="w-32"
+           
             :options="activityTypeOptions"
             placeholder="请选择活动类型"
           />
@@ -367,7 +370,6 @@ function statusMeta(value?: number | string) {
           <Input
             v-model:value="filterActivityName"
             allow-clear
-            style="width: 220px"
             placeholder="请输入活动名称"
           >
             <template #addonBefore>活动名称</template>
@@ -378,24 +380,26 @@ function statusMeta(value?: number | string) {
           <Select
             v-model:value="filterStatus"
             allow-clear
-            class="w-28"
+           
             :options="VOUCHER_STATUS_FILTER_OPTIONS"
             placeholder="请选择票券状态"
           />
         </Space.Compact>
-        <Space>
+        <div class="query-filter-actions">
+          <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
         </Space>
-      </div>
-      <Button
+        <Button
         :loading="exportLoading"
         type="primary"
         @click="handleExportClick"
       >
         导出
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

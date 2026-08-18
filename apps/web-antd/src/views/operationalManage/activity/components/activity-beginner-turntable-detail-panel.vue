@@ -127,12 +127,13 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Space.Compact>
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <Space.Compact>
         <span class="query-field-addon">奖品状态</span>
         <Select
           v-model:value="filterStatus"
-          class="w-32"
+         
           :options="statusOptions"
           placeholder="请选择奖品状态"
         />
@@ -141,15 +142,22 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <span class="query-field-addon">转盘类型</span>
         <Select
           v-model:value="filterActivityType"
-          class="w-32"
+         
           :options="activityTypeOptions"
           placeholder="请选择转盘类型"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="drawTimeRange" />
-      <QueryDatetimeRangePicker v-model="applyTimeRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="drawTimeRange" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="applyTimeRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

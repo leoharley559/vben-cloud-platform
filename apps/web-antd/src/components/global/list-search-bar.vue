@@ -3,7 +3,9 @@ import type { Dayjs } from 'dayjs';
 
 import { ref, watch } from 'vue';
 
-import { Button, DatePicker, Input, Select, Space } from 'ant-design-vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 export interface ListSearchOption {
   label: string;
@@ -108,38 +110,37 @@ defineExpose({
 </script>
 
 <template>
-  <div class="mb-3 flex flex-wrap items-center gap-2">
-    <Space.Compact>
+  <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+          <Space.Compact>
       <Select
         v-model:value="filterKey"
         :options="options"
-        style="width: 120px"
       />
       <Input
         v-model:value="filterValue"
         allow-clear
         :placeholder="keywordPlaceholder"
-        style="width: 220px"
         @press-enter="handleSearch"
       />
     </Space.Compact>
 
-    <div v-if="showDateTime" class="flex items-center gap-2">
-      <span class="whitespace-nowrap text-sm text-gray-500">{{ dateLabel }}</span>
-      <DatePicker.RangePicker
-        v-model:value="dateRange"
-        allow-clear
-        :show-time="dateTimeType === 'datetimerange'"
-        class="min-w-[360px]"
+    <div v-if="showDateTime" class="query-filter-wide">
+      <QueryDatetimeRangePicker
+        v-model="dateRange"
+        :label="dateLabel"
+        :precision="dateTimeType === 'datetimerange' ? 'datetime' : 'date'"
       />
     </div>
-
-    <Button :loading="loading" type="primary" @click="handleSearch">
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="handleSearch">
       查询
     </Button>
     <Button :disabled="loading" @click="handleReset">重置</Button>
     <Button v-if="showAdd" type="primary" @click="emit('add')">
       {{ addText }}
     </Button>
+        </div>
+    </div>
   </div>
 </template>

@@ -630,12 +630,12 @@ async function handleExport() {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 220px"
           @change="normalizeLoginAccount"
           placeholder="请输入游戏账号"
         >
@@ -647,7 +647,6 @@ async function handleExport() {
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          style="width: 180px"
           placeholder="请输入玩家ID"
         >
           <template #addonBefore>玩家ID</template>
@@ -658,7 +657,6 @@ async function handleExport() {
         <Input
           v-model:value="filterPlayerName"
           allow-clear
-          style="width: 180px"
           placeholder="请输入玩家昵称"
         >
           <template #addonBefore>玩家昵称</template>
@@ -670,7 +668,7 @@ async function handleExport() {
         <Select
           v-model:value="filterPackageId"
           allow-clear
-          class="w-44"
+         
           :options="packageSelectOptions"
           show-search
           :filter-option="
@@ -685,14 +683,13 @@ async function handleExport() {
 
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" style="width: 240px" placeholder="请输入渠道号" />
+        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
       </Space.Compact>
 
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 240px"
           placeholder="请输入订单编号"
         >
           <template #addonBefore>订单编号</template>
@@ -703,7 +700,7 @@ async function handleExport() {
         <span class="query-field-addon">流水类型</span>
         <Select
           v-model:value="filterWaterType"
-          class="w-32"
+         
           :options="waterTypeOptions"
           placeholder="请选择流水类型"
         />
@@ -714,7 +711,7 @@ async function handleExport() {
         <Select
           v-model:value="filterDone"
           allow-clear
-          class="w-44"
+         
           :max-tag-count="1"
           mode="multiple"
           :options="doneOptions"
@@ -727,7 +724,7 @@ async function handleExport() {
         <Select
           v-model:value="filterReason"
           allow-clear
-          class="w-44"
+         
           :max-tag-count="1"
           mode="multiple"
           :options="reasonOptions"
@@ -739,14 +736,17 @@ async function handleExport() {
         <span class="query-field-addon">数据类型</span>
         <Select
           v-model:value="filterDataSearchType"
-          class="w-28"
+         
           :options="dataSearchTypeOptions"
           placeholder="请选择数据类型"
         />
       </Space.Compact>
 
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button
         v-if="canExport"
@@ -756,7 +756,9 @@ async function handleExport() {
       >
         导出Excel
       </Button>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

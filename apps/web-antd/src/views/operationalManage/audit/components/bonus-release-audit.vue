@@ -407,12 +407,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 220px"
           placeholder="请输入订单编号"
         >
           <template #addonBefore>订单编号</template>
@@ -422,7 +422,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 200px"
           @change="normalizeLoginAccount"
           placeholder="请输入游戏账号"
         >
@@ -435,7 +434,6 @@ onMounted(() => {
           v-model:value="filterPackageId"
           allow-clear
           :options="packageSelectOptions"
-          style="width: 160px"
           show-search
           :filter-option="
             (input, option) =>
@@ -448,7 +446,7 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" style="width: 220px" placeholder="请输入渠道号" />
+        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">类型</span>
@@ -458,7 +456,6 @@ onMounted(() => {
           mode="multiple"
           :max-tag-count="1"
           :options="BONUS_AUDIT_REASON_OPTIONS"
-          style="width: 180px"
           placeholder="请选择类型"
         />
       </Space.Compact>
@@ -469,17 +466,21 @@ onMounted(() => {
           { label: '倍数', value: 1 },
           { label: '金额', value: 2 },
         ]"
-        style="width: 120px"
       />
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button :loading="loading" type="primary" @click="gridApi.reload()">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
         导出 CSV
       </Button>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

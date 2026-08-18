@@ -470,12 +470,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -485,7 +485,6 @@ onMounted(() => {
         <Input
           v-model:value="filterPackageName"
           allow-clear
-          style="width: 240px"
           placeholder="请输入产品名称"
         >
           <template #addonBefore>产品名称</template>
@@ -495,7 +494,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 250px"
           placeholder="请输入订单号"
         >
           <template #addonBefore>订单号</template>
@@ -505,7 +503,6 @@ onMounted(() => {
         <Input
           v-model:value="filterGiftName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入奖品名称"
         >
           <template #addonBefore>奖品名称</template>
@@ -514,12 +511,10 @@ onMounted(() => {
       <Select
         v-model:value="filterVipLevel"
         :options="VIP_LEVEL_OPTIONS"
-        style="width: 110px"
       />
       <Select
         v-model:value="filterPlayerStatus"
         :options="playerStatusOptions"
-        style="width: 110px"
       />
       <Space.Compact>
         <span class="query-field-addon">发货状态</span>
@@ -527,18 +522,22 @@ onMounted(() => {
           v-model:value="filterStatus"
           :options="statusOptions"
           allow-clear
-          style="width: 110px"
           placeholder="请选择发货状态"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="filterApplyDateRange" label="申请时间" />
-      <QueryDatetimeRangePicker v-model="filterApproveDateRange" label="审核时间" />
-      <QueryDatetimeRangePicker v-model="filterDeliverDateRange" label="发货时间" />
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterApplyDateRange" label="申请时间" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterApproveDateRange" label="审核时间" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDeliverDateRange" label="发货时间" />
+        </div>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterContact"
           allow-clear
-          style="width: 200px"
           placeholder="请输入收货人"
         >
           <template #addonBefore>收货人</template>
@@ -548,7 +547,6 @@ onMounted(() => {
         <Input
           v-model:value="filterMobile"
           allow-clear
-          style="width: 210px"
           placeholder="请输入收货电话"
         >
           <template #addonBefore>收货电话</template>
@@ -558,13 +556,13 @@ onMounted(() => {
         <Input
           v-model:value="filterExpressOrderId"
           allow-clear
-          style="width: 220px"
           placeholder="请输入快递单号"
         >
           <template #addonBefore>快递单号</template>
         </Input>
       </div>
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
         导出
@@ -572,7 +570,9 @@ onMounted(() => {
       <Button v-if="canBatchDeliver" type="primary" @click="openBatchDeliver">
         批量发货
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

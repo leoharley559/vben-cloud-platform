@@ -186,12 +186,12 @@ onMounted(load);
 <template>
   <div v-if="canView" class="space-y-3">
     <div class="mb-3">
-      <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="orderId"
             allow-clear
-            style="width: 220px"
             placeholder="请输入订单号"
           >
             <template #addonBefore>订单号</template>
@@ -200,14 +200,18 @@ onMounted(load);
         <Space.Compact>
           <span class="query-field-addon">状态</span>
           <Select v-model:value="status" allow-clear mode="multiple" :options="statusOptions"
-            style="min-width: 180px"
             placeholder="请选择状态" />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="dateRange" />
-        <Button type="primary" @click="load">查询</Button>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="load">查询</Button>
         <Button @click="reset">重置</Button>
         <Button :loading="exporting" @click="exportAll">导出全部</Button>
-      </div>
+        </div>
+    </div>
+  </div>
     </div>
     <SummaryCards :items="summaryItems" />
     <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="{

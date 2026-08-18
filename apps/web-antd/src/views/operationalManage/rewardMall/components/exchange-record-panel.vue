@@ -328,12 +328,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canView">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterProductName"
           allow-clear
-          style="width: 240px"
           placeholder="请输入商品名称"
         >
           <template #addonBefore>商品名称</template>
@@ -344,18 +344,20 @@ onMounted(() => {
         <Select
           v-model:value="filterProductType"
           allow-clear
-          class="w-32"
+         
           :options="REWARD_PRODUCT_TYPE_FILTER_OPTIONS"
           placeholder="请选择商品类型"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="filterExchangeRange" />
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterExchangeRange" />
+        </div>
       <Space.Compact>
         <span class="query-field-addon">商品页签</span>
         <Select
           v-model:value="filterProductTag"
           allow-clear
-          class="w-32"
+         
           :options="productTagOptions"
           show-search
           placeholder="请选择商品页签"
@@ -365,7 +367,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 240px"
           placeholder="请输入订单编号"
         >
           <template #addonBefore>订单编号</template>
@@ -375,7 +376,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 230px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -383,14 +383,14 @@ onMounted(() => {
       </div>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model:value="filterChannelIds" style="width: 200px" placeholder="请输入渠道号" />
+        <ChannelSelect v-model:value="filterChannelIds" placeholder="请输入渠道号" />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">所属产品</span>
         <Select
           v-model:value="filterPackageId"
           allow-clear
-          class="w-36"
+         
           :options="
             packageOptions.map((item) => ({
               label: item.PackageName,
@@ -406,7 +406,7 @@ onMounted(() => {
         <Select
           v-model:value="filterVipLevels"
           allow-clear
-          class="w-40"
+         
           mode="multiple"
           :max-tag-count="1"
           :options="REWARD_VIP_FILTER_OPTIONS.filter((item) => item.value !== -1)"
@@ -418,12 +418,13 @@ onMounted(() => {
         <Select
           v-model:value="filterIsWater"
           allow-clear
-          class="w-28"
+         
           :options="REWARD_WATER_REQUIRE_OPTIONS"
           placeholder="请选择流水要求"
         />
       </Space.Compact>
-      <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
       <Button
         v-if="canExport"
@@ -433,7 +434,9 @@ onMounted(() => {
       >
         导出
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

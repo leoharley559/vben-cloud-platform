@@ -280,23 +280,23 @@ onMounted(() => {
         <Input
           v-model:value="filterLevelName"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入会员层级"
         >
           <template #addonBefore>会员层级</template>
         </Input>
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
-      
-      </div>
-      <Button type="primary" @click="handleSearch">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
       <Button v-if="canAdd" type="primary" ghost @click="openCreate">
         新增层级
       </Button>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #levelName="{ row }">

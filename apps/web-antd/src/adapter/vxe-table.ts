@@ -13,6 +13,7 @@ import { Button, Image } from 'ant-design-vue';
 
 import {
   getTableListHeightPx,
+  TABLE_DEFAULT_PAGE_SIZE,
   TABLE_LIST_MIN_HEIGHT,
 } from '#/utils/table-height';
 
@@ -72,7 +73,7 @@ setupVbenVxeTable({
 });
 
 /**
- * height:'auto' → 按视口计算的固定像素高度，表体占满下方留白；
+ * height:'auto' → 按「表头 + 每页条数」计算高度（默认 40×21=840）；
  * 弹窗等已显式传 number 高度的不覆盖。
  */
 export const useVbenVxeGrid = <T extends Record<string, any>>(
@@ -90,11 +91,17 @@ export const useVbenVxeGrid = <T extends Record<string, any>>(
     return useGrid(...rest);
   }
 
+  const pager = gridOptions.pagerConfig;
+  const pageSize =
+    pager && typeof pager === 'object' && typeof pager.pageSize === 'number'
+      ? pager.pageSize
+      : TABLE_DEFAULT_PAGE_SIZE;
+
   const enhanced = {
     ...options,
     gridOptions: {
       ...gridOptions,
-      height: getTableListHeightPx(),
+      height: getTableListHeightPx(pageSize),
       minHeight: gridOptions.minHeight ?? TABLE_LIST_MIN_HEIGHT,
     },
   };

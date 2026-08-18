@@ -448,14 +448,14 @@ async function exportDomains() {
       </div>
 
       <div class="query-panel">
-        <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-          <div class="flex flex-col gap-1">
+        <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+                <div class="flex flex-col gap-1">
             <Input
               v-model:value="filters.Keyword"
               allow-clear
               class="!w-[280px]"
               @press-enter="handleSearch"
-              style="width: 220px"
               placeholder="请输入域名"
             >
               <template #addonBefore>域名</template>
@@ -474,9 +474,12 @@ async function exportDomains() {
               placeholder="请选择使用状态"
             />
           </Space.Compact>
+        <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
         </div>
+    </div>
+  </div>
       </div>
 
       <Alert

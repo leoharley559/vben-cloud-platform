@@ -666,10 +666,10 @@ onMounted(async () => {
             { label: '手动', value: 1 },
           ]"
         />
-        <div v-if="activeType === 'summary'" class="flex flex-col gap-1">
+        <div v-if="activeType === 'summary'" class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="generationRange" label="返水生成时间" />
         </div>
-        <div class="flex flex-col gap-1">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker
             v-model="awardRange"
             :label="activeType === 'summary' ? '发放时间' : '游戏时间'"

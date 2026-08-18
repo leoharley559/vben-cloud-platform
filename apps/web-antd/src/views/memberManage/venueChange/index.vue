@@ -424,7 +424,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
-              style="width: 260px"
               @press-enter="handleSearch"
               placeholder="请输入游戏账号"
             >
@@ -435,7 +434,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterOrderId"
               allow-clear
-              style="width: 250px"
               @press-enter="handleSearch"
               placeholder="请输入流水号"
             >
@@ -447,12 +445,10 @@ onMounted(async () => {
               <span class="query-field-addon">转账类型</span>
               <Select
                 v-model:value="filterType"
-                style="width: 120px"
                 :options="transferTypeOptions"
                 placeholder="请选择转账类型"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -461,12 +457,10 @@ onMounted(async () => {
                 v-model:value="filterOutGameId"
                 show-search
                 option-filter-prop="label"
-                style="width: 160px"
                 :options="gameOptions"
                 placeholder="请选择转出账户"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -475,41 +469,35 @@ onMounted(async () => {
                 v-model:value="filterInGameId"
                 show-search
                 option-filter-prop="label"
-                style="width: 160px"
                 :options="gameOptions"
                 placeholder="请选择转入账户"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">状态</span>
               <Select
                 v-model:value="filterState"
-                style="width: 140px"
                 :options="stateFilterOptions"
                 placeholder="请选择状态"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">数据类型</span>
               <Select
                 v-model:value="filterDataSearchType"
-                style="width: 120px"
                 :options="dataSearchTypeOptions"
                 placeholder="请选择数据类型"
               />
             </Space.Compact>
-          
           </div>
-          <div class="flex flex-col gap-1">
-            <QueryDatetimeRangePicker v-model="filterDateRange" />
-          
-          </div>
+          <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="handleSearch">
             查询
           </Button>
@@ -521,7 +509,8 @@ onMounted(async () => {
           >
             导出
           </Button>
-        </template>
+        </div>
+      </template>
 
         <Grid>
           <template #loginAccount="{ row }">

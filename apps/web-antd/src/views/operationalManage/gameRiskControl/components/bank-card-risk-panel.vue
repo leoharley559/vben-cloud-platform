@@ -332,12 +332,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canView">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -347,7 +347,6 @@ onMounted(() => {
         <Input
           v-model:value="filterKeyword"
           allow-clear
-          style="width: 260px"
           placeholder="请输入卡号关键字"
         >
           <template #addonBefore>卡号关键字</template>
@@ -358,12 +357,14 @@ onMounted(() => {
         <Select
           v-model:value="filterSourceType"
           :options="sourceTypeOptions"
-          style="width: 140px"
           placeholder="请选择来源"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button @click="resetFilters">重置</Button>
         <Button v-if="canWrite" type="primary" @click="openCreate">新增</Button>
@@ -372,7 +373,9 @@ onMounted(() => {
           批量删除
         </Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #actions="{ row }">

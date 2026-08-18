@@ -17,10 +17,7 @@ defineProps<{ items: SummaryCardItem[] }>();
 </script>
 
 <template>
-  <div
-    v-if="items.length > 0"
-    class="mb-2 grid grid-cols-2 gap-2 text-sm md:grid-cols-3 lg:grid-cols-6"
-  >
+  <div v-if="items.length > 0" class="ops-summary-cards mb-2 text-sm">
     <div
       v-for="item in items"
       :key="item.label"

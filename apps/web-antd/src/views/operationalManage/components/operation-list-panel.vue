@@ -256,12 +256,12 @@ defineExpose({ reload: () => gridApi.reload() });
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div v-if="enabledFilters.has('login')" class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div v-if="enabledFilters.has('login')" class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 260px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -271,7 +271,6 @@ defineExpose({ reload: () => gridApi.reload() });
         <Input
           v-model:value="filterUsername"
           allow-clear
-          style="width: 230px"
           placeholder="请输入账号"
         >
           <template #addonBefore>账号</template>
@@ -283,7 +282,7 @@ defineExpose({ reload: () => gridApi.reload() });
           v-if="enabledFilters.has('package')"
           v-model:value="filterPackageId"
           allow-clear
-          class="w-40"
+         
           :options="packageOptions"
           placeholder="请选择产品包"
         />
@@ -294,7 +293,7 @@ defineExpose({ reload: () => gridApi.reload() });
           v-if="enabledFilters.has('status') && config.statusOptions?.length"
           v-model:value="filterStatus"
           allow-clear
-          class="w-32"
+         
           :options="config.statusOptions"
           placeholder="请选择状态"
         />
@@ -303,13 +302,18 @@ defineExpose({ reload: () => gridApi.reload() });
         v-if="enabledFilters.has('date') && isSingleDate"
         v-model:value="filterSingleDate"
       />
-      <QueryDatetimeRangePicker
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
         v-if="enabledFilters.has('date') && !isSingleDate"
         v-model="filterDateRange"
         :precision="config.dateValueFormat === 'dateString' ? 'date' : 'datetime'"
       />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryCards" />
 

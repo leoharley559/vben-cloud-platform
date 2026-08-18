@@ -489,12 +489,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 200px"
           @change="normalizeLoginAccount"
           placeholder="请输入游戏账号"
         >
@@ -505,7 +505,6 @@ onMounted(() => {
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          style="width: 180px"
           placeholder="请输入玩家ID"
         >
           <template #addonBefore>玩家ID</template>
@@ -515,7 +514,6 @@ onMounted(() => {
         <Input
           v-model:value="filterPlayerName"
           allow-clear
-          style="width: 180px"
           placeholder="请输入玩家昵称"
         >
           <template #addonBefore>玩家昵称</template>
@@ -527,7 +525,6 @@ onMounted(() => {
           v-model:value="filterPackageId"
           allow-clear
           :options="packageSelectOptions"
-          style="width: 160px"
           show-search
           :filter-option="
             (input, option) =>
@@ -540,13 +537,12 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" style="width: 220px" placeholder="请输入渠道号" />
+        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
       </Space.Compact>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterAdminUserName"
           allow-clear
-          style="width: 180px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -557,7 +553,6 @@ onMounted(() => {
         <Select
           v-model:value="filterReason"
           :options="ADJUST_REASON_OPTIONS"
-          style="width: 140px"
           placeholder="请选择调整类型"
         />
       </Space.Compact>
@@ -565,7 +560,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 220px"
           placeholder="请输入订单编号"
         >
           <template #addonBefore>订单编号</template>
@@ -576,7 +570,6 @@ onMounted(() => {
         <Select
           v-model:value="filterHandleType"
           :options="ADJUST_AUDIT_HANDLE_TYPE_OPTIONS"
-          style="width: 140px"
           placeholder="请选择调整方式"
         />
       </Space.Compact>
@@ -585,14 +578,14 @@ onMounted(() => {
         <Select
           v-model:value="filterWaterType"
           :options="ADJUST_AUDIT_WATER_TYPE_OPTIONS"
-          style="width: 140px"
           placeholder="请选择流水类型"
         />
       </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterCreateRange" label="创建时间" />
-      </div>
-      <Button :loading="loading" type="primary" @click="gridApi.reload()">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterCreateRange" label="创建时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>
       <Button @click="resetFilters">重置</Button>
@@ -610,7 +603,9 @@ onMounted(() => {
       <Button v-if="canBatchReject" danger @click="openReject()">
         批量拒绝
       </Button>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

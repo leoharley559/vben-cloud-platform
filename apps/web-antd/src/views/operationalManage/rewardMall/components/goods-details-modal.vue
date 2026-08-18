@@ -184,14 +184,15 @@ async function handleExport(payload: Record<string, unknown>) {
 
 <template>
   <Modal v-model:open="open" :footer="null" :title="title" width="92%">
-    <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
-      <div class="flex flex-wrap items-end gap-2">
-        <QueryDatetimeRangePicker v-model="filterExchangeDateRange" label="兑换时间" />
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterExchangeDateRange" label="兑换时间" />
+        </div>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterOrderId"
             allow-clear
-            style="width: 230px"
             placeholder="请输入订单编号"
           >
             <template #addonBefore>订单编号</template>
@@ -201,7 +202,6 @@ async function handleExport(payload: Record<string, unknown>) {
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
-            style="width: 220px"
             placeholder="请输入游戏账号"
           >
             <template #addonBefore>游戏账号</template>
@@ -212,7 +212,7 @@ async function handleExport(payload: Record<string, unknown>) {
           <Select
             v-model:value="filterVipLevel"
             allow-clear
-            class="w-40"
+           
             mode="multiple"
             :options="VIP_LEVEL_OPTIONS.filter((item) => item.value !== -1)"
             placeholder="请选择VIP等级"
@@ -220,33 +220,37 @@ async function handleExport(payload: Record<string, unknown>) {
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">渠道号</span>
-          <ChannelSelect v-model="filterChannelIds" style="width: 200px" placeholder="请输入渠道号" />
+          <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
-            class="w-36"
+           
             :field-names="{ label: 'PackageName', value: 'PackageId' }"
             :options="packageOptions"
             placeholder="请选择所属产品"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="filterRegDateRange" label="注册时间" />
-        <Space>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterRegDateRange" label="注册时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
         </Space>
-      </div>
-      <Button
+        <Button
         :loading="exportLoading"
         type="primary"
         @click="handleExportClick"
       >
         导出
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

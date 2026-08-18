@@ -110,13 +110,13 @@ onMounted(load);
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="query.AgentAccount"
           allow-clear
           @press-enter="search"
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -124,12 +124,17 @@ onMounted(load);
       </div>
       <Space.Compact>
         <span class="query-field-addon">代理类型</span>
-        <Select v-model:value="query.AccountType" :options="accountTypeOptions" style="width: 150px" placeholder="请选择代理类型" />
+        <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="请选择代理类型" />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="transferRange" />
-      <Button type="primary" @click="search">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="transferRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
+        </div>
     </div>
+  </div>
     <SummaryCards :items="summaryItems" />
     <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1250 }" size="small">
       <template #bodyCell="{ column, record, index }">

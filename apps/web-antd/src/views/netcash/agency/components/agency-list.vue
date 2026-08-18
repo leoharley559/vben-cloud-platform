@@ -670,12 +670,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewList">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterUsername"
           allow-clear
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -685,7 +685,6 @@ onMounted(() => {
         <Input
           v-model:value="filterTeamName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入团队名称"
         >
           <template #addonBefore>团队名称</template>
@@ -695,7 +694,6 @@ onMounted(() => {
         <Input
           v-model:value="filterDeveloperName"
           allow-clear
-          style="width: 210px"
           placeholder="请输入发展人"
         >
           <template #addonBefore>发展人</template>
@@ -705,7 +703,6 @@ onMounted(() => {
         <Input
           v-model:value="filterMaintainerName"
           allow-clear
-          style="width: 210px"
           placeholder="请输入维护人"
         >
           <template #addonBefore>维护人</template>
@@ -716,7 +713,7 @@ onMounted(() => {
         <Select
           v-model:value="filterStatus"
           allow-clear
-          class="w-32"
+         
           :options="[
             { label: '启用', value: 1 },
             { label: '停用', value: 2 },
@@ -736,7 +733,6 @@ onMounted(() => {
             { label: '特殊代理', value: 2 },
             { label: '测试代理', value: 3 },
           ]"
-          style="min-width: 140px"
           placeholder="请选择代理类型"
         />
       </Space.Compact>
@@ -744,7 +740,6 @@ onMounted(() => {
         <Input
           v-model:value="filterMobile"
           allow-clear
-          style="width: 210px"
           placeholder="请输入手机号"
         >
           <template #addonBefore>手机号</template>
@@ -754,7 +749,6 @@ onMounted(() => {
         <Input
           v-model:value="filterMainUsername"
           allow-clear
-          style="width: 220px"
           placeholder="请输入上级账号"
         >
           <template #addonBefore>上级账号</template>
@@ -764,7 +758,6 @@ onMounted(() => {
         <Input
           v-model:value="filterParentAdminId"
           allow-clear
-          style="width: 240px"
           placeholder="请输入下级代理 ID"
         >
           <template #addonBefore>下级代理 ID</template>
@@ -774,7 +767,6 @@ onMounted(() => {
         <Input
           v-model:value="filterWithdrawAccName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入银行姓名"
         >
           <template #addonBefore>银行姓名</template>
@@ -784,7 +776,6 @@ onMounted(() => {
         <Input
           v-model:value="filterWithdrawAccNum"
           allow-clear
-          style="width: 240px"
           placeholder="请输入银行卡号"
         >
           <template #addonBefore>银行卡号</template>
@@ -794,7 +785,6 @@ onMounted(() => {
         <Input
           v-model:value="filterRegistIP"
           allow-clear
-          style="width: 210px"
           placeholder="请输入注册 IP"
         >
           <template #addonBefore>注册 IP</template>
@@ -804,7 +794,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLastLoginIP"
           allow-clear
-          style="width: 240px"
           placeholder="请输入最后登录 IP"
         >
           <template #addonBefore>最后登录 IP</template>
@@ -814,7 +803,6 @@ onMounted(() => {
         <Input
           v-model:value="filterRegistDevice"
           allow-clear
-          style="width: 220px"
           placeholder="请输入注册设备"
         >
           <template #addonBefore>注册设备</template>
@@ -824,31 +812,36 @@ onMounted(() => {
         <Input
           v-model:value="filterLastLoginDevice"
           allow-clear
-          style="width: 250px"
           placeholder="请输入最后登录设备"
         >
           <template #addonBefore>最后登录设备</template>
         </Input>
       </div>
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
+        </div>
       <Select
         v-model:value="visibleColumns"
         mode="multiple"
         allow-clear
-        style="min-width: 180px"
         :max-tag-count="1"
         :options="COLUMN_OPTIONS"
         @change="persistColumns"
         placeholder="请选择统计时间"
       />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button :loading="exportLoading" @click="exportAgencyList">导出 Excel</Button>
       <Button v-if="canAdd" type="primary" @click="openCreateModal">
         新增代理
       </Button>
+        </div>
     </div>
+  </div>
 
     <div v-if="drillPath.length > 0" class="mb-3 flex items-center gap-1 text-sm">
       <Button size="small" type="link" @click="drillBack(0)">全部代理</Button>

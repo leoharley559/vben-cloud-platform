@@ -412,7 +412,9 @@ void loadList();
               <template #addonBefore>上架包编码</template>
             </Input>
           </div>
+          <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filters.DateRange" />
+        </div>
         </div>
         <div class="query-actions">
           <Space>

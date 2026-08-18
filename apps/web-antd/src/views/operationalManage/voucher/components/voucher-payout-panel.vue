@@ -364,13 +364,14 @@ async function handleIssueExport(payload: Record<string, unknown>) {
 
     <div v-if="activeTab === 'single'" class="max-w-xl">
       <div class="mb-3 text-base font-medium">玩家信息</div>
-      <Space class="mb-4" wrap>
-        <Space.Compact>
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <Space.Compact>
           <span class="query-field-addon">产品包</span>
           <Select
             v-model:value="singleForm.PackageId"
             allow-clear
-            class="w-40"
+           
             :field-names="{ label: 'PackageName', value: 'PackageId' }"
             :options="packageOptions"
             placeholder="请选择产品包"
@@ -379,14 +380,16 @@ async function handleIssueExport(payload: Record<string, unknown>) {
         <Input
           v-model:value="singleForm.LoginAccount"
           allow-clear
-          style="width: 180px"
           @press-enter="searchSinglePlayer"
           placeholder="请输入玩家账号"
         />
-        <Button :loading="singleSearching" @click="searchSinglePlayer">
+        <div class="query-filter-actions">
+          <Button :loading="singleSearching" @click="searchSinglePlayer">
           查询玩家
         </Button>
-      </Space>
+        </div>
+    </div>
+  </div>
       <div v-if="singleForm.PlayerLabel" class="mb-4 text-sm text-gray-600">
         已选：{{ singleForm.PlayerLabel }}
       </div>
@@ -453,12 +456,11 @@ async function handleIssueExport(payload: Record<string, unknown>) {
     </div>
 
     <div v-else-if="activeTab === 'record'">
-      <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
-        <div class="flex flex-wrap items-end gap-2">
-          <Input
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+                <Input
             v-model:value="filterLoginAccount"
             allow-clear
-            style="width: 220px"
             placeholder="请输入游戏账号"
           >
             <template #addonBefore>游戏账号</template>
@@ -467,18 +469,22 @@ async function handleIssueExport(payload: Record<string, unknown>) {
             <span class="query-field-addon">VIP</span>
             <Select
               v-model:value="filterVipLevel"
-              class="w-28"
+             
               :options="VIP_LEVEL_OPTIONS"
               placeholder="请选择VIP"
             />
           </Space.Compact>
+          <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterRegRange" label="注册时间" />
+        </div>
+          <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterIssueRange" label="发放时间" />
+        </div>
+        <div class="query-filter-actions">
           <Space>
             <Button type="primary" @click="handleIssueSearch">查询</Button>
             <Button @click="handleIssueReset">重置</Button>
           </Space>
-        </div>
         <Button
           v-if="canExportIssue"
           :loading="exportLoading"
@@ -487,7 +493,9 @@ async function handleIssueExport(payload: Record<string, unknown>) {
         >
           导出
         </Button>
-      </div>
+        </div>
+    </div>
+  </div>
       <IssueGrid />
       <PassPopup
         ref="passPopupRef"

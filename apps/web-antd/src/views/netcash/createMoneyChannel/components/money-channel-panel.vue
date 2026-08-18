@@ -621,12 +621,12 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-      <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filters.ChannelId"
             allow-clear
-            style="width: 210px"
             @press-enter="search"
             placeholder="请输入渠道号"
           >
@@ -637,7 +637,6 @@ onBeforeUnmount(() => {
           <Input
             v-model:value="filters.ChannelName"
             allow-clear
-            style="width: 230px"
             @press-enter="search"
             placeholder="请输入渠道名称"
           >
@@ -648,7 +647,6 @@ onBeforeUnmount(() => {
           <Input
             v-model:value="filters.PromoterAdminUserName"
             allow-clear
-            style="width: 230px"
             @press-enter="search"
             placeholder="请输入代理账号"
           >
@@ -659,7 +657,6 @@ onBeforeUnmount(() => {
           <Input
             v-model:value="filters.PromoterAdminName"
             allow-clear
-            style="width: 230px"
             @press-enter="search"
             placeholder="请输入代理名称"
           >
@@ -670,7 +667,6 @@ onBeforeUnmount(() => {
           <Input
             v-model:value="filters.InvitationCode"
             allow-clear
-            style="width: 210px"
             @press-enter="search"
             placeholder="请输入邀请码"
           >
@@ -681,7 +677,6 @@ onBeforeUnmount(() => {
           <Input
             v-model:value="filters.NetCashDomain"
             allow-clear
-            style="width: 260px"
             @press-enter="search"
             placeholder="请输入专属 APP 域名"
           >
@@ -692,7 +687,6 @@ onBeforeUnmount(() => {
           <Input
             v-model:value="filters.NetCashH5Domain"
             allow-clear
-            style="width: 260px"
             @press-enter="search"
             placeholder="请输入专属 H5 域名"
           >
@@ -705,7 +699,6 @@ onBeforeUnmount(() => {
             v-model:value="filters.PushType"
             allow-clear
             :options="pushTypeOptions"
-            style="width: 135px"
             placeholder="请选择推广模式"
           />
         </Space.Compact>
@@ -716,13 +709,11 @@ onBeforeUnmount(() => {
             { label: '启用代理', value: 1 },
             { label: '显示停用代理', value: 2 },
           ]"
-          style="width: 135px"
         />
         <Select
           v-if="checkPermission(props.isTest ? 12_498 : 12_341)"
           v-model:value="filters.IsHidden"
           :options="visibilityOptions"
-          style="width: 120px"
         />
         <Space.Compact>
           <span class="query-field-addon">打包状态</span>
@@ -730,13 +721,15 @@ onBeforeUnmount(() => {
             v-model:value="filters.PackStatus"
             allow-clear
             :options="packStatusOptions"
-            style="width: 120px"
             placeholder="请选择打包状态"
           />
         </Space.Compact>
-        <Button type="primary" @click="search">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="search">查询</Button>
         <Button @click="reset">重置</Button>
-      </div>
+        </div>
+    </div>
+  </div>
       <Space>
         <Button v-if="can('batch') && can('list')" @click="openBatch">
           批量设置

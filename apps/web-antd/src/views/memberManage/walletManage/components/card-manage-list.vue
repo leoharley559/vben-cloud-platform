@@ -215,7 +215,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -226,18 +225,17 @@ onMounted(() => {
         <Input
           v-model:value="filterBankCardNum"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入银行卡号"
         >
           <template #addonBefore>银行卡号</template>
         </Input>
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
-      
-      </div>
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
@@ -246,7 +244,8 @@ onMounted(() => {
           新增银行卡
         </Button>
       </Space>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #loginAccount="{ row }">

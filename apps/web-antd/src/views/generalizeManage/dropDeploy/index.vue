@@ -149,22 +149,25 @@ onMounted(async () => {
     title="落地页配置"
   >
     <Card>
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterName"
             allow-clear
-            style="width: 220px"
             placeholder="请输入模板名称"
           >
             <template #addonBefore>模板名称</template>
           </Input>
         </div>
-        <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button v-if="canCreate" type="primary" @click="handleCreate">
           新增落地
         </Button>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <Grid v-if="canViewList">
         <template #preview="{ row }">

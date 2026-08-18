@@ -139,20 +139,19 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <!-- <InputNumber
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <!-- <InputNumber
         v-model:value="filterPlayerId"
         :controls="false"
         :min="1"
         :precision="0"
         placeholder="获奖玩家ID"
-        style="width: 140px"
       /> -->
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterAccount"
           allow-clear
-          style="width: 160px"
           placeholder="请输入发放账号"
         >
           <template #addonBefore>发放账号</template>
@@ -164,7 +163,6 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         :min="1"
         :precision="0"
         placeholder="邀请人ID"
-        style="width: 130px"
       /> -->
       <!-- <InputNumber
         v-model:value="filterInviteeId"
@@ -172,14 +170,13 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         :min="1"
         :precision="0"
         placeholder="被邀请人ID"
-        style="width: 140px"
       /> -->
       <Space.Compact>
         <span class="query-field-addon">奖励角色</span>
         <Select
           v-model:value="filterRole"
           allow-clear
-          class="w-36"
+         
           :options="INVITE_REWARD_ROLE_OPTIONS"
           placeholder="请选择奖励角色"
         />
@@ -189,7 +186,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <Select
           v-model:value="filterRewardStatus"
           allow-clear
-          class="w-32"
+         
           :options="INVITE_REWARD_STATUS_OPTIONS"
           placeholder="请选择发奖状态"
         />
@@ -198,12 +195,16 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         v-model:value="filterBusinessOrderId"
         allow-clear
         placeholder="业务单号"
-        style="width: 180px"
       /> -->
-      <QueryDatetimeRangePicker v-model="createTimeRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="createTimeRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
+        </div>
     </div>
+  </div>
     <div class="mb-2 text-xs text-gray-400">
       筛选时间提交为 Unix 秒；发奖状态 / 角色枚举与对接文档一致。
     </div>

@@ -297,7 +297,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterLogId"
               allow-clear
-              style="width: 260px"
               @press-enter="handleSearch"
               placeholder="请输入订单号"
             >
@@ -308,7 +307,6 @@ onMounted(async () => {
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
-              style="width: 260px"
               @press-enter="handleSearch"
               placeholder="请输入游戏账号"
             >
@@ -322,12 +320,10 @@ onMounted(async () => {
                 v-model:value="filterPackageId"
                 show-search
                 option-filter-prop="label"
-                style="width: 160px"
                 :options="packageSelectOptions"
                 placeholder="请选择所属产品"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -339,34 +335,31 @@ onMounted(async () => {
                 :max-tag-count="1"
                 show-search
                 option-filter-prop="label"
-                style="min-width: 180px"
                 :options="reasonOptions"
                 placeholder="请选择账变类型"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">数据类型</span>
               <Select
                 v-model:value="filterDataSearchType"
-                style="width: 120px"
                 :options="dataSearchTypeOptions"
                 placeholder="请选择数据类型"
               />
             </Space.Compact>
-          
           </div>
-          <div class="flex flex-col gap-1">
-            <QueryDatetimeRangePicker v-model="filterDateRange" label="时间范围（最多 180 天）" :disabled-date="disabledDate" />
-          
-          </div>
+          <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="时间范围" :disabled-date="disabledDate" />
+        </div>
+        <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="handleSearch">
             查询
           </Button>
           <Button @click="handleReset">重置</Button>
-        </template>
+        </div>
+      </template>
 
         <template #summary>
           <SummaryCards :items="summaryItems" />

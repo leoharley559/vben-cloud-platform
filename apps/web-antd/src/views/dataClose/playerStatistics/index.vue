@@ -944,7 +944,6 @@ onMounted(() => {
             <Input
               v-model:value="filters.LoginAccount"
               allow-clear
-              style="width: 220px"
               @press-enter="handleSearch"
               placeholder="请输入玩家账号"
             >
@@ -955,7 +954,6 @@ onMounted(() => {
             <Input
               v-model:value="filters.PlayerId"
               allow-clear
-              style="width: 220px"
               @press-enter="handleSearch"
               placeholder="请输入玩家ID"
             >
@@ -971,17 +969,14 @@ onMounted(() => {
                 mode="multiple"
                 :max-tag-count="1"
                 :options="playerStatusOptions"
-                style="min-width: 160px"
                 placeholder="请选择玩家状态"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filters.Promoter"
               allow-clear
-              style="width: 220px"
               @press-enter="handleSearch"
               placeholder="请输入代理账号"
             >
@@ -991,9 +986,8 @@ onMounted(() => {
           <div class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">渠道号</span>
-              <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" placeholder="请输入渠道号" />
+              <ChannelSelect v-model="filters.ChannelId" placeholder="请输入渠道号" />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -1002,13 +996,11 @@ onMounted(() => {
                 v-model:value="filters.PackageId"
                 allow-clear
                 :options="packageSelectOptions"
-                style="min-width: 160px"
                 show-search
                 option-filter-prop="label"
                 placeholder="请选择产品名称"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -1017,11 +1009,9 @@ onMounted(() => {
                 v-model:value="filters.VipLevel"
                 allow-clear
                 :options="vipSelectOptions"
-                style="min-width: 120px"
                 placeholder="请选择VIP等级"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -1032,11 +1022,9 @@ onMounted(() => {
                 mode="multiple"
                 :max-tag-count="1"
                 :options="USER_SOURCE_OPTIONS"
-                style="min-width: 160px"
                 placeholder="请选择用户来源"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -1047,11 +1035,9 @@ onMounted(() => {
                 mode="multiple"
                 :max-tag-count="1"
                 :options="deviceOptions"
-                style="min-width: 160px"
                 placeholder="请选择注册来源"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -1062,11 +1048,9 @@ onMounted(() => {
                 mode="multiple"
                 :max-tag-count="1"
                 :options="appStoreOptions"
-                style="min-width: 160px"
                 placeholder="请选择上架包"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -1074,11 +1058,9 @@ onMounted(() => {
               <Select
                 v-model:value="filters.StatisticType"
                 :options="STATISTIC_TYPE_OPTIONS"
-                style="min-width: 140px"
                 placeholder="请选择统计类型"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -1089,35 +1071,29 @@ onMounted(() => {
                 mode="multiple"
                 :max-tag-count="1"
                 :options="inviteOptions"
-                style="min-width: 160px"
                 placeholder="请选择邀请站点"
               />
             </Space.Compact>
-          
           </div>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filters.BindPhone"
               allow-clear
-              style="width: 220px"
               @press-enter="handleSearch"
               placeholder="请输入会员手机号"
             >
               <template #addonBefore>会员手机号</template>
             </Input>
           </div>
-          <div class="flex flex-col gap-1">
-            <QueryDatetimeRangePicker v-model="filters.regRange" label="注册时间" precision="date" />
-          
-          </div>
-          <div class="flex flex-col gap-1">
-            <QueryDatetimeRangePicker v-model="filters.totalRange" label="统计时间" precision="date" />
-          
-          </div>
-          <div class="flex flex-col gap-1">
-            <QueryDatetimeRangePicker v-model="filters.firstPayRange" label="首存时间" precision="date" />
-          
-          </div>
+          <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filters.regRange" label="注册时间" precision="date" />
+        </div>
+          <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filters.totalRange" label="统计时间" precision="date" />
+        </div>
+          <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filters.firstPayRange" label="首存时间" precision="date" />
+        </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">显示列</span>
@@ -1126,13 +1102,12 @@ onMounted(() => {
                 mode="multiple"
                 :max-tag-count="1"
                 :options="COLUMN_OPTIONS"
-                style="min-width: 180px"
                 @change="persistVisibleColumns"
                 placeholder="请选择显示列"
               />
             </Space.Compact>
-          
           </div>
+        <div class="query-filter-actions">
           <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
           <Button @click="handleReset">重置</Button>
           <Button @click="handleCopy">复制</Button>
@@ -1145,7 +1120,8 @@ onMounted(() => {
           >
             导出 CSV
           </Button>
-        </template>
+        </div>
+      </template>
 
         <template #summary>
           <ReportSummaryCards :items="summaryItems" />

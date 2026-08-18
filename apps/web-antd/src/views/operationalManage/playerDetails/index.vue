@@ -321,12 +321,12 @@ onMounted(async () => {
 <template>
   <Page auto-content-height :title="pageTitle">
     <Card class="mb-4">
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="searchLoginAccount"
             allow-clear
-            style="width: 200px"
             @press-enter="handleSearch"
             placeholder="请输入游戏账号"
           >
@@ -346,7 +346,6 @@ onMounted(async () => {
                   value: item.PackageId,
                 }))
             "
-            style="width: 180px"
             placeholder="请选择产品"
           />
         </Space.Compact>
@@ -355,15 +354,14 @@ onMounted(async () => {
           <Input
             v-model:value="searchPlayerId"
             allow-clear
-            style="width: 180px"
             @press-enter="handleSearch"
             placeholder="请输入玩家 ID"
           >
             <template #addonBefore>玩家 ID</template>
           </Input>
         </div>
-
-        <Space>
+        <div class="query-filter-actions">
+          <Space>
           <Button
             :loading="searchLoading || loading"
             type="primary"
@@ -373,7 +371,9 @@ onMounted(async () => {
           </Button>
           <Button @click="handleResetSearch">重置</Button>
         </Space>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <Spin :spinning="loading">
         <div class="flex flex-wrap gap-6 text-sm">
@@ -408,8 +408,7 @@ onMounted(async () => {
                 <Select
                   v-model:value="nextStatus"
                   :options="statusSelectOptions"
-                  style="width: 160px"
-                  placeholder="请选择选择状态"
+                  placeholder="请选择状态"
                 />
               </Space.Compact>
               <Button

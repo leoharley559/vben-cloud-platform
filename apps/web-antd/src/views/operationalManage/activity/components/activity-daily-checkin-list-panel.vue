@@ -88,12 +88,12 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
     <div class="mb-3 text-xs text-gray-400">
       签到活动完整对话框尚未迁移，编辑按钮已禁用。
     </div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterId"
           allow-clear
-          style="width: 210px"
           placeholder="请输入活动ID"
         >
           <template #addonBefore>活动ID</template>
@@ -104,14 +104,19 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <Select
           v-model:value="filterEventType"
           allow-clear
-          class="w-36"
+         
           :options="eventTypeOptions"
           placeholder="请选择活动类型"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="dateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #action>
         <Button disabled size="small" type="link">编辑</Button>

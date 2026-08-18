@@ -495,12 +495,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 200px"
           @change="normalizeLoginAccount"
           placeholder="请输入游戏账号"
         >
@@ -510,13 +510,11 @@ onMounted(() => {
       <Select
         v-model:value="filterPlayerStatus"
         :options="playerStatusOptions"
-        style="width: 120px"
       />
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 200px"
           placeholder="请输入订单号"
         >
           <template #addonBefore>订单号</template>
@@ -526,7 +524,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOperatorAccount"
           allow-clear
-          style="width: 280px"
           placeholder="请输入账号"
         >
           <template #addonBefore>
@@ -534,7 +531,6 @@ onMounted(() => {
               v-model:value="filterOperatorAccountType"
               :bordered="false"
               :options="OPERATOR_ACCOUNT_TYPE_OPTIONS"
-              style="width: 90px"
             />
           </template>
         </Input>
@@ -543,7 +539,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOperatorRemark"
           allow-clear
-          style="width: 300px"
           placeholder="请输入备注"
         >
           <template #addonBefore>
@@ -551,7 +546,6 @@ onMounted(() => {
               v-model:value="filterOperatorRemarkType"
               :bordered="false"
               :options="OPERATOR_REMARK_TYPE_OPTIONS"
-              style="width: 90px"
             />
           </template>
         </Input>
@@ -560,7 +554,6 @@ onMounted(() => {
         <Input
           v-model:value="filterBonusTitle"
           allow-clear
-          style="width: 180px"
           placeholder="请输入红利标题"
         >
           <template #addonBefore>红利标题</template>
@@ -570,7 +563,6 @@ onMounted(() => {
         <Input
           v-model:value="filterUsername"
           allow-clear
-          style="width: 180px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -579,27 +571,23 @@ onMounted(() => {
       <Select
         v-model:value="filterIsWater"
         :options="IS_WATER_OPTIONS"
-        style="width: 120px"
       />
       <Select
         v-model:value="filterStatus"
         :options="BONUS_ORDER_STATUS_OPTIONS"
-        style="width: 120px"
       />
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" style="width: 220px" placeholder="请输入渠道号" />
+        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
       </Space.Compact>
       <Select
         v-model:value="filterWaterType"
         :options="WATER_TYPE_FILTER_OPTIONS"
-        style="width: 120px"
       />
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterPageTitle"
           allow-clear
-          style="width: 180px"
           placeholder="请输入活动分页"
         >
           <template #addonBefore>活动分页</template>
@@ -608,17 +596,14 @@ onMounted(() => {
       <Select
         v-model:value="filterActivityType"
         :options="ACTIVITY_TYPE_OPTIONS"
-        style="width: 140px"
       />
       <Select
         v-model:value="filterPageType"
         :options="PAGE_TYPE_OPTIONS"
-        style="width: 120px"
       />
       <Select
         v-model:value="filterSendType"
         :options="SEND_TYPE_OPTIONS"
-        style="width: 120px"
       />
       <Space.Compact>
         <span class="query-field-addon">产品名称</span>
@@ -626,7 +611,6 @@ onMounted(() => {
           v-model:value="filterPackageId"
           allow-clear
           :options="packageSelectOptions"
-          style="width: 160px"
           show-search
           :filter-option="
             (input, option) =>
@@ -640,7 +624,6 @@ onMounted(() => {
       <Select
         v-model:value="filterVipLevel"
         :options="VIP_LEVEL_OPTIONS"
-        style="width: 100px"
       />
       <Space.Compact>
         <span class="query-field-addon">红利类型</span>
@@ -650,20 +633,26 @@ onMounted(() => {
           mode="multiple"
           :max-tag-count="1"
           :options="BONUS_TYPE_OPTIONS"
-          style="width: 180px"
           placeholder="请选择红利类型"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="filterApplyDateRange" label="申请时间" />
-      <QueryDatetimeRangePicker v-model="filterFinishDateRange" label="审核时间" />
-      <Button :loading="loading" type="primary" @click="gridApi.reload()">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterApplyDateRange" label="申请时间" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterFinishDateRange" label="审核时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
         导出 CSV
       </Button>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

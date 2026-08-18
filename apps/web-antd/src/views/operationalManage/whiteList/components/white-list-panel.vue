@@ -502,13 +502,13 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewList">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <template v-if="isIp">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <template v-if="isIp">
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterWhiteIp"
             allow-clear
-            style="width: 250px"
             @press-enter="handleSearch"
             placeholder="请输入IP地址"
           >
@@ -519,7 +519,6 @@ onMounted(() => {
           <Input
             v-model:value="filterWhiteUsername"
             allow-clear
-            style="width: 250px"
             @press-enter="handleSearch"
             placeholder="请输入使用者"
           >
@@ -531,7 +530,6 @@ onMounted(() => {
         <Input
           v-model:value="filterUserName"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入使用者"
         >
@@ -544,14 +542,14 @@ onMounted(() => {
           <Select
             v-model:value="filterStatus"
             allow-clear
-            style="width: 120px"
             :options="statusOptions"
             placeholder="请选择状态"
           />
         </Space.Compact>
       
       </div>
-      <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
       <Button
         v-if="(isIp && canCreateIp) || (!isIp && canCreateUser)"
@@ -559,7 +557,9 @@ onMounted(() => {
       >
         新增
       </Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #status="{ row }">
         <Switch

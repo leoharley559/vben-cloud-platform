@@ -603,23 +603,26 @@ onMounted(() => void load(true));
         </template>
 
         <template v-else>
-          <div class="mb-3 flex flex-wrap items-center gap-2">
-            <div class="flex flex-col gap-1">
+          <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+                  <div class="flex flex-col gap-1">
               <Input
                 v-model:value="keyword"
                 allow-clear
-                style="width: 260px"
                 @press-enter="query"
                 placeholder="请输入通道名称"
               >
                 <template #addonBefore>通道名称</template>
               </Input>
             </div>
-            <Button :loading="loading" type="primary" @click="query"
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="query"
               >查询</Button
             >
             <Button @click="resetFilters">重置</Button>
-          </div>
+        </div>
+    </div>
+  </div>
 
           <Table
             :columns="columns"

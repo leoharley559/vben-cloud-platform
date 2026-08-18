@@ -128,12 +128,12 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       无预约取款明细查看权限 (11912)
     </div>
     <template v-else>
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterOrderId"
             allow-clear
-            style="width: 230px"
             placeholder="请输入订单号"
           >
             <template #addonBefore>订单号</template>
@@ -143,7 +143,6 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
-            style="width: 240px"
             @change="
               filterLoginAccount = String(filterLoginAccount || '')
                 .trim()
@@ -159,7 +158,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           <Select
             v-model:value="filterPackageId"
             allow-clear
-            class="w-40"
+           
             :options="packageOptions"
             placeholder="请选择产品包"
           />
@@ -168,15 +167,19 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           <Input
             v-model:value="filterWithdrawOrderId"
             allow-clear
-            style="width: 260px"
             placeholder="请输入取款订单号"
           >
             <template #addonBefore>取款订单号</template>
           </Input>
         </div>
-        <QueryDatetimeRangePicker v-model="withdrawTimeRange" />
-        <QueryDatetimeRangePicker v-model="awardTimeRange" />
-        <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="withdrawTimeRange" />
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="awardTimeRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button
           @click="
             () => {
@@ -192,7 +195,9 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         >
           重置
         </Button>
-      </div>
+        </div>
+    </div>
+  </div>
       <Grid>
         <template #loginAccount="{ row }">
           <PlayerAccountLink

@@ -294,7 +294,6 @@ async function handleExport(payload: Record<string, unknown>) {
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -307,7 +306,6 @@ async function handleExport(payload: Record<string, unknown>) {
           <Select
             v-model:value="filterSubGroup"
             show-search
-            style="width: 160px"
             :options="pageSelectOptions"
             :filter-option="
               (input, option) =>
@@ -318,16 +316,13 @@ async function handleExport(payload: Record<string, unknown>) {
             placeholder="请选择访问页面"
           />
         </Space.Compact>
-      
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterVisitRange" label="访问时间（最多 7 天）" :disabled-date="visitRangeLimit.disabledDate" />
-      
-      </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterLeaveRange" label="离开时间" :disabled-date="leaveRangeLimit.disabledDate" />
-      
-      </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterVisitRange" label="访问时间（最多 7 天）" :disabled-date="visitRangeLimit.disabledDate" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterLeaveRange" label="离开时间" :disabled-date="leaveRangeLimit.disabledDate" />
+        </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">访问时长</span>
@@ -337,7 +332,6 @@ async function handleExport(payload: Record<string, unknown>) {
             allow-clear
           />
         </Space.Compact>
-      
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
@@ -345,7 +339,6 @@ async function handleExport(payload: Record<string, unknown>) {
           <Select
             v-model:value="filterAppType"
             show-search
-            style="width: 140px"
             :options="deviceSelectOptions"
             :filter-option="
               (input, option) =>
@@ -356,9 +349,9 @@ async function handleExport(payload: Record<string, unknown>) {
             placeholder="请选择访问设备"
           />
         </Space.Compact>
-      
       </div>
-      <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
       <Button
         v-if="canExport"
@@ -367,7 +360,8 @@ async function handleExport(payload: Record<string, unknown>) {
       >
         导出 CSV
       </Button>
-    </template>
+        </div>
+      </template>
 
     <div v-if="canLoad === false" class="py-10 text-center text-gray-400">
       无明细数据查询权限

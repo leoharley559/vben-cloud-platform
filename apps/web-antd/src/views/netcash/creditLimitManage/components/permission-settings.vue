@@ -389,13 +389,13 @@ onMounted(loadTab);
       </Card>
 
       <Card class="mt-4" size="small" title="按代理账号限制">
-        <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-          <div class="flex flex-col gap-1">
+        <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+                <div class="flex flex-col gap-1">
             <Input
               v-model:value="query.AgentAccount"
               allow-clear
               @press-enter="search"
-              style="width: 220px"
               placeholder="请输入代理账号"
             >
               <template #addonBefore>代理账号</template>
@@ -403,15 +403,20 @@ onMounted(loadTab);
           </div>
           <Space.Compact>
             <span class="query-field-addon">代理类型</span>
-            <Select v-model:value="query.AccountType" :options="accountTypeOptions" style="width: 150px" placeholder="请选择代理类型" />
+            <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="请选择代理类型" />
           </Space.Compact>
+          <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="createRange" />
+        </div>
+        <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>
           <Button v-if="canExport" :loading="exporting" @click="handleExport">导出</Button>
           <Button v-if="canAdd" type="primary" @click="openAdd">添加</Button>
           <Popconfirm v-if="canRemove" title="确认批量移除选中的代理限制？" @confirm="removeRows(selectedKeys)"><Button :disabled="selectedKeys.length === 0" danger>批量移除</Button></Popconfirm>
         </div>
+    </div>
+  </div>
         <Table :columns="restrictionColumns" :data-source="rows" :loading="loading" :pagination="false" :row-selection="canRemove ? { selectedRowKeys: selectedKeys, onChange: (keys: Array<number | string>) => (selectedKeys = keys) } : undefined" row-key="Id" :scroll="{ x: 1000 }" size="small">
           <template #bodyCell="{ column, record, index }">
             <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>

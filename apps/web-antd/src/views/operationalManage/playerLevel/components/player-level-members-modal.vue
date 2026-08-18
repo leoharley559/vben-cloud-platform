@@ -172,12 +172,12 @@ watch(open, (visible) => {
     :footer="null"
     destroy-on-close
   >
-    <div class="mb-3 flex flex-wrap items-end gap-2">
-      <div v-if="canFilter" class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+            <div v-if="canFilter" class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 220px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -188,7 +188,6 @@ watch(open, (visible) => {
         <Input
           v-model:value="filterPlayerIdsStr"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入玩家ID"
         >
@@ -199,7 +198,6 @@ watch(open, (visible) => {
         <Input
           v-model:value="filterChannelIds"
           allow-clear
-          style="width: 210px"
           @press-enter="handleSearch"
           placeholder="请输入渠道号"
         >
@@ -208,10 +206,10 @@ watch(open, (visible) => {
       </div>
       <Select
         v-model:value="filterPackageId"
-        style="width: 160px"
         :options="packageSelectOptions"
       />
-      <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
       <Button
         danger
         :disabled="!selectedIds.length"
@@ -220,7 +218,9 @@ watch(open, (visible) => {
       >
         删除所选
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

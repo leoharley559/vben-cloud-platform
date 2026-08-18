@@ -308,13 +308,12 @@ function statusLabel(status?: number) {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
-      <div class="flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterId"
             allow-clear
-            style="width: 210px"
             placeholder="请输入活动ID"
           >
             <template #addonBefore>活动ID</template>
@@ -325,18 +324,20 @@ function statusLabel(status?: number) {
           <Select
             v-model:value="filterActivityType"
             allow-clear
-            class="w-32"
+           
             :options="typeFilterOptions"
             placeholder="请选择活动类型"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="filterDateRange" />
-        <Space>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
         </Space>
-      </div>
-      <Space v-if="!isHistory">
+        <Space v-if="!isHistory">
         <span v-if="canConfig" class="inline-flex items-center gap-2 text-sm">
           活动开关
           <Switch
@@ -350,7 +351,9 @@ function statusLabel(status?: number) {
           新增活动
         </Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #activityId="{ row }">

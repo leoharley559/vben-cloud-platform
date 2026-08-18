@@ -283,7 +283,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -294,7 +293,6 @@ onMounted(() => {
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          style="width: 210px"
           @press-enter="handleSearch"
           placeholder="请输入玩家ID"
         >
@@ -307,12 +305,10 @@ onMounted(() => {
           <Select
             v-model:value="filterPackageId"
             allow-clear
-            style="width: 160px"
             :options="packageSelectOptions"
             placeholder="请选择产品"
           />
         </Space.Compact>
-      
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
@@ -320,11 +316,9 @@ onMounted(() => {
           <ChannelSelect
             v-model="filterChannelId"
             :multiple="false"
-            style="width: 180px"
             placeholder="请输入渠道号"
           />
         </Space.Compact>
-      
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
@@ -332,51 +326,45 @@ onMounted(() => {
           <AccountSelect
             v-model="filterAgentId"
             :multiple="false"
-            style="width: 190px"
           />
         </Space.Compact>
-      
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">验证场景</span>
           <Select
             v-model:value="filterAuthScenario"
-            style="width: 140px"
             :options="AUTH_SCENARIO_OPTIONS"
             placeholder="请选择验证场景"
           />
         </Space.Compact>
-      
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">状态</span>
           <Select
             v-model:value="filterStatus"
-            style="width: 120px"
             :options="AUTH_STATUS_OPTIONS"
             placeholder="请选择状态"
           />
         </Space.Compact>
-      
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterUploadDateRange" label="上传时间" />
-      
-      </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterVerifyDateRange" label="审核时间" />
-      
-      </div>
-      <Button :loading="loading" type="primary" @click="handleSearch">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterUploadDateRange" label="上传时间" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterVerifyDateRange" label="审核时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="handleSearch">
         查询
       </Button>
       <Button @click="handleReset">重置</Button>
       <Button :loading="exportLoading" @click="handleExportClick">
         导出 CSV
       </Button>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #username="{ row }">

@@ -148,12 +148,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterUsername"
           allow-clear
-          style="width: 180px"
           @press-enter="handleSearch"
           placeholder="请输入操作人员"
         >
@@ -165,7 +165,6 @@ onMounted(() => {
         <Input
           v-model:value="filterType"
           allow-clear
-          style="width: 160px"
           @press-enter="handleSearch"
           placeholder="请输入类型"
         >
@@ -173,17 +172,19 @@ onMounted(() => {
         </Input>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="操作时间" />
-      </div>
-
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="操作时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
         <Button @click="handleReset">重置</Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Grid />
   </div>

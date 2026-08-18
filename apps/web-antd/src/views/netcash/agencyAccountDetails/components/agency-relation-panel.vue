@@ -166,20 +166,23 @@ onMounted(loadAll);
 
 <template>
   <div class="space-y-4">
-    <Space wrap>
-      <Select
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <Select
         v-model:value="createTime"
         :options="dateOptions"
-        style="width: 150px"
       />
-      <Button type="primary" @click="loadAll">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="loadAll">查询</Button>
       <Button @click="reset">重置</Button>
       <Radio.Group v-model:value="mode" button-style="solid">
         <Radio.Button value="summary">统计</Radio.Button>
         <Radio.Button value="detail">详细数据</Radio.Button>
       </Radio.Group>
       <Button @click="exportCurrent">导出当前数据</Button>
-    </Space>
+        </div>
+    </div>
+  </div>
 
     <Row :gutter="[12, 12]">
       <Col v-if="canDevice" :lg="12" :xs="24">

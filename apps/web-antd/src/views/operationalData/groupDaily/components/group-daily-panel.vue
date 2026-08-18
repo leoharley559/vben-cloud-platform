@@ -367,9 +367,10 @@ onMounted(async () => {
 
 <template>
   <div class="flex flex-col gap-4">
-    <div class="mb-1">
-      <Space wrap class="w-full">
-        <Space.Compact>
+    <div class="ops-query-scope mb-1">
+    <div class="ops-query-filters">
+              
+          <Space.Compact>
           <span class="query-field-addon">选择分类</span>
           <Cascader
             v-model:value="groupTemp"
@@ -398,31 +399,28 @@ onMounted(async () => {
           ]"
         />
 
-        <Space>
+        <div class="query-filter-wide">
           <Space.Compact>
             <span class="query-field-addon">日期</span>
             <DatePicker.RangePicker
               v-model:value="dateRange"
               :format="dateFormat"
               :picker="pickerMode"
-              style="width: 260px"
             />
           </Space.Compact>
-        </Space>
+        </div>
+        
 
-        <Space>
-          <Space.Compact>
+        <Space.Compact>
             <span class="query-field-addon">数据类型</span>
             <Select
               v-model:value="dataSearchType"
               :options="memberTypeOptions"
-              style="width: 120px"
               placeholder="请选择数据类型"
             />
           </Space.Compact>
-        </Space>
-
-        <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
         <Button
           v-if="canExport"
@@ -432,8 +430,9 @@ onMounted(async () => {
         >
           导出 Excel
         </Button>
-      </Space>
+        </div>
     </div>
+  </div>
 
     <Card size="small" title="代理分组日报">
       <Spin :spinning="loading">

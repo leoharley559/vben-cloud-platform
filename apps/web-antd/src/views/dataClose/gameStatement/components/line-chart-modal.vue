@@ -139,11 +139,17 @@ watch(
     destroy-on-close
   >
     <Spin :spinning="loading">
-      <Space wrap class="mb-3">
-        <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
-        <Button type="primary" @click="loadChart">查询</Button>
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="loadChart">查询</Button>
         <Button @click="handleReset">重置</Button>
-      </Space>
+        </div>
+    </div>
+  </div>
       <ReportLineChart
         :categories="categories"
         :series="[{ data: seriesData, name: title, type: 'line' }]"

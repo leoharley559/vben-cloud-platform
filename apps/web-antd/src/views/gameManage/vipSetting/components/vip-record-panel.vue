@@ -317,7 +317,9 @@ onMounted(() => {
             placeholder="请选择状态"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="dateRange" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
         <Space>
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>

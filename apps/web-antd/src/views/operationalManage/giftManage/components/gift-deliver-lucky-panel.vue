@@ -613,12 +613,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -628,7 +628,6 @@ onMounted(() => {
         <Input
           v-model:value="filterPackageName"
           allow-clear
-          style="width: 240px"
           placeholder="请输入产品名称"
         >
           <template #addonBefore>产品名称</template>
@@ -637,19 +636,16 @@ onMounted(() => {
       <Select
         v-model:value="filterActivityType"
         :options="activityTypeOptions"
-        style="width: 120px"
       />
       <Select
         v-if="filterActivityType === ACTIVITY_TYPE_LUCKY_DRAW"
         v-model:value="filterBonusCategory"
         :options="LUCKY_DRAW_BONUS_CATEGORY_OPTIONS"
-        style="width: 130px"
       />
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterBonusTitle"
           allow-clear
-          style="width: 220px"
           placeholder="请输入活动标题"
         >
           <template #addonBefore>活动标题</template>
@@ -659,7 +655,6 @@ onMounted(() => {
         <Input
           v-model:value="filterGiftName"
           allow-clear
-          style="width: 210px"
           placeholder="请输入奖品名称"
         >
           <template #addonBefore>奖品名称</template>
@@ -668,41 +663,40 @@ onMounted(() => {
       <Select
         v-model:value="filterGiftType"
         :options="GIFT_TYPE_FILTER_OPTIONS"
-        style="width: 110px"
       />
       <Select
         v-model:value="filterAuditStatus"
         :options="GIFT_LUCKY_DELIVER_STATUS_OPTIONS"
-        style="width: 110px"
       />
       <Select
         v-model:value="filterPlayerStatus"
         :options="playerStatusOptions"
-        style="width: 110px"
       />
       <Select
         v-model:value="filterRiskMessage"
         :options="GIFT_RISK_OPTIONS"
-        style="width: 110px"
       />
       <Select
         v-model:value="filterIsManual"
         :options="GIFT_IS_MANUAL_OPTIONS"
-        style="width: 110px"
       />
       <Select
         v-model:value="filterVipLevel"
         :options="VIP_LEVEL_OPTIONS"
-        style="width: 100px"
       />
-      <QueryDatetimeRangePicker v-model="filterApplyDateRange" />
-      <QueryDatetimeRangePicker v-model="filterApproveDateRange" />
-      <QueryDatetimeRangePicker v-model="filterDeliverDateRange" />
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterApplyDateRange" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterApproveDateRange" />
+        </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDeliverDateRange" />
+        </div>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterExpressOrderId"
           allow-clear
-          style="width: 220px"
           placeholder="请输入快递单号"
         >
           <template #addonBefore>快递单号</template>
@@ -712,13 +706,13 @@ onMounted(() => {
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 230px"
           placeholder="请输入订单号"
         >
           <template #addonBefore>订单号</template>
         </Input>
       </div>
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
         导出
@@ -729,7 +723,9 @@ onMounted(() => {
       <Button v-if="canBatchReject" danger @click="openBatchReject">
         批量拒绝
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

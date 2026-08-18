@@ -137,13 +137,14 @@ watch(
     title="当前排行"
     width="960px"
   >
-    <div class="mb-3 flex flex-wrap items-end gap-2">
-      <Space.Compact>
+    <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+            <Space.Compact>
         <span class="query-field-addon">产品包</span>
         <Select
           v-model:value="filterPackageId"
           allow-clear
-          class="w-40"
+         
           :options="packageOptions"
           placeholder="请选择产品包"
         />
@@ -152,7 +153,6 @@ watch(
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 220px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -160,7 +160,7 @@ watch(
       </div>
       <Select
         v-model:value="filterVipLevel"
-        class="w-28"
+       
         :options="[
           { label: '全部', value: -1 },
           ...Array.from({ length: 16 }, (_, level) => ({
@@ -169,8 +169,11 @@ watch(
           })),
         ]"
       />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

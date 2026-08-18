@@ -255,12 +255,12 @@ defineExpose({ reload: () => gridApi.reload() });
 
 <template>
   <div v-if="canView">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterKeyword"
           allow-clear
-          style="width: 240px"
           @press-enter="handleSearch"
           :placeholder="`请输入${kind === 'ip' ? 'IP地址' : '设备标识'}`"
         >
@@ -271,15 +271,17 @@ defineExpose({ reload: () => gridApi.reload() });
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
         </Input>
       </div>
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button type="primary" @click="handleSearch">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Space class="ml-auto">
         <Button v-if="canCreate" type="primary" @click="createOpen = true">
@@ -290,7 +292,9 @@ defineExpose({ reload: () => gridApi.reload() });
           批量删除
         </Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #actions="{ row }">

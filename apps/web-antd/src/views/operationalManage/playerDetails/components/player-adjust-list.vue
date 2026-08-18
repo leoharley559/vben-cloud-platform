@@ -248,14 +248,14 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">调整类型</span>
           <Select
             v-model:value="filterReason"
             :options="ADJUST_REASON_OPTIONS"
-            style="width: 160px"
             placeholder="请选择调整类型"
           />
         </Space.Compact>
@@ -265,7 +265,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 220px"
           @press-enter="handleSearch"
           placeholder="请输入订单编号"
         >
@@ -279,17 +278,16 @@ onMounted(() => {
           <Select
             v-model:value="filterHandleType"
             :options="ADJUST_HANDLE_TYPE_OPTIONS"
-            style="width: 140px"
             placeholder="请选择调整方式"
           />
         </Space.Compact>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
-      </div>
-
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
@@ -298,7 +296,9 @@ onMounted(() => {
           导出 Excel
         </Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #done="{ row }">

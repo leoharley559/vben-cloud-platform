@@ -189,20 +189,21 @@ onMounted(() => {
         <Input
           v-model:value="filterName"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入类别名称"
         >
           <template #addonBefore>类别名称</template>
         </Input>
       </div>
-      <Space>
+        <div class="query-filter-actions">
+          <Space>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button v-if="canAdd" type="primary" @click="openForm('add')">
           新增类别
         </Button>
       </Space>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #switch="{ row }">

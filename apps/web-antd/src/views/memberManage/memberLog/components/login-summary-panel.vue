@@ -155,22 +155,20 @@ onMounted(() => {
           <span class="query-field-addon">数据类型</span>
           <Select
             v-model:value="filterDataSearchType"
-            style="width: 120px"
             :options="memberTypeOptions"
             placeholder="请选择数据类型"
           />
         </Space.Compact>
-      
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="统计时间" precision="date" />
-      
-      </div>
-      <Button :loading="loading" type="primary" @click="handleSearch">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="统计时间" precision="date" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="handleSearch">
         查询
       </Button>
       <Button @click="handleReset">重置</Button>
-    </template>
+        </div></template>
 
     <div class="mb-6">
       <div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">

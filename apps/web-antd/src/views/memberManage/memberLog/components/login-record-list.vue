@@ -251,7 +251,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 260px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -263,18 +262,15 @@ onMounted(() => {
           <span class="query-field-addon">产品名称</span>
           <Select
             v-model:value="filterPackageId"
-            style="width: 160px"
             :options="packageSelectOptions"
             placeholder="请选择产品名称"
           />
         </Space.Compact>
-      
       </div>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          style="width: 210px"
           @press-enter="handleSearch"
           placeholder="请输入玩家ID"
         >
@@ -287,11 +283,9 @@ onMounted(() => {
           <ChannelSelect
             v-model="filterChannelId"
             :multiple="false"
-            style="width: 180px"
             placeholder="请输入渠道号"
           />
         </Space.Compact>
-      
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
@@ -299,29 +293,26 @@ onMounted(() => {
           <Select
             v-model:value="filterLoginPlatform"
             allow-clear
-            style="width: 140px"
             :options="devicePlatformOptions"
             placeholder="请选择设备类型"
           />
         </Space.Compact>
-      
       </div>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterIp"
           allow-clear
-          style="width: 230px"
           @press-enter="handleSearch"
           placeholder="请输入登录IP"
         >
           <template #addonBefore>登录IP</template>
         </Input>
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="登录时间" />
-      
-      </div>
-      <Button :loading="loading" type="primary" @click="handleSearch">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="登录时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="handleSearch">
         查询
       </Button>
       <Button @click="handleReset">重置</Button>
@@ -332,7 +323,8 @@ onMounted(() => {
       >
         导出 CSV
       </Button>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #loginAccount="{ row }">

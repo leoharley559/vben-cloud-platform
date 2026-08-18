@@ -307,12 +307,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canView">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 230px"
           placeholder="请输入玩家账号"
         >
           <template #addonBefore>玩家账号</template>
@@ -323,7 +323,7 @@ onMounted(() => {
         <Select
           v-model:value="filterPlayerStatus"
           allow-clear
-          class="w-28"
+         
           :options="[{ label: '全部', value: -1 }, ...PLAYER_STATUS_OPTIONS]"
           placeholder="请选择玩家状态"
         />
@@ -332,7 +332,6 @@ onMounted(() => {
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 230px"
           placeholder="请输入订单号"
         >
           <template #addonBefore>订单号</template>
@@ -342,7 +341,6 @@ onMounted(() => {
         <Input
           v-model:value="filterBonusTitle"
           allow-clear
-          style="width: 220px"
           placeholder="请输入红利标题"
         >
           <template #addonBefore>红利标题</template>
@@ -352,7 +350,6 @@ onMounted(() => {
         <Input
           v-model:value="filterUsername"
           allow-clear
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -363,21 +360,21 @@ onMounted(() => {
         <Select
           v-model:value="filterBonusType"
           allow-clear
-          class="w-36"
+         
           :options="REWARD_POINT_BONUS_TYPE_OPTIONS"
           placeholder="请选择红利类型"
         />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model:value="filterChannelIds" style="width: 200px" placeholder="请输入渠道号" />
+        <ChannelSelect v-model:value="filterChannelIds" placeholder="请输入渠道号" />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">产品名称</span>
         <Select
           v-model:value="filterPackageId"
           allow-clear
-          class="w-36"
+         
           :options="
             packageOptions.map((item) => ({
               label: item.PackageName,
@@ -393,7 +390,7 @@ onMounted(() => {
         <Select
           v-model:value="filterVipLevels"
           allow-clear
-          class="w-40"
+         
           mode="multiple"
           :max-tag-count="1"
           :options="REWARD_VIP_FILTER_OPTIONS.filter((item) => item.value !== -1)"
@@ -405,7 +402,7 @@ onMounted(() => {
         <Select
           v-model:value="filterBonusCategory"
           allow-clear
-          class="w-32"
+         
           :options="REWARD_POINT_BONUS_CATEGORY_OPTIONS"
           placeholder="请选择活动分类"
         />
@@ -415,15 +412,16 @@ onMounted(() => {
         <Select
           v-model:value="filterSendType"
           allow-clear
-          class="w-32"
+         
           :options="REWARD_POINT_SEND_TYPE_OPTIONS"
           placeholder="请选择发放方式"
         />
       </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterApplyRange" label="申请时间" />
-      </div>
-      <Button type="primary" @click="handleSearch">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterApplyRange" label="申请时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
       <Button
         v-if="canExport"
@@ -433,7 +431,9 @@ onMounted(() => {
       >
         导出
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #username="{ row }">

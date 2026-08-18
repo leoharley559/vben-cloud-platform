@@ -198,7 +198,6 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           @press-enter="handleSearch"
           placeholder="请输入游戏账号"
         >
@@ -209,7 +208,6 @@ onMounted(() => {
         <Input
           v-model:value="filterAccountNum"
           allow-clear
-          style="width: 240px"
           @press-enter="handleSearch"
           placeholder="请输入钱包账号"
         >
@@ -222,17 +220,15 @@ onMounted(() => {
           <Select
             v-model:value="filterPayType"
             :options="[{ label: '全部', value: '' }, ...E_WALLET_PAY_TYPES]"
-            style="width: 140px"
             placeholder="请选择钱包类型"
           />
         </Space.Compact>
-      
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
-      
-      </div>
-      <Space>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
@@ -241,7 +237,8 @@ onMounted(() => {
           新增电子钱包
         </Button>
       </Space>
-    </template>
+        </div>
+      </template>
 
     <Grid>
       <template #loginAccount="{ row }">

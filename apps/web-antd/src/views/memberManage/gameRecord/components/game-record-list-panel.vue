@@ -779,7 +779,7 @@ onMounted(async () => {
   <div>
     <OpsListPanel>
       <template #filters>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">场馆模版</span>
             <Select
@@ -787,14 +787,13 @@ onMounted(async () => {
               allow-clear
               mode="multiple"
               :max-tag-count="1"
-              style="min-width: 160px"
               :options="gameGroupOptions"
               @change="(v: string[]) => handleVenuesTempChange(v || [])"
               placeholder="请选择场馆模版"
             />
           </Space.Compact>
         </div>
-        <div class="flex flex-col gap-1">
+        <div>
           <Space.Compact>
             <span class="query-field-addon">场馆名称</span>
             <Select
@@ -802,30 +801,28 @@ onMounted(async () => {
               allow-clear
               mode="multiple"
               :max-tag-count="1"
-              style="min-width: 160px"
               :options="platformGameOptions"
               placeholder="请选择场馆名称"
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">产品</span>
             <Select
               v-model:value="filterPackageId"
-              style="width: 150px"
               :options="packageSelectOptions"
               placeholder="请选择产品"
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">渠道号</span>
-            <ChannelSelect v-model="filterChannelIds" style="width: 180px" placeholder="请输入渠道号" />
+            <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">游戏名称</span>
             <Select
@@ -833,17 +830,15 @@ onMounted(async () => {
               allow-clear
               show-search
               option-filter-prop="label"
-              style="min-width: 180px"
               :options="subGameOptions"
               placeholder="请选择游戏名称"
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
-            style="width: 260px"
             @press-enter="handleSearch"
             placeholder="请输入游戏账号"
           >
@@ -860,7 +855,7 @@ onMounted(async () => {
             </template>
           </Input>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">场馆类型</span>
             <Select
@@ -868,7 +863,6 @@ onMounted(async () => {
               allow-clear
               mode="multiple"
               :max-tag-count="1"
-              style="min-width: 150px"
               :options="venueTypeOptions"
               @change="
                 (v: Array<string | number>) => handleVenueTypeChange(v || [])
@@ -877,88 +871,80 @@ onMounted(async () => {
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Input
             v-model:value="filterUsername"
             allow-clear
-            style="width: 220px"
             placeholder="请输入代理账号"
           >
             <template #addonBefore>代理账号</template>
           </Input>
         </div>
-        <div class="flex flex-col gap-1">
+        <div>
           <Input
             v-model:value="filterTransactionId"
             allow-clear
-            style="width: 260px"
             placeholder="请输入注单流水号"
           >
             <template #addonBefore>注单流水号</template>
           </Input>
         </div>
-        <div class="flex flex-col gap-1">
+        <div>
           <Space.Compact>
             <span class="query-field-addon">状态</span>
             <Select
               v-model:value="filterStatus"
               allow-clear
-              style="width: 140px"
               :options="BET_STATUS_OPTIONS"
               placeholder="请选择状态"
             />
           </Space.Compact>
         </div>
-        <div class="flex flex-col gap-1">
+        <div>
           <Input
             v-model:value="filterRoundId"
             allow-clear
-            style="width: 220px"
             placeholder="请输入牌局编号"
           >
             <template #addonBefore>牌局编号</template>
           </Input>
         </div>
-        <div class="flex flex-col gap-1">
+        <div>
           <Space.Compact>
             <span class="query-field-addon">下注金额</span>
             <InputNumber
               v-model:value="filterBeginBetGold"
               :min="0"
-              style="width: 90px"
               placeholder="请输入起"
             />
             <InputNumber
               v-model:value="filterEndBetGold"
               :min="0"
-              style="width: 90px"
               placeholder="请输入止"
             />
           </Space.Compact>
         </div>
-        <div class="flex flex-col gap-1">
+        <div>
           <Space.Compact>
             <span class="query-field-addon">提前结算</span>
             <Select
               v-model:value="filterIsBetTrade"
-              style="width: 110px"
               :options="BET_YES_NO_OPTIONS"
               placeholder="请选择提前结算"
             />
           </Space.Compact>
         </div>
-        <div class="flex flex-col gap-1">
+        <div>
           <Space.Compact>
             <span class="query-field-addon">二次结算</span>
             <Select
               v-model:value="filterSettleCount"
-              style="width: 110px"
               :options="BET_YES_NO_OPTIONS"
               placeholder="请选择二次结算"
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">邀请站点</span>
             <Select
@@ -966,13 +952,12 @@ onMounted(async () => {
               allow-clear
               mode="multiple"
               :max-tag-count="1"
-              style="min-width: 160px"
               :options="inviteSiteOptions"
               placeholder="请选择邀请站点"
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">玩家状态</span>
             <Select
@@ -980,23 +965,21 @@ onMounted(async () => {
               allow-clear
               mode="multiple"
               :max-tag-count="1"
-              style="min-width: 160px"
               :options="PLAYER_STATUS_OPTIONS"
               placeholder="请选择玩家状态"
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Input
             v-model:value="filterTagName"
             allow-clear
-            style="width: 220px"
             placeholder="请输入玩家标签"
           >
             <template #addonBefore>玩家标签</template>
           </Input>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">站点类型</span>
             <Select
@@ -1004,13 +987,12 @@ onMounted(async () => {
               allow-clear
               mode="multiple"
               :max-tag-count="1"
-              style="min-width: 140px"
               :options="siteTypeOptions"
               placeholder="请选择站点类型"
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">上架包</span>
             <Select
@@ -1018,13 +1000,12 @@ onMounted(async () => {
               allow-clear
               mode="multiple"
               :max-tag-count="1"
-              style="min-width: 150px"
               :options="appUrlOptions"
               placeholder="请选择上架包"
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">设备类型</span>
             <Select
@@ -1032,49 +1013,48 @@ onMounted(async () => {
               allow-clear
               mode="multiple"
               :max-tag-count="1"
-              style="min-width: 140px"
               :options="devicePlatformOptions"
               placeholder="请选择设备类型"
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope" class="flex flex-col gap-1">
+        <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">时区</span>
             <Select
               v-model:value="filterTimeZone"
-              style="width: 140px"
               :options="TIMEZONE_OPTIONS"
               placeholder="请选择时区"
             />
           </Space.Compact>
         </div>
-        <div class="flex flex-col gap-1">
+        <div>
           <Space.Compact>
             <span class="query-field-addon">时间类型</span>
             <Select
               v-model:value="filterSelectTimeType"
-              style="width: 140px"
               :options="BET_TIME_TYPE_OPTIONS"
               placeholder="请选择时间类型"
             />
           </Space.Compact>
         </div>
-        <div class="flex flex-col gap-1">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button :loading="copyLoading" @click="handleCopy">复制</Button>
-        <Button
-          v-if="canExport"
-          :loading="exportLoading"
-          @click="handleExportClick"
-        >
-          导出 CSV
-        </Button>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="handleSearch">
+            查询
+          </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button :loading="copyLoading" @click="handleCopy">复制</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExportClick"
+          >
+            导出 CSV
+          </Button>
+        </div>
       </template>
 
       <template #summary>

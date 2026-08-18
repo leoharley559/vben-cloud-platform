@@ -215,34 +215,32 @@ onMounted(() => {
         <Input
           v-model:value="account"
           allow-clear
-          style="width: 220px"
           @press-enter="handleSearch"
           placeholder="请输入账户"
         >
           <template #addonBefore>账户</template>
         </Input>
       </div>
-      <div class="flex flex-col gap-1">
-        <QueryDatetimeRangePicker v-model="dateRange" label="日期" />
-      
-      </div>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" label="日期" />
+        </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">数据类型</span>
           <Select
             v-model:value="dataSearchType"
             :options="memberTypeOptions"
-            style="width: 120px"
             placeholder="请选择数据类型"
           />
         </Space.Compact>
-      
       </div>
-      <Button type="primary" :loading="loading" @click="handleSearch">
+        <div class="query-filter-actions">
+          <Button type="primary" :loading="loading" @click="handleSearch">
         查询
       </Button>
       <Button @click="handleReset">重置</Button>
-    </template>
+        </div>
+      </template>
 
     <Spin :spinning="loading">
       <Table

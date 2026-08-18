@@ -67,12 +67,13 @@ function handleReset() {
     title="流水信息"
   >
     <Card>
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
-            class="w-64"
+           
             @press-enter="handleSearch"
             placeholder="请输入游戏账号"
           >
@@ -85,7 +86,7 @@ function handleReset() {
             <Select
               v-model:value="filterPackageId"
               allow-clear
-              class="w-40"
+             
               :options="
                 packageOptions.map((item) => ({
                   label: item.PackageName,
@@ -96,11 +97,14 @@ function handleReset() {
             />
           </Space.Compact>
         </div>
-        <Space>
+        <div class="query-filter-actions">
+          <Space>
           <Button :loading="searchLoading" type="primary" @click="handleSearch"> 查询 </Button>
           <Button @click="handleReset">重置</Button>
         </Space>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <PlayerStreamingPanel v-if="playerId" :key="String(playerId)" :player-id="playerId" />
       <Result

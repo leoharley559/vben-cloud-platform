@@ -301,7 +301,9 @@ onMounted(() => {
                 placeholder="请选择推广账号"
               />
             </Space.Compact>
-            <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" :disabled-date="disabledDate" />
+            <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" :disabled-date="disabledDate" />
+        </div>
             <Button type="primary" @click="loadData">查询</Button>
             <Button @click="reset">重置</Button>
           </div>

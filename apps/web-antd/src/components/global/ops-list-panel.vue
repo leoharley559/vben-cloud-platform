@@ -8,10 +8,7 @@ defineOptions({ name: 'OpsListPanel' });
 
 <template>
   <div class="ops-list-panel">
-    <div
-      v-if="$slots.filters"
-      class="mb-2 flex flex-wrap items-end gap-x-3 gap-y-2"
-    >
+    <div v-if="$slots.filters" class="ops-query-filters mb-2">
       <slot name="filters" />
     </div>
     <div v-if="$slots.summary">

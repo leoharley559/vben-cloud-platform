@@ -759,13 +759,12 @@ onMounted(() => {
       </template>
     </Alert>
 
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="query.Keyword"
             allow-clear
-            style="width: 260px"
             @press-enter="search"
             placeholder="请输入关键词"
           >
@@ -777,7 +776,6 @@ onMounted(() => {
           <Select
             v-model:value="query.Status"
             allow-clear
-            style="width: 130px"
             :options="[
               { label: '开启', value: 1 },
               { label: '关闭', value: 2 },
@@ -786,10 +784,10 @@ onMounted(() => {
             placeholder="请选择状态"
           />
         </Space.Compact>
-        <Button type="primary" @click="search">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="search">查询</Button>
         <Button @click="resetSearch">重置</Button>
-      </div>
-      <Space wrap>
+        <Space wrap>
         <span class="text-sm text-gray-500">客服分配：</span>
         <Radio.Group
           :value="orderMode"
@@ -803,7 +801,9 @@ onMounted(() => {
         </Radio.Group>
         <Button type="primary" @click="openCreate">添加账号</Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Table
       :columns="columns"

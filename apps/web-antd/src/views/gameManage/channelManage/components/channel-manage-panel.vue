@@ -133,20 +133,23 @@ function handleSearch() {
 
 <template>
   <div>
-    <div class="mb-3 flex flex-wrap items-center gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterUsername"
           allow-clear
-          style="width: 240px"
           @press-enter="handleSearch"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
         </Input>
       </div>
-      <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
+        </div>
     </div>
+  </div>
     <div class="mb-3 text-xs text-gray-400">
       已支持邀请码编辑；打包/短链/登录注册配置待下一迭代。
     </div>

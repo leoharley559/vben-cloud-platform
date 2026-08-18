@@ -198,12 +198,12 @@ function handleOffshelf(row: OngoingActivityRow) {
     </div>
 
     <template v-else>
-      <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterId"
             allow-clear
-            style="width: 210px"
             placeholder="请输入活动ID"
           >
             <template #addonBefore>活动ID</template>
@@ -213,7 +213,6 @@ function handleOffshelf(row: OngoingActivityRow) {
           <Input
             v-model:value="filterName"
             allow-clear
-            style="width: 260px"
             placeholder="请输入活动名称"
           >
             <template #addonBefore>活动名称</template>
@@ -224,16 +223,23 @@ function handleOffshelf(row: OngoingActivityRow) {
           <Select
             v-model:value="filterType"
             allow-clear
-            class="w-40"
+           
             :options="typeOptions"
             placeholder="请选择活动类型"
           />
         </Space.Compact>
-        <QueryDatetimeRangePicker v-model="showTimeRange" />
-        <QueryDatetimeRangePicker v-model="activityTimeRange" />
-        <Button type="primary" @click="handleSearch">查询</Button>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="showTimeRange" />
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="activityTimeRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-      </div>
+        </div>
+    </div>
+  </div>
 
       <Grid>
         <template #displayStatus="{ row }">

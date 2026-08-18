@@ -231,7 +231,9 @@ onMounted(() => {
           <template #addonBefore>操作人员</template>
         </Input>
       </div>
-      <QueryDatetimeRangePicker v-model="dateRange" />
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
       <template #actions>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>

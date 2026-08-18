@@ -90,12 +90,12 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterEventId"
           allow-clear
-          style="width: 210px"
           placeholder="请输入活动ID"
         >
           <template #addonBefore>活动ID</template>
@@ -105,7 +105,6 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 240px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -116,7 +115,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <Select
           v-model:value="filterPackageId"
           allow-clear
-          class="w-40"
+         
           :options="packageOptions"
           placeholder="请选择产品包"
         />
@@ -126,14 +125,19 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <Select
           v-model:value="filterEventType"
           allow-clear
-          class="w-36"
+         
           :options="eventTypeOptions"
           placeholder="请选择活动类别"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker v-model="dateRange" />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="dateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

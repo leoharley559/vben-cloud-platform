@@ -217,9 +217,9 @@ onMounted(() => void initialize());
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-      <Space wrap>
-        <Space.Compact>
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <Space.Compact>
           <span class="query-field-addon">产品名称</span>
           <Select
             v-model:value="filters.PackageId"
@@ -233,7 +233,6 @@ onMounted(() => void initialize());
                 value: packageId(item),
               }))
             "
-            style="min-width: 260px"
             placeholder="请选择产品名称"
           />
         </Space.Compact>
@@ -251,11 +250,11 @@ onMounted(() => void initialize());
               }))
             "
             show-search
-            style="min-width: 300px"
             placeholder="请选择渠道号"
           />
         </Space.Compact>
-        <Button type="primary" @click="gridApi.query()">查询</Button>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.query()">查询</Button>
         <Button
           @click="
             filters.ChannelId = [];
@@ -267,16 +266,9 @@ onMounted(() => void initialize());
         >
           重置
         </Button>
-      </Space>
-      <Button
-        v-if="canAdd"
-        :disabled="rows.length >= 10"
-        type="primary"
-        @click="openCreate"
-      >
-        新增方案
-      </Button>
+        </div>
     </div>
+  </div>
     <Grid>
       <template #actions="{ row }">
         <Space :size="2">

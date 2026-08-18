@@ -207,12 +207,12 @@ defineExpose({
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div v-if="enabledFilters.has('username')" class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div v-if="enabledFilters.has('username')" class="flex flex-col gap-1">
         <Input
           v-model:value="filterUsername"
           allow-clear
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -222,7 +222,6 @@ defineExpose({
         <Input
           v-model:value="filterAgentAccount"
           allow-clear
-          style="width: 220px"
           placeholder="请输入代理账号"
         >
           <template #addonBefore>代理账号</template>
@@ -232,7 +231,6 @@ defineExpose({
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 220px"
           placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
@@ -242,7 +240,6 @@ defineExpose({
         <Input
           v-model:value="filterTeamName"
           allow-clear
-          style="width: 220px"
           placeholder="请输入团队名称"
         >
           <template #addonBefore>团队名称</template>
@@ -254,7 +251,7 @@ defineExpose({
           v-if="enabledFilters.has('package')"
           v-model:value="filterPackageId"
           allow-clear
-          class="w-40"
+         
           :options="packageOptions"
           placeholder="请选择产品包"
         />
@@ -265,17 +262,22 @@ defineExpose({
           v-if="enabledFilters.has('status') && config.statusOptions?.length"
           v-model:value="filterStatus"
           allow-clear
-          class="w-32"
+         
           :options="config.statusOptions"
           placeholder="请选择状态"
         />
       </Space.Compact>
-      <QueryDatetimeRangePicker
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
         v-if="showDateFilter"
         v-model="filterDateRange"
       />
-      <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
+        <div class="query-filter-actions">
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+        </div>
     </div>
+  </div>
 
     <SummaryCards :items="summaryItems" />
 

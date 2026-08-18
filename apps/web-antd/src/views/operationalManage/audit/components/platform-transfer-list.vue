@@ -327,12 +327,12 @@ onMounted(async () => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          style="width: 200px"
           @change="normalizeLoginAccount"
           placeholder="请输入游戏账号"
         >
@@ -343,7 +343,6 @@ onMounted(async () => {
         <Input
           v-model:value="filterOrderId"
           allow-clear
-          style="width: 200px"
           placeholder="请输入流水号"
         >
           <template #addonBefore>流水号</template>
@@ -356,7 +355,6 @@ onMounted(async () => {
           { label: '转入', value: 1 },
           { label: '转出', value: 2 },
         ]"
-        style="width: 120px"
       />
       <Space.Compact>
         <span class="query-field-addon">转出账户</span>
@@ -365,7 +363,6 @@ onMounted(async () => {
           allow-clear
           show-search
           :options="gameOptions"
-          style="width: 160px"
           :filter-option="
             (input, option) =>
               String(option?.label ?? '')
@@ -382,7 +379,6 @@ onMounted(async () => {
           allow-clear
           show-search
           :options="gameOptions"
-          style="width: 160px"
           :filter-option="
             (input, option) =>
               String(option?.label ?? '')
@@ -401,10 +397,12 @@ onMounted(async () => {
           { label: '转人工处理', value: 5 },
           { label: '失败', value: 18 },
         ]"
-        style="width: 140px"
       />
-      <QueryDatetimeRangePicker v-model="filterDateRange" />
-      <Button :loading="loading" type="primary" @click="gridApi.reload()">
+      <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>
       <Button @click="resetFilters">重置</Button>
@@ -416,7 +414,9 @@ onMounted(async () => {
       >
         导出
       </Button>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

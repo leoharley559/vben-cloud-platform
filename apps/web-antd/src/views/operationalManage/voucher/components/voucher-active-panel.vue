@@ -300,13 +300,12 @@ function handleOffshelf(row: VoucherRow) {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
-      <div class="flex flex-wrap items-end gap-2">
-        <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterId"
             allow-clear
-            style="width: 200px"
             placeholder="请输入票券ID"
           >
             <template #addonBefore>票券ID</template>
@@ -317,7 +316,7 @@ function handleOffshelf(row: VoucherRow) {
           <Select
             v-model:value="filterType"
             allow-clear
-            class="w-36"
+           
             :options="typeFilterOptions"
             placeholder="请选择票券类型"
           />
@@ -326,19 +325,20 @@ function handleOffshelf(row: VoucherRow) {
           <Input
             v-model:value="filterName"
             allow-clear
-            style="width: 240px"
             placeholder="请输入票券名称"
           >
             <template #addonBefore>票券名称</template>
           </Input>
         </div>
-        <QueryDatetimeRangePicker v-model="filterDateRange" />
-        <Space>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-actions">
+          <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
         </Space>
-      </div>
-      <Space v-if="!isHistory">
+        <Space v-if="!isHistory">
         <span v-if="canConfig" class="inline-flex items-center gap-2 text-sm">
           票券中心开关
           <Switch
@@ -350,6 +350,7 @@ function handleOffshelf(row: VoucherRow) {
         <Button v-if="canConfig" @click="configOpen = true">全局设置</Button>
         <Dropdown v-if="canCreate" :trigger="['click']">
           <Button type="primary">新增票券</Button>
+        </div>
           <template #overlay>
             <Menu @click="({ key }) => openAdd(Number(key))">
               <Menu.Item
@@ -363,6 +364,7 @@ function handleOffshelf(row: VoucherRow) {
         </Dropdown>
       </Space>
     </div>
+  </div>
 
     <Grid>
       <template #name="{ row }">

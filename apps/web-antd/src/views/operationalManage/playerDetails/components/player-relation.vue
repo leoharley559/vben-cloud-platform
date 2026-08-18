@@ -203,14 +203,14 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-4">
+    <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">时间范围</span>
           <Select
             v-model:value="filterCreateTime"
             :options="TIME_PRESET_OPTIONS"
-            style="width: 120px"
             placeholder="请选择时间范围"
           />
         </Space.Compact>
@@ -220,14 +220,16 @@ onMounted(() => {
         <Radio :value="1">设备统计</Radio>
         <Radio :value="2">IP 统计</Radio>
       </Radio.Group>
-
-      <Space>
+        <div class="query-filter-actions">
+          <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
         </Button>
         <Button @click="handleReset">重置</Button>
       </Space>
+        </div>
     </div>
+  </div>
 
     <Grid>
       <template #blacklist="{ row }">
