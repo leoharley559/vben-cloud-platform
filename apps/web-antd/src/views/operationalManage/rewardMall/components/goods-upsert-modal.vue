@@ -599,6 +599,7 @@ async function handleSubmit() {
             <ChannelSelect
               v-model="validChannels"
               style="width: 100%; max-width: 480px"
+              placeholder="请输入渠道号"
             />
           </Form.Item>
 

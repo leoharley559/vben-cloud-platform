@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -22,6 +21,7 @@ import {
   updateSendOrderListApi,
 } from '#/api/operationManage/withdraw-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -73,8 +73,8 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     Keyword: filterOrderId.value,
     LoginAccount: filterLoginAccount.value,
     PackageId: filterPackageId.value,
@@ -191,14 +191,16 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterPackageId"
         :options="
@@ -211,14 +213,16 @@ onMounted(() => {
         "
         style="width: 160px"
       />
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 200px"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 200px"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterRiskStatus"
         :options="[
@@ -230,7 +234,7 @@ onMounted(() => {
         ]"
         style="width: 140px"
       />
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>

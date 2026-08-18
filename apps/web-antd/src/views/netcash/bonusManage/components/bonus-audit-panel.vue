@@ -7,7 +7,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   InputNumber,
@@ -27,6 +26,7 @@ import {
   fetchBonusApproveListApi,
 } from '#/api/netcash/bonus-manage';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
@@ -92,8 +92,8 @@ function auditQuery() {
   const [begin, end] = auditRange.value || [];
   return {
     ...auditFilters,
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     IsExp: false,
     Page: auditPage.value,
     PageSize: auditPageSize.value,
@@ -267,14 +267,16 @@ onMounted(() => {
   />
   <template v-else>
     <div class="mb-4 flex flex-wrap items-center gap-2">
-      <Input
-        v-model:value="auditFilters.Username"
-        allow-clear
-        placeholder="代理账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>代理账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="auditFilters.Username"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="auditFilters.WalletType"
         class="w-36"
@@ -285,23 +287,27 @@ onMounted(() => {
         class="w-36"
         :options="bonusOptions"
       />
-      <Input
-        v-model:value="auditFilters.ApplyName"
-        allow-clear
-        placeholder="申请账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>申请账号</template>
-      </Input>
-      <Input
-        v-model:value="auditFilters.ApplyDesc"
-        allow-clear
-        placeholder="申请备注"
-        style="width: 220px"
-      >
-        <template #addonBefore>申请备注</template>
-      </Input>
-      <DatePicker.RangePicker v-model:value="auditRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="auditFilters.ApplyName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入申请账号"
+        >
+          <template #addonBefore>申请账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="auditFilters.ApplyDesc"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入申请备注"
+        >
+          <template #addonBefore>申请备注</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="auditRange" />
       <Button type="primary" @click="searchAudit">查询</Button>
       <Button @click="resetAudit">重置</Button>
     </div>

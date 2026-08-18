@@ -9,7 +9,6 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Modal,
   Result,
   Select,
@@ -17,6 +16,8 @@ import {
   Tag,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -107,10 +108,10 @@ function getAmountClass(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     BillType: filterBillType.value,
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     PlayerId: String(props.playerId),
   };
 }
@@ -337,15 +338,18 @@ onMounted(async () => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">帐变项目</span>
-        <Select
-          v-model:value="filterBillType"
-          :options="STREAMING_BILL_TYPE_OPTIONS"
-          style="width: 140px"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">帐变项目</span>
+          <Select
+            v-model:value="filterBillType"
+            :options="STREAMING_BILL_TYPE_OPTIONS"
+            style="width: 140px"
+            placeholder="请选择帐变项目"
+          />
+        </Space.Compact>
       </div>
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询

@@ -5,7 +5,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   Modal,
@@ -29,6 +28,7 @@ import {
   remarkGiftApi,
 } from '#/api/operationManage/gift-manage';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -196,11 +196,11 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
   const [deliverBegin, deliverEnd] = filterDeliverDateRange.value || [];
   return {
     ActivityType: filterActivityType.value,
-    ApplyBeginTime: applyBegin ? applyBegin.startOf('day').unix() : '',
-    ApplyEndTime: applyEnd ? applyEnd.endOf('day').unix() : '',
+    ApplyBeginTime: applyBegin ? applyBegin.unix() : '',
+    ApplyEndTime: applyEnd ? applyEnd.unix() : '',
     ApplyType: '5,6,7',
-    ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
-    ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
+    ApproveBeginTime: approveBegin ? approveBegin.unix() : '',
+    ApproveEndTime: approveEnd ? approveEnd.unix() : '',
     AuditDeliverStatus: filterAuditStatus.value,
     BonusCategory:
       filterActivityType.value === ACTIVITY_TYPE_LUCKY_DRAW
@@ -208,8 +208,8 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
         : 0,
     BonusTitle: filterBonusTitle.value.trim(),
     Contact: filterContact.value.trim(),
-    DeliverBeginTime: deliverBegin ? deliverBegin.startOf('day').unix() : '',
-    DeliverEndTime: deliverEnd ? deliverEnd.endOf('day').unix() : '',
+    DeliverBeginTime: deliverBegin ? deliverBegin.unix() : '',
+    DeliverEndTime: deliverEnd ? deliverEnd.unix() : '',
     ExpressOrderId: filterExpressOrderId.value.trim(),
     GiftName: filterGiftName.value.trim(),
     GiftType: filterGiftType.value,
@@ -614,22 +614,26 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 240px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Input
-        v-model:value="filterPackageName"
-        allow-clear
-        placeholder="产品名称"
-        style="width: 240px"
-      >
-        <template #addonBefore>产品名称</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPackageName"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入产品名称"
+        >
+          <template #addonBefore>产品名称</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterActivityType"
         :options="activityTypeOptions"
@@ -641,22 +645,26 @@ onMounted(() => {
         :options="LUCKY_DRAW_BONUS_CATEGORY_OPTIONS"
         style="width: 130px"
       />
-      <Input
-        v-model:value="filterBonusTitle"
-        allow-clear
-        placeholder="活动标题"
-        style="width: 220px"
-      >
-        <template #addonBefore>活动标题</template>
-      </Input>
-      <Input
-        v-model:value="filterGiftName"
-        allow-clear
-        placeholder="奖品名称"
-        style="width: 210px"
-      >
-        <template #addonBefore>奖品名称</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterBonusTitle"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入活动标题"
+        >
+          <template #addonBefore>活动标题</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterGiftName"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入奖品名称"
+        >
+          <template #addonBefore>奖品名称</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterGiftType"
         :options="GIFT_TYPE_FILTER_OPTIONS"
@@ -687,34 +695,29 @@ onMounted(() => {
         :options="VIP_LEVEL_OPTIONS"
         style="width: 100px"
       />
-      <DatePicker.RangePicker
-        v-model:value="filterApplyDateRange"
-        :placeholder="['申请开始', '申请结束']"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filterApproveDateRange"
-        :placeholder="['审核开始', '审核结束']"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filterDeliverDateRange"
-        :placeholder="['发货开始', '发货结束']"
-      />
-      <Input
-        v-model:value="filterExpressOrderId"
-        allow-clear
-        placeholder="快递单号"
-        style="width: 220px"
-      >
-        <template #addonBefore>快递单号</template>
-      </Input>
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单号"
-        style="width: 230px"
-      >
-        <template #addonBefore>订单号</template>
-      </Input>
+      <QueryDatetimeRangePicker v-model="filterApplyDateRange" />
+      <QueryDatetimeRangePicker v-model="filterApproveDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDeliverDateRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterExpressOrderId"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入快递单号"
+        >
+          <template #addonBefore>快递单号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 230px"
+          placeholder="请输入订单号"
+        >
+          <template #addonBefore>订单号</template>
+        </Input>
+      </div>
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">

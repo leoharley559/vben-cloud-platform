@@ -7,7 +7,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   message,
   Pagination,
@@ -19,6 +18,7 @@ import dayjs from 'dayjs';
 
 import { fetchBonusHistoryListApi } from '#/api/netcash/bonus-manage';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
@@ -79,10 +79,10 @@ function historyQuery(isExport = false) {
   const [approveBegin, approveEnd] = historyApproveRange.value || [];
   return {
     ...historyFilters,
-    ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
-    ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
-    BeginTime: applyBegin ? applyBegin.startOf('day').unix() : '',
-    EndTime: applyEnd ? applyEnd.endOf('day').unix() : '',
+    ApproveBeginTime: approveBegin ? approveBegin.unix() : '',
+    ApproveEndTime: approveEnd ? approveEnd.unix() : '',
+    BeginTime: applyBegin ? applyBegin.unix() : '',
+    EndTime: applyEnd ? applyEnd.unix() : '',
     IsExp: isExport,
     Page: isExport ? 1 : historyPage.value,
     PageSize: isExport ? 9999 : historyPageSize.value,
@@ -208,14 +208,16 @@ onMounted(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-center gap-2">
-      <Input
-        v-model:value="historyFilters.Username"
-        allow-clear
-        placeholder="代理账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>代理账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="historyFilters.Username"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="historyFilters.WalletType"
         class="w-36"
@@ -226,53 +228,55 @@ onMounted(() => {
         class="w-36"
         :options="bonusOptions"
       />
-      <Input
-        v-model:value="historyFilters.ApplyName"
-        allow-clear
-        placeholder="申请账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>申请账号</template>
-      </Input>
-      <Input
-        v-model:value="historyFilters.ApplyDesc"
-        allow-clear
-        placeholder="申请备注"
-        style="width: 220px"
-      >
-        <template #addonBefore>申请备注</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="historyFilters.ApplyName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入申请账号"
+        >
+          <template #addonBefore>申请账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="historyFilters.ApplyDesc"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入申请备注"
+        >
+          <template #addonBefore>申请备注</template>
+        </Input>
+      </div>
       <Select
         v-model:value="historyFilters.Approve"
         class="w-36"
         :options="statusOptions"
       />
-      <Input
-        v-model:value="historyFilters.ApproveName"
-        allow-clear
-        placeholder="审核账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>审核账号</template>
-      </Input>
-      <Input
-        v-model:value="historyFilters.ApproveDesc"
-        allow-clear
-        placeholder="审核备注"
-        style="width: 220px"
-      >
-        <template #addonBefore>审核备注</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="historyFilters.ApproveName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入审核账号"
+        >
+          <template #addonBefore>审核账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="historyFilters.ApproveDesc"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入审核备注"
+        >
+          <template #addonBefore>审核备注</template>
+        </Input>
+      </div>
       <span class="text-gray-500">申请时间</span>
-      <DatePicker.RangePicker
-        v-model:value="historyApplyRange"
-        allow-clear
-      />
+      <QueryDatetimeRangePicker v-model="historyApplyRange" />
       <span class="text-gray-500">审核时间</span>
-      <DatePicker.RangePicker
-        v-model:value="historyApproveRange"
-        allow-clear
-      />
+      <QueryDatetimeRangePicker v-model="historyApproveRange" />
       <Button type="primary" @click="searchHistory">查询</Button>
       <Button @click="resetHistory">重置</Button>
     </div>

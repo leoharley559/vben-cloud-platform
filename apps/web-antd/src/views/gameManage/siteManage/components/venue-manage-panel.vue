@@ -7,7 +7,6 @@ import { preferences } from '@vben/preferences';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   message,
@@ -18,6 +17,8 @@ import {
   Tabs,
   Tag,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -543,15 +544,18 @@ function handleReset() {
   <div>
     <div class="query-panel">
       <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <Input
-          v-model:value="filterName"
-          allow-clear
-          class="!w-[280px]"
-          placeholder="请输入场馆名称"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>场馆名称</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterName"
+            allow-clear
+            class="!w-[280px]"
+            @press-enter="handleSearch"
+            style="width: 220px"
+            placeholder="请输入场馆名称"
+          >
+            <template #addonBefore>场馆名称</template>
+          </Input>
+        </div>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
       </div>
@@ -645,12 +649,7 @@ function handleReset() {
           </Radio.Group>
         </Form.Item>
         <Form.Item v-if="showTimedPicker" label="定时关闭时间" required>
-          <DatePicker.RangePicker
-            v-model:value="switchRange"
-            class="w-full"
-            show-time
-            @change="changeSwitchRange"
-          />
+          <QueryDatetimeRangePicker v-model="switchRange" />
         </Form.Item>
       </Form>
     </Modal>
@@ -673,12 +672,7 @@ function handleReset() {
           />
         </Form.Item>
         <Form.Item label="维护显示时间">
-          <DatePicker.RangePicker
-            v-model:value="maintainRange"
-            class="w-full"
-            show-time
-            @change="changeMaintainRange"
-          />
+          <QueryDatetimeRangePicker v-model="maintainRange" />
         </Form.Item>
         <Form.Item label="维护显示内容">
           <Input.TextArea

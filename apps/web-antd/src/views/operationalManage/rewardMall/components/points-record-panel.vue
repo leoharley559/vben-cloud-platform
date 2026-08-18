@@ -5,7 +5,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -22,6 +21,7 @@ import {
 } from '#/api/operationManage/reward-mall';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
@@ -112,10 +112,9 @@ function vipLevelsParam() {
 function buildQuery(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterApplyRange.value || [];
   return {
-    ApplyTimeBegin: begin
-      ? begin.startOf('day').unix()
+    ApplyTimeBegin: begin ? begin.unix()
       : '',
-    ApplyTimeEnd: end ? end.endOf('day').unix() : '',
+    ApplyTimeEnd: end ? end.unix() : '',
     BonusCategory: filterBonusCategory.value,
     BonusTitle: filterBonusTitle.value.trim(),
     BonusType: filterBonusType.value,
@@ -309,92 +308,120 @@ onMounted(() => {
 <template>
   <div v-if="canView">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="玩家账号"
-        style="width: 230px"
-      >
-        <template #addonBefore>玩家账号</template>
-      </Input>
-      <Select
-        v-model:value="filterPlayerStatus"
-        allow-clear
-        class="w-28"
-        :options="[{ label: '全部', value: -1 }, ...PLAYER_STATUS_OPTIONS]"
-        placeholder="玩家状态"
-      />
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单号"
-        style="width: 230px"
-      >
-        <template #addonBefore>订单号</template>
-      </Input>
-      <Input
-        v-model:value="filterBonusTitle"
-        allow-clear
-        placeholder="红利标题"
-        style="width: 220px"
-      >
-        <template #addonBefore>红利标题</template>
-      </Input>
-      <Input
-        v-model:value="filterUsername"
-        allow-clear
-        placeholder="代理账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>代理账号</template>
-      </Input>
-      <Select
-        v-model:value="filterBonusType"
-        allow-clear
-        class="w-36"
-        :options="REWARD_POINT_BONUS_TYPE_OPTIONS"
-        placeholder="红利类型"
-      />
-      <ChannelSelect v-model:value="filterChannelIds" style="width: 200px" />
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        class="w-36"
-        :options="
-          packageOptions.map((item) => ({
-            label: item.PackageName,
-            value: item.PackageId,
-          }))
-        "
-        placeholder="产品名称"
-        show-search
-      />
-      <Select
-        v-model:value="filterVipLevels"
-        allow-clear
-        class="w-40"
-        mode="multiple"
-        :max-tag-count="1"
-        :options="REWARD_VIP_FILTER_OPTIONS.filter((item) => item.value !== -1)"
-        placeholder="VIP等级"
-      />
-      <Select
-        v-model:value="filterBonusCategory"
-        allow-clear
-        class="w-32"
-        :options="REWARD_POINT_BONUS_CATEGORY_OPTIONS"
-        placeholder="活动分类"
-      />
-      <Select
-        v-model:value="filterSendType"
-        allow-clear
-        class="w-32"
-        :options="REWARD_POINT_SEND_TYPE_OPTIONS"
-        placeholder="发放方式"
-      />
-      <div class="flex items-center gap-1">
-        <span class="text-xs text-gray-500">申请时间</span>
-        <DatePicker.RangePicker v-model:value="filterApplyRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 230px"
+          placeholder="请输入玩家账号"
+        >
+          <template #addonBefore>玩家账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">玩家状态</span>
+        <Select
+          v-model:value="filterPlayerStatus"
+          allow-clear
+          class="w-28"
+          :options="[{ label: '全部', value: -1 }, ...PLAYER_STATUS_OPTIONS]"
+          placeholder="请选择玩家状态"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 230px"
+          placeholder="请输入订单号"
+        >
+          <template #addonBefore>订单号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterBonusTitle"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入红利标题"
+        >
+          <template #addonBefore>红利标题</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterUsername"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">红利类型</span>
+        <Select
+          v-model:value="filterBonusType"
+          allow-clear
+          class="w-36"
+          :options="REWARD_POINT_BONUS_TYPE_OPTIONS"
+          placeholder="请选择红利类型"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">渠道号</span>
+        <ChannelSelect v-model:value="filterChannelIds" style="width: 200px" placeholder="请输入渠道号" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">产品名称</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          class="w-36"
+          :options="
+            packageOptions.map((item) => ({
+              label: item.PackageName,
+              value: item.PackageId,
+            }))
+          "
+          show-search
+          placeholder="请选择产品名称"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">VIP等级</span>
+        <Select
+          v-model:value="filterVipLevels"
+          allow-clear
+          class="w-40"
+          mode="multiple"
+          :max-tag-count="1"
+          :options="REWARD_VIP_FILTER_OPTIONS.filter((item) => item.value !== -1)"
+          placeholder="请选择VIP等级"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">活动分类</span>
+        <Select
+          v-model:value="filterBonusCategory"
+          allow-clear
+          class="w-32"
+          :options="REWARD_POINT_BONUS_CATEGORY_OPTIONS"
+          placeholder="请选择活动分类"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">发放方式</span>
+        <Select
+          v-model:value="filterSendType"
+          allow-clear
+          class="w-32"
+          :options="REWARD_POINT_SEND_TYPE_OPTIONS"
+          placeholder="请选择发放方式"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterApplyRange" label="申请时间" />
       </div>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>

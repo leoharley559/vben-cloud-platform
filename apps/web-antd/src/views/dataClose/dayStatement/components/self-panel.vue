@@ -3,10 +3,17 @@ import type { Dayjs } from 'dayjs';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, message, Select, Table } from 'ant-design-vue';
+import {
+  Button,
+  message,
+  Select,
+  Space,
+  Table,
+} from 'ant-design-vue';
 
 import { fetchDayStatementListApi } from '#/api/dataClose/day-statement';
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
@@ -164,27 +171,39 @@ onMounted(() => {
   <div>
     <ReportSummaryCards :items="summaryItems" />
     <ReportQueryCard>
-      <AccountSelect v-model="adminIds" class="w-56" />
-      <ChannelSelect v-model="channelIds" class="w-56" />
-      <Select
-        v-model:value="appUrls"
-        allow-clear
-        class="w-48"
-        mode="multiple"
-        :options="iosAppStoreOptions"
-        placeholder="上架包"
-        :max-tag-count="1"
-      />
-      <Select
-        v-model:value="venueTypes"
-        allow-clear
-        class="w-48"
-        mode="multiple"
-        :options="platformGameTypeOptions"
-        placeholder="场馆"
-        :max-tag-count="1"
-      />
-      <DatePicker.RangePicker v-model:value="dateRange" />
+      <Space.Compact>
+        <span class="query-field-addon">账号</span>
+        <AccountSelect v-model="adminIds" class="w-56" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">渠道号</span>
+        <ChannelSelect v-model="channelIds" class="w-56" placeholder="请输入渠道号" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">上架包</span>
+        <Select
+          v-model:value="appUrls"
+          allow-clear
+          class="w-48"
+          mode="multiple"
+          :options="iosAppStoreOptions"
+          :max-tag-count="1"
+          placeholder="请选择上架包"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">场馆</span>
+        <Select
+          v-model:value="venueTypes"
+          allow-clear
+          class="w-48"
+          mode="multiple"
+          :options="platformGameTypeOptions"
+          :max-tag-count="1"
+          placeholder="请选择场馆"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
         <Button :disabled="loading" @click="reset">重置</Button>

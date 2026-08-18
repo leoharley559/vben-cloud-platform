@@ -5,13 +5,13 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
+  message,
   Modal,
   Select,
+  Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -23,6 +23,7 @@ import {
   rejectApplyServiceApi,
 } from '#/api/operationManage/apply-service';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -210,8 +211,8 @@ function buildStatusParam() {
 function buildListQuery(page?: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     LoginAccount: filterLoginAccount.value.trim(),
     OperatorUsername: filterOperatorUsername.value.trim(),
     OrderId: filterOrderId.value.trim(),
@@ -497,8 +498,8 @@ async function loadFilterOptions() {
     const [workRes, endRes] = await Promise.all([
       fetchWorkQuestionTypeListApi(),
       fetchEndReasonListApi({
-        BeginTime: filterDateRange.value?.[0]?.startOf('day').unix() || '',
-        EndTime: filterDateRange.value?.[1]?.endOf('day').unix() || '',
+        BeginTime: filterDateRange.value?.[0]?.unix() || '',
+        EndTime: filterDateRange.value?.[1]?.unix() || '',
       }),
     ]);
     const workItems = (workRes.Items || [])
@@ -543,61 +544,72 @@ onMounted(() => {
   <div>
     <!-- 查询区与旧站 playerOrderPage Filters 逐项对齐 -->
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="请输入"
-        style="width: 250px"
-      >
-        <template #addonBefore>订单号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 250px"
+          placeholder="请输入订单号"
+        >
+          <template #addonBefore>订单号</template>
+        </Input>
+      </div>
 
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="请输入"
-        style="width: 250px"
-        @change="
-          filterLoginAccount = filterLoginAccount
-            .toLowerCase()
-            .replace(/\s/g, '')
-        "
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        class="w-[250px]"
-        :options="packageSelectOptions"
-        placeholder="请选择产品"
-        show-search
-        :filter-option="
-          (input, option) =>
-            String(option?.label ?? '')
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 250px"
+          @change="
+            filterLoginAccount = filterLoginAccount
               .toLowerCase()
-              .includes(input.toLowerCase())
-        "
-      />
+              .replace(/\s/g, '')
+          "
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
 
-      <Input
-        v-model:value="filterSupporterUsername"
-        allow-clear
-        placeholder="请输入"
-        style="width: 250px"
-      >
-        <template #addonBefore>申请人</template>
-      </Input>
+      <Space.Compact>
+        <span class="query-field-addon">产品</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          class="w-[250px]"
+          :options="packageSelectOptions"
+          placeholder="请选择产品"
+          show-search
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
+        />
+      </Space.Compact>
 
-      <Input
-        v-model:value="filterOperatorUsername"
-        allow-clear
-        placeholder="请输入"
-        style="width: 250px"
-      >
-        <template #addonBefore>审核人</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterSupporterUsername"
+          allow-clear
+          style="width: 250px"
+          placeholder="请输入申请人"
+        >
+          <template #addonBefore>申请人</template>
+        </Input>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOperatorUsername"
+          allow-clear
+          style="width: 250px"
+          placeholder="请输入审核人"
+        >
+          <template #addonBefore>审核人</template>
+        </Input>
+      </div>
 
       <div v-if="canFilterQuestType" class="flex items-center gap-1">
         <span class="whitespace-nowrap text-sm text-gray-500">问题类型</span>
@@ -642,7 +654,7 @@ onMounted(() => {
         />
       </div>
 
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button

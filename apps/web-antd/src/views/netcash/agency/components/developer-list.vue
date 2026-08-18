@@ -3,7 +3,9 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, DatePicker, Form, Input, message, Modal, Space } from 'ant-design-vue';
+import { Button, Form, Input, message, Modal, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -31,10 +33,10 @@ const form = reactive({ DeveloperName: '', Id: '' as number | string, Remark: ''
 
 function queryParams(page: { currentPage: number; pageSize: number }) {
   return {
-    BeginTime: dateRange.value?.[0]?.startOf('day').unix() || 0,
+    BeginTime: dateRange.value?.[0]?.unix() || 0,
     CurrPage: page.currentPage,
     DeveloperName: developerName.value,
-    EndTime: dateRange.value?.[1]?.endOf('day').unix() || 0,
+    EndTime: dateRange.value?.[1]?.unix() || 0,
     Page: page.currentPage,
     PageSize: page.pageSize,
   };
@@ -129,10 +131,17 @@ onMounted(() => canView.value && gridApi.reload());
 <template>
   <div v-if="canView">
     <div class="mb-4 flex flex-wrap items-center gap-2">
-      <Input v-model:value="developerName" allow-clear placeholder="发展人名称" style="width: 250px">
-        <template #addonBefore>发展人名称</template>
-      </Input>
-      <DatePicker.RangePicker v-model:value="dateRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="developerName"
+          allow-clear
+          style="width: 250px"
+          placeholder="请输入发展人名称"
+        >
+          <template #addonBefore>发展人名称</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="dateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="reset">重置</Button>
       <Button v-if="canCreate" type="primary" @click="openCreate">新增发展人</Button>

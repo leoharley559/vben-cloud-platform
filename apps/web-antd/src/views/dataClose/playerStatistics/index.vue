@@ -10,13 +10,13 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Input,
   message,
   Modal,
   Pagination,
   Result,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 
@@ -25,6 +25,7 @@ import {
   fetchPlayerStatisticsListApi,
 } from '#/api/dataClose/player-report';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
@@ -943,9 +944,9 @@ onMounted(() => {
             <Input
               v-model:value="filters.LoginAccount"
               allow-clear
-              placeholder="玩家账号"
               style="width: 220px"
               @press-enter="handleSearch"
+              placeholder="请输入玩家账号"
             >
               <template #addonBefore>玩家账号</template>
             </Input>
@@ -954,168 +955,183 @@ onMounted(() => {
             <Input
               v-model:value="filters.PlayerId"
               allow-clear
-              placeholder="玩家Id"
               style="width: 220px"
               @press-enter="handleSearch"
+              placeholder="请输入玩家ID"
             >
               <template #addonBefore>玩家ID</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">玩家状态</span>
-            <Select
-              v-model:value="filters.Status"
-              allow-clear
-              mode="multiple"
-              :max-tag-count="1"
-              :options="playerStatusOptions"
-              placeholder="请选择"
-              style="min-width: 160px"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">玩家状态</span>
+              <Select
+                v-model:value="filters.Status"
+                allow-clear
+                mode="multiple"
+                :max-tag-count="1"
+                :options="playerStatusOptions"
+                style="min-width: 160px"
+                placeholder="请选择玩家状态"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filters.Promoter"
               allow-clear
-              placeholder="代理账号"
               style="width: 220px"
               @press-enter="handleSearch"
+              placeholder="请输入代理账号"
             >
               <template #addonBefore>代理账号</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">渠道号</span>
-            <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
+            <Space.Compact>
+              <span class="query-field-addon">渠道号</span>
+              <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" placeholder="请输入渠道号" />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">产品名称</span>
-            <Select
-              v-model:value="filters.PackageId"
-              allow-clear
-              :options="packageSelectOptions"
-              placeholder="请选择"
-              style="min-width: 160px"
-              show-search
-              option-filter-prop="label"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">产品名称</span>
+              <Select
+                v-model:value="filters.PackageId"
+                allow-clear
+                :options="packageSelectOptions"
+                style="min-width: 160px"
+                show-search
+                option-filter-prop="label"
+                placeholder="请选择产品名称"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">VIP等级</span>
-            <Select
-              v-model:value="filters.VipLevel"
-              allow-clear
-              :options="vipSelectOptions"
-              placeholder="请选择"
-              style="min-width: 120px"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">VIP等级</span>
+              <Select
+                v-model:value="filters.VipLevel"
+                allow-clear
+                :options="vipSelectOptions"
+                style="min-width: 120px"
+                placeholder="请选择VIP等级"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">用户来源</span>
-            <Select
-              v-model:value="filters.UserSource"
-              allow-clear
-              mode="multiple"
-              :max-tag-count="1"
-              :options="USER_SOURCE_OPTIONS"
-              placeholder="请选择"
-              style="min-width: 160px"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">用户来源</span>
+              <Select
+                v-model:value="filters.UserSource"
+                allow-clear
+                mode="multiple"
+                :max-tag-count="1"
+                :options="USER_SOURCE_OPTIONS"
+                style="min-width: 160px"
+                placeholder="请选择用户来源"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">注册来源</span>
-            <Select
-              v-model:value="filters.DevicePlatform"
-              allow-clear
-              mode="multiple"
-              :max-tag-count="1"
-              :options="deviceOptions"
-              placeholder="请选择"
-              style="min-width: 160px"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">注册来源</span>
+              <Select
+                v-model:value="filters.DevicePlatform"
+                allow-clear
+                mode="multiple"
+                :max-tag-count="1"
+                :options="deviceOptions"
+                style="min-width: 160px"
+                placeholder="请选择注册来源"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">上架包</span>
-            <Select
-              v-model:value="filters.AppUrl"
-              allow-clear
-              mode="multiple"
-              :max-tag-count="1"
-              :options="appStoreOptions"
-              placeholder="请选择"
-              style="min-width: 160px"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">上架包</span>
+              <Select
+                v-model:value="filters.AppUrl"
+                allow-clear
+                mode="multiple"
+                :max-tag-count="1"
+                :options="appStoreOptions"
+                style="min-width: 160px"
+                placeholder="请选择上架包"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">统计类型</span>
-            <Select
-              v-model:value="filters.StatisticType"
-              :options="STATISTIC_TYPE_OPTIONS"
-              placeholder="请选择"
-              style="min-width: 140px"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">统计类型</span>
+              <Select
+                v-model:value="filters.StatisticType"
+                :options="STATISTIC_TYPE_OPTIONS"
+                style="min-width: 140px"
+                placeholder="请选择统计类型"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">邀请站点</span>
-            <Select
-              v-model:value="filters.InviteSite"
-              allow-clear
-              mode="multiple"
-              :max-tag-count="1"
-              :options="inviteOptions"
-              placeholder="请选择"
-              style="min-width: 160px"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">邀请站点</span>
+              <Select
+                v-model:value="filters.InviteSite"
+                allow-clear
+                mode="multiple"
+                :max-tag-count="1"
+                :options="inviteOptions"
+                style="min-width: 160px"
+                placeholder="请选择邀请站点"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filters.BindPhone"
               allow-clear
-              placeholder="会员手机号"
               style="width: 220px"
               @press-enter="handleSearch"
+              placeholder="请输入会员手机号"
             >
               <template #addonBefore>会员手机号</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">注册时间</span>
-            <DatePicker.RangePicker
-              v-model:value="filters.regRange"
-              show-time
-              :placeholder="['开始', '结束']"
-              style="width: 340px"
-            />
+            <QueryDatetimeRangePicker v-model="filters.regRange" label="注册时间" precision="date" />
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">统计时间</span>
-            <DatePicker.RangePicker
-              v-model:value="filters.totalRange"
-              show-time
-              :placeholder="['开始', '结束']"
-              style="width: 340px"
-            />
+            <QueryDatetimeRangePicker v-model="filters.totalRange" label="统计时间" precision="date" />
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">首存时间</span>
-            <DatePicker.RangePicker
-              v-model:value="filters.firstPayRange"
-              show-time
-              :placeholder="['开始', '结束']"
-              style="width: 340px"
-            />
+            <QueryDatetimeRangePicker v-model="filters.firstPayRange" label="首存时间" precision="date" />
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">显示列</span>
-            <Select
-              v-model:value="visibleColumns"
-              mode="multiple"
-              :max-tag-count="1"
-              :options="COLUMN_OPTIONS"
-              placeholder="请选择"
-              style="min-width: 180px"
-              @change="persistVisibleColumns"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">显示列</span>
+              <Select
+                v-model:value="visibleColumns"
+                mode="multiple"
+                :max-tag-count="1"
+                :options="COLUMN_OPTIONS"
+                style="min-width: 180px"
+                @change="persistVisibleColumns"
+                placeholder="请选择显示列"
+              />
+            </Space.Compact>
+          
           </div>
           <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
           <Button @click="handleReset">重置</Button>

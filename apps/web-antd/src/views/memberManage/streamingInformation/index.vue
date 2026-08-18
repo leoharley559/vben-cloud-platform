@@ -68,31 +68,33 @@ function handleReset() {
   >
     <Card>
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex items-center gap-2">
+        <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
             class="w-64"
-            placeholder="请输入"
             @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
           >
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">产品</span>
-          <Select
-            v-model:value="filterPackageId"
-            allow-clear
-            class="w-40"
-            :options="
-              packageOptions.map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-            "
-            placeholder="全部产品"
-          />
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">产品</span>
+            <Select
+              v-model:value="filterPackageId"
+              allow-clear
+              class="w-40"
+              :options="
+                packageOptions.map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+              "
+              placeholder="请选择产品"
+            />
+          </Space.Compact>
         </div>
         <Space>
           <Button :loading="searchLoading" type="primary" @click="handleSearch"> 查询 </Button>

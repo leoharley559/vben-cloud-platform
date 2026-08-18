@@ -176,23 +176,29 @@ function onThirdSaved() {
   />
   <div v-else>
     <Space class="mb-3">
-      <Input
-        v-model:value="name"
-        placeholder="第三方名称"
-        style="width: 240px"
-      >
-        <template #addonBefore>第三方名称</template>
-      </Input>
-      <Select
-        v-model:value="status"
-        allow-clear
-        placeholder="上架状态"
-        :options="[
-          { label: '上架', value: 1 },
-          { label: '下架', value: 2 },
-        ]"
-        style="width: 130px"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="name"
+          style="width: 240px"
+          allow-clear
+          placeholder="请输入第三方名称"
+        >
+          <template #addonBefore>第三方名称</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">上架状态</span>
+        <Select
+          v-model:value="status"
+          allow-clear
+          :options="[
+            { label: '上架', value: 1 },
+            { label: '下架', value: 2 },
+          ]"
+          style="width: 130px"
+          placeholder="请选择上架状态"
+        />
+      </Space.Compact>
       <Button type="primary" @click="thirdGridApi.reload()">查询</Button>
       <Button @click="resetAndReload">重置</Button>
     </Space>

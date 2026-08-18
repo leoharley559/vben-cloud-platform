@@ -5,7 +5,13 @@ import type { ChannelDataItem } from '#/types/promotion';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Result, Select, Table, Tooltip } from 'ant-design-vue';
+import {
+  Result,
+  Select,
+  Space,
+  Table,
+  Tooltip,
+} from 'ant-design-vue';
 
 import {
   fetchChannelDataListApi,
@@ -243,16 +249,18 @@ onMounted(async () => {
 <template>
   <div v-if="canViewTable">
     <PromoteDataSearch ref="searchRef" :max-range-days="6" @search="loadData">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">汇率</span>
-        <Select
-          v-model:value="currentRate"
-          allow-clear
-          class="w-32"
-          :options="rateOptions"
-          placeholder="默认"
-          @change="currentRate = Number(currentRate || 1)"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">汇率</span>
+          <Select
+            v-model:value="currentRate"
+            allow-clear
+            class="w-32"
+            :options="rateOptions"
+            @change="currentRate = Number(currentRate || 1)"
+            placeholder="请选择汇率"
+          />
+        </Space.Compact>
       </div>
     </PromoteDataSearch>
     <Table

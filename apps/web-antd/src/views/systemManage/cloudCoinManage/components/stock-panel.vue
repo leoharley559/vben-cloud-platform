@@ -3,12 +3,13 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, Space } from 'ant-design-vue';
+import { Button, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchCloudCoinStockApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
@@ -49,8 +50,8 @@ function keepTwoDecimal(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
   };
 }
 
@@ -176,11 +177,7 @@ onMounted(() => {
 
     <template v-if="canViewTable">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="text-sm text-gray-500">库存明细</span>
-        <DatePicker.RangePicker
-          v-model:value="filterDateRange"
-          format="YYYY-MM-DD"
-        />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="时间范围" />
         <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>

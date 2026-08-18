@@ -414,15 +414,18 @@ void loadGames();
     <template v-else>
       <div class="query-panel">
         <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-          <Input
-            v-model:value="gameQuery.PackageName"
-            allow-clear
-            class="!w-[280px]"
-            placeholder="请输入游戏名称"
-            @press-enter="searchGames"
-          >
-            <template #addonBefore>游戏名称</template>
-          </Input>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="gameQuery.PackageName"
+              allow-clear
+              class="!w-[280px]"
+              @press-enter="searchGames"
+              style="width: 220px"
+              placeholder="请输入游戏名称"
+            >
+              <template #addonBefore>游戏名称</template>
+            </Input>
+          </div>
           <Button type="primary" :loading="gameLoading" @click="searchGames">
             查询
           </Button>

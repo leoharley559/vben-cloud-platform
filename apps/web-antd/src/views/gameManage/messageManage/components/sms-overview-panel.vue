@@ -7,7 +7,6 @@ import { computed, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   InputNumber,
   message,
   Modal,
@@ -25,6 +24,7 @@ import {
   updateSmsAutoBuyApi,
 } from '#/api/gameManage/message-manage';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
@@ -114,8 +114,8 @@ const gridOptions: VxeTableGridOptions<DailyRow> = {
           return { items: [], total: 0 };
         }
         const result = await fetchSmsDailyListApi({
-          BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
-          EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
+          BeginTime: dateRange.value?.[0]?.unix() || '',
+          EndTime: dateRange.value?.[1]?.unix() || '',
           Page: page.currentPage,
           PageSize: page.pageSize,
         });
@@ -230,7 +230,7 @@ void loadSummary();
 
     <template v-if="canDaily">
       <div class="query-panel">
-        <DatePicker.RangePicker v-model:value="dateRange" />
+        <QueryDatetimeRangePicker v-model="dateRange" />
         <Space>
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>

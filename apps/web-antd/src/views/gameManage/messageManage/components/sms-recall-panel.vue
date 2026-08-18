@@ -8,7 +8,6 @@ import { computed, reactive, ref } from 'vue';
 import {
   Alert,
   Button,
-  DatePicker,
   Descriptions,
   Input,
   message,
@@ -27,6 +26,7 @@ import {
   updateRecallSwitchApi,
 } from '#/api/gameManage/message-manage';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'SmsRecallPanel' });
@@ -358,7 +358,7 @@ async function exportDetail() {
     </Space>
   </div>
   <div class="query-panel">
-    <DatePicker.RangePicker v-model:value="dateRange" />
+    <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
     <Space>
       <Button type="primary" @click="reloadFirstPage">查询</Button>
       <Button @click="reset">重置</Button>

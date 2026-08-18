@@ -752,6 +752,7 @@ async function handleSubmit() {
               v-if="form.ChannelIdMode === 1"
               v-model="form.ChannelIds"
               style="width: 100%"
+              placeholder="请输入渠道号"
             />
           </div>
         </Form.Item>
@@ -766,6 +767,7 @@ async function handleSubmit() {
               v-if="form.ShieldChannelIdMode === 1"
               v-model="form.ShieldChannelIds"
               style="width: 100%"
+              placeholder="请输入渠道号"
             />
           </div>
         </Form.Item>

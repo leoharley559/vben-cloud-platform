@@ -9,7 +9,6 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Input,
   message,
   Result,
@@ -21,6 +20,7 @@ import dayjs from 'dayjs';
 
 import { fetchEvoSideBetListApi } from '#/api/memberManage/game-record';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
@@ -103,10 +103,10 @@ function getQueryParams(extra?: {
 }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     ChannelIds: filterChannelIds.value,
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     IsBetTrade: filterIsBetTrade.value,
     LoginAccount: filterLoginAccount.value,
     PackageId: filterPackageId.value,
@@ -407,89 +407,105 @@ onMounted(async () => {
       <SummaryCards :items="summaryItems" />
 
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">产品</span>
-          <Select
-            v-model:value="filterPackageId"
-            allow-clear
-            class="w-36"
-            :options="
-              packageOptions.map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-            "
-            placeholder="全部产品"
-          />
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">产品</span>
+            <Select
+              v-model:value="filterPackageId"
+              allow-clear
+              class="w-36"
+              :options="
+                packageOptions.map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+              "
+              placeholder="请选择产品"
+            />
+          </Space.Compact>
         </div>
         <div class="flex w-52 flex-col gap-1">
-          <span class="text-sm text-gray-500">渠道号</span>
-          <ChannelSelect v-model="filterChannelIds" />
+          <Space.Compact>
+            <span class="query-field-addon">渠道号</span>
+            <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
+          </Space.Compact>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">游戏名称</span>
-          <Select
-            v-model:value="filterSubGameId"
-            allow-clear
-            class="w-44"
-            :options="subGameOptions"
-            placeholder="请选择"
-            show-search
-          />
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">游戏名称</span>
+            <Select
+              v-model:value="filterSubGameId"
+              allow-clear
+              class="w-44"
+              :options="subGameOptions"
+              placeholder="请选择游戏名称"
+              show-search
+            />
+          </Space.Compact>
         </div>
-        <div class="flex items-center gap-2">
-          <Input v-model:value="filterLoginAccount" allow-clear class="w-60" placeholder="请输入">
+        <div class="flex flex-col gap-1">
+          <Input v-model:value="filterLoginAccount" allow-clear class="w-60" placeholder="请输入游戏账号" >
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <div class="flex items-center gap-2">
-          <Input v-model:value="filterUsername" allow-clear class="w-60" placeholder="请输入">
+        <div class="flex flex-col gap-1">
+          <Input v-model:value="filterUsername" allow-clear class="w-60" placeholder="请输入代理账号" >
             <template #addonBefore>代理账号</template>
           </Input>
         </div>
-        <div class="flex items-center gap-2">
-          <Input v-model:value="filterTransactionId" allow-clear class="w-60" placeholder="请输入">
+        <div class="flex flex-col gap-1">
+          <Input v-model:value="filterTransactionId" allow-clear class="w-60" placeholder="请输入注单号" >
             <template #addonBefore>注单号</template>
           </Input>
         </div>
-        <div class="flex items-center gap-2">
-          <Input v-model:value="filterRoundId" allow-clear class="w-60" placeholder="请输入">
+        <div class="flex flex-col gap-1">
+          <Input v-model:value="filterRoundId" allow-clear class="w-60" placeholder="请输入牌局编号" >
             <template #addonBefore>牌局编号</template>
           </Input>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">状态</span>
-          <Select
-            v-model:value="filterStatus"
-            allow-clear
-            class="w-28"
-            :options="BET_STATUS_OPTIONS"
-            placeholder="全部"
-          />
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="filterStatus"
+              allow-clear
+              class="w-28"
+              :options="BET_STATUS_OPTIONS"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">时间类型</span>
-          <Select
-            v-model:value="filterSelectTimeType"
-            class="w-28"
-            :options="BET_TIME_TYPE_OPTIONS"
-          />
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">时间类型</span>
+            <Select
+              v-model:value="filterSelectTimeType"
+              class="w-28"
+              :options="BET_TIME_TYPE_OPTIONS"
+              placeholder="请选择时间类型"
+            />
+          </Space.Compact>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">是否投注</span>
-          <Select v-model:value="filterIsBetTrade" class="w-24" :options="BET_YES_NO_OPTIONS" />
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">是否投注</span>
+            <Select v-model:value="filterIsBetTrade" class="w-24" :options="BET_YES_NO_OPTIONS" placeholder="请选择是否投注" />
+          </Space.Compact>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">结算次数</span>
-          <Select v-model:value="filterSettleCount" class="w-24" :options="BET_YES_NO_OPTIONS" />
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">结算次数</span>
+            <Select v-model:value="filterSettleCount" class="w-24" :options="BET_YES_NO_OPTIONS" placeholder="请选择结算次数" />
+          </Space.Compact>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">数据类型</span>
-          <Select v-model:value="filterDataSearchType" class="w-28" :options="memberTypeOptions" />
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">数据类型</span>
+            <Select v-model:value="filterDataSearchType" class="w-28" :options="memberTypeOptions" placeholder="请选择数据类型" />
+          </Space.Compact>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">时间范围</span>
-          <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <div class="flex flex-col gap-1">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <Space>
           <Button :loading="loading" type="primary" @click="handleSearch"> 查询 </Button>

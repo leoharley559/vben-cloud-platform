@@ -10,7 +10,6 @@ import {
   Button,
   Card,
   Col,
-  DatePicker,
   Dropdown,
   Input,
   Menu,
@@ -20,6 +19,7 @@ import {
   Result,
   Row,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -29,6 +29,7 @@ import {
   updatePlayerAnalyzeStatusApi,
 } from '#/api/dataClose/player-report';
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
@@ -483,45 +484,57 @@ onMounted(() => {
   <Page v-if="canView" auto-content-height description="数据闭环 · 玩家分析" title="玩家分析">
     <Card>
       <ReportQueryCard title="查询条件">
-        <Input
-          v-model:value="filters.LoginAccount"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 220px"
-          @blur="normalizeLoginAccount"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-        <Select
-          v-model:value="filters.RegisterOrLogin"
-          :options="REGISTER_OR_LOGIN_OPTIONS"
-          placeholder="注册/登录用户"
-          style="min-width: 130px"
-        />
-        <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
-        <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
-        <Select
-          v-model:value="filters.PackageId"
-          allow-clear
-          :options="packageSelectOptions"
-          placeholder="产品"
-          style="min-width: 160px"
-          show-search
-          option-filter-prop="label"
-        />
-        <Select
-          v-model:value="filters.DataSearchType"
-          :options="DATA_TYPE_OPTIONS"
-          placeholder="数据类型"
-          style="min-width: 120px"
-        />
-        <DatePicker.RangePicker
-          v-model:value="filters.dateRange"
-          :disabled-date="disabledDate"
-          :placeholder="['开始日期', '结束日期']"
-          style="width: 260px"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.LoginAccount"
+            allow-clear
+            style="width: 220px"
+            @blur="normalizeLoginAccount"
+            @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">注册/登录用户</span>
+          <Select
+            v-model:value="filters.RegisterOrLogin"
+            :options="REGISTER_OR_LOGIN_OPTIONS"
+            style="min-width: 130px"
+            placeholder="请选择注册/登录用户"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">账号</span>
+          <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" placeholder="请输入渠道号" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filters.PackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            style="min-width: 160px"
+            show-search
+            option-filter-prop="label"
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="filters.DataSearchType"
+            :options="DATA_TYPE_OPTIONS"
+            style="min-width: 120px"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="filters.dateRange" precision="date" :disabled-date="disabledDate" />
         <template #actions>
           <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
           <Button @click="handleReset">重置</Button>

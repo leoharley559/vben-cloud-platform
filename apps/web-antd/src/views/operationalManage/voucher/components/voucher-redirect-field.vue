@@ -139,8 +139,8 @@ function handleTypeChange() {
         v-else
         v-model:value="param as string"
         :disabled="disabled"
-        placeholder="活动列表加载失败，可输入活动ID"
         style="width: 260px"
+        placeholder="请输入活动列表加载失败，可输入活动ID"
       />
     </template>
 
@@ -168,8 +168,8 @@ function handleTypeChange() {
         v-else
         v-model:value="param as string"
         :disabled="disabled"
-        placeholder="公告列表加载失败，可输入公告ID"
         style="width: 260px"
+        placeholder="请输入公告列表加载失败，可输入公告ID"
       />
     </template>
 
@@ -188,8 +188,8 @@ function handleTypeChange() {
         v-else
         v-model:value="param as string"
         :disabled="disabled"
-        placeholder="场馆列表加载失败，可输入场馆ID"
         style="width: 260px"
+        placeholder="请输入场馆列表加载失败，可输入场馆ID"
       />
     </template>
   </div>

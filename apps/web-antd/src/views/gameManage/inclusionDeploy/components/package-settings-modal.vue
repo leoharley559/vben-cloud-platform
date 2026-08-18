@@ -2150,8 +2150,8 @@ watch(
                 <Space.Compact block>
                   <Input
                     v-model:value="newSiteName"
-                    placeholder="站点名称"
                     @press-enter="addSite"
+                    placeholder="请输入站点名称"
                   />
                   <Button type="primary" :loading="siteSaving" @click="addSite">
                     添加

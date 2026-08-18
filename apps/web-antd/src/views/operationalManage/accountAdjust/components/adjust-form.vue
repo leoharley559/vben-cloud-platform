@@ -499,24 +499,29 @@ function exportFailItems() {
       <div class="mb-3 text-base font-medium">玩家信息</div>
       <template v-if="saveType === 'single'">
         <div class="mb-4 flex flex-wrap items-end gap-2">
-          <Input
-            v-model:value="loginAccount"
-            allow-clear
-            placeholder="请输入游戏账号"
-            style="width: 260px"
-            @blur="lookupPlayer"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-          <Select
-            v-model:value="packageName"
-            allow-clear
-            class="w-48"
-            :options="packageSelectOptions"
-            placeholder="请选择产品"
-            show-search
-            @change="lookupPlayer"
-          />
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="loginAccount"
+              allow-clear
+              style="width: 260px"
+              @blur="lookupPlayer"
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">产品</span>
+            <Select
+              v-model:value="packageName"
+              allow-clear
+              class="w-48"
+              :options="packageSelectOptions"
+              placeholder="请选择产品"
+              show-search
+              @change="lookupPlayer"
+            />
+          </Space.Compact>
           <Button :loading="lookupLoading" type="primary" @click="lookupPlayer">
             查询玩家
           </Button>

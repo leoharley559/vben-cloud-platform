@@ -3,7 +3,15 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import { Button, DatePicker, Input, InputNumber, Select } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  InputNumber,
+  Select,
+  Space,
+} from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -172,12 +180,16 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         placeholder="邀请人玩家ID"
         style="width: 150px"
       /> -->
-      <Input
-        v-model:value="filterInviterAccount"
-        allow-clear
-        placeholder="邀请人账号"
-        style="width: 180px"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterInviterAccount"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入邀请人账号"
+        >
+          <template #addonBefore>邀请人账号</template>
+        </Input>
+      </div>
       <!-- <InputNumber
         v-model:value="filterInviteeId"
         :controls="false"
@@ -186,12 +198,16 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         placeholder="被邀请人玩家ID"
         style="width: 160px"
       /> -->
-      <Input
-        v-model:value="filterInviteeAccount"
-        allow-clear
-        placeholder="被邀请人账号"
-        style="width: 180px"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterInviteeAccount"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入被邀请人账号"
+        >
+          <template #addonBefore>被邀请人账号</template>
+        </Input>
+      </div>
       <!-- <Select
         v-model:value="filterSource"
         allow-clear
@@ -199,23 +215,27 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         :options="INVITE_SOURCE_OPTIONS"
         placeholder="来源"
       /> -->
-      <Select
-        v-model:value="filterRewardStatus"
-        allow-clear
-        class="w-52"
-        :options="INVITE_RELATION_STATUS_OPTIONS"
-        placeholder="关系状态"
-      />
-      <Input
-        v-model:value="filterBusinessOrderId"
-        allow-clear
-        placeholder="业务单号"
-        style="width: 180px"
-      />
-      <DatePicker.RangePicker
-        v-model:value="bindTimeRange"
-        :placeholder="['绑定开始 UTC', '绑定结束 UTC']"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">关系状态</span>
+        <Select
+          v-model:value="filterRewardStatus"
+          allow-clear
+          class="w-52"
+          :options="INVITE_RELATION_STATUS_OPTIONS"
+          placeholder="请选择关系状态"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterBusinessOrderId"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入业务单号"
+        >
+          <template #addonBefore>业务单号</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="bindTimeRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
     </div>

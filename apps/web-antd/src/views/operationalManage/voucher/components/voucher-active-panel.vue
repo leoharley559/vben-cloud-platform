@@ -5,7 +5,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Dropdown,
   Input,
   Menu,
@@ -15,6 +14,8 @@ import {
   Switch,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -106,8 +107,8 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
   if (props.isHistory) {
     return {
       ...base,
-      ClaimBeginTime: begin ? begin.startOf('day').unix() : '',
-      ClaimEndTime: end ? end.endOf('day').unix() : '',
+      ClaimBeginTime: begin ? begin.unix() : '',
+      ClaimEndTime: end ? end.unix() : '',
       IsExp: false,
       IsHistory: true,
     };
@@ -115,8 +116,8 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 
   return {
     ...base,
-    EndTime: end ? end.endOf('day').unix() : '',
-    StartTime: begin ? begin.startOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
+    StartTime: begin ? begin.unix() : '',
   };
 }
 
@@ -301,30 +302,37 @@ function handleOffshelf(row: VoucherRow) {
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
       <div class="flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterId"
-          allow-clear
-          placeholder="票券ID"
-          style="width: 200px"
-        >
-          <template #addonBefore>票券ID</template>
-        </Input>
-        <Select
-          v-model:value="filterType"
-          allow-clear
-          class="w-36"
-          :options="typeFilterOptions"
-          placeholder="票券类型"
-        />
-        <Input
-          v-model:value="filterName"
-          allow-clear
-          placeholder="票券名称"
-          style="width: 240px"
-        >
-          <template #addonBefore>票券名称</template>
-        </Input>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterId"
+            allow-clear
+            style="width: 200px"
+            placeholder="请输入票券ID"
+          >
+            <template #addonBefore>票券ID</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">票券类型</span>
+          <Select
+            v-model:value="filterType"
+            allow-clear
+            class="w-36"
+            :options="typeFilterOptions"
+            placeholder="请选择票券类型"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterName"
+            allow-clear
+            style="width: 240px"
+            placeholder="请输入票券名称"
+          >
+            <template #addonBefore>票券名称</template>
+          </Input>
+        </div>
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
         <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>

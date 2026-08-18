@@ -9,12 +9,12 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Input,
   message,
   Pagination,
   Result,
   Select,
+  Space,
   Table,
   Tooltip,
 } from 'ant-design-vue';
@@ -22,6 +22,7 @@ import dayjs from 'dayjs';
 
 import { fetchUserWinLossListApi } from '#/api/dataClose/player-report';
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
@@ -421,57 +422,72 @@ onMounted(async () => {
   >
     <Card>
       <ReportQueryCard title="查询条件">
-        <Select
-          v-model:value="filters.VenuesTemp"
-          allow-clear
-          mode="multiple"
-          :max-tag-count="1"
-          :options="gameGroupOptions"
-          placeholder="场馆模版"
-          style="min-width: 180px"
-        />
-        <Input
-          v-model:value="filters.LoginAccount"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 220px"
-          @blur="normalizeLoginAccount"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-        <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
-        <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" />
-        <Select
-          v-model:value="filters.PackageId"
-          allow-clear
-          :options="packageSelectOptions"
-          placeholder="产品"
-          style="min-width: 160px"
-          show-search
-          option-filter-prop="label"
-        />
-        <Select
-          v-model:value="filters.AppUrl"
-          allow-clear
-          mode="multiple"
-          :max-tag-count="1"
-          :options="appStoreOptions"
-          placeholder="上架包"
-          style="min-width: 160px"
-        />
-        <Select
-          v-model:value="filters.ViewBy"
-          :options="VIEW_BY_OPTIONS"
-          placeholder="数据显示模式"
-          style="min-width: 150px"
-        />
-        <DatePicker.RangePicker
-          v-model:value="filters.dateRange"
-          :disabled-date="disabledDate"
-          :placeholder="['开始日期', '结束日期']"
-          style="width: 260px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">场馆模版</span>
+          <Select
+            v-model:value="filters.VenuesTemp"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="gameGroupOptions"
+            style="min-width: 180px"
+            placeholder="请选择场馆模版"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.LoginAccount"
+            allow-clear
+            style="width: 220px"
+            @blur="normalizeLoginAccount"
+            @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">账号</span>
+          <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" placeholder="请输入渠道号" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filters.PackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            style="min-width: 160px"
+            show-search
+            option-filter-prop="label"
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">上架包</span>
+          <Select
+            v-model:value="filters.AppUrl"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="appStoreOptions"
+            style="min-width: 160px"
+            placeholder="请选择上架包"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">数据显示模式</span>
+          <Select
+            v-model:value="filters.ViewBy"
+            :options="VIEW_BY_OPTIONS"
+            style="min-width: 150px"
+            placeholder="请选择数据显示模式"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="filters.dateRange" precision="date" :disabled-date="disabledDate" />
         <template #actions>
           <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
           <Button @click="handleReset">重置</Button>

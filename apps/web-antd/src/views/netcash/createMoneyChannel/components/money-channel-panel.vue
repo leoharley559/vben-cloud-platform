@@ -622,76 +622,93 @@ onBeforeUnmount(() => {
   <div>
     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
       <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <Input
-          v-model:value="filters.ChannelId"
-          allow-clear
-          placeholder="渠道号"
-          style="width: 210px"
-          @press-enter="search"
-        >
-          <template #addonBefore>渠道号</template>
-        </Input>
-        <Input
-          v-model:value="filters.ChannelName"
-          allow-clear
-          placeholder="渠道名称"
-          style="width: 230px"
-          @press-enter="search"
-        >
-          <template #addonBefore>渠道名称</template>
-        </Input>
-        <Input
-          v-model:value="filters.PromoterAdminUserName"
-          allow-clear
-          placeholder="代理账号"
-          style="width: 230px"
-          @press-enter="search"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-        <Input
-          v-model:value="filters.PromoterAdminName"
-          allow-clear
-          placeholder="代理名称"
-          style="width: 230px"
-          @press-enter="search"
-        >
-          <template #addonBefore>代理名称</template>
-        </Input>
-        <Input
-          v-model:value="filters.InvitationCode"
-          allow-clear
-          placeholder="邀请码"
-          style="width: 210px"
-          @press-enter="search"
-        >
-          <template #addonBefore>邀请码</template>
-        </Input>
-        <Input
-          v-model:value="filters.NetCashDomain"
-          allow-clear
-          placeholder="专属 APP 域名"
-          style="width: 260px"
-          @press-enter="search"
-        >
-          <template #addonBefore>专属 APP 域名</template>
-        </Input>
-        <Input
-          v-model:value="filters.NetCashH5Domain"
-          allow-clear
-          placeholder="专属 H5 域名"
-          style="width: 260px"
-          @press-enter="search"
-        >
-          <template #addonBefore>专属 H5 域名</template>
-        </Input>
-        <Select
-          v-model:value="filters.PushType"
-          allow-clear
-          :options="pushTypeOptions"
-          placeholder="推广模式"
-          style="width: 135px"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.ChannelId"
+            allow-clear
+            style="width: 210px"
+            @press-enter="search"
+            placeholder="请输入渠道号"
+          >
+            <template #addonBefore>渠道号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.ChannelName"
+            allow-clear
+            style="width: 230px"
+            @press-enter="search"
+            placeholder="请输入渠道名称"
+          >
+            <template #addonBefore>渠道名称</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.PromoterAdminUserName"
+            allow-clear
+            style="width: 230px"
+            @press-enter="search"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.PromoterAdminName"
+            allow-clear
+            style="width: 230px"
+            @press-enter="search"
+            placeholder="请输入代理名称"
+          >
+            <template #addonBefore>代理名称</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.InvitationCode"
+            allow-clear
+            style="width: 210px"
+            @press-enter="search"
+            placeholder="请输入邀请码"
+          >
+            <template #addonBefore>邀请码</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.NetCashDomain"
+            allow-clear
+            style="width: 260px"
+            @press-enter="search"
+            placeholder="请输入专属 APP 域名"
+          >
+            <template #addonBefore>专属 APP 域名</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.NetCashH5Domain"
+            allow-clear
+            style="width: 260px"
+            @press-enter="search"
+            placeholder="请输入专属 H5 域名"
+          >
+            <template #addonBefore>专属 H5 域名</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">推广模式</span>
+          <Select
+            v-model:value="filters.PushType"
+            allow-clear
+            :options="pushTypeOptions"
+            style="width: 135px"
+            placeholder="请选择推广模式"
+          />
+        </Space.Compact>
         <Select
           v-if="checkPermission(props.isTest ? 12_498 : 12_341)"
           v-model:value="filters.IsHiddenAgent"
@@ -707,13 +724,16 @@ onBeforeUnmount(() => {
           :options="visibilityOptions"
           style="width: 120px"
         />
-        <Select
-          v-model:value="filters.PackStatus"
-          allow-clear
-          :options="packStatusOptions"
-          placeholder="打包状态"
-          style="width: 120px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">打包状态</span>
+          <Select
+            v-model:value="filters.PackStatus"
+            allow-clear
+            :options="packStatusOptions"
+            style="width: 120px"
+            placeholder="请选择打包状态"
+          />
+        </Space.Compact>
         <Button type="primary" @click="search">查询</Button>
         <Button @click="reset">重置</Button>
       </div>

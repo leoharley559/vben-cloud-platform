@@ -7,7 +7,6 @@ import { computed, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   message,
   Radio,
@@ -23,6 +22,7 @@ import {
   fetchRegisterOtpDetailApi,
 } from '#/api/gameManage/message-manage';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -187,9 +187,9 @@ async function loadReport() {
   reportLoading.value = true;
   try {
     const result = await fetchRegisterOtpDailyApi({
-      BeginTime: reportRange.value?.[0]?.startOf('day').unix() || '',
+      BeginTime: reportRange.value?.[0]?.unix() || '',
       ChannelIds: reportFilters.ChannelIds,
-      EndTime: reportRange.value?.[1]?.endOf('day').unix() || '',
+      EndTime: reportRange.value?.[1]?.unix() || '',
       PackageIds: reportFilters.PackageIds,
       Page: 1,
       PageSize: 9999,
@@ -240,9 +240,9 @@ const detailGridOptions: VxeTableGridOptions<OtpRow> = {
     ajax: {
       query: async ({ page }) => {
         const result = await fetchRegisterOtpDetailApi({
-          BeginTime: detailRange.value?.[0]?.startOf('day').unix() || '',
+          BeginTime: detailRange.value?.[0]?.unix() || '',
           ChannelIds: detailFilters.ChannelIds,
-          EndTime: detailRange.value?.[1]?.endOf('day').unix() || '',
+          EndTime: detailRange.value?.[1]?.unix() || '',
           IsRegistered: detailFilters.IsRegistered,
           PackageIds: detailFilters.PackageIds,
           Page: page.currentPage,
@@ -353,9 +353,9 @@ function exportReport() {
 
 async function exportDetail() {
   const result = await fetchRegisterOtpDetailApi({
-    BeginTime: detailRange.value?.[0]?.startOf('day').unix() || '',
+    BeginTime: detailRange.value?.[0]?.unix() || '',
     ChannelIds: detailFilters.ChannelIds,
-    EndTime: detailRange.value?.[1]?.endOf('day').unix() || '',
+    EndTime: detailRange.value?.[1]?.unix() || '',
     IsRegistered: detailFilters.IsRegistered,
     PackageIds: detailFilters.PackageIds,
     Page: 1,
@@ -408,21 +408,26 @@ void loadReport();
     <template v-if="activeType === 1">
       <div class="query-panel">
         <div class="query-fields">
-          <Select
-            v-model:value="reportFilters.PackageIds"
-            :options="packageOptions"
-            placeholder="选择产品"
-            show-search
-          />
-          <Input
-            v-model:value="reportFilters.ChannelIds"
-            allow-clear
-            placeholder="渠道号"
-            style="width: 220px"
-          >
-            <template #addonBefore>渠道号</template>
-          </Input>
-          <DatePicker.RangePicker v-model:value="reportRange" />
+          <Space.Compact>
+            <span class="query-field-addon">选择产品</span>
+            <Select
+              v-model:value="reportFilters.PackageIds"
+              :options="packageOptions"
+              show-search
+              placeholder="请选择选择产品"
+            />
+          </Space.Compact>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="reportFilters.ChannelIds"
+              allow-clear
+              style="width: 220px"
+              placeholder="请输入渠道号"
+            >
+              <template #addonBefore>渠道号</template>
+            </Input>
+          </div>
+          <QueryDatetimeRangePicker v-model="reportRange" />
         </div>
         <Space>
           <Button type="primary" :loading="reportLoading" @click="loadReport">
@@ -543,34 +548,44 @@ void loadReport();
     <template v-else>
       <div class="query-panel">
         <div class="detail-query-fields">
-          <Select
-            v-model:value="detailFilters.PackageIds"
-            :options="packageOptions"
-            placeholder="选择产品"
-            show-search
-          />
-          <Input
-            v-model:value="detailFilters.ChannelIds"
-            allow-clear
-            placeholder="渠道号"
-            style="width: 220px"
-          >
-            <template #addonBefore>渠道号</template>
-          </Input>
-          <Input
-            v-model:value="detailFilters.PhoneNum"
-            allow-clear
-            placeholder="手机号"
-            style="width: 210px"
-          >
-            <template #addonBefore>手机号</template>
-          </Input>
-          <Select
-            v-model:value="detailFilters.RegisterType"
-            mode="multiple"
-            :options="deviceOptions"
-            placeholder="注册来源"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">选择产品</span>
+            <Select
+              v-model:value="detailFilters.PackageIds"
+              :options="packageOptions"
+              show-search
+              placeholder="请选择选择产品"
+            />
+          </Space.Compact>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="detailFilters.ChannelIds"
+              allow-clear
+              style="width: 220px"
+              placeholder="请输入渠道号"
+            >
+              <template #addonBefore>渠道号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="detailFilters.PhoneNum"
+              allow-clear
+              style="width: 210px"
+              placeholder="请输入手机号"
+            >
+              <template #addonBefore>手机号</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">注册来源</span>
+            <Select
+              v-model:value="detailFilters.RegisterType"
+              mode="multiple"
+              :options="deviceOptions"
+              placeholder="请选择注册来源"
+            />
+          </Space.Compact>
           <Select
             v-model:value="detailFilters.IsRegistered"
             :options="[
@@ -579,7 +594,7 @@ void loadReport();
               { label: '否', value: 2 },
             ]"
           />
-          <DatePicker.RangePicker v-model:value="detailRange" />
+          <QueryDatetimeRangePicker v-model="detailRange" />
         </div>
         <Space>
           <Button type="primary" @click="reloadDetail">查询</Button>

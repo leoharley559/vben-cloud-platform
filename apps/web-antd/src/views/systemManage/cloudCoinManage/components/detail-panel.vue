@@ -5,7 +5,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Result,
   Space,
 } from 'ant-design-vue';
@@ -14,6 +13,7 @@ import dayjs from 'dayjs';
 import { fetchCloudCoinDetailListApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
@@ -89,9 +89,9 @@ function resolveTotalCloudCoin(
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     ChannelName: '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     Keyword: '',
     PromoterName: '',
   };
@@ -179,10 +179,7 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable" class="space-y-4">
     <div class="flex flex-wrap items-center gap-2">
-      <DatePicker.RangePicker
-        v-model:value="filterDateRange"
-        format="YYYY-MM-DD"
-      />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Space>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>

@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -23,6 +22,7 @@ import {
   fetchBonusAuditListApi,
 } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
@@ -171,10 +171,10 @@ function getQueryParams() {
   const [approveBegin, approveEnd] = filterApproveDateRange.value || [];
   return {
     ActivityType: 10009,
-    ApplyBeginTime: applyBegin ? applyBegin.startOf('day').unix() : '',
-    ApplyEndTime: applyEnd ? applyEnd.endOf('day').unix() : '',
-    ApproveBeginTime: approveBegin ? approveBegin.startOf('day').unix() : '',
-    ApproveEndTime: approveEnd ? approveEnd.endOf('day').unix() : '',
+    ApplyBeginTime: applyBegin ? applyBegin.unix() : '',
+    ApplyEndTime: applyEnd ? applyEnd.unix() : '',
+    ApproveBeginTime: approveBegin ? approveBegin.unix() : '',
+    ApproveEndTime: approveEnd ? approveEnd.unix() : '',
     ApproveStatus: filterApproveStatus.value,
     AppUrl: filterAppUrl.value,
     ChannelIds: filterChannelIds.value,
@@ -500,99 +500,121 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @change="normalizeLoginAccount"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Input
-        v-model:value="filterPackageName"
-        allow-clear
-        placeholder="产品名称"
-        style="width: 180px"
-      >
-        <template #addonBefore>产品名称</template>
-      </Input>
-      <Input
-        v-model:value="filterTitle"
-        allow-clear
-        placeholder="红利标题"
-        style="width: 180px"
-      >
-        <template #addonBefore>红利标题</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          @change="normalizeLoginAccount"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPackageName"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入产品名称"
+        >
+          <template #addonBefore>产品名称</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterTitle"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入红利标题"
+        >
+          <template #addonBefore>红利标题</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterPageType"
         :options="pageTypeOptions"
         style="width: 120px"
       />
-      <Input
-        v-model:value="filterPageTitle"
-        allow-clear
-        placeholder="活动分页"
-        style="width: 180px"
-      >
-        <template #addonBefore>活动分页</template>
-      </Input>
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单号"
-        style="width: 200px"
-      >
-        <template #addonBefore>订单号</template>
-      </Input>
-      <ChannelSelect v-model="filterChannelIds" style="width: 220px" />
-      <Select
-        v-model:value="filterAppUrl"
-        allow-clear
-        show-search
-        :options="appUrlOptions"
-        placeholder="上架包"
-        style="width: 180px"
-        :filter-option="
-          (input, option) =>
-            String(option?.label ?? '')
-              .toLowerCase()
-              .includes(input.toLowerCase())
-        "
-      />
-      <Select
-        v-model:value="filterPlayerStatus"
-        :options="playerStatusOptions"
-        style="width: 120px"
-      />
-      <Select
-        v-model:value="filterVipLevel"
-        :options="VIP_LEVEL_OPTIONS"
-        style="width: 100px"
-      />
-      <Select
-        v-model:value="filterApproveStatus"
-        :options="BONUS_EVENT_APPROVE_STATUS_OPTIONS"
-        style="width: 120px"
-      />
-      <Select
-        v-model:value="filterRiskStatus"
-        :options="BONUS_EVENT_RISK_STATUS_OPTIONS"
-        style="width: 120px"
-      />
-      <div class="flex items-center gap-1">
-        <span class="whitespace-nowrap text-sm text-gray-500">申请时间</span>
-        <DatePicker.RangePicker
-          v-model:value="filterApplyDateRange"
-        />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPageTitle"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入活动分页"
+        >
+          <template #addonBefore>活动分页</template>
+        </Input>
       </div>
-      <div class="flex items-center gap-1">
-        <span class="whitespace-nowrap text-sm text-gray-500">审核时间</span>
-        <DatePicker.RangePicker
-          v-model:value="filterApproveDateRange"
-        />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 200px"
+          placeholder="请输入订单号"
+        >
+          <template #addonBefore>订单号</template>
+        </Input>
       </div>
+      <Space.Compact>
+        <span class="query-field-addon">渠道号</span>
+        <ChannelSelect v-model="filterChannelIds" style="width: 220px" placeholder="请输入渠道号" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">上架包</span>
+        <Select
+          v-model:value="filterAppUrl"
+          allow-clear
+          show-search
+          :options="appUrlOptions"
+          style="width: 180px"
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
+          placeholder="请选择上架包"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">玩家状态</span>
+        <Select
+          v-model:value="filterPlayerStatus"
+          :options="playerStatusOptions"
+          style="width: 120px"
+          placeholder="请选择玩家状态"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">VIP等级</span>
+        <Select
+          v-model:value="filterVipLevel"
+          :options="VIP_LEVEL_OPTIONS"
+          style="width: 100px"
+          placeholder="请选择VIP等级"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">审核状态</span>
+        <Select
+          v-model:value="filterApproveStatus"
+          :options="BONUS_EVENT_APPROVE_STATUS_OPTIONS"
+          style="width: 120px"
+          placeholder="请选择审核状态"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">风控状态</span>
+        <Select
+          v-model:value="filterRiskStatus"
+          :options="BONUS_EVENT_RISK_STATUS_OPTIONS"
+          style="width: 120px"
+          placeholder="请选择风控状态"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="filterApplyDateRange" label="申请时间" />
+      <QueryDatetimeRangePicker v-model="filterApproveDateRange" label="审核时间" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>

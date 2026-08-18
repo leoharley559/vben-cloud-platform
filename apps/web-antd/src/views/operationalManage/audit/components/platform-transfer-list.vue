@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -23,6 +22,7 @@ import {
   manualPlatformTransferApi,
 } from '#/api/operationManage/platform-transfer';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
@@ -90,8 +90,8 @@ function normalizeLoginAccount() {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     InGameId: filterInGameId.value,
     LoginAccount: filterLoginAccount.value
       .trim()
@@ -328,23 +328,27 @@ onMounted(async () => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @change="normalizeLoginAccount"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="流水号"
-        style="width: 200px"
-      >
-        <template #addonBefore>流水号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          @change="normalizeLoginAccount"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 200px"
+          placeholder="请输入流水号"
+        >
+          <template #addonBefore>流水号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterType"
         :options="[
@@ -354,34 +358,40 @@ onMounted(async () => {
         ]"
         style="width: 120px"
       />
-      <Select
-        v-model:value="filterOutGameId"
-        allow-clear
-        show-search
-        :options="gameOptions"
-        placeholder="转出账户"
-        style="width: 160px"
-        :filter-option="
-          (input, option) =>
-            String(option?.label ?? '')
-              .toLowerCase()
-              .includes(input.toLowerCase())
-        "
-      />
-      <Select
-        v-model:value="filterInGameId"
-        allow-clear
-        show-search
-        :options="gameOptions"
-        placeholder="转入账户"
-        style="width: 160px"
-        :filter-option="
-          (input, option) =>
-            String(option?.label ?? '')
-              .toLowerCase()
-              .includes(input.toLowerCase())
-        "
-      />
+      <Space.Compact>
+        <span class="query-field-addon">转出账户</span>
+        <Select
+          v-model:value="filterOutGameId"
+          allow-clear
+          show-search
+          :options="gameOptions"
+          style="width: 160px"
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
+          placeholder="请选择转出账户"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">转入账户</span>
+        <Select
+          v-model:value="filterInGameId"
+          allow-clear
+          show-search
+          :options="gameOptions"
+          style="width: 160px"
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
+          placeholder="请选择转入账户"
+        />
+      </Space.Compact>
       <Select
         v-model:value="filterState"
         :options="[
@@ -393,10 +403,7 @@ onMounted(async () => {
         ]"
         style="width: 140px"
       />
-      <DatePicker.RangePicker
-        v-model:value="filterDateRange"
-        allow-clear
-      />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>

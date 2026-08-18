@@ -13,7 +13,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import {
   Button,
   Card,
-  DatePicker,
   Empty,
   Form,
   Image,
@@ -29,6 +28,8 @@ import {
   Tag,
   Upload,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import {
   createPromotionMaterialApi,
@@ -177,8 +178,8 @@ async function loadList() {
 
 function search() {
   if (dateRange.value?.length === 2) {
-    query.BeginTime = dateRange.value?.[0]?.startOf('day').unix() || '';
-    query.EndTime = dateRange.value?.[1]?.endOf('day').unix() || '';
+    query.BeginTime = dateRange.value?.[0]?.unix() || '';
+    query.EndTime = dateRange.value?.[1]?.unix() || '';
   } else {
     query.BeginTime = undefined;
     query.EndTime = undefined;
@@ -492,43 +493,58 @@ onMounted(async () => {
   <div v-if="checkPermission(10_571)" class="material-page">
     <Card size="small" class="filter-card">
       <div class="filter-grid">
-        <Select
-          v-model:value="query.PackageId"
-          allow-clear
-          :options="packages"
-          placeholder="产品包"
-        />
-        <Select
-          v-model:value="query.ThemeId"
-          allow-clear
-          :options="options(themes)"
-          placeholder="主题"
-        />
-        <Select
-          v-model:value="query.SizeId"
-          allow-clear
-          :options="options(sizes)"
-          placeholder="尺寸"
-        />
-        <Select
-          v-if="langGroups.length > 0"
-          v-model:value="query.LangGroupId"
-          allow-clear
-          :options="
-            langGroups.map((item) => ({ label: item.Name, value: item.Id }))
-          "
-          placeholder="语言组"
-        />
-        <Select
-          v-model:value="query.Status"
-          allow-clear
-          :options="[
-            { label: '启用', value: 1 },
-            { label: '停用', value: 0 },
-          ]"
-          placeholder="状态"
-        />
-        <DatePicker.RangePicker v-model:value="dateRange" />
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="query.PackageId"
+            allow-clear
+            :options="packages"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">主题</span>
+          <Select
+            v-model:value="query.ThemeId"
+            allow-clear
+            :options="options(themes)"
+            placeholder="请选择主题"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">尺寸</span>
+          <Select
+            v-model:value="query.SizeId"
+            allow-clear
+            :options="options(sizes)"
+            placeholder="请选择尺寸"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">语言组</span>
+          <Select
+            v-if="langGroups.length > 0"
+            v-model:value="query.LangGroupId"
+            allow-clear
+            :options="
+              langGroups.map((item) => ({ label: item.Name, value: item.Id }))
+            "
+            placeholder="请选择语言组"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="query.Status"
+            allow-clear
+            :options="[
+              { label: '启用', value: 1 },
+              { label: '停用', value: 0 },
+            ]"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="dateRange" />
         <Select
           v-model:value="query.Sort"
           :options="[

@@ -9,7 +9,6 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Input,
   message,
   Modal,
@@ -27,6 +26,7 @@ import {
   startCloseOrderApi,
 } from '#/api/promotion/close-order';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   CLOSE_ORDER_STATUS_COLOR,
@@ -379,55 +379,62 @@ onMounted(() => {
   >
     <Card class="close-order-card" :bordered="false">
       <div class="query-panel">
-        <Input
-          v-model:value="filterAdminUserName"
-          allow-clear
-          placeholder="请输入推广账号"
-          style="width: 250px"
-          @keydown.space.prevent
-          @press-enter="reloadGrid"
-        >
-          <template #addonBefore>推广账号</template>
-        </Input>
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单编号"
-          style="width: 250px"
-          @keydown.space.prevent
-          @press-enter="reloadGrid"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          class="w-48"
-          mode="multiple"
-          :options="[
-            { label: '申请中', value: 1 },
-            { label: '处理中', value: 2 },
-            { label: '已完成', value: 3 },
-            { label: '已拒绝', value: 4 },
-          ]"
-          placeholder="状态"
-        />
-        <DatePicker.RangePicker
-          v-model:value="filterDateRange"
-          format="YYYY-MM-DD"
-        />
-        <Select
-          v-model:value="moreColumns"
-          class="w-52"
-          mode="multiple"
-          placeholder="显示更多列"
-          @change="handleMoreColumnsChange"
-          :options="[
-            { label: '接收申请时间', value: 0 },
-            { label: '接收申请账号', value: 1 },
-            { label: '完成时间', value: 2 },
-          ]"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAdminUserName"
+            allow-clear
+            style="width: 250px"
+            @keydown.space.prevent
+            @press-enter="reloadGrid"
+            placeholder="请输入推广账号"
+          >
+            <template #addonBefore>推广账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            style="width: 250px"
+            @keydown.space.prevent
+            @press-enter="reloadGrid"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            class="w-48"
+            mode="multiple"
+            :options="[
+              { label: '申请中', value: 1 },
+              { label: '处理中', value: 2 },
+              { label: '已完成', value: 3 },
+              { label: '已拒绝', value: 4 },
+            ]"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
+        <Space.Compact>
+          <span class="query-field-addon">显示更多列</span>
+          <Select
+            v-model:value="moreColumns"
+            class="w-52"
+            mode="multiple"
+            @change="handleMoreColumnsChange"
+            :options="[
+              { label: '接收申请时间', value: 0 },
+              { label: '接收申请账号', value: 1 },
+              { label: '完成时间', value: 2 },
+            ]"
+            placeholder="请选择显示更多列"
+          />
+        </Space.Compact>
         <Button type="primary" @click="reloadGrid">查询</Button>
         <Button @click="handleReset">重置</Button>
       </div>

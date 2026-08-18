@@ -3,12 +3,18 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import { Button, DatePicker, Input, Select } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  Select,
+  Space,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchAppointmentWithdrawListApi } from '#/api/operationManage/activity';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -123,50 +129,53 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
     </div>
     <template v-else>
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="订单号"
-          style="width: 230px"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 240px"
-          @change="
-            filterLoginAccount = String(filterLoginAccount || '')
-              .trim()
-              .toLowerCase()
-          "
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          class="w-40"
-          :options="packageOptions"
-          placeholder="产品包"
-        />
-        <Input
-          v-model:value="filterWithdrawOrderId"
-          allow-clear
-          placeholder="取款订单号"
-          style="width: 260px"
-        >
-          <template #addonBefore>取款订单号</template>
-        </Input>
-        <DatePicker.RangePicker
-          v-model:value="withdrawTimeRange"
-          :placeholder="['取款开始', '取款结束']"
-        />
-        <DatePicker.RangePicker
-          v-model:value="awardTimeRange"
-          :placeholder="['派奖开始', '派奖结束']"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            style="width: 230px"
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            style="width: 240px"
+            @change="
+              filterLoginAccount = String(filterLoginAccount || '')
+                .trim()
+                .toLowerCase()
+            "
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            class="w-40"
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterWithdrawOrderId"
+            allow-clear
+            style="width: 260px"
+            placeholder="请输入取款订单号"
+          >
+            <template #addonBefore>取款订单号</template>
+          </Input>
+        </div>
+        <QueryDatetimeRangePicker v-model="withdrawTimeRange" />
+        <QueryDatetimeRangePicker v-model="awardTimeRange" />
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button
           @click="

@@ -16,7 +16,6 @@ import { computed, reactive, ref } from 'vue';
 import {
   Alert,
   Button,
-  DatePicker,
   Form,
   Input,
   message,
@@ -28,6 +27,8 @@ import {
   Tag,
   Upload,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import { getProjectConfigApi } from '#/api/core/project';
 import {
@@ -389,26 +390,29 @@ void loadList();
     <template v-else>
       <div class="query-panel">
         <div class="query-fields">
-          <Input
-            v-model:value="filters.AppName"
-            allow-clear
-            placeholder="请输入上架包名称"
-            @press-enter="handleSearch"
-          >
-            <template #addonBefore>上架包名称</template>
-          </Input>
-          <Input
-            v-model:value="filters.AppUrl"
-            allow-clear
-            placeholder="请输入上架包编码"
-            @press-enter="handleSearch"
-          >
-            <template #addonBefore>上架包编码</template>
-          </Input>
-          <DatePicker.RangePicker
-            v-model:value="filters.DateRange"
-            class="w-full"
-          />
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.AppName"
+              allow-clear
+              @press-enter="handleSearch"
+              style="width: 220px"
+              placeholder="请输入上架包名称"
+            >
+              <template #addonBefore>上架包名称</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.AppUrl"
+              allow-clear
+              @press-enter="handleSearch"
+              style="width: 220px"
+              placeholder="请输入上架包编码"
+            >
+              <template #addonBefore>上架包编码</template>
+            </Input>
+          </div>
+          <QueryDatetimeRangePicker v-model="filters.DateRange" />
         </div>
         <div class="query-actions">
           <Space>

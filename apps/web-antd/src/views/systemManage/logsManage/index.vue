@@ -6,7 +6,9 @@ import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
-import { Button, Card, DatePicker, message, Result, Select, Space } from 'ant-design-vue';
+import { Button, Card, message, Result, Select, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -85,9 +87,9 @@ function getQueryParams() {
   const fallback = getTodayRangeSeconds();
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     CreateAdminId: filterCreateAdminId.value || '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     LogTypeId: filterLogTypeId.value || '',
   };
 }
@@ -254,21 +256,27 @@ onMounted(async () => {
   <Page v-if="canViewList" auto-content-height description="系统管理 · 日志管理" title="日志管理">
     <Card>
       <div class="mb-4 flex flex-wrap items-center gap-2">
-        <Select
-          v-model:value="filterCreateAdminId"
-          :options="userOptions"
-          placeholder="操作人员"
-          show-search
-          style="width: 180px"
-        />
-        <Select
-          v-model:value="filterLogTypeId"
-          :options="logTypeOptions"
-          placeholder="日志类型"
-          show-search
-          style="width: 180px"
-        />
-        <DatePicker.RangePicker v-model:value="filterDateRange" format="YYYY-MM-DD" />
+        <Space.Compact>
+          <span class="query-field-addon">操作人员</span>
+          <Select
+            v-model:value="filterCreateAdminId"
+            :options="userOptions"
+            show-search
+            style="width: 180px"
+            placeholder="请选择操作人员"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">日志类型</span>
+          <Select
+            v-model:value="filterLogTypeId"
+            :options="logTypeOptions"
+            show-search
+            style="width: 180px"
+            placeholder="请选择日志类型"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
         <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>

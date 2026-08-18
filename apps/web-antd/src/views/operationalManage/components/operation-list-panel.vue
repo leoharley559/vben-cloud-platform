@@ -4,11 +4,18 @@ import type { CloudListResult } from '#/types/operation-manage';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Input, Select } from 'ant-design-vue';
+import {
+  Button,
+  DatePicker,
+  Input,
+  Select,
+  Space,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -122,8 +129,8 @@ function buildDateQuery(query: Record<string, unknown>) {
       query[beginKey] = begin.format('YYYY-MM-DD');
       query[endKey] = end.format('YYYY-MM-DD');
     } else {
-      query[beginKey] = begin.startOf('day').unix();
-      query[endKey] = end.endOf('day').unix();
+      query[beginKey] = begin.unix();
+      query[endKey] = end.unix();
     }
   }
 }
@@ -250,47 +257,56 @@ defineExpose({ reload: () => gridApi.reload() });
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-if="enabledFilters.has('login')"
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 260px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Input
-        v-if="enabledFilters.has('username')"
-        v-model:value="filterUsername"
-        allow-clear
-        placeholder="账号"
-        style="width: 230px"
-      >
-        <template #addonBefore>账号</template>
-      </Input>
-      <Select
-        v-if="enabledFilters.has('package')"
-        v-model:value="filterPackageId"
-        allow-clear
-        class="w-40"
-        :options="packageOptions"
-        placeholder="产品包"
-      />
-      <Select
-        v-if="enabledFilters.has('status') && config.statusOptions?.length"
-        v-model:value="filterStatus"
-        allow-clear
-        class="w-32"
-        :options="config.statusOptions"
-        placeholder="状态"
-      />
+      <div v-if="enabledFilters.has('login')" class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 260px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div v-if="enabledFilters.has('username')" class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterUsername"
+          allow-clear
+          style="width: 230px"
+          placeholder="请输入账号"
+        >
+          <template #addonBefore>账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品包</span>
+        <Select
+          v-if="enabledFilters.has('package')"
+          v-model:value="filterPackageId"
+          allow-clear
+          class="w-40"
+          :options="packageOptions"
+          placeholder="请选择产品包"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">状态</span>
+        <Select
+          v-if="enabledFilters.has('status') && config.statusOptions?.length"
+          v-model:value="filterStatus"
+          allow-clear
+          class="w-32"
+          :options="config.statusOptions"
+          placeholder="请选择状态"
+        />
+      </Space.Compact>
       <DatePicker
         v-if="enabledFilters.has('date') && isSingleDate"
         v-model:value="filterSingleDate"
       />
-      <DatePicker.RangePicker
-        v-else-if="enabledFilters.has('date')"
-        v-model:value="filterDateRange"
+      <QueryDatetimeRangePicker
+        v-if="enabledFilters.has('date') && !isSingleDate"
+        v-model="filterDateRange"
+        :precision="config.dateValueFormat === 'dateString' ? 'date' : 'datetime'"
       />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>

@@ -6,7 +6,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   Modal,
@@ -15,6 +14,8 @@ import {
   Space,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -332,32 +333,36 @@ onMounted(() => {
 <template>
   <div v-if="canView">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 240px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Input
-        v-model:value="filterKeyword"
-        allow-clear
-        placeholder="卡号关键字"
-        style="width: 260px"
-      >
-        <template #addonBefore>卡号关键字</template>
-      </Input>
-      <Select
-        v-model:value="filterSourceType"
-        :options="sourceTypeOptions"
-        placeholder="来源"
-        style="width: 140px"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filterDateRange"
-        allow-clear
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterKeyword"
+          allow-clear
+          style="width: 260px"
+          placeholder="请输入卡号关键字"
+        >
+          <template #addonBefore>卡号关键字</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">来源</span>
+        <Select
+          v-model:value="filterSourceType"
+          :options="sourceTypeOptions"
+          style="width: 140px"
+          placeholder="请选择来源"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Space>
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button @click="resetFilters">重置</Button>

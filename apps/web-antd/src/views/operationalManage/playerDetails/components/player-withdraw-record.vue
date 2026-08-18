@@ -4,7 +4,9 @@ import type { WithdrawListItem } from '#/types/operation-manage';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Input, Select, Space, Tag } from 'ant-design-vue';
+import { Button, Input, Select, Space, Tag } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchWithdrawListApi } from '#/api/operationManage/withdraw';
@@ -28,7 +30,7 @@ const defaultRange = getLast7CalendarDaysRangeSeconds();
 const totalAmount = ref(0);
 
 const filterOrderId = ref('');
-const filterWithdrawStatus = ref<number | string>('');
+const filterWithdrawStatus = ref<number | string>();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
@@ -48,12 +50,12 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     OrderId: filterOrderId.value,
     PlayerId: String(props.playerId),
     SelectTimeType: 1,
-    WithdrawStatus: filterWithdrawStatus.value,
+    WithdrawStatus: filterWithdrawStatus.value ?? '',
   };
 }
 
@@ -167,7 +169,7 @@ function handleSearch() {
 
 function handleReset() {
   filterOrderId.value = '';
-  filterWithdrawStatus.value = '';
+  filterWithdrawStatus.value = undefined;
   filterDateRange.value = [
     dayjs.unix(defaultRange.BeginTime),
     dayjs.unix(defaultRange.EndTime),
@@ -194,30 +196,33 @@ onMounted(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 200px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">状态</span>
-        <Select
-          v-model:value="filterWithdrawStatus"
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
           allow-clear
-          :options="WITHDRAW_STATUS_OPTIONS"
-          placeholder="全部"
-          style="width: 140px"
-        />
+          style="width: 200px"
+          @press-enter="handleSearch"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">日期</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterWithdrawStatus"
+            allow-clear
+            :options="WITHDRAW_STATUS_OPTIONS"
+            style="width: 140px"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" />
       </div>
 
       <Space>

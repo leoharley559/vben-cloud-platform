@@ -3,7 +3,11 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import { Button, Select } from 'ant-design-vue';
+import {
+  Button,
+  Select,
+  Space,
+} from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchActivityOwnTemplateListApi } from '#/api/operationManage/activity';
@@ -64,13 +68,16 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Select
-        v-model:value="filterType"
-        allow-clear
-        class="w-48"
-        :options="typeOptions"
-        placeholder="活动类型"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">活动类型</span>
+        <Select
+          v-model:value="filterType"
+          allow-clear
+          class="w-48"
+          :options="typeOptions"
+          placeholder="请选择活动类型"
+        />
+      </Space.Compact>
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button disabled type="primary">添加模板</Button>
     </div>

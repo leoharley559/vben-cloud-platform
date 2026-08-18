@@ -7,7 +7,6 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Checkbox,
-  DatePicker,
   Input,
   Space,
   Tooltip,
@@ -21,6 +20,7 @@ import {
 } from '#/api/memberManage/bank-card';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -87,8 +87,8 @@ function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     BankCardNum: filterBankCardNum.value.trim() || undefined,
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     // 对齐旧站 keyup：账号转小写去空格
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value) || undefined,
     ...extra,
@@ -215,9 +215,9 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          placeholder="请输入"
           style="width: 240px"
           @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
         </Input>
@@ -226,16 +226,16 @@ onMounted(() => {
         <Input
           v-model:value="filterBankCardNum"
           allow-clear
-          placeholder="请输入"
           style="width: 260px"
           @press-enter="handleSearch"
+          placeholder="请输入银行卡号"
         >
           <template #addonBefore>银行卡号</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">添加时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+      
       </div>
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">

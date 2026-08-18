@@ -340,33 +340,45 @@ function handleReset() {
   <div>
     <div class="query-panel">
       <div class="query-fields">
-        <Input
-          v-model:value="filters.SubGameId"
-          allow-clear
-          placeholder="请输入游戏 ID"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>游戏 ID</template>
-        </Input>
-        <Input
-          v-model:value="filters.SubGameName"
-          allow-clear
-          placeholder="请输入游戏名称"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>游戏名称</template>
-        </Input>
-        <Select
-          v-model:value="filters.SearchTag"
-          :options="searchTagOptions"
-          placeholder="游戏标签"
-        />
-        <Select
-          v-model:value="filters.GameId"
-          :options="venueOptions"
-          placeholder="场馆名称"
-          show-search
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.SubGameId"
+            allow-clear
+            @press-enter="handleSearch"
+            style="width: 220px"
+            placeholder="请输入游戏 ID"
+          >
+            <template #addonBefore>游戏 ID</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.SubGameName"
+            allow-clear
+            @press-enter="handleSearch"
+            style="width: 220px"
+            placeholder="请输入游戏名称"
+          >
+            <template #addonBefore>游戏名称</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">游戏标签</span>
+          <Select
+            v-model:value="filters.SearchTag"
+            :options="searchTagOptions"
+            placeholder="请选择游戏标签"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">场馆名称</span>
+          <Select
+            v-model:value="filters.GameId"
+            :options="venueOptions"
+            show-search
+            placeholder="请选择场馆名称"
+          />
+        </Space.Compact>
       </div>
       <Space wrap>
         <Button type="primary" @click="handleSearch">查询</Button>

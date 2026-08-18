@@ -8,7 +8,6 @@ import { computed, reactive, ref } from 'vue';
 import {
   Alert,
   Button,
-  DatePicker,
   Form,
   Input,
   message,
@@ -18,6 +17,8 @@ import {
   Switch,
   Tag,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -233,7 +234,7 @@ async function submitEdit() {
           { label: '停用', value: 2 },
         ]"
       />
-      <DatePicker.RangePicker v-model:value="dateRange" />
+      <QueryDatetimeRangePicker v-model="dateRange" />
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
     </Space>

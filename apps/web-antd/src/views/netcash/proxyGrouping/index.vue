@@ -14,7 +14,6 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Form,
   Input,
   message,
@@ -25,6 +24,8 @@ import {
   Table,
   Tree,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -283,8 +284,8 @@ function applyDateRange() {
     query.GroupEndTime = '';
     return;
   }
-  query.GroupBeginTime = dateRange.value?.[0]?.startOf('day').unix() || '';
-  query.GroupEndTime = dateRange.value?.[1]?.endOf('day').unix() || '';
+  query.GroupBeginTime = dateRange.value?.[0]?.unix() || '';
+  query.GroupEndTime = dateRange.value?.[1]?.unix() || '';
 }
 
 async function search() {
@@ -636,29 +637,29 @@ onMounted(async () => {
 
       <Card class="member-card" :body-style="{ padding: '16px' }">
         <div class="mb-4 flex flex-wrap items-center gap-2">
-          <Input
-            v-model:value="query.Username"
-            allow-clear
-            placeholder="代理账号"
-            style="width: 220px"
-            @press-enter="search"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
-          <Input
-            v-model:value="query.DeveloperName"
-            allow-clear
-            placeholder="发展人编码"
-            style="width: 240px"
-            @press-enter="search"
-          >
-            <template #addonBefore>发展人编码</template>
-          </Input>
-          <DatePicker.RangePicker
-            v-model:value="dateRange"
-            :disabled-date="disabledDate"
-            @calendar-change="onCalendarChange"
-          />
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.Username"
+              allow-clear
+              style="width: 220px"
+              @press-enter="search"
+              placeholder="请输入代理账号"
+            >
+              <template #addonBefore>代理账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.DeveloperName"
+              allow-clear
+              style="width: 240px"
+              @press-enter="search"
+              placeholder="请输入发展人编码"
+            >
+              <template #addonBefore>发展人编码</template>
+            </Input>
+          </div>
+          <QueryDatetimeRangePicker v-model="dateRange" :disabled-date="disabledDate" />
           <Button type="primary" @click="search">查询</Button>
           <Button @click="resetSearch">重置</Button>
           <Button

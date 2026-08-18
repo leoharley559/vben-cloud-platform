@@ -4,7 +4,9 @@ import type { PlayerBetDateStatItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Select, Space } from 'ant-design-vue';
+import { Button, Select, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerBetDateStatApi } from '#/api/operationManage/bet-detail';
@@ -166,29 +168,33 @@ onMounted(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          :options="BET_STATUS_OPTIONS"
-          placeholder="全部"
-          style="width: 120px"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            :options="BET_STATUS_OPTIONS"
+            placeholder="请选择状态"
+            style="width: 120px"
+          />
+        </Space.Compact>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">时间类型</span>
-        <Select
-          v-model:value="filterSelectTimeType"
-          :options="BET_TIME_TYPE_OPTIONS"
-          style="width: 120px"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">时间类型</span>
+          <Select
+            v-model:value="filterSelectTimeType"
+            :options="BET_TIME_TYPE_OPTIONS"
+            style="width: 120px"
+            placeholder="请选择时间类型"
+          />
+        </Space.Compact>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">日期</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" />
       </div>
 
       <Space>

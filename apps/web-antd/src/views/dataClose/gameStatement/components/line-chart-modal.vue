@@ -5,11 +5,12 @@ import { computed, ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Modal,
   Space,
   Spin,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs, { type Dayjs } from 'dayjs';
 
 import {
@@ -139,10 +140,7 @@ watch(
   >
     <Spin :spinning="loading">
       <Space wrap class="mb-3">
-        <DatePicker.RangePicker
-          v-model:value="dateRange"
-          :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')"
-        />
+        <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
         <Button type="primary" @click="loadChart">查询</Button>
         <Button @click="handleReset">重置</Button>
       </Space>

@@ -5,7 +5,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Select,
@@ -23,6 +22,7 @@ import {
 } from '#/api/operationManage/voucher';
 import PassPopup from '#/components/security/pass-popup.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { ACTIVITY_TYPE_OPTIONS, VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
@@ -107,15 +107,15 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
       filterActivityType.value === -1 || filterActivityType.value === ''
         ? ''
         : filterActivityType.value,
-    EndReceiveVoucherTime: recvEnd ? recvEnd.endOf('day').unix() : '',
-    EndRegisterTime: regEnd ? regEnd.endOf('day').unix() : '',
+    EndReceiveVoucherTime: recvEnd ? recvEnd.unix() : '',
+    EndRegisterTime: regEnd ? regEnd.unix() : '',
     Id: props.voucherId ?? '',
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     PackageId: filterPackageId.value ?? '',
     Page: page.currentPage,
     PageSize: page.pageSize,
-    StartReceiveVoucherTime: recvBegin ? recvBegin.startOf('day').unix() : '',
-    StartRegisterTime: regBegin ? regBegin.startOf('day').unix() : '',
+    StartReceiveVoucherTime: recvBegin ? recvBegin.unix() : '',
+    StartRegisterTime: regBegin ? regBegin.unix() : '',
     Status: filterStatus.value === '' ? '' : filterStatus.value,
     VipLevel:
       filterVipLevel.value === -1 || filterVipLevel.value === ''
@@ -321,58 +321,68 @@ function statusMeta(value?: number | string) {
   <div>
     <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
       <div class="flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="玩家账号"
-          style="width: 220px"
-        >
-          <template #addonBefore>玩家账号</template>
-        </Input>
-        <Select
-          v-model:value="filterVipLevel"
-          allow-clear
-          class="w-28"
-          :options="vipOptions"
-          placeholder="VIP等级"
-        />
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          class="w-36"
-          :options="packageFilterOptions"
-          placeholder="所属产品"
-        />
-        <DatePicker.RangePicker
-          v-model:value="filterRegDateRange"
-          placeholder="['注册开始','注册结束']"
-        />
-        <DatePicker.RangePicker
-          v-model:value="filterReceiveDateRange"
-          placeholder="['获取开始','获取结束']"
-        />
-        <Select
-          v-model:value="filterActivityType"
-          allow-clear
-          class="w-32"
-          :options="activityTypeOptions"
-          placeholder="活动类型"
-        />
-        <Input
-          v-model:value="filterActivityName"
-          allow-clear
-          placeholder="活动名称"
-          style="width: 220px"
-        >
-          <template #addonBefore>活动名称</template>
-        </Input>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          class="w-28"
-          :options="VOUCHER_STATUS_FILTER_OPTIONS"
-          placeholder="票券状态"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入玩家账号"
+          >
+            <template #addonBefore>玩家账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            allow-clear
+            class="w-28"
+            :options="vipOptions"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            class="w-36"
+            :options="packageFilterOptions"
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="filterRegDateRange" label="注册时间" />
+        <QueryDatetimeRangePicker v-model="filterReceiveDateRange" label="领取时间" />
+        <Space.Compact>
+          <span class="query-field-addon">活动类型</span>
+          <Select
+            v-model:value="filterActivityType"
+            allow-clear
+            class="w-32"
+            :options="activityTypeOptions"
+            placeholder="请选择活动类型"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterActivityName"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入活动名称"
+          >
+            <template #addonBefore>活动名称</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">票券状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            class="w-28"
+            :options="VOUCHER_STATUS_FILTER_OPTIONS"
+            placeholder="请选择票券状态"
+          />
+        </Space.Compact>
         <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>

@@ -158,7 +158,7 @@ onMounted(() => {
     :loading="loading"
     :mode="multiple ? 'multiple' : undefined"
     :options="selectOptions"
-    placeholder="请选择账号"
+    placeholder="请输入账号"
     show-search
     @change="handleChange"
     @dropdown-visible-change="handleDropdownVisibleChange"

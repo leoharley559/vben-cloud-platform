@@ -4,7 +4,7 @@ import type { AgencyListItem, AgentFanDianLine } from '#/types/netcash';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { Button, DatePicker, Space, Table } from 'ant-design-vue';
+import { Button, Space, Table } from 'ant-design-vue';
 import dayjs, { type Dayjs } from 'dayjs';
 import * as XLSX from 'xlsx';
 
@@ -14,6 +14,7 @@ import {
   fetchAgentPersonalStatsApi,
 } from '#/api/netcash/agency-account-details';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import venueConfig from '#/config/venue-config.json';
 import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -409,8 +410,8 @@ function columns(kind: 'agent' | 'member' | 'personal') {
 function query(page: number, pageSize: number) {
   return {
     AdminId: props.adminId,
-    BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
-    EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
+    BeginTime: dateRange.value?.[0]?.unix() || '',
+    EndTime: dateRange.value?.[1]?.unix() || '',
     Page: page,
     PageSize: pageSize,
   };
@@ -530,7 +531,7 @@ watch(
   <div class="space-y-5">
     <div>
       <Space wrap>
-        <DatePicker.RangePicker v-model:value="dateRange" />
+        <QueryDatetimeRangePicker v-model="dateRange" />
         <Button type="primary" @click="load">查询</Button>
         <Button @click="
           dateRange = [

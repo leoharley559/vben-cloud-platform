@@ -110,8 +110,8 @@ async function handleOk() {
         <Input
           v-model:value="form.InvitationCode"
           :maxlength="20"
-          placeholder="字母+数字组合，4-20 位；历史短码可原样保留"
           @press-enter="handleOk"
+          placeholder="请输入字母+数字组合，4-20 位；历史短码可原样保留"
         />
       </FormItem>
     </Form>

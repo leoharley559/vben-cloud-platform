@@ -4,7 +4,9 @@ import type { WithdrawOrderStatItem } from '#/types/withdraw-extra';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, Result } from 'ant-design-vue';
+import { Button, Result } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchWithdrawOrderStatApi } from '#/api/operationManage/withdraw-extra';
@@ -29,8 +31,8 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
   };
 }
 
@@ -170,7 +172,7 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>

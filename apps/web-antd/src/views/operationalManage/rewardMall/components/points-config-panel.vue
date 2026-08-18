@@ -634,8 +634,8 @@ onMounted(() => {
             v-model:value="betEditGamesRatio[String(game.id)]"
             :min="0"
             :precision="2"
-            placeholder="留空则使用默认比例"
             style="width: 160px"
+            placeholder="请输入留空则使用默认比例"
           >
             <template #addonAfter>%</template>
           </InputNumber>

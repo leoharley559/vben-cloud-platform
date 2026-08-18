@@ -3,12 +3,17 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import { Button, DatePicker, Select } from 'ant-design-vue';
+import {
+  Button,
+  Select,
+  Space,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchNewPlayerDrawListApi } from '#/api/operationManage/activity';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { formatActivityType } from '#/utils/bonus-reward';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -123,26 +128,26 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Select
-        v-model:value="filterStatus"
-        class="w-32"
-        :options="statusOptions"
-        placeholder="奖品状态"
-      />
-      <Select
-        v-model:value="filterActivityType"
-        class="w-32"
-        :options="activityTypeOptions"
-        placeholder="转盘类型"
-      />
-      <DatePicker.RangePicker
-        v-model:value="drawTimeRange"
-        :placeholder="['抽奖开始', '抽奖结束']"
-      />
-      <DatePicker.RangePicker
-        v-model:value="applyTimeRange"
-        :placeholder="['领奖开始', '领奖结束']"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">奖品状态</span>
+        <Select
+          v-model:value="filterStatus"
+          class="w-32"
+          :options="statusOptions"
+          placeholder="请选择奖品状态"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">转盘类型</span>
+        <Select
+          v-model:value="filterActivityType"
+          class="w-32"
+          :options="activityTypeOptions"
+          placeholder="请选择转盘类型"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="drawTimeRange" />
+      <QueryDatetimeRangePicker v-model="applyTimeRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
     <Grid>

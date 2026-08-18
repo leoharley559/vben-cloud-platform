@@ -9,6 +9,7 @@ import {
   message,
   Popover,
   Select,
+  Space,
   Table,
   Tooltip,
 } from 'ant-design-vue';
@@ -308,31 +309,40 @@ onMounted(() => {
     />
     <ReportSummaryCards :items="summaryItems" />
     <ReportQueryCard>
-      <Select
-        v-model:value="packageId"
-        allow-clear
-        class="w-44"
-        :options="packageOptions"
-        placeholder="产品"
-      />
-      <Select
-        v-model:value="appUrls"
-        allow-clear
-        class="w-48"
-        mode="multiple"
-        :max-tag-count="1"
-        :options="iosAppStoreOptions"
-        placeholder="上架包"
-      />
-      <Select
-        v-model:value="platformGameTypes"
-        allow-clear
-        class="w-48"
-        mode="multiple"
-        :max-tag-count="1"
-        :options="platformGameTypeOptions"
-        placeholder="场馆"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">产品</span>
+        <Select
+          v-model:value="packageId"
+          allow-clear
+          class="w-44"
+          :options="packageOptions"
+          placeholder="请选择产品"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">上架包</span>
+        <Select
+          v-model:value="appUrls"
+          allow-clear
+          class="w-48"
+          mode="multiple"
+          :max-tag-count="1"
+          :options="iosAppStoreOptions"
+          placeholder="请选择上架包"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">场馆</span>
+        <Select
+          v-model:value="platformGameTypes"
+          allow-clear
+          class="w-48"
+          mode="multiple"
+          :max-tag-count="1"
+          :options="platformGameTypeOptions"
+          placeholder="请选择场馆"
+        />
+      </Space.Compact>
       <DatePicker.RangePicker v-model:value="monthRange" picker="month" />
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>

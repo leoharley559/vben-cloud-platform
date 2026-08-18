@@ -4,7 +4,6 @@ import { onMounted, reactive, ref } from 'vue';
 import {
   Button,
   Card,
-  DatePicker,
   Input,
   message,
   Popover,
@@ -17,6 +16,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 
 import { fetchVipRecordListApi } from '#/api/gameManage/vip-setting';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 
@@ -271,41 +271,53 @@ onMounted(() => {
   <div>
     <Card class="query-card" size="small">
       <div class="query-grid">
-        <Input
-          v-model:value="filters.LoginAccount"
-          allow-clear
-          addon-before="游戏账号"
-          placeholder="请输入"
-          @press-enter="search"
-        />
-        <Input
-          v-model:value="filters.PackageName"
-          allow-clear
-          addon-before="包体名称"
-          placeholder="请输入"
-          @press-enter="search"
-        />
-        <Input
-          v-model:value="filters.VipLevel"
-          allow-clear
-          addon-before="VIP 等级"
-          placeholder="请输入"
-          @press-enter="search"
-        />
-        <Select
-          v-model:value="filters.Status"
-          allow-clear
-          :options="Object.entries(statusMap).map(([value, item]) => ({
-            label: item.text,
-            value: Number(value),
-          }))"
-          placeholder="状态"
-          @clear="filters.Status = ''"
-        />
-        <DatePicker.RangePicker
-          v-model:value="dateRange"
-          format="YYYY-MM-DD"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.LoginAccount"
+            allow-clear
+            style="width: 220px"
+            @press-enter="search"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.PackageName"
+            allow-clear
+            style="width: 220px"
+            @press-enter="search"
+            placeholder="请输入包体名称"
+          >
+            <template #addonBefore>包体名称</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.VipLevel"
+            allow-clear
+            style="width: 220px"
+            @press-enter="search"
+            placeholder="请输入VIP 等级"
+          >
+            <template #addonBefore>VIP 等级</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filters.Status"
+            allow-clear
+            :options="Object.entries(statusMap).map(([value, item]) => ({
+              label: item.text,
+              value: Number(value),
+            }))"
+            @clear="filters.Status = ''"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="dateRange" />
         <Space>
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>

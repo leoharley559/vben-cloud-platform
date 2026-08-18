@@ -3,7 +3,15 @@ import type { Dayjs } from 'dayjs';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, message, Select, Table } from 'ant-design-vue';
+import {
+  Button,
+  message,
+  Select,
+  Space,
+  Table,
+} from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import { fetchDayStatementSonListApi } from '#/api/dataClose/day-statement';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -302,31 +310,40 @@ onMounted(() => {
     />
     <ReportSummaryCards :items="summaryItems" />
     <ReportQueryCard>
-      <Select
-        v-model:value="dataSearchType"
-        class="w-36"
-        :options="dataSearchTypeOptions"
-        placeholder="数据类型"
-      />
-      <Select
-        v-model:value="appUrls"
-        allow-clear
-        class="w-48"
-        mode="multiple"
-        :max-tag-count="1"
-        :options="iosAppStoreOptions"
-        placeholder="上架包"
-      />
-      <Select
-        v-model:value="platformGameTypes"
-        allow-clear
-        class="w-48"
-        mode="multiple"
-        :max-tag-count="1"
-        :options="platformGameTypeOptions"
-        placeholder="产品名称"
-      />
-      <DatePicker.RangePicker v-model:value="dateRange" />
+      <Space.Compact>
+        <span class="query-field-addon">数据类型</span>
+        <Select
+          v-model:value="dataSearchType"
+          class="w-36"
+          :options="dataSearchTypeOptions"
+          placeholder="请选择数据类型"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">上架包</span>
+        <Select
+          v-model:value="appUrls"
+          allow-clear
+          class="w-48"
+          mode="multiple"
+          :max-tag-count="1"
+          :options="iosAppStoreOptions"
+          placeholder="请选择上架包"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">产品名称</span>
+        <Select
+          v-model:value="platformGameTypes"
+          allow-clear
+          class="w-48"
+          mode="multiple"
+          :max-tag-count="1"
+          :options="platformGameTypeOptions"
+          placeholder="请选择产品名称"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
         <Button :disabled="loading" @click="reset">重置</Button>

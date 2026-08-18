@@ -583,29 +583,36 @@ onMounted(loadMain);
     width="950px"
   >
     <div class="mb-3 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <Input
-        v-model:value="whitelistQuery.Account"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Input
-        v-model:value="whitelistQuery.ChannelId"
-        allow-clear
-        placeholder="渠道号"
-        style="width: 210px"
-      >
-        <template #addonBefore>渠道号</template>
-      </Input>
-      <Select
-        v-model:value="whitelistQuery.PackageId"
-        :options="productOptions"
-        allow-clear
-        placeholder="产品"
-        style="width: 180px"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="whitelistQuery.Account"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="whitelistQuery.ChannelId"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入渠道号"
+        >
+          <template #addonBefore>渠道号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品</span>
+        <Select
+          v-model:value="whitelistQuery.PackageId"
+          :options="productOptions"
+          allow-clear
+          style="width: 180px"
+          placeholder="请选择产品"
+        />
+      </Space.Compact>
       <Button type="primary" @click="loadWhitelist">查询</Button>
       <Button type="primary" @click="openWhitelistAdd">新增白名单</Button>
       <Button @click="openBatch">Excel/批量导入</Button>

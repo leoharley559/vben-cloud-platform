@@ -150,14 +150,16 @@ onMounted(async () => {
   >
     <Card>
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterName"
-          allow-clear
-          placeholder="模板名称"
-          style="width: 220px"
-        >
-          <template #addonBefore>模板名称</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterName"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入模板名称"
+          >
+            <template #addonBefore>模板名称</template>
+          </Input>
+        </div>
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button v-if="canCreate" type="primary" @click="handleCreate">
           新增落地

@@ -13,13 +13,13 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Input,
+  message,
   Modal,
   Radio,
   Result,
   Select,
-  message,
+  Space,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -28,6 +28,7 @@ import {
   fetchRelationQueryListApi,
 } from '#/api/operationManage/relation-query';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
@@ -125,9 +126,9 @@ function getChannelParams() {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DeviceId: filterDeviceId.value.trim(),
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     InviterLoginAccount: filterInviterLoginAccount.value.trim(),
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value),
     LoginAddress: filterLoginAddress.value.trim(),
@@ -300,39 +301,42 @@ onMounted(() => {
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
-              placeholder="请输入"
               style="width: 260px"
               @press-enter="handleSearch"
               @blur="
                 filterLoginAccount = normalizeLoginAccount(filterLoginAccount)
               "
+              placeholder="请输入游戏账号"
             >
               <template #addonBefore>游戏账号</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">所属产品</span>
-            <Select
-              v-model:value="filterPackageId"
-              allow-clear
-              show-search
-              placeholder="全部"
-              style="width: 160px"
-              :options="packageSelectOptions"
-              :filter-option="
-                (input, option) =>
-                  String(option?.label ?? '')
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-              "
-            />
+            <Space.Compact>
+              <span class="query-field-addon">所属产品</span>
+              <Select
+                v-model:value="filterPackageId"
+                allow-clear
+                show-search
+                style="width: 160px"
+                :options="packageSelectOptions"
+                :filter-option="
+                  (input, option) =>
+                    String(option?.label ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                "
+                placeholder="请选择所属产品"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filterInviterLoginAccount"
               allow-clear
-              placeholder="请输入"
               style="width: 240px"
+              placeholder="请输入上级代理"
             >
               <template #addonBefore>上级代理</template>
             </Input>
@@ -341,8 +345,8 @@ onMounted(() => {
             <Input
               v-model:value="filterDeviceId"
               allow-clear
-              placeholder="请输入"
               style="width: 250px"
+              placeholder="请输入设备号"
             >
               <template #addonBefore>设备号</template>
             </Input>
@@ -351,15 +355,15 @@ onMounted(() => {
             <Input
               v-model:value="filterLoginIp"
               allow-clear
-              placeholder="请输入"
               style="width: 220px"
+              placeholder="请输入登录IP"
             >
               <template #addonBefore>登录IP</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">渠道查询</span>
-            <div class="flex flex-wrap items-center gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">渠道查询</span>
               <Radio.Group
                 v-model:value="channelSearchType"
                 button-style="solid"
@@ -372,22 +376,23 @@ onMounted(() => {
                 v-if="channelSearchType === 0"
                 v-model="filterChannelIds"
                 style="width: 220px"
+                placeholder="请输入渠道号"
               />
               <Input
                 v-else
                 v-model:value="filterChannelExact"
                 allow-clear
-                placeholder="渠道号"
                 style="width: 180px"
+                placeholder="请输入渠道号"
               />
-            </div>
+            </Space.Compact>
           </div>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filterLoginAddress"
               allow-clear
-              placeholder="请输入"
               style="width: 240px"
+              placeholder="请输入登录地址"
             >
               <template #addonBefore>登录地址</template>
             </Input>
@@ -396,18 +401,15 @@ onMounted(() => {
             <Input
               v-model:value="filterLoginPlatform"
               allow-clear
-              placeholder="请输入"
               style="width: 220px"
+              placeholder="请输入登录设备"
             >
               <template #addonBefore>登录设备</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">登录时间</span>
-            <DatePicker.RangePicker
-              v-model:value="filterDateRange"
-              allow-clear
-            />
+            <QueryDatetimeRangePicker v-model="filterDateRange" label="登录时间" />
+          
           </div>
           <Button :loading="loading" type="primary" @click="handleSearch">
             查询

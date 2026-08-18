@@ -10,7 +10,6 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Input,
   Image,
   Modal,
@@ -27,6 +26,7 @@ import {
   fetchSpillManageListApi,
 } from '#/api/netcash/spill-manage';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -90,8 +90,8 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
     PageSize: page.pageSize,
     PlayerId: '',
     Status: status,
-    TimeBegin: begin ? begin.startOf('day').unix() : '',
-    TimeEnd: end ? end.endOf('day').unix() : '',
+    TimeBegin: begin ? begin.unix() : '',
+    TimeEnd: end ? end.unix() : '',
     VipLevel: filterVipLevel.value ?? -1,
   };
 }
@@ -260,50 +260,63 @@ onMounted(() => {
   >
     <Card>
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 230px"
-          @press-enter="search"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-        <Input
-          v-model:value="filterAccount"
-          allow-clear
-          placeholder="申请代理"
-          style="width: 230px"
-          @press-enter="search"
-        >
-          <template #addonBefore>申请代理</template>
-        </Input>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          class="w-40"
-          :options="packageOptions"
-          placeholder="产品包"
-        />
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          class="w-32"
-          :options="[
-            { label: '全部', value: 0 },
-            { label: '申请中', value: 1 },
-            { label: '已通过', value: 2 },
-            { label: '已拒绝', value: 3 },
-          ]"
-          placeholder="状态"
-        />
-        <Select
-          v-model:value="filterVipLevel"
-          class="w-28"
-          :options="[{ label: '全部 VIP', value: -1 }, ...Array.from({ length: 11 }, (_, value) => ({ label: `VIP${value}`, value }))]"
-          placeholder="VIP等级"
-        />
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            style="width: 230px"
+            @press-enter="search"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAccount"
+            allow-clear
+            style="width: 230px"
+            @press-enter="search"
+            placeholder="请输入申请代理"
+          >
+            <template #addonBefore>申请代理</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            class="w-40"
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            class="w-32"
+            :options="[
+              { label: '全部', value: 0 },
+              { label: '申请中', value: 1 },
+              { label: '已通过', value: 2 },
+              { label: '已拒绝', value: 3 },
+            ]"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            class="w-28"
+            :options="[{ label: '全部 VIP', value: -1 }, ...Array.from({ length: 11 }, (_, value) => ({ label: `VIP${value}`, value }))]"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
         <Button type="primary" @click="search">查询</Button>
         <Button @click="resetQuery">重置</Button>
       </div>

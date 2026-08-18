@@ -4,11 +4,12 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Input } from 'ant-design-vue';
+import { Button, Input } from 'ant-design-vue';
 
 import { fetchGoldSellRecordListApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
@@ -194,38 +195,43 @@ onMounted(() => {
 <template>
   <div>
     <ReportQueryCard>
-      <Input
-        v-model:value="filterUsername"
-        allow-clear
-        class="!w-[220px]"
-        placeholder="包网账号"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>包网账号</template>
-      </Input>
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        class="!w-[220px]"
-        placeholder="订单编号"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-      <Input
-        v-model:value="filterCreateAdminName"
-        allow-clear
-        class="!w-[220px]"
-        placeholder="操作人员"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>操作人员</template>
-      </Input>
-      <DatePicker.RangePicker
-        v-model:value="dateRange"
-        allow-clear
-        class="!w-[280px]"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterUsername"
+          allow-clear
+          class="!w-[220px]"
+          @press-enter="handleSearch"
+          style="width: 220px"
+          placeholder="请输入包网账号"
+        >
+          <template #addonBefore>包网账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          class="!w-[220px]"
+          @press-enter="handleSearch"
+          style="width: 220px"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterCreateAdminName"
+          allow-clear
+          class="!w-[220px]"
+          @press-enter="handleSearch"
+          style="width: 220px"
+          placeholder="请输入操作人员"
+        >
+          <template #addonBefore>操作人员</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="dateRange" />
       <template #actions>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>

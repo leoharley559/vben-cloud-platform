@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, DatePicker, Input, Pagination, Result, Select, Table } from 'ant-design-vue';
+import { Button, Input, Pagination, Result, Select, Table } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchTeamRecordListApi } from '#/api/netcash/team-manage';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatNetcashDateTime } from '#/utils/netcash';
@@ -65,8 +66,8 @@ function recordContent(row: Row) {
 }
 async function loadRecords() {
   if (!canViewRecordList.value) return;
-  recordQuery.BeginTime = recordDates.value?.[0]?.startOf('day').unix() || 0;
-  recordQuery.EndTime = recordDates.value?.[1]?.endOf('day').unix() || 0;
+  recordQuery.BeginTime = recordDates.value?.[0]?.unix() || 0;
+  recordQuery.EndTime = recordDates.value?.[1]?.unix() || 0;
   recordLoading.value = true;
   try {
     const result = await fetchTeamRecordListApi(recordQuery);
@@ -106,15 +107,36 @@ onMounted(() => {
 <template>
   <template v-if="canViewRecordList">
     <div class="mb-4 flex flex-wrap items-center gap-2">
-      <Input v-model:value="recordQuery.TeamName" allow-clear placeholder="团队名称" style="width: 220px">
-        <template #addonBefore>团队名称</template>
-      </Input>
-      <Input v-model:value="recordQuery.Username" allow-clear placeholder="主线账号" style="width: 220px">
-        <template #addonBefore>主线账号</template>
-      </Input>
-      <Input v-model:value="recordQuery.SubName" allow-clear placeholder="副线账号" style="width: 220px">
-        <template #addonBefore>副线账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="recordQuery.TeamName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入团队名称"
+        >
+          <template #addonBefore>团队名称</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="recordQuery.Username"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入主线账号"
+        >
+          <template #addonBefore>主线账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="recordQuery.SubName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入副线账号"
+        >
+          <template #addonBefore>副线账号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="recordQuery.Operate"
         :options="[
@@ -125,7 +147,7 @@ onMounted(() => {
         ]"
         style="width: 130px"
       />
-      <DatePicker.RangePicker v-model:value="recordDates" />
+      <QueryDatetimeRangePicker v-model="recordDates" />
       <Button type="primary" @click="searchRecords">查询</Button>
       <Button @click="resetRecords">重置</Button>
     </div>

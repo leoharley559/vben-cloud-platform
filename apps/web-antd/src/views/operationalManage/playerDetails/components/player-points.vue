@@ -4,7 +4,9 @@ import type { PlayerPointsRecordItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Select, Space } from 'ant-design-vue';
+import { Button, Select, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerPointsRecordApi } from '#/api/operationManage/player-detail-extra';
@@ -47,10 +49,9 @@ function formatPointType(type?: number) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    ApplyTimeBegin: begin
-      ? begin.startOf('day').unix()
+    ApplyTimeBegin: begin ? begin.unix()
       : '',
-    ApplyTimeEnd: end ? end.endOf('day').unix() : '',
+    ApplyTimeEnd: end ? end.unix() : '',
     Full: true,
     PlayerId: String(props.playerId),
     PointType: filterPointType.value,
@@ -148,18 +149,20 @@ onMounted(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">账变类型</span>
-        <Select
-          v-model:value="filterPointType"
-          :options="POINT_TYPE_OPTIONS"
-          style="width: 160px"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">账变类型</span>
+          <Select
+            v-model:value="filterPointType"
+            :options="POINT_TYPE_OPTIONS"
+            style="width: 160px"
+            placeholder="请选择账变类型"
+          />
+        </Space.Compact>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">日期</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" />
       </div>
 
       <Space>

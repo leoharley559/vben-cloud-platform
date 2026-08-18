@@ -11,16 +11,17 @@ import {
   Breadcrumb,
   Button,
   Card,
-  DatePicker,
   Input,
   message,
   Result,
+  Space,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchTeamQueryListApi } from '#/api/promotion/team-query';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
@@ -97,8 +98,8 @@ function getQueryParams(page?: { currentPage?: number; pageSize?: number }) {
   return {
     AdminId: filterAdminId.value ?? '',
     AdminUsername: filterAdminUsername.value.trim(),
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     Page: page?.currentPage || 1,
     PageSize: page?.pageSize || 20,
     Sort: '',
@@ -298,25 +299,20 @@ onMounted(() => {
   >
     <Card class="team-query-card" :bordered="false">
       <div class="query-panel">
-        <Input
-          v-model:value="filterAdminUsername"
-          allow-clear
-          placeholder="请输入推广账号"
-          style="width: 260px"
-          @keydown.space.prevent
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>推广账号</template>
-        </Input>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">统计时间</span>
-          <DatePicker.RangePicker
-            v-model:value="filterDateRange"
-            :disabled-date="disabledDate"
-            format="YYYY-MM-DD"
-            @calendar-change="onCalendarChange"
-            @open-change="(open) => !open && (rangeSelecting = undefined)"
-          />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAdminUsername"
+            allow-clear
+            style="width: 260px"
+            @keydown.space.prevent
+            @press-enter="handleSearch"
+            placeholder="请输入推广账号"
+          >
+            <template #addonBefore>推广账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="统计时间" :disabled-date="disabledDate" />
         </div>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>

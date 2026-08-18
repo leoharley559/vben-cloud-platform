@@ -9,7 +9,6 @@ import { useRouter } from 'vue-router';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   message,
@@ -35,6 +34,7 @@ import {
   validateJuniorImportApi,
 } from '#/api/netcash/junior-member';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
@@ -517,71 +517,81 @@ onMounted(async () => {
 <template>
   <template v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filters.LoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 220px"
-        @press-enter="searchMembers"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Input
-        v-model:value="filters.Promoter"
-        allow-clear
-        placeholder="归属代理"
-        style="width: 220px"
-        @press-enter="searchMembers"
-      >
-        <template #addonBefore>归属代理</template>
-      </Input>
-      <Select
-        v-model:value="filters.PackageId"
-        allow-clear
-        :options="packageOptions"
-        placeholder="产品包"
-        style="width: 150px"
-      />
-      <Select
-        v-model:value="filters.Status"
-        allow-clear
-        :options="Object.entries(statusMap).map(([value, label]) => ({ label, value: Number(value) }))"
-        placeholder="玩家状态"
-        style="width: 130px"
-      />
-      <Select
-        v-model:value="filters.ActiveStatus"
-        allow-clear
-        :options="[{ label: '不活跃', value: 0 }, { label: '活跃', value: 1 }]"
-        placeholder="活跃状态"
-        style="width: 130px"
-      />
-      <Select
-        v-model:value="filters.VipLevel"
-        allow-clear
-        :options="vipOptions"
-        placeholder="VIP等级"
-        style="width: 130px"
-      />
-      <Select
-        v-model:value="filters.AlgorithmTemplateId"
-        allow-clear
-        :options="algorithmOptions"
-        placeholder="佣金算法"
-        style="width: 170px"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filters.RegTime"
-        :placeholder="['注册开始时间', '注册结束时间']"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filters.FirstPayTime"
-        :placeholder="['首存开始时间', '首存结束时间']"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filters.StatisticsTime"
-        :placeholder="['统计开始时间', '统计结束时间']"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filters.LoginAccount"
+          allow-clear
+          style="width: 220px"
+          @press-enter="searchMembers"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filters.Promoter"
+          allow-clear
+          style="width: 220px"
+          @press-enter="searchMembers"
+          placeholder="请输入归属代理"
+        >
+          <template #addonBefore>归属代理</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品包</span>
+        <Select
+          v-model:value="filters.PackageId"
+          allow-clear
+          :options="packageOptions"
+          style="width: 150px"
+          placeholder="请选择产品包"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">玩家状态</span>
+        <Select
+          v-model:value="filters.Status"
+          allow-clear
+          :options="Object.entries(statusMap).map(([value, label]) => ({ label, value: Number(value) }))"
+          style="width: 130px"
+          placeholder="请选择玩家状态"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">活跃状态</span>
+        <Select
+          v-model:value="filters.ActiveStatus"
+          allow-clear
+          :options="[{ label: '不活跃', value: 0 }, { label: '活跃', value: 1 }]"
+          style="width: 130px"
+          placeholder="请选择活跃状态"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">VIP等级</span>
+        <Select
+          v-model:value="filters.VipLevel"
+          allow-clear
+          :options="vipOptions"
+          style="width: 130px"
+          placeholder="请选择VIP等级"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">佣金算法</span>
+        <Select
+          v-model:value="filters.AlgorithmTemplateId"
+          allow-clear
+          :options="algorithmOptions"
+          style="width: 170px"
+          placeholder="请选择佣金算法"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="filters.RegTime" />
+      <QueryDatetimeRangePicker v-model="filters.FirstPayTime" />
+      <QueryDatetimeRangePicker v-model="filters.StatisticsTime" />
       <Button type="primary" @click="searchMembers">查询</Button>
       <Button @click="resetFilters">重置</Button>
     </div>

@@ -3,7 +3,13 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, ref, watch } from 'vue';
 
-import { Button, Input, Modal, Select } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  Modal,
+  Select,
+  Space,
+} from 'ant-design-vue';
 
 import { fetchLeaderboardRecordApi } from '#/api/operationManage/leaderboard';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
@@ -132,21 +138,26 @@ watch(
     width="960px"
   >
     <div class="mb-3 flex flex-wrap items-end gap-2">
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        class="w-40"
-        :options="packageOptions"
-        placeholder="产品包"
-      />
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
+      <Space.Compact>
+        <span class="query-field-addon">产品包</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          class="w-40"
+          :options="packageOptions"
+          placeholder="请选择产品包"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterVipLevel"
         class="w-28"

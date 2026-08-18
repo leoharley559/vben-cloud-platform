@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -21,6 +20,7 @@ import {
   fetchRechargeBlackPlayerListApi,
 } from '#/api/operationManage/recharge-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -67,9 +67,9 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DeviceId: filterDeviceId.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     LoginAccount: filterLoginAccount.value,
     PackageId: filterPackageId.value || '',
   };
@@ -231,42 +231,46 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @press-enter="gridApi.reload()"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Select
-        v-model:value="filterPackageId"
-        :options="[
-          { label: '全部产品', value: '' },
-          ...packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            })),
-        ]"
-        allow-clear
-        placeholder="全部产品"
-        style="width: 160px"
-      />
-      <Input
-        v-model:value="filterDeviceId"
-        allow-clear
-        placeholder="设备号"
-        style="width: 200px"
-      >
-        <template #addonBefore>设备号</template>
-      </Input>
-      <DatePicker.RangePicker
-        v-model:value="filterDateRange"
-        allow-clear
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          @press-enter="gridApi.reload()"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品</span>
+        <Select
+          v-model:value="filterPackageId"
+          :options="[
+            { label: '全部产品', value: '' },
+            ...packageOptions
+              .filter((item) => item.PackageId !== '')
+              .map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              })),
+          ]"
+          allow-clear
+          style="width: 160px"
+          placeholder="请选择产品"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterDeviceId"
+          allow-clear
+          style="width: 200px"
+          placeholder="请输入设备号"
+        >
+          <template #addonBefore>设备号</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Space wrap>
         <Button :loading="loading" type="primary" @click="gridApi.reload()">
           查询

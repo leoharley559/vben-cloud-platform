@@ -5,7 +5,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -24,6 +23,7 @@ import {
 } from '#/api/operationManage/reward-mall';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
@@ -128,10 +128,9 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterExchangeRange.value || [];
   return {
     ChannelId: channelIdsParam(),
-    ExchangeTimeBegin: begin
-      ? begin.startOf('day').unix()
+    ExchangeTimeBegin: begin ? begin.unix()
       : '',
-    ExchangeTimeEnd: end ? end.endOf('day').unix() : '',
+    ExchangeTimeEnd: end ? end.unix() : '',
     IsWater: filterIsWater.value,
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     OrderId: filterOrderId.value.trim(),
@@ -330,79 +329,100 @@ onMounted(() => {
 <template>
   <div v-if="canView">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterProductName"
-        allow-clear
-        placeholder="商品名称"
-        style="width: 240px"
-      >
-        <template #addonBefore>商品名称</template>
-      </Input>
-      <Select
-        v-model:value="filterProductType"
-        allow-clear
-        class="w-32"
-        :options="REWARD_PRODUCT_TYPE_FILTER_OPTIONS"
-        placeholder="商品类型"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filterExchangeRange"
-        :placeholder="['兑换开始', '兑换结束']"
-      />
-      <Select
-        v-model:value="filterProductTag"
-        allow-clear
-        class="w-32"
-        :options="productTagOptions"
-        placeholder="商品页签"
-        show-search
-      />
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 240px"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 230px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <ChannelSelect v-model:value="filterChannelIds" style="width: 200px" />
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        class="w-36"
-        :options="
-          packageOptions.map((item) => ({
-            label: item.PackageName,
-            value: item.PackageId,
-          }))
-        "
-        placeholder="所属产品"
-        show-search
-      />
-      <Select
-        v-model:value="filterVipLevels"
-        allow-clear
-        class="w-40"
-        mode="multiple"
-        :max-tag-count="1"
-        :options="REWARD_VIP_FILTER_OPTIONS.filter((item) => item.value !== -1)"
-        placeholder="VIP等级"
-      />
-      <Select
-        v-model:value="filterIsWater"
-        allow-clear
-        class="w-28"
-        :options="REWARD_WATER_REQUIRE_OPTIONS"
-        placeholder="流水要求"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterProductName"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入商品名称"
+        >
+          <template #addonBefore>商品名称</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">商品类型</span>
+        <Select
+          v-model:value="filterProductType"
+          allow-clear
+          class="w-32"
+          :options="REWARD_PRODUCT_TYPE_FILTER_OPTIONS"
+          placeholder="请选择商品类型"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="filterExchangeRange" />
+      <Space.Compact>
+        <span class="query-field-addon">商品页签</span>
+        <Select
+          v-model:value="filterProductTag"
+          allow-clear
+          class="w-32"
+          :options="productTagOptions"
+          show-search
+          placeholder="请选择商品页签"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 230px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">渠道号</span>
+        <ChannelSelect v-model:value="filterChannelIds" style="width: 200px" placeholder="请输入渠道号" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">所属产品</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          class="w-36"
+          :options="
+            packageOptions.map((item) => ({
+              label: item.PackageName,
+              value: item.PackageId,
+            }))
+          "
+          show-search
+          placeholder="请选择所属产品"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">VIP等级</span>
+        <Select
+          v-model:value="filterVipLevels"
+          allow-clear
+          class="w-40"
+          mode="multiple"
+          :max-tag-count="1"
+          :options="REWARD_VIP_FILTER_OPTIONS.filter((item) => item.value !== -1)"
+          placeholder="请选择VIP等级"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">流水要求</span>
+        <Select
+          v-model:value="filterIsWater"
+          allow-clear
+          class="w-28"
+          :options="REWARD_WATER_REQUIRE_OPTIONS"
+          placeholder="请选择流水要求"
+        />
+      </Space.Compact>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
       <Button

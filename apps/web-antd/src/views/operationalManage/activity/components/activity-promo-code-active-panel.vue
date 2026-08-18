@@ -3,7 +3,9 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import { Button, DatePicker, Input } from 'ant-design-vue';
+import { Button, Input } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -87,26 +89,27 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       优惠码 upsert / 全局配置 / 补码尚未迁移，创建与编辑按钮已禁用。
     </div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterId"
-        allow-clear
-        placeholder="优惠码ID"
-        style="width: 220px"
-      >
-        <template #addonBefore>优惠码ID</template>
-      </Input>
-      <Input
-        v-model:value="filterName"
-        allow-clear
-        placeholder="优惠码名称"
-        style="width: 260px"
-      >
-        <template #addonBefore>优惠码名称</template>
-      </Input>
-      <DatePicker.RangePicker
-        v-model:value="activeTimeRange"
-        :placeholder="['生效开始', '生效结束']"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterId"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入优惠码ID"
+        >
+          <template #addonBefore>优惠码ID</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterName"
+          allow-clear
+          style="width: 260px"
+          placeholder="请输入优惠码名称"
+        >
+          <template #addonBefore>优惠码名称</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="activeTimeRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button disabled type="primary">添加优惠码</Button>
     </div>

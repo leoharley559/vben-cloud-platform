@@ -7,7 +7,6 @@ import { useRouter } from 'vue-router';
 import {
   Button,
   Checkbox,
-  DatePicker,
   Descriptions,
   Form,
   Input,
@@ -30,6 +29,7 @@ import {
   orderOperateApi,
 } from '#/api/netcash/drawmoney-manage';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -123,8 +123,8 @@ function withdrawalParams(
     AmountMax: Number(withdrawQuery.AmountMax || 0) * 100,
     AmountMin: Number(withdrawQuery.AmountMin || 0) * 100,
     Auto: autoRefreshStatus.value === 1,
-    BeginTime: withdrawRange.value?.[0]?.startOf('day').unix() || '',
-    EndTime: withdrawRange.value?.[1]?.endOf('day').unix() || '',
+    BeginTime: withdrawRange.value?.[0]?.unix() || '',
+    EndTime: withdrawRange.value?.[1]?.unix() || '',
     IsExp: exp,
     Page: exp ? 1 : page.currentPage,
     PageSize: exp ? 99_999 : page.pageSize,
@@ -712,26 +712,72 @@ onUnmounted(() => {
   <Result v-if="!canView" status="403" sub-title="无提款列表查看权限" title="403" />
   <div v-else>
     <div class="mb-3 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <Input v-model:value="withdrawQuery.Applicant" placeholder="代理账号" style="width: 220px">
-        <template #addonBefore>代理账号</template>
-      </Input>
-        <Input v-model:value="withdrawQuery.OrderId" placeholder="订单号" style="width: 220px">
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="withdrawQuery.Applicant"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="withdrawQuery.OrderId"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入订单号"
+        >
           <template #addonBefore>订单号</template>
         </Input>
-        <Input v-model:value="withdrawQuery.HandlerName" placeholder="操作人员" style="width: 220px">
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="withdrawQuery.HandlerName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入操作人员"
+        >
           <template #addonBefore>操作人员</template>
         </Input>
-        <Input v-model:value="withdrawQuery.ShowName" placeholder="出款通道" style="width: 220px">
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="withdrawQuery.ShowName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入出款通道"
+        >
           <template #addonBefore>出款通道</template>
         </Input>
-        <Input v-model:value="withdrawQuery.WithdrawAccount" placeholder="出款账号" style="width: 220px">
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="withdrawQuery.WithdrawAccount"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入出款账号"
+        >
           <template #addonBefore>出款账号</template>
         </Input>
-        <Input v-model:value="withdrawQuery.PayName" placeholder="持卡人" style="width: 210px">
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="withdrawQuery.PayName"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入持卡人"
+        >
           <template #addonBefore>持卡人</template>
         </Input>
-        <Select v-model:value="withdrawQuery.AccountType" mode="multiple" :options="PAY_TYPE_OPTIONS" placeholder="提款方式"
-          style="min-width: 150px" />
+      </div>
+        <Space.Compact>
+          <span class="query-field-addon">提款方式</span>
+          <Select v-model:value="withdrawQuery.AccountType" mode="multiple" :options="PAY_TYPE_OPTIONS"
+            style="min-width: 150px"
+            placeholder="请选择提款方式" />
+        </Space.Compact>
         <Select v-model:value="withdrawQuery.AmountType" :options="[
           { label: '申请金额', value: 1 },
           { label: '实际出款', value: 2 },
@@ -741,29 +787,28 @@ onUnmounted(() => {
           { label: '结束时间', value: 2 },
           { label: '财务响应时间', value: 3 },
         ]" />
-        <DatePicker.RangePicker
-          v-model:value="withdrawRange"
-          v-model:open="withdrawRangeOpen"
-          :get-popup-container="(node) => node.parentElement || document.body"
-        />
-        <InputNumber v-model:value="withdrawQuery.AmountMin" placeholder="最小金额" />
-        <InputNumber v-model:value="withdrawQuery.AmountMax" placeholder="最大金额" />
-        <Select
-          v-model:value="withdrawQuery.WithdrawStatus"
-          allow-clear
-          mode="multiple"
-          :max-tag-count="1"
-          placeholder="状态"
-          :options="[
-            { label: '待处理', value: '1' },
-            { label: '已出款', value: '2' },
-            { label: '退款驳回', value: '3' },
-            { label: '不退款驳回', value: '4' },
-            { label: '出款异常', value: '5' },
-            { label: '处理中', value: '6' },
-          ]"
-          style="min-width: 140px"
-        />
+        <QueryDatetimeRangePicker v-model="withdrawRange" />
+        <InputNumber v-model:value="withdrawQuery.AmountMin" placeholder="请输入最小金额" />
+        <InputNumber v-model:value="withdrawQuery.AmountMax" placeholder="请输入最大金额" />
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="withdrawQuery.WithdrawStatus"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="[
+              { label: '待处理', value: '1' },
+              { label: '已出款', value: '2' },
+              { label: '退款驳回', value: '3' },
+              { label: '不退款驳回', value: '4' },
+              { label: '出款异常', value: '5' },
+              { label: '处理中', value: '6' },
+            ]"
+            style="min-width: 140px"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
         <Button type="primary" @click="withdrawGridApi.reload()">查询</Button>
         <Button @click="resetWithdraw">重置</Button>
         <Button @click="exportWithdraw">导出 Excel</Button>
@@ -893,22 +938,24 @@ onUnmounted(() => {
       <div v-for="(rule, index) in autoRules" :key="rule.Id || index" class="mb-2 flex items-center gap-2">
         <Select v-model:value="rule.PayType" :disabled="autoSetting.Status === 1 || !!rule.Id"
           :options="PAY_TYPE_OPTIONS" style="width: 130px" />
-        <InputNumber v-model:value="rule.AutoWithdrawAmountMin" :disabled="autoSetting.Status === 1" :min="1"
-          placeholder="最小金额" />
+        <InputNumber v-model:value="rule.AutoWithdrawAmountMin" :disabled="autoSetting.Status === 1" :min="1" placeholder="请输入最小金额" />
         <span>—</span>
-        <InputNumber v-model:value="rule.AutoWithdrawAmountMax" :disabled="autoSetting.Status === 1" :min="1"
-          placeholder="最大金额" />
-        <Select v-model:value="rule.AgentWithdrawAccount" allow-clear :disabled="autoSetting.Status === 1" :options="autoChannels
-            .filter(
-              (x) =>
-                !rule.PayType ||
-                Number(x.AccountType) === Number(rule.PayType),
-            )
-            .map((x) => ({
-              label: `${x.ShowName || x.AccountNum}（${Number(x.ScriptMode) === 1 ? '自动' : '手动'}）`,
-              value: String(x.Id),
-            }))
-          " placeholder="出款通道" style="width: 210px" />
+        <InputNumber v-model:value="rule.AutoWithdrawAmountMax" :disabled="autoSetting.Status === 1" :min="1" placeholder="请输入最大金额" />
+        <Space.Compact>
+          <span class="query-field-addon">出款通道</span>
+          <Select v-model:value="rule.AgentWithdrawAccount" allow-clear :disabled="autoSetting.Status === 1" :options="autoChannels
+              .filter(
+                (x) =>
+                  !rule.PayType ||
+                  Number(x.AccountType) === Number(rule.PayType),
+              )
+              .map((x) => ({
+                label: `${x.ShowName || x.AccountNum}（${Number(x.ScriptMode) === 1 ? '自动' : '手动'}）`,
+                value: String(x.Id),
+              }))
+            " style="width: 210px"
+              placeholder="请选择出款通道" />
+        </Space.Compact>
         <span>今日已出 {{ rule.AutoWithdrawalAmount || 0 }}</span>
         <Button danger :disabled="autoSetting.Status === 1" @click="removeAutoRule(rule)">
           删除

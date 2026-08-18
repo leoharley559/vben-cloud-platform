@@ -21,6 +21,7 @@ import {
   fetchAgentWalletBalanceApi,
   fetchAgentWalletLogApi,
 } from '#/api/netcash/agency-account-details';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
@@ -226,16 +227,16 @@ function query(isExp = false) {
   if (activeTab.value === 'bonus') {
     return {
       ...base,
-      ApplyEndTime: bonusDateRange.value?.[1]?.endOf('day').unix() || '',
-      ApplyStartTime: bonusDateRange.value?.[0]?.startOf('day').unix() || '',
+      ApplyEndTime: bonusDateRange.value?.[1]?.unix() || '',
+      ApplyStartTime: bonusDateRange.value?.[0]?.unix() || '',
       Approve: approve.value,
       BonusType: bonusType.value,
     };
   }
   return {
     ...base,
-    TransferEndTime: logDateRange.value?.[1]?.endOf('day').unix() || '',
-    TransferStartTime: logDateRange.value?.[0]?.startOf('day').unix() || '',
+    TransferEndTime: logDateRange.value?.[1]?.unix() || '',
+    TransferStartTime: logDateRange.value?.[0]?.unix() || '',
     TransferType: transferType.value,
     WalletType: isCommission.value ? 1 : 2,
   };
@@ -477,7 +478,7 @@ onMounted(load);
           ]"
           style="width: 150px"
         />
-        <DatePicker.RangePicker v-model:value="bonusDateRange" />
+        <QueryDatetimeRangePicker v-model="bonusDateRange" label="申请时间" />
       </template>
       <template v-else>
         <Select
@@ -485,7 +486,7 @@ onMounted(load);
           :options="transferOptions"
           style="width: 180px"
         />
-        <DatePicker.RangePicker v-model:value="logDateRange" />
+        <QueryDatetimeRangePicker v-model="logDateRange" label="账变时间" />
       </template>
       <Button type="primary" @click="load">查询</Button>
       <Button @click="resetFilters">重置</Button>

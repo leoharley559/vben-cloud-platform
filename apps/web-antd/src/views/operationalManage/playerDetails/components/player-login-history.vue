@@ -4,7 +4,9 @@ import type { PlayerLoginIpRecord } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Space } from 'ant-design-vue';
+import { Button, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerLoginIpListApi } from '#/api/operationManage/player';
@@ -38,9 +40,9 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     PlayerId: String(props.playerId),
   };
 }
@@ -172,9 +174,8 @@ onMounted(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end justify-end gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">日期</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" />
       </div>
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">

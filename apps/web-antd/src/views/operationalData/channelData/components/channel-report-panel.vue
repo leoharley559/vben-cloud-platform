@@ -392,106 +392,120 @@ onMounted(() => {
       <Space wrap class="w-full">
         <Space.Compact>
           <Select
+            class="query-auto-select"
+            :popup-match-select-width="false"
             v-model:value="adminSearchType"
             :options="[
               { label: '账号模糊', value: 0 },
               { label: '账号精准', value: 1 },
             ]"
-            style="width: 110px"
           />
           <AccountSelect
             v-if="adminSearchType === 0"
             v-model="adminSearch"
-            style="width: 220px"
+            style="width: 140px"
           />
           <Input
             v-else
             v-model:value="adminSearch as string"
             allow-clear
+            style="width: 140px"
             placeholder="请输入账号"
-            style="width: 220px"
-          />
+            />
         </Space.Compact>
 
         <Space.Compact>
           <Select
+            class="query-auto-select"
+            :popup-match-select-width="false"
             v-model:value="channelSearchType"
             :options="[
               { label: '渠道模糊', value: 0 },
               { label: '渠道精准', value: 1 },
             ]"
-            style="width: 110px"
           />
           <ChannelSelect
             v-if="channelSearchType === 0"
             v-model="channelSearch"
-            style="width: 220px"
+            style="width: 140px"
+            placeholder="请输入渠道号"
           />
           <Input
             v-else
             v-model:value="channelSearch as string"
             allow-clear
+            style="width: 140px"
             placeholder="请输入渠道"
-            style="width: 220px"
-          />
+            />
         </Space.Compact>
 
         <Space>
-          <span class="text-sm text-gray-500">产品</span>
-          <Select
-            v-model:value="packageId"
-            :options="
-              packageOptions.map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-            "
-            allow-clear
-            placeholder="全部产品"
-            style="width: 180px"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">产品</span>
+            <Select
+              v-model:value="packageId"
+              :options="
+                packageOptions.map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+              "
+              allow-clear
+              style="width: 120px"
+              placeholder="请选择产品"
+            />
+          </Space.Compact>
         </Space>
 
         <Space v-if="dim === 'agent'">
-          <span class="text-sm text-gray-500">代理类型</span>
-          <Select
-            v-model:value="agentType"
-            :options="[
-              { label: '全部', value: '' },
-              { label: '普通', value: 1 },
-              { label: '官方', value: 2 },
-            ]"
-            style="width: 110px"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">代理类型</span>
+            <Select
+              v-model:value="agentType"
+              :options="[
+                { label: '全部', value: '' },
+                { label: '普通', value: 1 },
+                { label: '官方', value: 2 },
+              ]"
+              style="width: 110px"
+              placeholder="请选择代理类型"
+            />
+          </Space.Compact>
         </Space>
 
         <Space>
-          <span class="text-sm text-gray-500">数据类型</span>
-          <Select
-            v-model:value="dataSearchType"
-            :options="memberTypeOptions"
-            style="width: 120px"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">数据类型</span>
+            <Select
+              v-model:value="dataSearchType"
+              :options="memberTypeOptions"
+              style="width: 120px"
+              placeholder="请选择数据类型"
+            />
+          </Space.Compact>
         </Space>
 
         <template v-if="!isToday">
           <Select
+            class="query-auto-select"
+            :popup-match-select-width="false"
             v-model:value="reportType"
             :options="[
               { label: '日报', value: 1 },
               { label: '月报', value: 2 },
               { label: '区间', value: 3 },
             ]"
-            style="width: 100px"
           />
           <Space>
-            <span class="text-sm text-gray-500">日期</span>
-            <DatePicker.RangePicker
-              v-model:value="dateRange"
-              :format="dateFormat"
-              :picker="pickerMode"
-              style="width: 260px"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">日期</span>
+              <DatePicker.RangePicker
+                v-model:value="dateRange"
+                :format="dateFormat"
+                :picker="pickerMode"
+                style="width: 260px"
+              />
+            </Space.Compact>
           </Space>
         </template>
 

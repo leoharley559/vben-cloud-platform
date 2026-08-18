@@ -257,15 +257,18 @@ function handleLookRecord(row: SellRow) {
 <template>
   <div>
     <div class="mb-3 flex flex-wrap items-center gap-2">
-      <Input
-        v-model:value="filterUsername"
-        allow-clear
-        class="!w-[260px]"
-        placeholder="请输入"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>包网账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterUsername"
+          allow-clear
+          class="!w-[260px]"
+          @press-enter="handleSearch"
+          style="width: 220px"
+          placeholder="请输入包网账号"
+        >
+          <template #addonBefore>包网账号</template>
+        </Input>
+      </div>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
     </div>

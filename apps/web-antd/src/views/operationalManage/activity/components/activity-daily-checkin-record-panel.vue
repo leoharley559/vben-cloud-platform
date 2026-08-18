@@ -3,12 +3,18 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import { Button, DatePicker, Input, Select } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  Select,
+  Space,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchDailyCheckInPlayerRecordApi } from '#/api/operationManage/activity';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -85,40 +91,47 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterEventId"
-        allow-clear
-        placeholder="活动ID"
-        style="width: 210px"
-      >
-        <template #addonBefore>活动ID</template>
-      </Input>
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 240px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        class="w-40"
-        :options="packageOptions"
-        placeholder="产品包"
-      />
-      <Select
-        v-model:value="filterEventType"
-        allow-clear
-        class="w-36"
-        :options="eventTypeOptions"
-        placeholder="活动类别"
-      />
-      <DatePicker.RangePicker
-        v-model:value="dateRange"
-        :placeholder="['签到开始', '签到结束']"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterEventId"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入活动ID"
+        >
+          <template #addonBefore>活动ID</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品包</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          class="w-40"
+          :options="packageOptions"
+          placeholder="请选择产品包"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">活动类别</span>
+        <Select
+          v-model:value="filterEventType"
+          allow-clear
+          class="w-36"
+          :options="eventTypeOptions"
+          placeholder="请选择活动类别"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="dateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
     <Grid>

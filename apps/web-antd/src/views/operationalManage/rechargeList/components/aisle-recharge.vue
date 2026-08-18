@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Select,
@@ -22,6 +21,7 @@ import {
   fetchRechargeListApi,
 } from '#/api/operationManage/recharge';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -120,7 +120,7 @@ const filterPlayerId = ref('');
 const filterPackageId = ref<number | string>('');
 const filterChannelIds = ref<Array<number | string>>([]);
 const filterNickName = ref('');
-const filterStatus = ref<number | string>('');
+const filterStatus = ref<number | string>();
 const filterDataSearchType = ref(0);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
@@ -142,16 +142,16 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AmountType: 1,
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     ChannelIds: filterChannelIds.value,
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     LoginAccount: filterLoginAccount.value,
     NickName: filterNickName.value,
     OrderId: filterOrderId.value,
     PackageId: filterPackageId.value,
     PlayerId: filterPlayerId.value,
-    Status: filterStatus.value,
+    Status: filterStatus.value ?? '',
     TimeType: 1,
   };
 }
@@ -332,7 +332,7 @@ function handleReset() {
   filterPackageId.value = '';
   filterChannelIds.value = [];
   filterNickName.value = '';
-  filterStatus.value = '';
+  filterStatus.value = undefined;
   filterDataSearchType.value = 0;
   filterDateRange.value = [
     dayjs.unix(defaultRange.BeginTime),
@@ -353,88 +353,105 @@ defineExpose({
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-
-      <Input
-        v-model:value="filterPlayerId"
-        allow-clear
-        placeholder="玩家ID"
-        style="width: 180px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>玩家ID</template>
-      </Input>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          style="width: 180px"
-        />
-      </div>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">渠道</span>
-        <ChannelSelect v-model="filterChannelIds" style="width: 260px" />
-      </div>
-
-      <Input
-        v-model:value="filterNickName"
-        allow-clear
-        placeholder="通道名称"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>通道名称</template>
-      </Input>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">状态</span>
-        <Select
-          v-model:value="filterStatus"
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
           allow-clear
-          :options="RECHARGE_STATUS_OPTIONS"
-          placeholder="全部"
-          style="width: 140px"
-        />
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">数据类型</span>
-        <Select
-          v-model:value="filterDataSearchType"
-          :options="memberTypeOptions"
-          style="width: 120px"
-        />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">创建时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPlayerId"
+          allow-clear
+          style="width: 180px"
+          @press-enter="handleSearch"
+          placeholder="请输入玩家ID"
+        >
+          <template #addonBefore>玩家ID</template>
+        </Input>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            style="width: 180px"
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">渠道</span>
+          <ChannelSelect v-model="filterChannelIds" style="width: 260px" placeholder="请输入渠道号" />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterNickName"
+          allow-clear
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入通道名称"
+        >
+          <template #addonBefore>通道名称</template>
+        </Input>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            :options="RECHARGE_STATUS_OPTIONS"
+            style="width: 140px"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="filterDataSearchType"
+            :options="memberTypeOptions"
+            style="width: 120px"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
       </div>
 
       <Space>

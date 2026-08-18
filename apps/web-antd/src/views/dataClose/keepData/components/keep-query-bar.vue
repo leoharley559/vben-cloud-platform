@@ -3,10 +3,16 @@ import type { Dayjs } from 'dayjs';
 
 import { computed, reactive } from 'vue';
 
-import { Button, DatePicker, message, Select } from 'ant-design-vue';
+import {
+  Button,
+  message,
+  Select,
+  Space,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
@@ -102,40 +108,50 @@ defineExpose({ buildQuery, handleSearch });
 
 <template>
   <ReportQueryCard title="查询条件">
-    <Select
-      v-model:value="filters.AdminGroupIds"
-      :max-tag-count="1"
-      :options="adminGroupOptions"
-      allow-clear
-      class="min-w-[180px]"
-      mode="multiple"
-      placeholder="代理模板"
-    />
-    <AccountSelect v-model="filters.AdminIds" class="min-w-[200px]" />
-    <ChannelSelect v-model="filters.ChannelIds" class="min-w-[200px]" />
-    <Select
-      v-model:value="filters.PackageId"
-      :options="packageSelectOptions"
-      allow-clear
-      class="w-44"
-      placeholder="产品"
-      show-search
-    />
-    <Select
-      v-model:value="filters.AppUrl"
-      :max-tag-count="1"
-      :options="iosAppStoreOptions"
-      allow-clear
-      class="min-w-[160px]"
-      mode="multiple"
-      placeholder="上架包"
-    />
-    <DatePicker.RangePicker
-      v-model:value="filters.dateRange"
-      :disabled-date="(current) => disabledKeepDate(current, pickingDate.value)"
-      @calendar-change="onCalendarChange"
-      @open-change="onOpenChange"
-    />
+    <Space.Compact>
+      <span class="query-field-addon">代理模板</span>
+      <Select
+        v-model:value="filters.AdminGroupIds"
+        :max-tag-count="1"
+        :options="adminGroupOptions"
+        allow-clear
+        class="min-w-[180px]"
+        mode="multiple"
+        placeholder="请选择代理模板"
+      />
+    </Space.Compact>
+    <Space.Compact>
+      <span class="query-field-addon">账号</span>
+      <AccountSelect v-model="filters.AdminIds" class="min-w-[200px]" />
+    </Space.Compact>
+    <Space.Compact>
+      <span class="query-field-addon">渠道号</span>
+      <ChannelSelect v-model="filters.ChannelIds" class="min-w-[200px]" placeholder="请输入渠道号" />
+    </Space.Compact>
+    <Space.Compact>
+      <span class="query-field-addon">产品</span>
+      <Select
+        v-model:value="filters.PackageId"
+        :options="packageSelectOptions"
+        allow-clear
+        class="w-44"
+        show-search
+        placeholder="请选择产品"
+      />
+    </Space.Compact>
+    <Space.Compact>
+      <span class="query-field-addon">上架包</span>
+      <Select
+        v-model:value="filters.AppUrl"
+        :max-tag-count="1"
+        :options="iosAppStoreOptions"
+        allow-clear
+        class="min-w-[160px]"
+        mode="multiple"
+        placeholder="请选择上架包"
+      />
+    </Space.Compact>
+    <QueryDatetimeRangePicker v-model="filters.dateRange" precision="date" :disabled-date="(current) => disabledKeepDate(current, pickingDate.value)" />
     <template #actions>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>

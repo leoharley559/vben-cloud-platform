@@ -3,7 +3,14 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import { Button, DatePicker, Input, Select } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  Select,
+  Space,
+} from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -82,25 +89,27 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       签到活动完整对话框尚未迁移，编辑按钮已禁用。
     </div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterId"
-        allow-clear
-        placeholder="活动ID"
-        style="width: 210px"
-      >
-        <template #addonBefore>活动ID</template>
-      </Input>
-      <Select
-        v-model:value="filterEventType"
-        allow-clear
-        class="w-36"
-        :options="eventTypeOptions"
-        placeholder="活动类型"
-      />
-      <DatePicker.RangePicker
-        v-model:value="dateRange"
-        :placeholder="['活动开始', '活动结束']"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterId"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入活动ID"
+        >
+          <template #addonBefore>活动ID</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">活动类型</span>
+        <Select
+          v-model:value="filterEventType"
+          allow-clear
+          class="w-36"
+          :options="eventTypeOptions"
+          placeholder="请选择活动类型"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="dateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
     <Grid>

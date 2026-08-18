@@ -14,10 +14,12 @@ defineOptions({ name: 'ChannelSelect' });
 const props = withDefaults(
   defineProps<{
     multiple?: boolean;
+    placeholder?: string;
     returnName?: boolean;
   }>(),
   {
     multiple: true,
+    placeholder: '请输入渠道号',
     returnName: false,
   },
 );
@@ -90,7 +92,7 @@ onMounted(() => {
     :loading="loading"
     :mode="multiple ? 'multiple' : undefined"
     :options="selectOptions"
-    placeholder="请输入渠道 ID 搜索"
+    :placeholder="placeholder"
     show-search
     @search="handleSearch"
   />

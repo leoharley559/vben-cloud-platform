@@ -178,7 +178,6 @@ function onFieldChange(row: AdvancedFilterRow) {
         <Select
           v-model:value="row.FieldId"
           style="width: 150px"
-          placeholder="字段"
           :options="
             fieldOptions(row.Type).map((item) => ({
               ...item,
@@ -186,6 +185,7 @@ function onFieldChange(row: AdvancedFilterRow) {
             }))
           "
           @change="() => onFieldChange(row)"
+          placeholder="请选择字段"
         />
         <Select
           v-model:value="row.Operator"

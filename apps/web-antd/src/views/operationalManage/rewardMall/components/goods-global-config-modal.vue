@@ -250,10 +250,10 @@ async function handleSubmit() {
             />
           </Form.Item>
           <Form.Item label="生效渠道">
-            <ChannelSelect v-model="validChannels" style="width: 100%" />
+            <ChannelSelect v-model="validChannels" style="width: 100%" placeholder="请输入渠道号" />
           </Form.Item>
           <Form.Item label="屏蔽渠道">
-            <ChannelSelect v-model="invalidChannels" style="width: 100%" />
+            <ChannelSelect v-model="invalidChannels" style="width: 100%" placeholder="请输入渠道号" />
           </Form.Item>
           <Form.Item label="生效包体">
             <Select

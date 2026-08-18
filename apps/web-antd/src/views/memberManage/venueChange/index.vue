@@ -9,14 +9,14 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Form,
   Input,
+  message,
   Modal,
   Result,
   Select,
+  Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -26,6 +26,7 @@ import {
   manualPlatformTransferApi,
 } from '#/api/operationManage/platform-transfer';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -138,9 +139,9 @@ function normalizeLoginAccount(value: string) {
 function getQueryParams(extra?: Record<string, unknown>) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     InGameId: filterInGameId.value,
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value),
     OrderId: filterOrderId.value.trim(),
@@ -423,9 +424,9 @@ onMounted(async () => {
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
-              placeholder="请输入"
               style="width: 260px"
               @press-enter="handleSearch"
+              placeholder="请输入游戏账号"
             >
               <template #addonBefore>游戏账号</template>
             </Input>
@@ -434,60 +435,80 @@ onMounted(async () => {
             <Input
               v-model:value="filterOrderId"
               allow-clear
-              placeholder="请输入"
               style="width: 250px"
               @press-enter="handleSearch"
+              placeholder="请输入流水号"
             >
               <template #addonBefore>流水号</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">转账类型</span>
-            <Select
-              v-model:value="filterType"
-              style="width: 120px"
-              :options="transferTypeOptions"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">转账类型</span>
+              <Select
+                v-model:value="filterType"
+                style="width: 120px"
+                :options="transferTypeOptions"
+                placeholder="请选择转账类型"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">转出账户</span>
-            <Select
-              v-model:value="filterOutGameId"
-              show-search
-              option-filter-prop="label"
-              style="width: 160px"
-              :options="gameOptions"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">转出账户</span>
+              <Select
+                v-model:value="filterOutGameId"
+                show-search
+                option-filter-prop="label"
+                style="width: 160px"
+                :options="gameOptions"
+                placeholder="请选择转出账户"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">转入账户</span>
-            <Select
-              v-model:value="filterInGameId"
-              show-search
-              option-filter-prop="label"
-              style="width: 160px"
-              :options="gameOptions"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">转入账户</span>
+              <Select
+                v-model:value="filterInGameId"
+                show-search
+                option-filter-prop="label"
+                style="width: 160px"
+                :options="gameOptions"
+                placeholder="请选择转入账户"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">状态</span>
-            <Select
-              v-model:value="filterState"
-              style="width: 140px"
-              :options="stateFilterOptions"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">状态</span>
+              <Select
+                v-model:value="filterState"
+                style="width: 140px"
+                :options="stateFilterOptions"
+                placeholder="请选择状态"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">数据类型</span>
-            <Select
-              v-model:value="filterDataSearchType"
-              style="width: 120px"
-              :options="dataSearchTypeOptions"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">数据类型</span>
+              <Select
+                v-model:value="filterDataSearchType"
+                style="width: 120px"
+                :options="dataSearchTypeOptions"
+                placeholder="请选择数据类型"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">时间范围</span>
-            <DatePicker.RangePicker v-model:value="filterDateRange" />
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
+          
           </div>
           <Button :loading="loading" type="primary" @click="handleSearch">
             查询

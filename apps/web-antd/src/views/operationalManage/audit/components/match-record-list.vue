@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   Modal,
@@ -25,6 +24,7 @@ import {
   updateActivityMatchBonusRemarkApi,
 } from '#/api/operationManage/activity-match-bonus';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -120,7 +120,7 @@ function getQueryParams() {
     ApplyNote: filterApplyNote.value.trim(),
     AuditStatus: filterAuditStatus.value ?? '',
     BonusTitle: filterBonusTitle.value.trim(),
-    EndApplyTime: end ? end.endOf('day').unix() : '',
+    EndApplyTime: end ? end.unix() : '',
     IsExp: false,
     LoginAccount: filterLoginAccount.value
       .trim()
@@ -131,8 +131,7 @@ function getQueryParams() {
     PageTitle: filterPageTitle.value.trim(),
     PlayerStatus: filterPlayerStatus.value ?? '',
     ReviewNote: filterReviewNote.value,
-    StartApplyTime: begin
-      ? begin.startOf('day').unix()
+    StartApplyTime: begin ? begin.unix()
       : '',
     VipLevel: filterVipLevel.value,
   };
@@ -480,75 +479,94 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @change="normalizeLoginAccount"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        :options="packageSelectOptions"
-        placeholder="产品名称"
-        style="width: 160px"
-        show-search
-        :filter-option="
-          (input, option) =>
-            String(option?.label ?? '')
-              .toLowerCase()
-              .includes(input.toLowerCase())
-        "
-      />
-      <Input
-        v-model:value="filterBonusTitle"
-        allow-clear
-        placeholder="活动标题"
-        style="width: 180px"
-      >
-        <template #addonBefore>活动标题</template>
-      </Input>
-      <Input
-        v-model:value="filterPageTitle"
-        allow-clear
-        placeholder="活动分页"
-        style="width: 180px"
-      >
-        <template #addonBefore>活动分页</template>
-      </Input>
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单号"
-        style="width: 200px"
-      >
-        <template #addonBefore>订单号</template>
-      </Input>
-      <Input
-        v-model:value="filterApplyNote"
-        allow-clear
-        placeholder="申请信息"
-        style="width: 180px"
-      >
-        <template #addonBefore>申请信息</template>
-      </Input>
-      <Select
-        v-model:value="filterAuditStatus"
-        allow-clear
-        :options="auditStatusOptions"
-        placeholder="审核状态"
-        style="width: 120px"
-      />
-      <Select
-        v-model:value="filterPlayerStatus"
-        allow-clear
-        :options="PLAYER_STATUS_OPTIONS"
-        placeholder="玩家状态"
-        style="width: 120px"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          @change="normalizeLoginAccount"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品名称</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          :options="packageSelectOptions"
+          style="width: 160px"
+          show-search
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
+          placeholder="请选择产品名称"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterBonusTitle"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入活动标题"
+        >
+          <template #addonBefore>活动标题</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPageTitle"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入活动分页"
+        >
+          <template #addonBefore>活动分页</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 200px"
+          placeholder="请输入订单号"
+        >
+          <template #addonBefore>订单号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterApplyNote"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入申请信息"
+        >
+          <template #addonBefore>申请信息</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">审核状态</span>
+        <Select
+          v-model:value="filterAuditStatus"
+          allow-clear
+          :options="auditStatusOptions"
+          style="width: 120px"
+          placeholder="请选择审核状态"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">玩家状态</span>
+        <Select
+          v-model:value="filterPlayerStatus"
+          allow-clear
+          :options="PLAYER_STATUS_OPTIONS"
+          style="width: 120px"
+          placeholder="请选择玩家状态"
+        />
+      </Space.Compact>
       <Select
         v-model:value="filterVipLevel"
         :options="VIP_LEVEL_OPTIONS"
@@ -559,7 +577,7 @@ onMounted(() => {
         :options="reviewNoteOptions"
         style="width: 120px"
       />
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>

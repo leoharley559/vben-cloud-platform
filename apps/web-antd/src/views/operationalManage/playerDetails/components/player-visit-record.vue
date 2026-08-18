@@ -6,13 +6,15 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
   Select,
+  Space,
   Tag,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -101,11 +103,11 @@ function buildFilter() {
   const [begin, end] = filterDateRange.value || [];
   filters.push({
     key: 'BeginTime',
-    value: String(begin ? begin.startOf('day').unix() : ''),
+    value: String(begin ? begin.unix() : ''),
   });
   filters.push({
     key: 'EndTime',
-    value: String(end ? end.endOf('day').unix() : ''),
+    value: String(end ? end.unix() : ''),
   });
   return filters;
 }
@@ -213,38 +215,47 @@ onMounted(async () => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterContentId"
-        allow-clear
-        placeholder="问题编号"
-        style="width: 160px"
-      >
-        <template #addonBefore>问题编号</template>
-      </Input>
-      <Select
-        v-model:value="filterCategoryId"
-        allow-clear
-        :options="categoryOptions"
-        placeholder="一级标题"
-        style="width: 180px"
-      />
-      <Input
-        v-model:value="filterTitle"
-        allow-clear
-        placeholder="二级标题"
-        style="width: 260px"
-      >
-        <template #addonBefore>二级标题</template>
-      </Input>
-      <Input
-        v-model:value="filterContent"
-        allow-clear
-        placeholder="三级内容"
-        style="width: 260px"
-      >
-        <template #addonBefore>三级内容</template>
-      </Input>
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterContentId"
+          allow-clear
+          style="width: 160px"
+          placeholder="请输入问题编号"
+        >
+          <template #addonBefore>问题编号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">一级标题</span>
+        <Select
+          v-model:value="filterCategoryId"
+          allow-clear
+          :options="categoryOptions"
+          style="width: 180px"
+          placeholder="请选择一级标题"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterTitle"
+          allow-clear
+          style="width: 260px"
+          placeholder="请输入二级标题"
+        >
+          <template #addonBefore>二级标题</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterContent"
+          allow-clear
+          style="width: 260px"
+          placeholder="请输入三级内容"
+        >
+          <template #addonBefore>三级内容</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>

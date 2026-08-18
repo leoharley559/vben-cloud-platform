@@ -4,12 +4,13 @@ import type { PlayerCreditRecordItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Input, Select, Space, Tag } from 'ant-design-vue';
+import { Button, Input, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerCreditRecordListApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -49,9 +50,9 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     IsBO: 1,
     OrderId: filterOrderId.value,
     PlayerAccountId: String(props.playerId),
@@ -159,21 +160,23 @@ onMounted(() => props.playerId && gridApi.reload());
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-        @press-enter="gridApi.reload()"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 220px"
+          @press-enter="gridApi.reload()"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterWalletType"
         :options="CREDIT_WALLET_TYPE_OPTIONS"
         style="width: 140px"
       />
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Space>
         <Button :loading="loading" type="primary" @click="gridApi.reload()">
           查询

@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Space,
@@ -20,6 +19,7 @@ import {
 } from '#/api/memberManage/card-multi-bind';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatCardMultiBindCategory } from '#/types/card-multi-bind';
 
@@ -56,8 +56,8 @@ function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     BankAccount: filterBankAccount.value.trim() || undefined,
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     ...extra,
   };
 }
@@ -155,16 +155,16 @@ onMounted(() => {
         <Input
           v-model:value="filterBankAccount"
           allow-clear
-          placeholder="请输入"
           style="width: 250px"
           @press-enter="handleSearch"
+          placeholder="请输入账号"
         >
           <template #addonBefore>账号</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">添加时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+      
       </div>
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">

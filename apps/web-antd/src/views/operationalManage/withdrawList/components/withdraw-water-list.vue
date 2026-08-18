@@ -10,7 +10,6 @@ import { useRouter } from 'vue-router';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   Modal,
@@ -30,6 +29,7 @@ import {
   updateWithdrawWaterStatusApi,
 } from '#/api/operationManage/withdraw-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -105,9 +105,9 @@ function formatWaterStatus(status?: number) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     ChannelId: filterChannelId.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     HandlerName: filterHandlerName.value,
     LoginAccount: filterLoginAccount.value,
     PackageIds: filterPackageId.value,
@@ -306,14 +306,16 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterPackageId"
         :options="
@@ -326,28 +328,32 @@ onMounted(() => {
         "
         style="width: 160px"
       />
-      <Input
-        v-model:value="filterChannelId"
-        allow-clear
-        placeholder="渠道号"
-        style="width: 160px"
-      >
-        <template #addonBefore>渠道号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterChannelId"
+          allow-clear
+          style="width: 160px"
+          placeholder="请输入渠道号"
+        >
+          <template #addonBefore>渠道号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterStatus"
         :options="statusOptions"
         style="width: 140px"
       />
-      <Input
-        v-model:value="filterHandlerName"
-        allow-clear
-        placeholder="操作人"
-        style="width: 160px"
-      >
-        <template #addonBefore>操作人</template>
-      </Input>
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterHandlerName"
+          allow-clear
+          style="width: 160px"
+          placeholder="请输入操作人"
+        >
+          <template #addonBefore>操作人</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>

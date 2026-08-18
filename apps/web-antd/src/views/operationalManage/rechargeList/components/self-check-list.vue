@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -25,6 +24,7 @@ import {
   updateSelfCheckGameSwitchApi,
 } from '#/api/operationManage/recharge-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -68,7 +68,7 @@ const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>('');
 const filterGameOrderIdOrigin = ref('');
 const filterOrderId = ref('');
-const filterStatus = ref<number | string>('');
+const filterStatus = ref<number | string>();
 const filterReviewName = ref('');
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
@@ -89,14 +89,14 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     GameOrderIdOrigin: filterGameOrderIdOrigin.value,
     LoginAccount: filterLoginAccount.value,
     OrderId: filterOrderId.value,
     PackageIds: filterPackageId.value,
     ReviewName: filterReviewName.value,
-    Status: filterStatus.value,
+    Status: filterStatus.value ?? '',
   };
 }
 
@@ -291,59 +291,74 @@ onMounted(() => {
     </div>
 
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @press-enter="gridApi.reload()"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Select
-        v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
-        style="width: 160px"
-      />
-      <Input
-        v-model:value="filterGameOrderIdOrigin"
-        allow-clear
-        placeholder="游戏订单编号"
-        style="width: 220px"
-      >
-        <template #addonBefore>游戏订单</template>
-      </Input>
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 200px"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-      <Select
-        v-model:value="filterStatus"
-        allow-clear
-        :options="SELF_CHECK_STATUS_OPTIONS"
-        placeholder="状态"
-        style="width: 140px"
-      />
-      <Input
-        v-model:value="filterReviewName"
-        allow-clear
-        placeholder="操作人"
-        style="width: 160px"
-      >
-        <template #addonBefore>操作人</template>
-      </Input>
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          @press-enter="gridApi.reload()"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品</span>
+        <Select
+          v-model:value="filterPackageId"
+          :options="
+            packageOptions
+              .filter((item) => item.PackageId !== '')
+              .map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+          "
+          style="width: 160px"
+          placeholder="请选择产品"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterGameOrderIdOrigin"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入游戏订单"
+        >
+          <template #addonBefore>游戏订单</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 200px"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">状态</span>
+        <Select
+          v-model:value="filterStatus"
+          allow-clear
+          :options="SELF_CHECK_STATUS_OPTIONS"
+          style="width: 140px"
+          placeholder="请选择状态"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterReviewName"
+          allow-clear
+          style="width: 160px"
+          placeholder="请输入操作人"
+        >
+          <template #addonBefore>操作人</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>

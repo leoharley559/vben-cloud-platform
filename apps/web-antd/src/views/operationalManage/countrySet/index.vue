@@ -289,15 +289,17 @@ onMounted(() => {
       </div>
 
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterName"
-          allow-clear
-          placeholder="请输入国家名称"
-          style="width: 260px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>国家名称</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterName"
+            allow-clear
+            style="width: 260px"
+            @press-enter="handleSearch"
+            placeholder="请输入国家名称"
+          >
+            <template #addonBefore>国家名称</template>
+          </Input>
+        </div>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="resetFilters">重置</Button>
         <div class="ml-auto flex flex-wrap gap-2">

@@ -7,11 +7,11 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Empty,
   message,
   Result,
   Select,
+  Space,
   Spin,
   Table,
   Tooltip,
@@ -20,6 +20,7 @@ import dayjs from 'dayjs';
 
 import { fetchTeamDailyListApi } from '#/api/promotion/team-daily';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatTeamQueryMoney } from '#/utils/promotion';
@@ -289,20 +290,18 @@ onMounted(() => {
             <div class="history-hint">昨日数据需在 00:30 后生成</div>
           </div>
           <div class="query-bar">
-            <Select
-              v-model:value="filterAdminId"
-              allow-clear
-              :options="teamAccountOptions"
-              placeholder="全部推广账号"
-              show-search
-              style="width: 220px"
-            />
-            <DatePicker.RangePicker
-              v-model:value="filterDateRange"
-              :disabled-date="disabledDate"
-              @calendar-change="onCalendarChange"
-              @open-change="(open) => !open && (rangeSelecting = undefined)"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">推广账号</span>
+              <Select
+                v-model:value="filterAdminId"
+                allow-clear
+                :options="teamAccountOptions"
+                show-search
+                style="width: 220px"
+                placeholder="请选择推广账号"
+              />
+            </Space.Compact>
+            <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" :disabled-date="disabledDate" />
             <Button type="primary" @click="loadData">查询</Button>
             <Button @click="reset">重置</Button>
           </div>

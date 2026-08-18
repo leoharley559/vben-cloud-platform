@@ -11,6 +11,7 @@ import {
   RadioButton,
   RadioGroup,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -290,32 +291,47 @@ onMounted(() => {
 <template>
   <div>
     <ReportQueryCard title="查询条件">
-      <Select
-        v-model:value="filters.DataSearchType"
-        :options="dataSearchTypeOptions"
-        class="w-36"
-        placeholder="数据类型"
-      />
-      <AccountSelect v-model="filters.AdminIds" class="min-w-[180px]" />
-      <ChannelSelect v-model="filters.ChannelIds" class="min-w-[180px]" />
-      <Select
-        v-model:value="filters.PackageId"
-        :options="packageSelectOptions"
-        allow-clear
-        class="w-40"
-        placeholder="产品"
-        show-search
-        option-filter-prop="label"
-      />
-      <Select
-        v-model:value="filters.AppUrl"
-        :max-tag-count="1"
-        :options="iosAppStoreOptions"
-        allow-clear
-        class="min-w-[160px]"
-        mode="multiple"
-        placeholder="上架包"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">数据类型</span>
+        <Select
+          v-model:value="filters.DataSearchType"
+          :options="dataSearchTypeOptions"
+          class="w-36"
+          placeholder="请选择数据类型"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">账号</span>
+        <AccountSelect v-model="filters.AdminIds" class="min-w-[180px]" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">渠道号</span>
+        <ChannelSelect v-model="filters.ChannelIds" class="min-w-[180px]" placeholder="请输入渠道号" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">产品</span>
+        <Select
+          v-model:value="filters.PackageId"
+          :options="packageSelectOptions"
+          allow-clear
+          class="w-40"
+          show-search
+          option-filter-prop="label"
+          placeholder="请选择产品"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">上架包</span>
+        <Select
+          v-model:value="filters.AppUrl"
+          :max-tag-count="1"
+          :options="iosAppStoreOptions"
+          allow-clear
+          class="min-w-[160px]"
+          mode="multiple"
+          placeholder="请选择上架包"
+        />
+      </Space.Compact>
       <DatePicker v-model:value="filters.beginDate" placeholder="开始日期" />
       <DatePicker v-model:value="filters.endDate" placeholder="结束日期" />
       <template #actions>

@@ -9,16 +9,17 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Input,
+  message,
   Result,
   Select,
-  message,
+  Space,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchFundFlowListApi } from '#/api/memberManage/fund-flow';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -128,9 +129,9 @@ function normalizeLoginAccount(value: string) {
 function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     LogId: filterLogId.value.trim(),
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value),
     PackageId: filterPackageId.value,
@@ -296,9 +297,9 @@ onMounted(async () => {
             <Input
               v-model:value="filterLogId"
               allow-clear
-              placeholder="请输入"
               style="width: 260px"
               @press-enter="handleSearch"
+              placeholder="请输入订单号"
             >
               <template #addonBefore>订单号</template>
             </Input>
@@ -307,53 +308,59 @@ onMounted(async () => {
             <Input
               v-model:value="filterLoginAccount"
               allow-clear
-              placeholder="请输入"
               style="width: 260px"
               @press-enter="handleSearch"
+              placeholder="请输入游戏账号"
             >
               <template #addonBefore>游戏账号</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">所属产品</span>
-            <Select
-              v-model:value="filterPackageId"
-              show-search
-              option-filter-prop="label"
-              style="width: 160px"
-              :options="packageSelectOptions"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">所属产品</span>
+              <Select
+                v-model:value="filterPackageId"
+                show-search
+                option-filter-prop="label"
+                style="width: 160px"
+                :options="packageSelectOptions"
+                placeholder="请选择所属产品"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">账变类型</span>
-            <Select
-              v-model:value="filterReason"
-              allow-clear
-              mode="multiple"
-              :max-tag-count="1"
-              show-search
-              option-filter-prop="label"
-              placeholder="请选择"
-              style="min-width: 180px"
-              :options="reasonOptions"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">账变类型</span>
+              <Select
+                v-model:value="filterReason"
+                allow-clear
+                mode="multiple"
+                :max-tag-count="1"
+                show-search
+                option-filter-prop="label"
+                style="min-width: 180px"
+                :options="reasonOptions"
+                placeholder="请选择账变类型"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">数据类型</span>
-            <Select
-              v-model:value="filterDataSearchType"
-              style="width: 120px"
-              :options="dataSearchTypeOptions"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">数据类型</span>
+              <Select
+                v-model:value="filterDataSearchType"
+                style="width: 120px"
+                :options="dataSearchTypeOptions"
+                placeholder="请选择数据类型"
+              />
+            </Space.Compact>
+          
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs text-gray-500">时间范围（最多 180 天）</span>
-            <DatePicker.RangePicker
-              v-model:value="filterDateRange"
-              :disabled-date="disabledDate"
-              @calendar-change="onCalendarChange"
-              @open-change="(open) => !open && (rangeSelecting = undefined)"
-            />
+            <QueryDatetimeRangePicker v-model="filterDateRange" label="时间范围（最多 180 天）" :disabled-date="disabledDate" />
+          
           </div>
           <Button :loading="loading" type="primary" @click="handleSearch">
             查询

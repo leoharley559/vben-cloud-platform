@@ -238,7 +238,7 @@ watch(
     </Space>
     <SummaryCards :items="summaryItems" />
     <Space class="mb-3">
-      <Input v-model:value="bulkNote" :maxlength="400" placeholder="批量备注" style="width: 320px" />
+      <Input v-model:value="bulkNote" :maxlength="400" style="width: 320px" placeholder="请输入批量备注" />
       <Button @click="applyBulkNote">应用到已选有效记录</Button>
     </Space>
     <Table

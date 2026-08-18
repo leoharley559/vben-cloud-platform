@@ -4,11 +4,18 @@ import type { RecordQueryBaseQuery, RecordQueryListResult } from '#/types/netcas
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, DatePicker, Input, message, Select } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  message,
+  Select,
+  Space,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 
 type QueryKind = 'bonus' | 'standard' | 'transaction';
@@ -188,8 +195,8 @@ function build(
       BonusType: Array.isArray(base.BonusType)
         ? base.BonusType.join(',')
         : base.BonusType,
-      FinishBeginTime: finishRange.value?.[0]?.startOf('day').unix() || '',
-      FinishEndTime: finishRange.value?.[1]?.endOf('day').unix() || '',
+      FinishBeginTime: finishRange.value?.[0]?.unix() || '',
+      FinishEndTime: finishRange.value?.[1]?.unix() || '',
     };
   }
   return {
@@ -373,60 +380,180 @@ onMounted(() => {
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
       <template v-if="kind === 'standard'">
-        <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" style="width: 220px" @press-enter="search">
-          <template #addonBefore>代理账号</template>
-        </Input>
-        <Input v-model:value="query.LoginAccount" allow-clear placeholder="游戏账号" style="width: 220px" @blur="cleanLoginAccount" @press-enter="search">
-          <template #addonBefore>游戏账号</template>
-        </Input>
-        <Select v-model:value="query.PackageId" allow-clear :options="packages" placeholder="所属产品" style="width: 160px" />
-        <Select v-if="config.showDataType" v-model:value="query.DataSearchType" :options="dataTypes" placeholder="数据类型" style="width: 130px" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.AgentAccount"
+            allow-clear
+            style="width: 220px"
+            @press-enter="search"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.LoginAccount"
+            allow-clear
+            style="width: 220px"
+            @blur="cleanLoginAccount"
+            @press-enter="search"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select v-model:value="query.PackageId" allow-clear :options="packages" style="width: 160px" placeholder="请选择所属产品" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select v-if="config.showDataType" v-model:value="query.DataSearchType" :options="dataTypes" style="width: 130px" placeholder="请选择数据类型" />
+        </Space.Compact>
       </template>
 
       <template v-else-if="kind === 'bonus'">
-        <Input v-model:value="query.LoginAccount" allow-clear placeholder="游戏账号" style="width: 220px" @blur="cleanLoginAccount" @press-enter="search">
-          <template #addonBefore>游戏账号</template>
-        </Input>
-        <Input v-model:value="query.OrderId" allow-clear placeholder="订单号" style="width: 220px" @press-enter="search">
-          <template #addonBefore>订单号</template>
-        </Input>
-        <Input v-model:value="query.Username" allow-clear placeholder="代理账号" style="width: 220px" @press-enter="search">
-          <template #addonBefore>代理账号</template>
-        </Input>
-        <Input v-model:value="query.BonusTitle" allow-clear placeholder="红利标题" style="width: 220px" @press-enter="search">
-          <template #addonBefore>红利标题</template>
-        </Input>
-        <Input v-model:value="query.OperatorAccount" allow-clear placeholder="申请人/审核人" style="width: 180px">
-          <template #addonBefore>
-            <Select v-model:value="query.OperatorAccountType" :options="[{ label: '申请人', value: 1 }, { label: '审核人', value: 2 }]" style="width: 100px" />
-          </template>
-        </Input>
-        <Input v-model:value="query.OperatorRemark" allow-clear placeholder="申请/审核备注" style="width: 200px">
-          <template #addonBefore>
-            <Select v-model:value="query.OperatorRemarkType" :options="[{ label: '申请备注', value: 1 }, { label: '审核备注', value: 2 }]" style="width: 100px" />
-          </template>
-        </Input>
-        <Select v-model:value="query.PackageId" allow-clear :options="packages" placeholder="所属产品" style="width: 160px" />
-        <Select v-model:value="query.BonusType" mode="multiple" :max-tag-count="1" :options="bonusTypes" placeholder="红利类型" style="width: 180px" />
-        <Select v-model:value="query.VipLevel" :options="vipLevels" placeholder="会员等级" style="width: 150px" />
-        <Select v-model:value="query.DataSearchType" :options="dataTypes.slice(0, 2)" placeholder="数据类型" style="width: 130px" />
-        <Select v-model:value="query.IsWater" :options="waterOptions" placeholder="是否需要流水" style="width: 150px" />
-        <Select v-model:value="query.Status" :options="statusOptions" placeholder="状态" style="width: 130px" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.LoginAccount"
+            allow-clear
+            style="width: 220px"
+            @blur="cleanLoginAccount"
+            @press-enter="search"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.OrderId"
+            allow-clear
+            style="width: 220px"
+            @press-enter="search"
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.Username"
+            allow-clear
+            style="width: 220px"
+            @press-enter="search"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.BonusTitle"
+            allow-clear
+            style="width: 220px"
+            @press-enter="search"
+            placeholder="请输入红利标题"
+          >
+            <template #addonBefore>红利标题</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.OperatorAccount"
+            allow-clear
+            style="width: 280px"
+            placeholder="请输入账号"
+          >
+            <template #addonBefore>
+              <Select
+                v-model:value="query.OperatorAccountType"
+                :bordered="false"
+                :options="[
+                  { label: '申请人', value: 1 },
+                  { label: '审核人', value: 2 },
+                ]"
+                style="width: 100px"
+              />
+            </template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.OperatorRemark"
+            allow-clear
+            style="width: 300px"
+            placeholder="请输入备注"
+          >
+            <template #addonBefore>
+              <Select
+                v-model:value="query.OperatorRemarkType"
+                :bordered="false"
+                :options="[
+                  { label: '申请备注', value: 1 },
+                  { label: '审核备注', value: 2 },
+                ]"
+                style="width: 100px"
+              />
+            </template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select v-model:value="query.PackageId" allow-clear :options="packages" style="width: 160px" placeholder="请选择所属产品" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">红利类型</span>
+          <Select v-model:value="query.BonusType" mode="multiple" :max-tag-count="1" :options="bonusTypes" style="width: 180px" placeholder="请选择红利类型" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">会员等级</span>
+          <Select v-model:value="query.VipLevel" :options="vipLevels" style="width: 150px" placeholder="请选择会员等级" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select v-model:value="query.DataSearchType" :options="dataTypes.slice(0, 2)" style="width: 130px" placeholder="请选择数据类型" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">是否需要流水</span>
+          <Select v-model:value="query.IsWater" :options="waterOptions" style="width: 150px" placeholder="请选择是否需要流水" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select v-model:value="query.Status" :options="statusOptions" style="width: 130px" placeholder="请选择状态" />
+        </Space.Compact>
       </template>
 
       <template v-else>
-        <Input v-model:value="query.AdminAccount" allow-clear placeholder="代理账号" style="width: 220px" @press-enter="search">
-          <template #addonBefore>代理账号</template>
-        </Input>
-        <Select v-model:value="query.WalletType" :options="walletOptions" placeholder="钱包类型" style="width: 140px" />
-        <Select v-model:value="query.TransferType" :options="config.transferTypeOptions" placeholder="账变类型" style="width: 170px" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.AdminAccount"
+            allow-clear
+            style="width: 220px"
+            @press-enter="search"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">钱包类型</span>
+          <Select v-model:value="query.WalletType" :options="walletOptions" style="width: 140px" placeholder="请选择钱包类型" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">账变类型</span>
+          <Select v-model:value="query.TransferType" :options="config.transferTypeOptions" style="width: 170px" placeholder="请选择账变类型" />
+        </Space.Compact>
       </template>
 
-      <span>{{ kind === 'bonus' ? '申请时间' : kind === 'transaction' ? '账变时间' : '日期' }}</span>
-      <DatePicker.RangePicker v-model:value="primaryRange" :disabled-date="disableStandardDate" />
+      <QueryDatetimeRangePicker
+        v-model="primaryRange"
+        :disabled-date="disableStandardDate"
+        :label="kind === 'bonus' ? '申请时间' : kind === 'transaction' ? '账变时间' : '日期'"
+      />
       <template v-if="kind === 'bonus'">
-        <span>审核时间</span>
-        <DatePicker.RangePicker v-model:value="finishRange" />
+        <QueryDatetimeRangePicker v-model="finishRange" label="审核时间" />
       </template>
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>

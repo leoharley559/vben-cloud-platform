@@ -4,7 +4,9 @@ import type { GameTitleBatchEditPayload } from '#/types/game-title';
 
 import { reactive, ref, watch } from 'vue';
 
-import { DatePicker, Form, Modal, Select, message } from 'ant-design-vue';
+import { Form, Modal, Select, message } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 defineOptions({ name: 'GameTitleBatchEditModal' });
@@ -81,20 +83,7 @@ defineExpose({
   >
     <Form layout="vertical">
       <Form.Item v-if="type === 'calTime'" label="条件计算时间" required>
-        <DatePicker.RangePicker
-          v-model:value="form.calRange"
-          class="w-full"
-          :presets="[
-            {
-              label: '近7天',
-              value: [dayjs().subtract(6, 'day'), dayjs()],
-            },
-            {
-              label: '近30天',
-              value: [dayjs().subtract(29, 'day'), dayjs()],
-            },
-          ]"
-        />
+        <QueryDatetimeRangePicker v-model="form.calRange" />
       </Form.Item>
       <Form.Item v-else label="VIP 等级">
         <div class="flex items-center gap-2">

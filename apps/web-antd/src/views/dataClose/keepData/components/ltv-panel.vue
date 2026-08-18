@@ -3,7 +3,13 @@ import type { TableColumnType } from 'ant-design-vue';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, message, Select, Table } from 'ant-design-vue';
+import {
+  Button,
+  message,
+  Select,
+  Space,
+  Table,
+} from 'ant-design-vue';
 
 import { fetchKeepDataLtvListApi } from '#/api/dataClose/keep-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -207,15 +213,18 @@ onMounted(() => {
     <div v-show="!showDetails">
       <KeepQueryBar ref="queryBarRef" @search="handleSearch" />
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <Select
-          v-model:value="moreData"
-          :options="moreOptions"
-          allow-clear
-          class="min-w-[220px]"
-          mode="multiple"
-          placeholder="显示更多数据"
-          @change="onMoreChange"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">显示更多数据</span>
+          <Select
+            v-model:value="moreData"
+            :options="moreOptions"
+            allow-clear
+            class="min-w-[220px]"
+            mode="multiple"
+            @change="onMoreChange"
+            placeholder="请选择显示更多数据"
+          />
+        </Space.Compact>
         <Button v-if="canExport" type="primary" @click="handleExport">
           导出Excel
         </Button>

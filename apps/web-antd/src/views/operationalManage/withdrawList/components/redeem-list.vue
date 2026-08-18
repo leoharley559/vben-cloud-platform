@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -29,6 +28,7 @@ import {
   withdrawNoticeApi,
 } from '#/api/operationManage/withdraw';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -99,7 +99,7 @@ const filterRiskAuditorName = ref('');
 const filterShowName = ref('');
 const filterChannelIds = ref<Array<number | string>>([]);
 const filterPackageId = ref<number | string>('');
-const filterWithdrawStatus = ref<number | string>('');
+const filterWithdrawStatus = ref<number | string>();
 const filterRiskStatus = ref<number | string>('');
 const filterSelectTimeType = ref(1);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
@@ -171,9 +171,9 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AccountNum: filterAccountNum.value,
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     ChannelIds: filterChannelIds.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     HandlerName: filterHandlerName.value,
     LoginAccount: filterLoginAccount.value,
     OrderId: filterOrderId.value,
@@ -184,7 +184,7 @@ function getQueryParams() {
     RiskStatus: filterRiskStatus.value,
     SelectTimeType: filterSelectTimeType.value,
     ShowName: filterShowName.value,
-    WithdrawStatus: filterWithdrawStatus.value,
+    WithdrawStatus: filterWithdrawStatus.value ?? '',
   };
 }
 
@@ -545,7 +545,7 @@ function filterUntreatedOrders() {
 
 /** 对齐旧站 fnHangUp：筛选挂起订单 */
 function filterHangupOrders() {
-  filterWithdrawStatus.value = '';
+  filterWithdrawStatus.value = undefined;
   filterRiskStatus.value = 3;
   gridApi.reload();
 }
@@ -561,7 +561,7 @@ function handleReset() {
   filterShowName.value = '';
   filterChannelIds.value = [];
   filterPackageId.value = '';
-  filterWithdrawStatus.value = '';
+  filterWithdrawStatus.value = undefined;
   filterRiskStatus.value = '';
   filterSelectTimeType.value = 1;
   filterDateRange.value = [
@@ -581,128 +581,153 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-
-      <Input
-        v-model:value="filterPlayerId"
-        allow-clear
-        placeholder="玩家ID"
-        style="width: 180px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>玩家ID</template>
-      </Input>
-
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-
-      <Input
-        v-model:value="filterAccountNum"
-        allow-clear
-        placeholder="出款账号"
-        style="width: 240px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>出款账号</template>
-      </Input>
-
-      <Input
-        v-model:value="filterRealName"
-        allow-clear
-        placeholder="真实姓名"
-        style="width: 180px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>真实姓名</template>
-      </Input>
-
-      <Input
-        v-model:value="filterHandlerName"
-        allow-clear
-        placeholder="操作人员"
-        style="width: 180px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>操作人员</template>
-      </Input>
-
-      <Input
-        v-model:value="filterRiskAuditorName"
-        allow-clear
-        placeholder="风控人员"
-        style="width: 180px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>风控人员</template>
-      </Input>
-
-      <Input
-        v-model:value="filterShowName"
-        allow-clear
-        placeholder="出款通道"
-        style="width: 200px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>出款通道</template>
-      </Input>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">渠道</span>
-        <ChannelSelect v-model="filterChannelIds" style="width: 260px" />
-      </div>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          style="width: 180px"
-        />
-      </div>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">状态</span>
-        <Select
-          v-model:value="filterWithdrawStatus"
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
           allow-clear
-          :options="WITHDRAW_STATUS_OPTIONS"
-          placeholder="全部"
-          style="width: 140px"
-        />
+          style="width: 200px"
+          @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">时间类型</span>
-        <Select
-          v-model:value="filterSelectTimeType"
-          :options="WITHDRAW_TIME_TYPE_OPTIONS"
-          style="width: 120px"
-        />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPlayerId"
+          allow-clear
+          style="width: 180px"
+          @press-enter="handleSearch"
+          placeholder="请输入玩家ID"
+        >
+          <template #addonBefore>玩家ID</template>
+        </Input>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">时间范围</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterAccountNum"
+          allow-clear
+          style="width: 240px"
+          @press-enter="handleSearch"
+          placeholder="请输入出款账号"
+        >
+          <template #addonBefore>出款账号</template>
+        </Input>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterRealName"
+          allow-clear
+          style="width: 180px"
+          @press-enter="handleSearch"
+          placeholder="请输入真实姓名"
+        >
+          <template #addonBefore>真实姓名</template>
+        </Input>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterHandlerName"
+          allow-clear
+          style="width: 180px"
+          @press-enter="handleSearch"
+          placeholder="请输入操作人员"
+        >
+          <template #addonBefore>操作人员</template>
+        </Input>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterRiskAuditorName"
+          allow-clear
+          style="width: 180px"
+          @press-enter="handleSearch"
+          placeholder="请输入风控人员"
+        >
+          <template #addonBefore>风控人员</template>
+        </Input>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterShowName"
+          allow-clear
+          style="width: 200px"
+          @press-enter="handleSearch"
+          placeholder="请输入出款通道"
+        >
+          <template #addonBefore>出款通道</template>
+        </Input>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">渠道</span>
+          <ChannelSelect v-model="filterChannelIds" style="width: 260px" placeholder="请输入渠道号" />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            style="width: 180px"
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterWithdrawStatus"
+            allow-clear
+            :options="WITHDRAW_STATUS_OPTIONS"
+            style="width: 140px"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">时间类型</span>
+          <Select
+            v-model:value="filterSelectTimeType"
+            :options="WITHDRAW_TIME_TYPE_OPTIONS"
+            style="width: 120px"
+            placeholder="请选择时间类型"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
       </div>
 
       <Space>

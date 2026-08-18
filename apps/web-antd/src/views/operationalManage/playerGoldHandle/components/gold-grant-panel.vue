@@ -6,12 +6,13 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Select,
+  Space,
   Table,
   Tabs,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -461,29 +462,34 @@ void loadRedTitles();
       <Tabs.TabPane v-if="canSingle" key="single" tab="单人发放">
         <div class="pt-2">
           <div class="mb-4 flex flex-wrap items-end gap-2">
-            <Input
-              v-model:value="queryForm.LoginAccount"
-              allow-clear
-              placeholder="请输入"
-              style="width: 240px"
-              @blur="
-                () => {
-                  if (queryForm.LoginAccount && queryForm.PackageName) {
-                    void queryPlayer();
+            <div class="flex flex-col gap-1">
+              <Input
+                v-model:value="queryForm.LoginAccount"
+                allow-clear
+                style="width: 240px"
+                @blur="
+                  () => {
+                    if (queryForm.LoginAccount && queryForm.PackageName) {
+                      void queryPlayer();
+                    }
                   }
-                }
-              "
-            >
-              <template #addonBefore>游戏账号</template>
-            </Input>
-            <Select
-              v-model:value="queryForm.PackageName"
-              allow-clear
-              class="w-48"
-              :options="packageSelectOptions"
-              placeholder="请选择产品"
-              show-search
-            />
+                "
+                placeholder="请输入游戏账号"
+              >
+                <template #addonBefore>游戏账号</template>
+              </Input>
+            </div>
+            <Space.Compact>
+              <span class="query-field-addon">产品</span>
+              <Select
+                v-model:value="queryForm.PackageName"
+                allow-clear
+                class="w-48"
+                :options="packageSelectOptions"
+                placeholder="请选择产品"
+                show-search
+              />
+            </Space.Compact>
             <Button type="primary" :loading="querying" @click="queryPlayer">
               查询玩家
             </Button>

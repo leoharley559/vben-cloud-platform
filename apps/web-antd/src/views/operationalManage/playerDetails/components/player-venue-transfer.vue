@@ -6,7 +6,6 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   Modal,
@@ -16,6 +15,8 @@ import {
   Space,
   Tag,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -143,9 +144,9 @@ function getStateColor(state?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     OrderId: filterOrderId.value,
     PlayerId: String(props.playerId),
     State: filterState.value,
@@ -385,37 +386,44 @@ onMounted(async () => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">转账类型</span>
-        <Select
-          v-model:value="filterType"
-          :options="TYPE_OPTIONS"
-          style="width: 120px"
-        />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">状态</span>
-        <Select
-          v-model:value="filterState"
-          :options="STATE_OPTIONS"
-          style="width: 120px"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">转账类型</span>
+          <Select
+            v-model:value="filterType"
+            :options="TYPE_OPTIONS"
+            style="width: 120px"
+            placeholder="请选择转账类型"
+          />
+        </Space.Compact>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">转账时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterState"
+            :options="STATE_OPTIONS"
+            style="width: 120px"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="转账时间" />
       </div>
 
       <Space>

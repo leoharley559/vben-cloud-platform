@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Select,
@@ -15,6 +14,8 @@ import {
   Tag,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -297,8 +298,8 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
           Title: filterTitle.value.trim(),
         };
         if (filterDateRange.value?.[0] && filterDateRange.value?.[1]) {
-          query.BeginTime = filterDateRange.value?.[0]?.startOf('day').unix() || '';
-          query.EndTime = filterDateRange.value?.[1]?.endOf('day').unix() || '';
+          query.BeginTime = filterDateRange.value?.[0]?.unix() || '';
+          query.EndTime = filterDateRange.value?.[1]?.unix() || '';
         }
         const result = await fetchGameNoticeListApi(query);
         const items = (result.Items || []) as unknown as NoticeRow[];
@@ -397,14 +398,16 @@ function handleDelete(row: NoticeRow) {
   <div v-if="canViewTable || canCreate">
     <!-- 查询区与旧站 notice.vue Filters 对齐：发布者 / 状态 / 公告标题 / 日期 / 查询重置 / 新增 -->
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterCreator"
-        allow-clear
-        placeholder="请输入"
-        style="width: 250px"
-      >
-        <template #addonBefore>发布者</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterCreator"
+          allow-clear
+          style="width: 250px"
+          placeholder="请输入发布者"
+        >
+          <template #addonBefore>发布者</template>
+        </Input>
+      </div>
 
       <div class="flex items-center gap-1">
         <span class="whitespace-nowrap text-sm text-gray-500">状态</span>
@@ -417,16 +420,18 @@ function handleDelete(row: NoticeRow) {
         />
       </div>
 
-      <Input
-        v-model:value="filterTitle"
-        allow-clear
-        placeholder="请输入"
-        style="width: 280px"
-      >
-        <template #addonBefore>公告标题</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterTitle"
+          allow-clear
+          style="width: 280px"
+          placeholder="请输入公告标题"
+        >
+          <template #addonBefore>公告标题</template>
+        </Input>
+      </div>
 
-      <DatePicker.RangePicker v-model:value="filterDateRange" allow-clear />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canCreate" type="primary" @click="openCreate">新增</Button>

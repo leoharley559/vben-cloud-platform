@@ -3,7 +3,9 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, Result, Space } from 'ant-design-vue';
+import { Button, Result, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchCloudCoinDailyListApi } from '#/api/systemManage/extra';
@@ -128,11 +130,7 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable" class="space-y-4">
     <div class="flex flex-wrap items-center gap-2">
-      <span class="text-sm text-gray-500">云币日报</span>
-      <DatePicker.RangePicker
-        v-model:value="filterDateRange"
-        format="YYYY-MM-DD"
-      />
+      <QueryDatetimeRangePicker v-model="filterDateRange" label="云币日报" precision="date" />
       <Space>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>

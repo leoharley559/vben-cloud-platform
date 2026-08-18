@@ -252,9 +252,9 @@ onMounted(() => {
         <Input
           v-model:value="filterCountryName"
           allow-clear
-          placeholder="请输入"
           style="width: 240px"
           @press-enter="handleSearch"
+          placeholder="请输入国家名称"
         >
           <template #addonBefore>国家名称</template>
         </Input>
@@ -263,9 +263,9 @@ onMounted(() => {
         <Input
           v-model:value="filterDialingCode"
           allow-clear
-          placeholder="请输入"
           style="width: 200px"
           @press-enter="handleSearch"
+          placeholder="请输入区码"
         >
           <template #addonBefore>区码</template>
         </Input>

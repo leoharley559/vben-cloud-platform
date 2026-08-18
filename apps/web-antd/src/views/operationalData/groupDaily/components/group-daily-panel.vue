@@ -369,8 +369,8 @@ onMounted(async () => {
   <div class="flex flex-col gap-4">
     <div class="mb-1">
       <Space wrap class="w-full">
-        <Space>
-          <span class="text-sm text-gray-500">选择分类</span>
+        <Space.Compact>
+          <span class="query-field-addon">选择分类</span>
           <Cascader
             v-model:value="groupTemp"
             :field-names="{
@@ -383,38 +383,43 @@ onMounted(async () => {
             change-on-select
             max-tag-count="responsive"
             multiple
-            placeholder="请选择分组"
-            style="min-width: 280px"
+            placeholder="请选择分组" 
             @change="handleGroupChange"
           />
-        </Space>
+        </Space.Compact>
 
         <Select
+          class="query-auto-select"
+          :popup-match-select-width="false"
           v-model:value="reportType"
           :options="[
             { label: '日报', value: 1 },
             { label: '月报', value: 2 },
           ]"
-          style="width: 100px"
         />
 
         <Space>
-          <span class="text-sm text-gray-500">日期</span>
-          <DatePicker.RangePicker
-            v-model:value="dateRange"
-            :format="dateFormat"
-            :picker="pickerMode"
-            style="width: 260px"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">日期</span>
+            <DatePicker.RangePicker
+              v-model:value="dateRange"
+              :format="dateFormat"
+              :picker="pickerMode"
+              style="width: 260px"
+            />
+          </Space.Compact>
         </Space>
 
         <Space>
-          <span class="text-sm text-gray-500">数据类型</span>
-          <Select
-            v-model:value="dataSearchType"
-            :options="memberTypeOptions"
-            style="width: 120px"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">数据类型</span>
+            <Select
+              v-model:value="dataSearchType"
+              :options="memberTypeOptions"
+              style="width: 120px"
+              placeholder="请选择数据类型"
+            />
+          </Space.Compact>
         </Space>
 
         <Button type="primary" @click="handleSearch">查询</Button>

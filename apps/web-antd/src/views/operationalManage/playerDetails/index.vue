@@ -322,39 +322,46 @@ onMounted(async () => {
   <Page auto-content-height :title="pageTitle">
     <Card class="mb-4">
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="searchLoginAccount"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 200px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="searchLoginAccount"
+            allow-clear
+            style="width: 200px"
+            @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
 
-        <Select
-          v-model:value="searchPackageId"
-          :options="
-            packageOptions
-              .filter((item) => item.PackageId !== '')
-              .map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-          "
-          placeholder="产品"
-          style="width: 180px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="searchPackageId"
+            :options="
+              packageOptions
+                .filter((item) => item.PackageId !== '')
+                .map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+            "
+            style="width: 180px"
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
 
-        <Input
-          v-model:value="searchPlayerId"
-          allow-clear
-          placeholder="玩家 ID"
-          style="width: 180px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>玩家 ID</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="searchPlayerId"
+            allow-clear
+            style="width: 180px"
+            @press-enter="handleSearch"
+            placeholder="请输入玩家 ID"
+          >
+            <template #addonBefore>玩家 ID</template>
+          </Input>
+        </div>
 
         <Space>
           <Button
@@ -396,12 +403,15 @@ onMounted(async () => {
               </Button>
             </template>
             <template v-else>
-              <Select
-                v-model:value="nextStatus"
-                :options="statusSelectOptions"
-                placeholder="选择状态"
-                style="width: 160px"
-              />
+              <Space.Compact>
+                <span class="query-field-addon">选择状态</span>
+                <Select
+                  v-model:value="nextStatus"
+                  :options="statusSelectOptions"
+                  style="width: 160px"
+                  placeholder="请选择选择状态"
+                />
+              </Space.Compact>
               <Button
                 :loading="statusSaving"
                 size="small"

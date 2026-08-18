@@ -5,7 +5,9 @@ import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
-import { Button, Card, DatePicker, Descriptions, Result } from 'ant-design-vue';
+import { Button, Card, Descriptions, Result } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchInvalidUserSummaryApi } from '#/api/promotion/generalize-data';
@@ -102,7 +104,7 @@ onMounted(() => {
   >
     <Card :loading="loading">
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" />
         <Button type="primary" @click="loadData">查询</Button>
       </div>
 

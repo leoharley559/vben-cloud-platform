@@ -3,11 +3,17 @@ import type { LoginLogSummaryData } from '#/types/member-logs';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, Select, Table } from 'ant-design-vue';
+import {
+  Button,
+  Select,
+  Space,
+  Table,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchLoginLogSummaryApi } from '#/api/memberManage/member-logs';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -145,16 +151,20 @@ onMounted(() => {
   <OpsListPanel>
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">数据类型</span>
-        <Select
-          v-model:value="filterDataSearchType"
-          style="width: 120px"
-          :options="memberTypeOptions"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="filterDataSearchType"
+            style="width: 120px"
+            :options="memberTypeOptions"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">统计时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="统计时间" precision="date" />
+      
       </div>
       <Button :loading="loading" type="primary" @click="handleSearch">
         查询

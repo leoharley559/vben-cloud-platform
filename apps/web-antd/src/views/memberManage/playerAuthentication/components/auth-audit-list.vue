@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Popover,
   Select,
@@ -18,6 +17,7 @@ import dayjs from 'dayjs';
 
 import { fetchPlayerAuthListApi } from '#/api/memberManage/player-authentication';
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
@@ -87,11 +87,11 @@ function getQueryParams() {
     AgentId: filterAgentId.value || undefined,
     // 对齐旧站：全部时传 AuthScenario=-1
     AuthScenario: filterAuthScenario.value,
-    BeginTime: begin ? begin.startOf('day').unix() : undefined,
+    BeginTime: begin ? begin.unix() : undefined,
     ChannelId: filterChannelId.value
       ? String(filterChannelId.value)
       : undefined,
-    EndTime: end ? end.endOf('day').unix() : undefined,
+    EndTime: end ? end.unix() : undefined,
     LoginAccount: filterLoginAccount.value.trim() || undefined,
     PackageId:
       filterPackageId.value === '' || filterPackageId.value === undefined
@@ -339,9 +339,9 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          placeholder="可批量，逗号分隔"
           style="width: 260px"
           @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
         </Input>
@@ -350,50 +350,64 @@ onMounted(() => {
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          placeholder="请输入"
           style="width: 210px"
           @press-enter="handleSearch"
+          placeholder="请输入玩家ID"
         >
           <template #addonBefore>玩家ID</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          placeholder="全部产品"
-          style="width: 160px"
-          :options="packageSelectOptions"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            style="width: 160px"
+            :options="packageSelectOptions"
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">渠道号</span>
-        <ChannelSelect
-          v-model="filterChannelId"
-          :multiple="false"
-          style="width: 180px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelId"
+            :multiple="false"
+            style="width: 180px"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">代理账号</span>
-        <AccountSelect
-          v-model="filterAgentId"
-          :multiple="false"
-          style="width: 190px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">代理账号</span>
+          <AccountSelect
+            v-model="filterAgentId"
+            :multiple="false"
+            style="width: 190px"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">验证场景</span>
-        <Select
-          v-model:value="filterAuthScenario"
-          style="width: 140px"
-          :options="AUTH_SCENARIO_OPTIONS"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">验证场景</span>
+          <Select
+            v-model:value="filterAuthScenario"
+            style="width: 140px"
+            :options="AUTH_SCENARIO_OPTIONS"
+            placeholder="请选择验证场景"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">上传时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="上传时间" />
+      
       </div>
       <Button :loading="loading" type="primary" @click="handleSearch">
         查询

@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -22,6 +21,7 @@ import {
   fetchBonusAuditListApi,
 } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -136,9 +136,9 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     Approve: '1,4',
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     ChannelIds: filterChannelIds.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     IsExp: false,
     LoginAccount: filterLoginAccount.value
       .trim()
@@ -408,47 +408,60 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @change="normalizeLoginAccount"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        :options="packageSelectOptions"
-        placeholder="产品名称"
-        style="width: 160px"
-        show-search
-        :filter-option="
-          (input, option) =>
-            String(option?.label ?? '')
-              .toLowerCase()
-              .includes(input.toLowerCase())
-        "
-      />
-      <ChannelSelect v-model="filterChannelIds" style="width: 220px" />
-      <Select
-        v-model:value="filterReason"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="BONUS_AUDIT_REASON_OPTIONS"
-        placeholder="类型"
-        style="width: 180px"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          @change="normalizeLoginAccount"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品名称</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          :options="packageSelectOptions"
+          style="width: 160px"
+          show-search
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
+          placeholder="请选择产品名称"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">渠道号</span>
+        <ChannelSelect v-model="filterChannelIds" style="width: 220px" placeholder="请输入渠道号" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">类型</span>
+        <Select
+          v-model:value="filterReason"
+          allow-clear
+          mode="multiple"
+          :max-tag-count="1"
+          :options="BONUS_AUDIT_REASON_OPTIONS"
+          style="width: 180px"
+          placeholder="请选择类型"
+        />
+      </Space.Compact>
       <Select
         v-model:value="filterWaterType"
         :options="[
@@ -458,10 +471,7 @@ onMounted(() => {
         ]"
         style="width: 120px"
       />
-      <DatePicker.RangePicker
-        v-model:value="filterDateRange"
-        allow-clear
-      />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询
       </Button>

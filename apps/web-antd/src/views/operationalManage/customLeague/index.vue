@@ -8,7 +8,6 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Image,
   Input,
   message,
@@ -17,6 +16,8 @@ import {
   Space,
   Switch,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -275,39 +276,43 @@ function handlePreview(path?: string) {
     <Card>
       <div class="mb-4 flex flex-wrap items-end gap-2">
         <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">产品</span>
-          <Select
-            v-model:value="filterPackageId"
-            :field-names="{ label: 'PackageName', value: 'PackageId' }"
-            :options="packageOptions"
-            style="width: 180px"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">产品</span>
+            <Select
+              v-model:value="filterPackageId"
+              :field-names="{ label: 'PackageName', value: 'PackageId' }"
+              :options="packageOptions"
+              style="width: 180px"
+              placeholder="请选择产品"
+            />
+          </Space.Compact>
+        
         </div>
         <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">开关</span>
-          <Select
-            v-model:value="filterIsActive"
-            :options="ACTIVE_OPTIONS"
-            style="width: 120px"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">开关</span>
+            <Select
+              v-model:value="filterIsActive"
+              :options="ACTIVE_OPTIONS"
+              style="width: 120px"
+              placeholder="请选择开关"
+            />
+          </Space.Compact>
+        
         </div>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLeagueShortName"
             allow-clear
-            placeholder="请输入联赛名称"
             style="width: 260px"
+            placeholder="请输入联赛名称"
           >
             <template #addonBefore>联赛名称</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">时间</span>
-          <DatePicker.RangePicker
-            v-model:value="filterDateRange"
-            allow-clear
-            value-format="YYYY-MM-DD"
-          />
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="时间" />
+        
         </div>
         <Space>
           <Button type="primary" @click="handleSearch">查询</Button>

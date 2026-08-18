@@ -9,7 +9,6 @@ import { useAppConfig } from '@vben/hooks';
 import {
   Button,
   Card,
-  DatePicker,
   Form,
   Input,
   Modal,
@@ -22,6 +21,8 @@ import {
   Tooltip,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -100,8 +101,8 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = range;
   return {
     Auto: autoRefresh.value,
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     Id: filterId.value.trim(),
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -347,36 +348,35 @@ onUnmounted(() => {
   >
     <Card>
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterId"
-          allow-clear
-          :maxlength="11"
-          placeholder="任务编号"
-          style="width: 180px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>任务编号</template>
-        </Input>
-        <Input
-          v-model:value="filterPath"
-          allow-clear
-          placeholder="导出文件名称"
-          style="width: 260px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>文件名称</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterId"
+            allow-clear
+            :maxlength="11"
+            style="width: 180px"
+            @press-enter="handleSearch"
+            placeholder="请输入任务编号"
+          >
+            <template #addonBefore>任务编号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPath"
+            allow-clear
+            style="width: 260px"
+            @press-enter="handleSearch"
+            placeholder="请输入文件名称"
+          >
+            <template #addonBefore>文件名称</template>
+          </Input>
+        </div>
         <Select
           v-model:value="filterStatus"
           :options="statusOptions"
           style="width: 120px"
         />
-        <DatePicker.RangePicker
-          v-model:value="filterDateRange"
-          allow-clear
-          :disabled="autoRefresh"
-          :placeholder="['发起开始', '发起结束']"
-        />
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="resetFilters">重置</Button>
         <div v-if="canAutoRefresh" class="flex items-center gap-2">

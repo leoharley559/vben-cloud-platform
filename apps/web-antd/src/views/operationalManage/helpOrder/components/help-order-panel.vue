@@ -8,12 +8,12 @@ import { preferences } from '@vben/preferences';
 
 import {
   Button,
-  DatePicker,
   Input,
+  message,
   Modal,
   Select,
+  Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -24,6 +24,7 @@ import {
 } from '#/api/operationManage/help-order';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useAuthStore } from '#/store';
 import { removeHelpLink, setHelpLink } from '#/utils/auth-token';
@@ -135,9 +136,9 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   const query: Record<string, unknown> = {
     // 对齐旧站 SearchTypeTwo：保留 RangePicker 时分秒
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     Creator: '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     Keyword: '',
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -310,38 +311,38 @@ function handleHelp(row: HelpOrderRow) {
   <OpsListPanel>
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">关键字</span>
         <div class="flex gap-1">
           <Select
             v-model:value="keywordType"
-            style="width: 110px"
+            class="query-auto-select"
+            :popup-match-select-width="false"
             :options="keywordTypeOptions"
           />
           <Input
             v-model:value="keywordValue"
             allow-clear
-            placeholder="请输入"
             style="width: 180px"
             @press-enter="handleSearch"
+            placeholder="请输入关键字"
           />
         </div>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          placeholder="全部"
-          style="width: 140px"
-          :options="statusOptions"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            style="width: 140px"
+            :options="statusOptions"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">创建日期</span>
-        <DatePicker.RangePicker
-          v-model:value="filterDateRange"
-          format="YYYY-MM-DD"
-        />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建日期" />
+      
       </div>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>

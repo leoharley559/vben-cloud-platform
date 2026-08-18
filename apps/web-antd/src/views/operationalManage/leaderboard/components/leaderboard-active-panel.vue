@@ -5,7 +5,6 @@ import { computed, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Select,
@@ -14,6 +13,8 @@ import {
   Tag,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -90,12 +91,12 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
     ActivityType:
       filterActivityType.value === '' ? '' : filterActivityType.value,
     // 测试环境传 YYYY-MM-DD 会 10000；与探测通过的 unix 秒对齐
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     Id: filterId.value.trim(),
     IsHistory: Boolean(props.isHistory),
     Page: page.currentPage,
     PageSize: page.pageSize,
-    StartTime: begin ? begin.startOf('day').unix() : '',
+    StartTime: begin ? begin.unix() : '',
   };
 }
 
@@ -309,22 +310,27 @@ function statusLabel(status?: number) {
   <div>
     <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
       <div class="flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterId"
-          allow-clear
-          placeholder="活动ID"
-          style="width: 210px"
-        >
-          <template #addonBefore>活动ID</template>
-        </Input>
-        <Select
-          v-model:value="filterActivityType"
-          allow-clear
-          class="w-32"
-          :options="typeFilterOptions"
-          placeholder="活动类型"
-        />
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterId"
+            allow-clear
+            style="width: 210px"
+            placeholder="请输入活动ID"
+          >
+            <template #addonBefore>活动ID</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">活动类型</span>
+          <Select
+            v-model:value="filterActivityType"
+            allow-clear
+            class="w-32"
+            :options="typeFilterOptions"
+            placeholder="请选择活动类型"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
         <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>

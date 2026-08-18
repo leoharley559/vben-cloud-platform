@@ -278,6 +278,7 @@ defineExpose({
           <Form.Item label="渠道权限">
             <ChannelSelect
               v-model="formModel.SonUserRoleDataField.SeeChannelId"
+              placeholder="请输入渠道号"
             />
           </Form.Item>
           <Form.Item label="账号权限">

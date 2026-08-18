@@ -3,10 +3,10 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Result,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 import dayjs, { type Dayjs } from 'dayjs';
@@ -17,6 +17,7 @@ import {
   fetchWithdrawAgentListApi,
 } from '#/api/netcash/agency-account-details';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
@@ -99,8 +100,8 @@ function query(isExp = false) {
     PageSize: pager.pageSize,
   };
   if (dateRange.value?.length === 2) {
-    params.BeginTime = dateRange.value?.[0]?.startOf('day').unix() || '';
-    params.EndTime = dateRange.value?.[1]?.endOf('day').unix() || '';
+    params.BeginTime = dateRange.value?.[0]?.unix() || '';
+    params.EndTime = dateRange.value?.[1]?.unix() || '';
   }
   if (status.value.length > 0) {
     params.WithdrawStatus = status.value.join(',');
@@ -186,12 +187,23 @@ onMounted(load);
   <div v-if="canView" class="space-y-3">
     <div class="mb-3">
       <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <Input v-model:value="orderId" allow-clear placeholder="订单号" style="width: 220px">
-          <template #addonBefore>订单号</template>
-        </Input>
-        <Select v-model:value="status" allow-clear mode="multiple" :options="statusOptions" placeholder="全部状态"
-          style="min-width: 180px" />
-        <DatePicker.RangePicker v-model:value="dateRange" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="orderId"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select v-model:value="status" allow-clear mode="multiple" :options="statusOptions"
+            style="min-width: 180px"
+            placeholder="请选择状态" />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="dateRange" />
         <Button type="primary" @click="load">查询</Button>
         <Button @click="reset">重置</Button>
         <Button :loading="exporting" @click="exportAll">导出全部</Button>

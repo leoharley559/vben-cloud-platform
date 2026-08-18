@@ -449,25 +449,31 @@ async function exportDomains() {
 
       <div class="query-panel">
         <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-          <Input
-            v-model:value="filters.Keyword"
-            allow-clear
-            class="!w-[280px]"
-            placeholder="请输入域名"
-            @press-enter="handleSearch"
-          >
-            <template #addonBefore>域名</template>
-          </Input>
-          <Select
-            v-model:value="filters.InUsed"
-            class="!w-[140px]"
-            :options="[
-              { label: '全部状态', value: '' },
-              { label: '启用', value: 1 },
-              { label: '停用', value: 2 },
-            ]"
-            placeholder="使用状态"
-          />
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.Keyword"
+              allow-clear
+              class="!w-[280px]"
+              @press-enter="handleSearch"
+              style="width: 220px"
+              placeholder="请输入域名"
+            >
+              <template #addonBefore>域名</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">使用状态</span>
+            <Select
+              v-model:value="filters.InUsed"
+              class="!w-[140px]"
+              :options="[
+                { label: '全部状态', value: '' },
+                { label: '启用', value: 1 },
+                { label: '停用', value: 2 },
+              ]"
+              placeholder="请选择使用状态"
+            />
+          </Space.Compact>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
         </div>

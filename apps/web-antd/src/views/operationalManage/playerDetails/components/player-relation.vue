@@ -204,13 +204,16 @@ onMounted(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">时间范围</span>
-        <Select
-          v-model:value="filterCreateTime"
-          :options="TIME_PRESET_OPTIONS"
-          style="width: 120px"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">时间范围</span>
+          <Select
+            v-model:value="filterCreateTime"
+            :options="TIME_PRESET_OPTIONS"
+            style="width: 120px"
+            placeholder="请选择时间范围"
+          />
+        </Space.Compact>
       </div>
 
       <Radio.Group v-model:value="relationType" @change="handleTypeChange">

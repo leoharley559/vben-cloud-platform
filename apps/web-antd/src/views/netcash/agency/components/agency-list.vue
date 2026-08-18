@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   message,
   Modal,
@@ -23,6 +22,7 @@ import {
   switchAgencyStatusApi,
 } from '#/api/netcash/agency';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -227,10 +227,10 @@ function showColumn(field: string) {
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   return {
     DeveloperName: filterDeveloperName.value,
-    BeginTime: filterDateRange.value?.[0]?.startOf('day').unix() || '',
-    EndTime: filterDateRange.value?.[1]?.endOf('day').unix() || '',
-    CountBeginTime: statisticsRange.value?.[0]?.startOf('day').unix() || '',
-    CountEndTime: statisticsRange.value?.[1]?.endOf('day').unix() || '',
+    BeginTime: filterDateRange.value?.[0]?.unix() || '',
+    EndTime: filterDateRange.value?.[1]?.unix() || '',
+    CountBeginTime: statisticsRange.value?.[0]?.unix() || '',
+    CountEndTime: statisticsRange.value?.[1]?.unix() || '',
     LastLoginDevice: filterLastLoginDevice.value,
     LastLoginIP: filterLastLoginIP.value,
     MainUsername: filterMainUsername.value,
@@ -671,145 +671,176 @@ onMounted(() => {
 <template>
   <div v-if="canViewList">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterUsername"
-        allow-clear
-        placeholder="代理账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>代理账号</template>
-      </Input>
-      <Input
-        v-model:value="filterTeamName"
-        allow-clear
-        placeholder="团队名称"
-        style="width: 220px"
-      >
-        <template #addonBefore>团队名称</template>
-      </Input>
-      <Input
-        v-model:value="filterDeveloperName"
-        allow-clear
-        placeholder="发展人"
-        style="width: 210px"
-      >
-        <template #addonBefore>发展人</template>
-      </Input>
-      <Input
-        v-model:value="filterMaintainerName"
-        allow-clear
-        placeholder="维护人"
-        style="width: 210px"
-      >
-        <template #addonBefore>维护人</template>
-      </Input>
-      <Select
-        v-model:value="filterStatus"
-        allow-clear
-        class="w-32"
-        :options="[
-          { label: '启用', value: 1 },
-          { label: '停用', value: 2 },
-        ]"
-        placeholder="状态"
-      />
-      <Select
-        v-model:value="filterType"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="[
-          { label: '普通代理', value: 1 },
-          { label: '特殊代理', value: 2 },
-          { label: '测试代理', value: 3 },
-        ]"
-        placeholder="代理类型"
-        style="min-width: 140px"
-      />
-      <Input
-        v-model:value="filterMobile"
-        allow-clear
-        placeholder="手机号"
-        style="width: 210px"
-      >
-        <template #addonBefore>手机号</template>
-      </Input>
-      <Input
-        v-model:value="filterMainUsername"
-        allow-clear
-        placeholder="上级账号"
-        style="width: 220px"
-      >
-        <template #addonBefore>上级账号</template>
-      </Input>
-      <Input
-        v-model:value="filterParentAdminId"
-        allow-clear
-        placeholder="下级代理 ID"
-        style="width: 240px"
-      >
-        <template #addonBefore>下级代理 ID</template>
-      </Input>
-      <Input
-        v-model:value="filterWithdrawAccName"
-        allow-clear
-        placeholder="银行姓名"
-        style="width: 220px"
-      >
-        <template #addonBefore>银行姓名</template>
-      </Input>
-      <Input
-        v-model:value="filterWithdrawAccNum"
-        allow-clear
-        placeholder="银行卡号"
-        style="width: 240px"
-      >
-        <template #addonBefore>银行卡号</template>
-      </Input>
-      <Input
-        v-model:value="filterRegistIP"
-        allow-clear
-        placeholder="注册 IP"
-        style="width: 210px"
-      >
-        <template #addonBefore>注册 IP</template>
-      </Input>
-      <Input
-        v-model:value="filterLastLoginIP"
-        allow-clear
-        placeholder="最后登录 IP"
-        style="width: 240px"
-      >
-        <template #addonBefore>最后登录 IP</template>
-      </Input>
-      <Input
-        v-model:value="filterRegistDevice"
-        allow-clear
-        placeholder="注册设备"
-        style="width: 220px"
-      >
-        <template #addonBefore>注册设备</template>
-      </Input>
-      <Input
-        v-model:value="filterLastLoginDevice"
-        allow-clear
-        placeholder="最后登录设备"
-        style="width: 250px"
-      >
-        <template #addonBefore>最后登录设备</template>
-      </Input>
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
-      <span class="text-sm text-gray-500">统计时间</span>
-      <DatePicker.RangePicker v-model:value="statisticsRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterUsername"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterTeamName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入团队名称"
+        >
+          <template #addonBefore>团队名称</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterDeveloperName"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入发展人"
+        >
+          <template #addonBefore>发展人</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterMaintainerName"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入维护人"
+        >
+          <template #addonBefore>维护人</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">状态</span>
+        <Select
+          v-model:value="filterStatus"
+          allow-clear
+          class="w-32"
+          :options="[
+            { label: '启用', value: 1 },
+            { label: '停用', value: 2 },
+          ]"
+          placeholder="请选择状态"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">代理类型</span>
+        <Select
+          v-model:value="filterType"
+          allow-clear
+          mode="multiple"
+          :max-tag-count="1"
+          :options="[
+            { label: '普通代理', value: 1 },
+            { label: '特殊代理', value: 2 },
+            { label: '测试代理', value: 3 },
+          ]"
+          style="min-width: 140px"
+          placeholder="请选择代理类型"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterMobile"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入手机号"
+        >
+          <template #addonBefore>手机号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterMainUsername"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入上级账号"
+        >
+          <template #addonBefore>上级账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterParentAdminId"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入下级代理 ID"
+        >
+          <template #addonBefore>下级代理 ID</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterWithdrawAccName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入银行姓名"
+        >
+          <template #addonBefore>银行姓名</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterWithdrawAccNum"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入银行卡号"
+        >
+          <template #addonBefore>银行卡号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterRegistIP"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入注册 IP"
+        >
+          <template #addonBefore>注册 IP</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLastLoginIP"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入最后登录 IP"
+        >
+          <template #addonBefore>最后登录 IP</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterRegistDevice"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入注册设备"
+        >
+          <template #addonBefore>注册设备</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLastLoginDevice"
+          allow-clear
+          style="width: 250px"
+          placeholder="请输入最后登录设备"
+        >
+          <template #addonBefore>最后登录设备</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
       <Select
         v-model:value="visibleColumns"
         mode="multiple"
         allow-clear
-        placeholder="显示列"
         style="min-width: 180px"
         :max-tag-count="1"
         :options="COLUMN_OPTIONS"
         @change="persistColumns"
+        placeholder="请选择统计时间"
       />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
@@ -966,7 +997,7 @@ onMounted(() => {
       <Input
         v-model:value="statusRemark"
         :maxlength="200"
-        placeholder="请输入状态变更备注"
+        placeholder="请输入统计时间"
       />
     </Modal>
   </div>

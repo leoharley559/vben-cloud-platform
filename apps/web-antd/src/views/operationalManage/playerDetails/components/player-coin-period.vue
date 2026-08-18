@@ -7,7 +7,9 @@ import type {
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, Card, DatePicker, Descriptions, Space } from 'ant-design-vue';
+import { Button, Card, Descriptions, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerGoldTotalApi } from '#/api/operationManage/player';
@@ -188,9 +190,8 @@ onMounted(() => {
   <div>
     <Card size="small" title="周期数据">
       <div class="mb-4 flex flex-wrap items-end justify-end gap-2">
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">日期</span>
-          <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <div class="flex flex-col gap-1">
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" />
         </div>
         <Space>
           <Button :loading="loading" type="primary" @click="handleSearch">

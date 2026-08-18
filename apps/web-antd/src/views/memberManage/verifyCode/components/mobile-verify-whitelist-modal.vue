@@ -185,27 +185,30 @@ function handleTableChange(pagination: {
       <Input
         v-model:value="filterAccount"
         allow-clear
-        placeholder="游戏账号"
         style="width: 220px"
+        placeholder="请输入游戏账号"
       >
         <template #addonBefore>游戏账号</template>
       </Input>
-      <Select
-        v-model:value="filterPackageId"
-        :field-names="{ label: 'PackageName', value: 'PackageId' }"
-        :options="[
-          { PackageId: '', PackageName: '全部' },
-          ...packageSelectOptions,
-        ]"
-        placeholder="所属产品"
-        show-search
-        style="width: 160px"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">所属产品</span>
+        <Select
+          v-model:value="filterPackageId"
+          :field-names="{ label: 'PackageName', value: 'PackageId' }"
+          :options="[
+            { PackageId: '', PackageName: '全部' },
+            ...packageSelectOptions,
+          ]"
+          show-search
+          style="width: 160px"
+          placeholder="请选择所属产品"
+        />
+      </Space.Compact>
       <Input
         v-model:value="filterChannelId"
         allow-clear
-        placeholder="渠道 ID"
         style="width: 210px"
+        placeholder="请输入渠道ID"
       >
         <template #addonBefore>渠道ID</template>
       </Input>
@@ -223,17 +226,20 @@ function handleTableChange(pagination: {
         <Input
           v-model:value="addAccount"
           allow-clear
-          placeholder="游戏账号"
           style="width: 200px"
+          placeholder="请输入游戏账号"
         />
-        <Select
-          v-model:value="addPackageId"
-          :field-names="{ label: 'PackageName', value: 'PackageId' }"
-          :options="packageSelectOptions"
-          placeholder="所属产品"
-          show-search
-          style="width: 180px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="addPackageId"
+            :field-names="{ label: 'PackageName', value: 'PackageId' }"
+            :options="packageSelectOptions"
+            show-search
+            style="width: 180px"
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
         <Button :loading="adding" type="primary" @click="handleAdd">
           添加
         </Button>

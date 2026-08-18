@@ -761,26 +761,31 @@ onMounted(() => {
 
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <Input
-          v-model:value="query.Keyword"
-          allow-clear
-          placeholder="账号 / 客服名称"
-          style="width: 260px"
-          @press-enter="search"
-        >
-          <template #addonBefore>关键词</template>
-        </Input>
-        <Select
-          v-model:value="query.Status"
-          allow-clear
-          placeholder="全部状态"
-          style="width: 130px"
-          :options="[
-            { label: '开启', value: 1 },
-            { label: '关闭', value: 2 },
-          ]"
-          @change="search"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.Keyword"
+            allow-clear
+            style="width: 260px"
+            @press-enter="search"
+            placeholder="请输入关键词"
+          >
+            <template #addonBefore>关键词</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="query.Status"
+            allow-clear
+            style="width: 130px"
+            :options="[
+              { label: '开启', value: 1 },
+              { label: '关闭', value: 2 },
+            ]"
+            @change="search"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
         <Button type="primary" @click="search">查询</Button>
         <Button @click="resetSearch">重置</Button>
       </div>

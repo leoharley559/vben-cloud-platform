@@ -219,36 +219,42 @@ onMounted(() => void initialize());
   <div>
     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
       <Space wrap>
-        <Select
-          v-model:value="filters.PackageId"
-          allow-clear
-          :max-tag-count="2"
-          mode="multiple"
-          :options="
-            packages.map((item) => ({
-              label:
-                item.PackageName || item.PackageAlias || packageId(item),
-              value: packageId(item),
-            }))
-          "
-          placeholder="产品名称"
-          style="min-width: 260px"
-        />
-        <Select
-          v-model:value="filters.ChannelId"
-          allow-clear
-          :max-tag-count="2"
-          mode="multiple"
-          :options="
-            channels.map((item) => ({
-              label: `${item.ChannelId}（${item.ChannelName || '-'}）`,
-              value: item.ChannelId,
-            }))
-          "
-          placeholder="渠道号"
-          show-search
-          style="min-width: 300px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">产品名称</span>
+          <Select
+            v-model:value="filters.PackageId"
+            allow-clear
+            :max-tag-count="2"
+            mode="multiple"
+            :options="
+              packages.map((item) => ({
+                label:
+                  item.PackageName || item.PackageAlias || packageId(item),
+                value: packageId(item),
+              }))
+            "
+            style="min-width: 260px"
+            placeholder="请选择产品名称"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <Select
+            v-model:value="filters.ChannelId"
+            allow-clear
+            :max-tag-count="2"
+            mode="multiple"
+            :options="
+              channels.map((item) => ({
+                label: `${item.ChannelId}（${item.ChannelName || '-'}）`,
+                value: item.ChannelId,
+              }))
+            "
+            show-search
+            style="min-width: 300px"
+            placeholder="请选择渠道号"
+          />
+        </Space.Compact>
         <Button type="primary" @click="gridApi.query()">查询</Button>
         <Button
           @click="

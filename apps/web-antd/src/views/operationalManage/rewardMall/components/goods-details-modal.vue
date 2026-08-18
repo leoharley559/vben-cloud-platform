@@ -5,7 +5,6 @@ import { ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Select,
@@ -19,6 +18,7 @@ import {
   fetchRewardExchangeRecordApi,
 } from '#/api/operationManage/reward-mall';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
@@ -68,16 +68,16 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
   return {
     // 与兑换记录列表一致：多选拼成逗号串，避免 qs 数组 brackets
     ChannelId: filterChannelIds.value.filter(Boolean).join(','),
-    ExchangeTimeBegin: exchangeBegin ? exchangeBegin.startOf('day').unix() : '',
-    ExchangeTimeEnd: exchangeEnd ? exchangeEnd.endOf('day').unix() : '',
+    ExchangeTimeBegin: exchangeBegin ? exchangeBegin.unix() : '',
+    ExchangeTimeEnd: exchangeEnd ? exchangeEnd.unix() : '',
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     OrderId: filterOrderId.value.trim(),
     PackageId: filterPackageId.value ?? '',
     Page: page.currentPage,
     PageSize: page.pageSize,
     ProductId: props.product?.Id ?? '',
-    RegisterTimeBegin: regBegin ? regBegin.startOf('day').unix() : '',
-    RegisterTimeEnd: regEnd ? regEnd.endOf('day').unix() : '',
+    RegisterTimeBegin: regBegin ? regBegin.unix() : '',
+    RegisterTimeEnd: regEnd ? regEnd.unix() : '',
     VipLevel: filterVipLevel.value
       .filter((v) => v !== undefined && v !== null && v !== '')
       .join(','),
@@ -186,47 +186,54 @@ async function handleExport(payload: Record<string, unknown>) {
   <Modal v-model:open="open" :footer="null" :title="title" width="92%">
     <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
       <div class="flex flex-wrap items-end gap-2">
-        <DatePicker.RangePicker
-          v-model:value="filterExchangeDateRange"
-          :placeholder="['兑换开始', '兑换结束']"
-        />
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="订单编号"
-          style="width: 230px"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 220px"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-        <Select
-          v-model:value="filterVipLevel"
-          allow-clear
-          class="w-40"
-          mode="multiple"
-          :options="VIP_LEVEL_OPTIONS.filter((item) => item.value !== -1)"
-          placeholder="VIP等级"
-        />
-        <ChannelSelect v-model="filterChannelIds" style="width: 200px" />
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          class="w-36"
-          :field-names="{ label: 'PackageName', value: 'PackageId' }"
-          :options="packageOptions"
-          placeholder="所属产品"
-        />
-        <DatePicker.RangePicker
-          v-model:value="filterRegDateRange"
-          :placeholder="['注册开始', '注册结束']"
-        />
+        <QueryDatetimeRangePicker v-model="filterExchangeDateRange" label="兑换时间" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            style="width: 230px"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            allow-clear
+            class="w-40"
+            mode="multiple"
+            :options="VIP_LEVEL_OPTIONS.filter((item) => item.value !== -1)"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect v-model="filterChannelIds" style="width: 200px" placeholder="请输入渠道号" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            class="w-36"
+            :field-names="{ label: 'PackageName', value: 'PackageId' }"
+            :options="packageOptions"
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="filterRegDateRange" label="注册时间" />
         <Space>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>

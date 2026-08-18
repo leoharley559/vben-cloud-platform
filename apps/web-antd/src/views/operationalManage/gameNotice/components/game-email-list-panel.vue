@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Space,
@@ -23,6 +22,7 @@ import {
 } from '#/api/operationManage/game-notice';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -316,8 +316,8 @@ const gridOptions: VxeTableGridOptions<EmailRow> = {
           Username: usernameParam(),
         };
         if (filterDateRange.value?.[0] && filterDateRange.value?.[1]) {
-          query.BeginTime = filterDateRange.value?.[0]?.startOf('day').unix() || '';
-          query.EndTime = filterDateRange.value?.[1]?.endOf('day').unix() || '';
+          query.BeginTime = filterDateRange.value?.[0]?.unix() || '';
+          query.EndTime = filterDateRange.value?.[1]?.unix() || '';
         }
         const result = await fetchGameEmailListApi(query);
         const items = (result.Items || []) as unknown as EmailRow[];
@@ -425,14 +425,16 @@ async function openReadPlayers(row: EmailRow) {
   <div v-if="canViewTable || canCreate">
     <!-- 查询区与旧站 email.vue 对齐：发送人 / 代理推广账号 / 日期 / 查询重置 / 新增 -->
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterSender"
-        allow-clear
-        placeholder="请输入"
-        style="width: 250px"
-      >
-        <template #addonBefore>发送人</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterSender"
+          allow-clear
+          style="width: 250px"
+          placeholder="请输入发送人"
+        >
+          <template #addonBefore>发送人</template>
+        </Input>
+      </div>
 
       <div class="flex items-center gap-0">
         <span
@@ -440,10 +442,13 @@ async function openReadPlayers(row: EmailRow) {
         >
           代理/推广账号
         </span>
-        <AccountSelect v-model="filterUsername" class="w-[250px]" return-name />
+        <Space.Compact>
+          <span class="query-field-addon">账号</span>
+          <AccountSelect v-model="filterUsername" class="w-[250px]" return-name />
+        </Space.Compact>
       </div>
 
-      <DatePicker.RangePicker v-model:value="filterDateRange" allow-clear />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canCreate" type="primary" @click="openCreate">新增</Button>

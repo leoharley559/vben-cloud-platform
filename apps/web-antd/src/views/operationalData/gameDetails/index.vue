@@ -6,7 +6,6 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Input,
   message,
   RadioButton,
@@ -20,6 +19,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 
 import { fetchGameAnalysisReportApi } from '#/api/operationalData/game-details';
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -253,12 +253,13 @@ onMounted(() => {
       <ReportQueryCard>
         <Space.Compact>
           <Select
+            class="query-auto-select"
+            :popup-match-select-width="false"
             v-model:value="adminSearchType"
             :options="[
               { label: '代理模糊', value: 0 },
               { label: '代理精准', value: 1 },
             ]"
-            style="width: 110px"
           />
           <AccountSelect
             v-if="adminSearchType === 0"
@@ -268,77 +269,91 @@ onMounted(() => {
           <Input
             v-else
             v-model:value="adminIds"
-            placeholder="代理账号"
             style="width: 180px"
             allow-clear
-          />
+            placeholder="请输入代理账号"
+            />
         </Space.Compact>
         <Space.Compact>
           <Select
+            class="query-auto-select"
+            :popup-match-select-width="false"
             v-model:value="channelSearchType"
             :options="[
               { label: '渠道模糊', value: 0 },
               { label: '渠道精准', value: 1 },
             ]"
-            style="width: 110px"
           />
           <ChannelSelect
             v-if="channelSearchType === 0"
             v-model="channelIds"
             style="width: 180px"
+            placeholder="请输入渠道号"
           />
           <Input
             v-else
             v-model:value="channelIds"
-            placeholder="渠道"
             style="width: 180px"
             allow-clear
+            placeholder="请输入渠道"
+            />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="packageId"
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            style="width: 160px"
+            show-search
+            allow-clear
+            placeholder="请选择产品"
           />
         </Space.Compact>
-        <Select
-          v-model:value="packageId"
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          placeholder="产品"
-          style="width: 160px"
-          show-search
-          allow-clear
-        />
-        <Select
-          v-model:value="devicePlatform"
-          :options="devicePlatformOptions"
-          mode="multiple"
-          placeholder="注册/设备平台"
-          style="width: 180px"
-          allow-clear
-          :max-tag-count="1"
-        />
-        <Select
-          v-model:value="betType"
-          :options="
-            Object.entries(BET_TYPE_MAP).map(([value, label]) => ({
-              label,
-              value: Number(value),
-            }))
-          "
-          placeholder="投注入口"
-          style="width: 140px"
-          allow-clear
-        />
-        <Select
-          v-model:value="dataSearchType"
-          :options="[
-            { label: '正式数据', value: 0 },
-            { label: '全部', value: 2 },
-          ]"
-          placeholder="数据类型"
-          style="width: 130px"
-        />
-        <DatePicker.RangePicker v-model:value="dateRange" />
+        <Space.Compact>
+          <span class="query-field-addon">注册/设备平台</span>
+          <Select
+            v-model:value="devicePlatform"
+            :options="devicePlatformOptions"
+            mode="multiple"
+            style="width: 180px"
+            allow-clear
+            :max-tag-count="1"
+            placeholder="请选择注册/设备平台"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">投注入口</span>
+          <Select
+            v-model:value="betType"
+            :options="
+              Object.entries(BET_TYPE_MAP).map(([value, label]) => ({
+                label,
+                value: Number(value),
+              }))
+            "
+            style="width: 140px"
+            allow-clear
+            placeholder="请选择投注入口"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="dataSearchType"
+            :options="[
+              { label: '正式数据', value: 0 },
+              { label: '全部', value: 2 },
+            ]"
+            style="width: 130px"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
         <template #actions>
           <Button type="primary" :loading="loading" @click="loadList">
             查询

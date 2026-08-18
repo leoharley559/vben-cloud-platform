@@ -274,67 +274,72 @@ defineExpose({
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-3">
       <template v-for="filter in config.filters || []" :key="filter.label">
-        <Input
+        <div
           v-if="(!filter.type || filter.type === 'input') && filter.field"
-          v-model:value="filterValues[filter.field]"
-          allow-clear
-          :placeholder="filter.placeholder || `请输入${filter.label}`"
-          style="width: 220px"
-          @press-enter="gridApi.reload()"
+          class="flex flex-col gap-1"
         >
-          <template #addonBefore>{{ filter.label }}</template>
-        </Input>
+          <Input
+            v-model:value="filterValues[filter.field]"
+            allow-clear
+            style="width: 220px"
+            @press-enter="gridApi.reload()"
+            :placeholder="`请输入${filter.label}`"
+          >
+            <template #addonBefore>{{ filter.label }}</template>
+          </Input>
+        </div>
         <div v-else class="flex flex-col gap-1">
-          <span class="text-xs text-gray-500">{{ filter.label }}</span>
-          <Select
-            v-if="filter.type === 'select' && filter.field"
-            v-model:value="filterValues[filter.field]"
-            allow-clear
-            :options="filter.options"
-            :placeholder="`请选择${filter.label}`"
-            style="width: 160px"
-          />
-          <Select
-            v-else-if="filter.type === 'multiSelect' && filter.field"
-            v-model:value="filterValues[filter.field]"
-            allow-clear
-            mode="multiple"
-            :options="filter.options"
-            :placeholder="`请选择${filter.label}`"
-            style="min-width: 200px"
-          />
-          <DatePicker.RangePicker
-            v-else-if="filter.type === 'dateRange' && filter.fields"
-            :value="
-              rangeValues[filter.label]?.[0]
-                ? [
-                    dayjs(rangeValues[filter.label][0]),
-                    dayjs(rangeValues[filter.label][1]),
-                  ]
-                : undefined
-            "
-            @change="
-              (value) =>
-                (rangeValues[filter.label] = value
-                  ? [value[0]?.valueOf(), value[1]?.valueOf()]
-                  : [undefined, undefined])
-            "
-          />
-          <Space v-else-if="filter.type === 'amountRange' && filter.fields">
+          <Space.Compact>
+            <span class="query-field-addon">{{ filter.label }}</span>
+            <Select
+              v-if="filter.type === 'select' && filter.field"
+              v-model:value="filterValues[filter.field]"
+              allow-clear
+              :options="filter.options"
+              :placeholder="`请选择${filter.label}`"
+              style="width: 160px"
+            />
+            <Select
+              v-else-if="filter.type === 'multiSelect' && filter.field"
+              v-model:value="filterValues[filter.field]"
+              allow-clear
+              mode="multiple"
+              :options="filter.options"
+              :placeholder="`请选择${filter.label}`"
+              style="min-width: 200px"
+            />
+            <DatePicker.RangePicker
+              v-else-if="filter.type === 'dateRange' && filter.fields"
+              :value="
+                rangeValues[filter.label]?.[0]
+                  ? [
+                      dayjs(rangeValues[filter.label][0]),
+                      dayjs(rangeValues[filter.label][1]),
+                    ]
+                  : undefined
+              "
+              @change="
+                (value) =>
+                  (rangeValues[filter.label] = value
+                    ? [value[0]?.valueOf(), value[1]?.valueOf()]
+                    : [undefined, undefined])
+              "
+            />
             <InputNumber
+              v-else-if="filter.type === 'amountRange' && filter.fields"
               v-model:value="rangeValues[filter.label][0]"
               :min="0"
-              placeholder="最小"
               style="width: 110px"
+              placeholder="请输入起"
             />
-            <span>至</span>
             <InputNumber
+              v-if="filter.type === 'amountRange' && filter.fields"
               v-model:value="rangeValues[filter.label][1]"
               :min="0"
-              placeholder="最大"
               style="width: 110px"
+              placeholder="请输入止"
             />
-          </Space>
+          </Space.Compact>
         </div>
       </template>
       <Button type="primary" @click="gridApi.reload()">查询</Button>

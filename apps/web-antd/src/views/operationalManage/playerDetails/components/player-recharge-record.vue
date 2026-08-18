@@ -4,7 +4,9 @@ import type { RechargeListItem } from '#/types/operation-manage';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Input, Select, Space, Tag } from 'ant-design-vue';
+import { Button, Input, Select, Space, Tag } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchRechargeListApi } from '#/api/operationManage/recharge';
@@ -28,7 +30,7 @@ const defaultRange = getLast7CalendarDaysRangeSeconds();
 const totalAmount = ref(0);
 
 const filterOrderId = ref('');
-const filterStatus = ref<number | string>('');
+const filterStatus = ref<number | string>();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
@@ -57,11 +59,11 @@ function formatChannelName(row: RechargeListItem) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     OrderId: filterOrderId.value,
     PlayerId: String(props.playerId),
-    Status: filterStatus.value,
+    Status: filterStatus.value ?? '',
   };
 }
 
@@ -180,7 +182,7 @@ function handleSearch() {
 
 function handleReset() {
   filterOrderId.value = '';
-  filterStatus.value = '';
+  filterStatus.value = undefined;
   filterDateRange.value = [
     dayjs.unix(defaultRange.BeginTime),
     dayjs.unix(defaultRange.EndTime),
@@ -207,30 +209,33 @@ onMounted(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 200px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">状态</span>
-        <Select
-          v-model:value="filterStatus"
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
           allow-clear
-          :options="RECHARGE_STATUS_OPTIONS"
-          placeholder="全部"
-          style="width: 140px"
-        />
+          style="width: 200px"
+          @press-enter="handleSearch"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">日期</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            :options="RECHARGE_STATUS_OPTIONS"
+            style="width: 140px"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" />
       </div>
 
       <Space>

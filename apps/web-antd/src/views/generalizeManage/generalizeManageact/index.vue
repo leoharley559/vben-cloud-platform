@@ -555,39 +555,51 @@ onMounted(() => {
   <div v-if="checkPermission(10_908)" class="promoter-page">
     <Card class="query-card" size="small">
       <div class="query-grid">
-        <Input
-          v-model:value="query.Username"
-          allow-clear
-          placeholder="请输入"
-          @press-enter="search"
-        >
-          <template #addonBefore>账号用户名</template>
-        </Input>
-        <Input
-          v-model:value="query.Name"
-          allow-clear
-          placeholder="请输入"
-          @press-enter="search"
-        >
-          <template #addonBefore>账号名称</template>
-        </Input>
-        <Select
-          v-model:value="query.Status"
-          allow-clear
-          :options="[
-            { label: '启用', value: 1 },
-            { label: '停用', value: 2 },
-          ]"
-          placeholder="状态"
-          @clear="query.Status = ''"
-        />
-        <Select
-          v-model:value="query.SettleType"
-          allow-clear
-          :options="settleOptions"
-          placeholder="结算方式"
-          @clear="query.SettleType = ''"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.Username"
+            allow-clear
+            @press-enter="search"
+            style="width: 220px"
+            placeholder="请输入账号用户名"
+          >
+            <template #addonBefore>账号用户名</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.Name"
+            allow-clear
+            @press-enter="search"
+            style="width: 220px"
+            placeholder="请输入账号名称"
+          >
+            <template #addonBefore>账号名称</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="query.Status"
+            allow-clear
+            :options="[
+              { label: '启用', value: 1 },
+              { label: '停用', value: 2 },
+            ]"
+            @clear="query.Status = ''"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">结算方式</span>
+          <Select
+            v-model:value="query.SettleType"
+            allow-clear
+            :options="settleOptions"
+            @clear="query.SettleType = ''"
+            placeholder="请选择结算方式"
+          />
+        </Space.Compact>
         <Space wrap>
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>

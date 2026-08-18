@@ -4,7 +4,9 @@ import type { RechargeCancelStatsItem } from '#/types/operation-manage';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, Result, Space } from 'ant-design-vue';
+import { Button, Result, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchRechargeCancelStatsApi } from '#/api/operationManage/recharge-extra';
@@ -27,8 +29,8 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     Page: 1,
     PageSize: 1000,
   };
@@ -84,7 +86,7 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Space>
         <Button :loading="loading" type="primary" @click="gridApi.reload()">
           查询

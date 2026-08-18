@@ -173,36 +173,39 @@ watch(open, (visible) => {
     destroy-on-close
   >
     <div class="mb-3 flex flex-wrap items-end gap-2">
-      <Input
-        v-if="canFilter"
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Input
-        v-if="canFilter"
-        v-model:value="filterPlayerIdsStr"
-        allow-clear
-        placeholder="玩家ID（逗号分隔）"
-        style="width: 260px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>玩家ID</template>
-      </Input>
-      <Input
-        v-if="canFilter"
-        v-model:value="filterChannelIds"
-        allow-clear
-        placeholder="渠道号"
-        style="width: 210px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>渠道号</template>
-      </Input>
+      <div v-if="canFilter" class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div v-if="canFilter" class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPlayerIdsStr"
+          allow-clear
+          style="width: 260px"
+          @press-enter="handleSearch"
+          placeholder="请输入玩家ID"
+        >
+          <template #addonBefore>玩家ID</template>
+        </Input>
+      </div>
+      <div v-if="canFilter" class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterChannelIds"
+          allow-clear
+          style="width: 210px"
+          @press-enter="handleSearch"
+          placeholder="请输入渠道号"
+        >
+          <template #addonBefore>渠道号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterPackageId"
         style="width: 160px"

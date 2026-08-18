@@ -5,12 +5,12 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
+  message,
   Modal,
   Select,
-  message,
+  Space,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -24,6 +24,7 @@ import {
 import { fetchWithdrawAutoSchemeListApi } from '#/api/operationManage/withdraw-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import PlayerLevelMembersModal from './player-level-members-modal.vue';
@@ -74,8 +75,8 @@ function buildListQuery(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   const levelName = canFilter.value ? filterLevelName.value.trim() : '';
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : undefined,
-    EndTime: end ? end.endOf('day').unix() : undefined,
+    BeginTime: begin ? begin.unix() : undefined,
+    EndTime: end ? end.unix() : undefined,
     LevelName: levelName || undefined,
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -279,16 +280,16 @@ onMounted(() => {
         <Input
           v-model:value="filterLevelName"
           allow-clear
-          placeholder="请输入"
           style="width: 260px"
           @press-enter="handleSearch"
+          placeholder="请输入会员层级"
         >
           <template #addonBefore>会员层级</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">创建时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
+      
       </div>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>

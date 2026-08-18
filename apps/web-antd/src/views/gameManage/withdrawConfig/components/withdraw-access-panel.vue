@@ -11,14 +11,15 @@ import {
   DatePicker,
   Empty,
   Input,
+  message,
   Modal,
   Pagination,
   Select,
+  Space,
   Spin,
   Table,
   Tabs,
   TimePicker,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -28,6 +29,7 @@ import {
   fetchWithdrawAccessStatisticsApi,
 } from '#/api/gameManage/withdraw-data';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -180,13 +182,13 @@ function detailQuery(withPage = true) {
     Group: 'Withdraw',
     IsDownload: '',
     Key: detailKey.value,
-    LeaveBeginTime: leaveRange.value?.[0]?.startOf('day').unix() || '',
-    LeaveEndTime: leaveRange.value?.[1]?.endOf('day').unix() || '',
+    LeaveBeginTime: leaveRange.value?.[0]?.unix() || '',
+    LeaveEndTime: leaveRange.value?.[1]?.unix() || '',
     PlayerId: playerId.value.trim() || '-1',
     Sort: detailSort.value,
     SubGroup: 'Enter',
-    VisitBeginTime: visitRange.value?.[0]?.startOf('day').unix() || '',
-    VisitEndTime: visitRange.value?.[1]?.endOf('day').unix() || '',
+    VisitBeginTime: visitRange.value?.[0]?.unix() || '',
+    VisitEndTime: visitRange.value?.[1]?.unix() || '',
   };
   if (withPage) {
     query.Page = detailPage.value;
@@ -360,8 +362,8 @@ async function loadStatistics() {
       Group: 'Withdraw',
       Key: statisticsKey.value,
       SubGroup: 'Enter',
-      VisitBeginTime: statisticsRange.value?.[0]?.startOf('day').unix() || '',
-      VisitEndTime: statisticsRange.value?.[1]?.endOf('day').unix() || '',
+      VisitBeginTime: statisticsRange.value?.[0]?.unix() || '',
+      VisitEndTime: statisticsRange.value?.[1]?.unix() || '',
     });
     deviceList.value = result.DeviceList as StatisticsRow[];
     userTypeList.value = result.UserTypeList as StatisticsRow[];
@@ -398,54 +400,59 @@ onMounted(() => {
       <Tabs.TabPane v-if="canDetail" key="detail" tab="明细">
         <OpsListPanel>
           <template #filters>
-            <Input
-              v-model:value="playerId"
-              allow-clear
-              placeholder="请输入游戏账号"
-              style="width: 230px"
-              @press-enter="searchDetail"
-            >
-              <template #addonBefore>游戏账号</template>
-            </Input>
             <div class="flex flex-col gap-1">
-              <span class="text-xs text-gray-500">访问页面</span>
-              <Select
-                v-model:value="detailKey"
-                :options="withdrawPageOptions"
-                style="width: 160px"
-              />
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-xs text-gray-500">访问时间</span>
-              <DatePicker.RangePicker
-                v-model:value="visitRange"
-                :allow-clear="false"
-                format="YYYY-MM-DD"
-              />
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-xs text-gray-500">离开时间</span>
-              <DatePicker.RangePicker
-                v-model:value="leaveRange"
+              <Input
+                v-model:value="playerId"
                 allow-clear
-                format="YYYY-MM-DD"
-              />
+                style="width: 230px"
+                @press-enter="searchDetail"
+                placeholder="请输入游戏账号"
+              >
+                <template #addonBefore>游戏账号</template>
+              </Input>
             </div>
             <div class="flex flex-col gap-1">
-              <span class="text-xs text-gray-500">访问时长</span>
-              <TimePicker.RangePicker
-                v-model:value="durationRange"
-                allow-clear
-                format="HH:mm:ss"
-              />
+              <Space.Compact>
+                <span class="query-field-addon">访问页面</span>
+                <Select
+                  v-model:value="detailKey"
+                  :options="withdrawPageOptions"
+                  style="width: 160px"
+                  placeholder="请选择访问页面"
+                />
+              </Space.Compact>
+            
             </div>
             <div class="flex flex-col gap-1">
-              <span class="text-xs text-gray-500">访问设备</span>
-              <Select
-                v-model:value="appType"
-                :options="deviceSelectOptions"
-                style="width: 130px"
-              />
+              <QueryDatetimeRangePicker v-model="visitRange" label="访问时间" />
+            
+            </div>
+            <div class="flex flex-col gap-1">
+              <QueryDatetimeRangePicker v-model="leaveRange" label="离开时间" />
+            
+            </div>
+            <div class="flex flex-col gap-1">
+              <Space.Compact>
+                <span class="query-field-addon">访问时长</span>
+                <TimePicker.RangePicker
+                  v-model:value="durationRange"
+                  allow-clear
+                  format="HH:mm:ss"
+                />
+              </Space.Compact>
+            
+            </div>
+            <div class="flex flex-col gap-1">
+              <Space.Compact>
+                <span class="query-field-addon">访问设备</span>
+                <Select
+                  v-model:value="appType"
+                  :options="deviceSelectOptions"
+                  style="width: 130px"
+                  placeholder="请选择访问设备"
+                />
+              </Space.Compact>
+            
             </div>
             <Button
               type="primary"
@@ -522,20 +529,20 @@ onMounted(() => {
         <OpsListPanel>
           <template #filters>
             <div class="flex flex-col gap-1">
-              <span class="text-xs text-gray-500">访问页面</span>
-              <Select
-                v-model:value="statisticsKey"
-                :options="withdrawPageOptions"
-                style="width: 160px"
-              />
+              <Space.Compact>
+                <span class="query-field-addon">访问页面</span>
+                <Select
+                  v-model:value="statisticsKey"
+                  :options="withdrawPageOptions"
+                  style="width: 160px"
+                  placeholder="请选择访问页面"
+                />
+              </Space.Compact>
+            
             </div>
             <div class="flex flex-col gap-1">
-              <span class="text-xs text-gray-500">统计时间</span>
-              <DatePicker.RangePicker
-                v-model:value="statisticsRange"
-                :allow-clear="false"
-                format="YYYY-MM-DD"
-              />
+              <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
+            
             </div>
             <Button
               type="primary"

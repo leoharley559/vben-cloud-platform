@@ -724,15 +724,17 @@ onMounted(async () => {
 <template>
   <div v-if="canView">
     <div class="query-panel">
-      <Input
-        v-model:value="searchName"
-        allow-clear
-        placeholder="搜索方案名称"
-        class="max-w-sm"
-        style="width: 240px"
-      >
-        <template #addonBefore>方案名称</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="searchName"
+          allow-clear
+          class="max-w-sm"
+          style="width: 240px"
+          placeholder="请输入方案名称"
+        >
+          <template #addonBefore>方案名称</template>
+        </Input>
+      </div>
       <Space>
         <Button
           v-if="canCreate"
@@ -1142,8 +1144,8 @@ onMounted(async () => {
               :options="addableGameOptions"
               mode="multiple"
               show-search
-              placeholder="批量选择游戏"
               class="!w-72"
+              placeholder="请选择批量选择游戏"
             />
             <Button :disabled="gamesToAdd.length === 0" @click="addSelectedGames">
               批量添加
@@ -1192,7 +1194,7 @@ onMounted(async () => {
             :options="gameOptions"
             show-search
             class="flex-1"
-            placeholder="选择游戏"
+            placeholder="请选择选择游戏"
           />
           <InputNumber
             v-model:value="item.Percent"

@@ -7,7 +7,6 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Checkbox,
-  DatePicker,
   Input,
   Space,
   message,
@@ -20,6 +19,7 @@ import {
 } from '#/api/memberManage/crypto-address';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -71,9 +71,9 @@ function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     // 对齐旧站首屏/重置：空日期不传 BeginTime/EndTime
-    BeginTime: begin ? begin.startOf('day').unix() : undefined,
+    BeginTime: begin ? begin.unix() : undefined,
     DigitalAddress: filterDigitalAddress.value.trim() || undefined,
-    EndTime: end ? end.endOf('day').unix() : undefined,
+    EndTime: end ? end.unix() : undefined,
     LoginAccount: normalizeLoginAccount(filterLoginAccount.value) || undefined,
     ...extra,
   };
@@ -195,9 +195,9 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          placeholder="请输入"
           style="width: 240px"
           @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
         </Input>
@@ -206,16 +206,16 @@ onMounted(() => {
         <Input
           v-model:value="filterDigitalAddress"
           allow-clear
-          placeholder="请输入"
           style="width: 260px"
           @press-enter="handleSearch"
+          placeholder="请输入虚拟币地址"
         >
           <template #addonBefore>虚拟币地址</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">添加时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+      
       </div>
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">

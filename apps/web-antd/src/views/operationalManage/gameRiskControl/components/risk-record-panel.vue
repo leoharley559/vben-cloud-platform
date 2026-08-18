@@ -6,13 +6,14 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
   Space,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -90,8 +91,8 @@ const fetchApi = computed(() =>
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     Keyword: filterKeyword.value.trim(),
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     Page: page.currentPage,
@@ -255,28 +256,29 @@ defineExpose({ reload: () => gridApi.reload() });
 <template>
   <div v-if="canView">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterKeyword"
-        allow-clear
-        :placeholder="kind === 'ip' ? 'IP地址' : '设备标识'"
-        style="width: 240px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>{{ kind === 'ip' ? 'IP地址' : '设备标识' }}</template>
-      </Input>
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 260px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <DatePicker.RangePicker
-        v-model:value="filterDateRange"
-        allow-clear
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterKeyword"
+          allow-clear
+          style="width: 240px"
+          @press-enter="handleSearch"
+          :placeholder="`请输入${kind === 'ip' ? 'IP地址' : '设备标识'}`"
+        >
+          <template #addonBefore>{{ kind === 'ip' ? 'IP地址' : '设备标识' }}</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 260px"
+          @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Space class="ml-auto">

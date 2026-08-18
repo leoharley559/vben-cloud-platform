@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Result,
   Select,
@@ -14,6 +13,8 @@ import {
   Tag,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerCreditRecordListApi } from '#/api/operationManage/player-detail-extra';
@@ -67,9 +68,9 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AccountName: filterAccountName.value,
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     IsBO: 1,
     PackageId: filterPackageId.value,
     PlayerAccount: filterPlayerAccount.value,
@@ -254,63 +255,80 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterPlayerAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPlayerAccount"
+          allow-clear
+          style="width: 200px"
+          @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
 
-      <Select
-        v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
-        placeholder="产品"
-        style="width: 160px"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">产品</span>
+        <Select
+          v-model:value="filterPackageId"
+          :options="
+            packageOptions
+              .filter((item) => item.PackageId !== '')
+              .map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+          "
+          style="width: 160px"
+          placeholder="请选择产品"
+        />
+      </Space.Compact>
 
-      <Input
-        v-model:value="filterReferenceId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterReferenceId"
+          allow-clear
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
 
-      <Select
-        v-model:value="filterWalletType"
-        :options="CREDIT_WALLET_TYPE_OPTIONS"
-        style="width: 140px"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">钱包类型</span>
+        <Select
+          v-model:value="filterWalletType"
+          :options="CREDIT_WALLET_TYPE_OPTIONS"
+          style="width: 140px"
+          placeholder="请选择钱包类型"
+        />
+      </Space.Compact>
 
-      <Input
-        v-model:value="filterAccountName"
-        allow-clear
-        placeholder="操作人"
-        style="width: 180px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>操作人</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterAccountName"
+          allow-clear
+          style="width: 180px"
+          @press-enter="handleSearch"
+          placeholder="请输入操作人"
+        >
+          <template #addonBefore>操作人</template>
+        </Input>
+      </div>
 
-      <Select
-        v-model:value="filterDataSearchType"
-        :options="memberTypeOptions"
-        style="width: 120px"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">数据类型</span>
+        <Select
+          v-model:value="filterDataSearchType"
+          :options="memberTypeOptions"
+          style="width: 120px"
+          placeholder="请选择数据类型"
+        />
+      </Space.Compact>
 
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
 
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">

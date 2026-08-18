@@ -148,13 +148,16 @@ function removeBlack(row: Record<string, unknown>) {
   />
   <div v-else>
     <Space class="mb-3">
-      <Input
-        v-model:value="keyword"
-        placeholder="全部"
-        style="width: 220px"
-      >
-        <template #addonBefore>关键词</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="keyword"
+          style="width: 220px"
+          allow-clear
+          placeholder="请输入关键词"
+        >
+          <template #addonBefore>关键词</template>
+        </Input>
+      </div>
       <Button type="primary" @click="blackGridApi.reload()">查询</Button>
       <Button @click="resetAndReload">重置</Button>
       <Button

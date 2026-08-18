@@ -4,7 +4,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, Tooltip } from 'ant-design-vue';
+import { Button, Tooltip } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import {
@@ -13,6 +13,7 @@ import {
 } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
@@ -314,10 +315,7 @@ onMounted(() => {
 
     <div v-if="canDetail">
       <ReportQueryCard title="库存明细">
-        <DatePicker.RangePicker
-          v-model:value="dateRange"
-          class="!w-[280px]"
-        />
+        <QueryDatetimeRangePicker v-model="dateRange" />
         <template #actions>
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>

@@ -9,12 +9,14 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   Result,
   Select,
+  Space,
   Statistic,
   Tooltip,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs, { type Dayjs } from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -276,22 +278,22 @@ onMounted(async () => {
 
     <Card v-if="canViewList" class="funding-card" :bordered="false">
       <div class="query-panel">
-        <Select
-          v-model:value="filterMoneyType"
-          allow-clear
-          class="w-48"
-          mode="multiple"
-          :options="[
-            { label: '日结账单', value: 1 },
-            { label: '提现', value: 2 },
-            { label: '提现退回', value: 3 },
-          ]"
-          placeholder="资金类型"
-        />
-        <DatePicker.RangePicker
-          v-model:value="filterDateRange"
-          format="YYYY-MM-DD"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">资金类型</span>
+          <Select
+            v-model:value="filterMoneyType"
+            allow-clear
+            class="w-48"
+            mode="multiple"
+            :options="[
+              { label: '日结账单', value: 1 },
+              { label: '提现', value: 2 },
+              { label: '提现退回', value: 3 },
+            ]"
+            placeholder="请选择资金类型"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
         <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button @click="handleReset">重置</Button>
       </div>

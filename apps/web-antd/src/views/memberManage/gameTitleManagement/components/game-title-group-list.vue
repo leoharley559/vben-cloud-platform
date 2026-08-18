@@ -189,9 +189,9 @@ onMounted(() => {
         <Input
           v-model:value="filterName"
           allow-clear
-          placeholder="请输入"
           style="width: 260px"
           @press-enter="handleSearch"
+          placeholder="请输入类别名称"
         >
           <template #addonBefore>类别名称</template>
         </Input>

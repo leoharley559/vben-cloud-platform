@@ -3,12 +3,18 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import { Button, DatePicker, Input, Select } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  Select,
+  Space,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerAgentReportApi } from '#/api/operationManage/activity';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -109,39 +115,46 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单号"
-        style="width: 230px"
-      >
-        <template #addonBefore>订单号</template>
-      </Input>
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 240px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        class="w-40"
-        :options="packageOptions"
-        placeholder="产品包"
-      />
-      <Select
-        v-model:value="filterMode"
-        class="w-32"
-        :options="modeOptions"
-        placeholder="代理模式"
-      />
-      <DatePicker.RangePicker
-        v-model:value="finishTimeRange"
-        :placeholder="['领奖开始', '领奖结束']"
-      />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 230px"
+          placeholder="请输入订单号"
+        >
+          <template #addonBefore>订单号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 240px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品包</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          class="w-40"
+          :options="packageOptions"
+          placeholder="请选择产品包"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">代理模式</span>
+        <Select
+          v-model:value="filterMode"
+          class="w-32"
+          :options="modeOptions"
+          placeholder="请选择代理模式"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="finishTimeRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
     </div>
     <Grid>

@@ -3,13 +3,13 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   message,
   Modal,
   Pagination,
   Select,
+  Space,
   Table,
   Tag,
 } from 'ant-design-vue';
@@ -21,6 +21,7 @@ import {
   rejectCreditLimitApi,
 } from '#/api/netcash/credit-limit';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
@@ -195,15 +196,36 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
     <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
       <Tag color="blue">平台可用额度：{{ amount(platformCredit) }}</Tag>
       <Button @click="loadPlatformCredit">刷新额度</Button>
-      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
-        <template #addonBefore>代理账号</template>
-      </Input>
-      <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="代理类型" style="width: 150px" />
-      <Select v-model:value="query.TransferType" :options="transferTypeOptions" placeholder="申请类型" style="width: 150px" />
-      <Input v-model:value="query.ApplyAccount" allow-clear placeholder="申请人" style="width: 210px">
-        <template #addonBefore>申请人</template>
-      </Input>
-      <DatePicker.RangePicker v-model:value="applyRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="query.AgentAccount"
+          allow-clear
+          @press-enter="search"
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">代理类型</span>
+        <Select v-model:value="query.AccountType" :options="accountTypeOptions" style="width: 150px" placeholder="请选择代理类型" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">申请类型</span>
+        <Select v-model:value="query.TransferType" :options="transferTypeOptions" style="width: 150px" placeholder="请选择申请类型" />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="query.ApplyAccount"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入申请人"
+        >
+          <template #addonBefore>申请人</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="applyRange" />
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
       <Button v-if="canApprove" :disabled="selectedKeys.length === 0" type="primary" @click="batchReview(true)">批量通过</Button>

@@ -882,9 +882,9 @@ onBeforeUnmount(() => {
               v-model:value="endReasonId"
               allow-clear
               class="min-w-40"
-              placeholder="结束原因"
               :options="endReasonOptions"
               size="small"
+              placeholder="请选择结束原因"
             />
             <Button
               size="small"

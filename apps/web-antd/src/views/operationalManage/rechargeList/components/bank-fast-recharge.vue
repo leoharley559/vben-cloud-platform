@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -24,6 +23,7 @@ import {
 import EasyRechargeActionModal from '#/components/easy-recharge/easy-recharge-action-modal.vue';
 import EasyRechargeVoucherCell from '#/components/easy-recharge/easy-recharge-voucher-cell.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -84,9 +84,9 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DataSearchType: filterDataSearchType.value,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     GameOrderId: filterOrderId.value,
     LoginAccount: filterLoginAccount.value,
     PackageId: filterPackageId.value,
@@ -319,55 +319,69 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
 
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 200px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 200px"
+          @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
 
-      <Select
-        v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
-        placeholder="产品"
-        style="width: 160px"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">产品</span>
+        <Select
+          v-model:value="filterPackageId"
+          :options="
+            packageOptions
+              .filter((item) => item.PackageId !== '')
+              .map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+          "
+          style="width: 160px"
+          placeholder="请选择产品"
+        />
+      </Space.Compact>
 
-      <Select
-        v-model:value="filterStatus"
-        allow-clear
-        :options="EASY_RECHARGE_STATUS_OPTIONS"
-        placeholder="状态"
-        style="width: 140px"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">状态</span>
+        <Select
+          v-model:value="filterStatus"
+          allow-clear
+          :options="EASY_RECHARGE_STATUS_OPTIONS"
+          style="width: 140px"
+          placeholder="请选择状态"
+        />
+      </Space.Compact>
 
-      <Select
-        v-model:value="filterDataSearchType"
-        :options="memberTypeOptions"
-        style="width: 120px"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">数据类型</span>
+        <Select
+          v-model:value="filterDataSearchType"
+          :options="memberTypeOptions"
+          style="width: 120px"
+          placeholder="请选择数据类型"
+        />
+      </Space.Compact>
 
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
 
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">

@@ -175,15 +175,17 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterDeviceId"
-        allow-clear
-        placeholder="设备号"
-        style="width: 240px"
-        @press-enter="gridApi.reload()"
-      >
-        <template #addonBefore>设备号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterDeviceId"
+          allow-clear
+          style="width: 240px"
+          @press-enter="gridApi.reload()"
+          placeholder="请输入设备号"
+        >
+          <template #addonBefore>设备号</template>
+        </Input>
+      </div>
       <Space wrap>
         <Button :loading="loading" type="primary" @click="gridApi.reload()">
           查询

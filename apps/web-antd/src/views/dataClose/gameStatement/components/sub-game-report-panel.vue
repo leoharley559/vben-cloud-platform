@@ -8,7 +8,6 @@ import { useRouter } from 'vue-router';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Select,
@@ -21,6 +20,7 @@ import {
   fetchSubGameReportListApi,
 } from '#/api/dataClose/game-statement';
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
@@ -287,12 +287,13 @@ onMounted(async () => {
     <ReportQueryCard>
       <Space.Compact>
         <Select
+          class="query-auto-select"
+          :popup-match-select-width="false"
           v-model:value="adminSearchType"
           :options="[
             { label: '代理模糊', value: 0 },
             { label: '代理精准', value: 1 },
           ]"
-          style="width: 110px"
         />
         <AccountSelect
           v-if="adminSearchType === 0"
@@ -302,88 +303,102 @@ onMounted(async () => {
         <Input
           v-else
           v-model:value="adminSearch"
-          placeholder="代理账号"
           style="width: 180px"
           allow-clear
-        />
+          placeholder="请输入代理账号"
+          />
       </Space.Compact>
       <Space.Compact>
         <Select
+          class="query-auto-select"
+          :popup-match-select-width="false"
           v-model:value="channelSearchType"
           :options="[
             { label: '渠道模糊', value: 0 },
             { label: '渠道精准', value: 1 },
           ]"
-          style="width: 110px"
         />
         <ChannelSelect
           v-if="channelSearchType === 0"
           v-model="channelSearch"
           style="width: 180px"
+          placeholder="请输入渠道号"
         />
         <Input
           v-else
           v-model:value="channelSearch"
-          placeholder="渠道"
           style="width: 180px"
           allow-clear
+          placeholder="请输入渠道"
+          />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">产品</span>
+        <Select
+          v-model:value="packageId"
+          :options="
+            packageOptions.map((item) => ({
+              label: item.PackageName,
+              value: item.PackageId,
+            }))
+          "
+          style="width: 160px"
+          show-search
+          allow-clear
+          placeholder="请选择产品"
         />
       </Space.Compact>
-      <Select
-        v-model:value="packageId"
-        :options="
-          packageOptions.map((item) => ({
-            label: item.PackageName,
-            value: item.PackageId,
-          }))
-        "
-        placeholder="产品"
-        style="width: 160px"
-        show-search
-        allow-clear
-      />
-      <Select
-        v-model:value="adminGroupIds"
-        :options="adminGroupOptions"
-        mode="multiple"
-        placeholder="代理模板"
-        style="width: 180px"
-        allow-clear
-        :max-tag-count="1"
-      />
-      <Select
-        v-model:value="gameType"
-        :options="venueOptions"
-        mode="multiple"
-        placeholder="场馆"
-        style="width: 160px"
-        allow-clear
-        :max-tag-count="1"
-      />
-      <Select
-        v-model:value="subGameId"
-        :options="subGameOptions"
-        :filter-option="false"
-        :loading="subGameLoading"
-        show-search
-        allow-clear
-        placeholder="子游戏"
-        style="width: 220px"
-        @search="remoteSearchSubGame"
-      />
-      <Select
-        v-model:value="appUrl"
-        :options="appUrlOptions"
-        mode="multiple"
-        placeholder="上架包"
-        style="width: 160px"
-        allow-clear
-        :max-tag-count="1"
-      />
-      <DatePicker.RangePicker
-        v-model:value="dateRange"
-        :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">代理模板</span>
+        <Select
+          v-model:value="adminGroupIds"
+          :options="adminGroupOptions"
+          mode="multiple"
+          style="width: 180px"
+          allow-clear
+          :max-tag-count="1"
+          placeholder="请选择代理模板"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">场馆</span>
+        <Select
+          v-model:value="gameType"
+          :options="venueOptions"
+          mode="multiple"
+          style="width: 160px"
+          allow-clear
+          :max-tag-count="1"
+          placeholder="请选择场馆"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">子游戏</span>
+        <Select
+          v-model:value="subGameId"
+          :options="subGameOptions"
+          :filter-option="false"
+          :loading="subGameLoading"
+          show-search
+          allow-clear
+          style="width: 220px"
+          @search="remoteSearchSubGame"
+          placeholder="请输入子游戏"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">上架包</span>
+        <Select
+          v-model:value="appUrl"
+          :options="appUrlOptions"
+          mode="multiple"
+          style="width: 160px"
+          allow-clear
+          :max-tag-count="1"
+          placeholder="请选择上架包"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
         <Button @click="handleReset">重置</Button>

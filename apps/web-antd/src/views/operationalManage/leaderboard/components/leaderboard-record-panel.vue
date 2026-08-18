@@ -5,7 +5,6 @@ import { onMounted, ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Select,
@@ -20,6 +19,7 @@ import {
   fetchLeaderboardRecordApi,
 } from '#/api/operationManage/leaderboard';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -297,36 +297,46 @@ onMounted(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        class="w-40"
-        :field-names="{ label: 'PackageName', value: 'PackageId' }"
-        :options="packageOptions"
-        placeholder="产品包"
-      />
-      <ChannelSelect v-model="filterChannelIds" style="width: 220px" />
-      <Input
-        v-model:value="filterActivityId"
-        allow-clear
-        placeholder="活动ID"
-        style="width: 200px"
-      >
-        <template #addonBefore>活动ID</template>
-      </Input>
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="游戏账号"
-        style="width: 240px"
-        @change="
-          filterLoginAccount = String(filterLoginAccount || '')
-            .trim()
-            .toLowerCase()
-        "
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
+      <Space.Compact>
+        <span class="query-field-addon">产品包</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          class="w-40"
+          :field-names="{ label: 'PackageName', value: 'PackageId' }"
+          :options="packageOptions"
+          placeholder="请选择产品包"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">渠道号</span>
+        <ChannelSelect v-model="filterChannelIds" style="width: 220px" placeholder="请输入渠道号" />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterActivityId"
+          allow-clear
+          style="width: 200px"
+          placeholder="请输入活动ID"
+        >
+          <template #addonBefore>活动ID</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          style="width: 240px"
+          @change="
+            filterLoginAccount = String(filterLoginAccount || '')
+              .trim()
+              .toLowerCase()
+          "
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="filterStatus"
         class="w-28"
@@ -336,19 +346,22 @@ onMounted(() => {
           { label: '已领取', value: 1 },
         ]"
       />
-      <Select
-        v-model:value="filterActivityType"
-        allow-clear
-        class="w-32"
-        :options="typeFilterOptions"
-        placeholder="活动类型"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">活动类型</span>
+        <Select
+          v-model:value="filterActivityType"
+          allow-clear
+          class="w-32"
+          :options="typeFilterOptions"
+          placeholder="请选择活动类型"
+        />
+      </Space.Compact>
       <Select
         v-model:value="filterVipLevel"
         class="w-28"
         :options="VIP_LEVEL_OPTIONS"
       />
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" />
       <Space>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>

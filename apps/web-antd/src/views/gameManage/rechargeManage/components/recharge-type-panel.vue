@@ -604,15 +604,17 @@ onMounted(() => void load(true));
 
         <template v-else>
           <div class="mb-3 flex flex-wrap items-center gap-2">
-            <Input
-              v-model:value="keyword"
-              allow-clear
-              placeholder="通道名称/显示名称"
-              style="width: 260px"
-              @press-enter="query"
-            >
-              <template #addonBefore>通道名称</template>
-            </Input>
+            <div class="flex flex-col gap-1">
+              <Input
+                v-model:value="keyword"
+                allow-clear
+                style="width: 260px"
+                @press-enter="query"
+                placeholder="请输入通道名称"
+              >
+                <template #addonBefore>通道名称</template>
+              </Input>
+            </div>
             <Button :loading="loading" type="primary" @click="query"
               >查询</Button
             >

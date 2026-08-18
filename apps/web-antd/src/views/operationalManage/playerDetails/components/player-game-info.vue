@@ -4,12 +4,13 @@ import type { PlayerGameDetailItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Input, Select, Space } from 'ant-design-vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerGameDetailListApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useGameConfig } from '#/composables/use-game-config';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -59,9 +60,9 @@ function parseExInfo(value?: string | Record<string, unknown>) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     LogId: filterLogId.value,
     PlayerId: String(props.playerId),
     Reason: filterReasons.value,
@@ -164,24 +165,29 @@ onMounted(async () => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLogId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-      <Select
-        v-model:value="filterReasons"
-        allow-clear
-        mode="multiple"
-        :max-tag-count="1"
-        :options="reasonOptions"
-        placeholder="账变类型"
-        style="width: 220px"
-      />
-      <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLogId"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">账变类型</span>
+        <Select
+          v-model:value="filterReasons"
+          allow-clear
+          mode="multiple"
+          :max-tag-count="1"
+          :options="reasonOptions"
+          style="width: 220px"
+          placeholder="请选择账变类型"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="filterDateRange" />
       <Space>
         <Button :loading="loading" type="primary" @click="gridApi.reload()"
           >查询</Button

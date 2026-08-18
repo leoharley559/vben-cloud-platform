@@ -1,11 +1,18 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, Select, Table, message } from 'ant-design-vue';
+import {
+  Button,
+  message,
+  Select,
+  Space,
+  Table,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchNoticeStatisticListApi } from '#/api/operationManage/game-notice';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 
@@ -191,29 +198,27 @@ onMounted(() => {
   <OpsListPanel>
     <template #filters>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">访问页面</span>
-        <Select
-          v-model:value="filterSubGroup"
-          show-search
-          style="width: 160px"
-          :options="pageSelectOptions"
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-        />
+        <Space.Compact>
+          <span class="query-field-addon">访问页面</span>
+          <Select
+            v-model:value="filterSubGroup"
+            show-search
+            style="width: 160px"
+            :options="pageSelectOptions"
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择访问页面"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">统计时间（最多 7 天）</span>
-        <DatePicker.RangePicker
-          v-model:value="filterVisitRange"
-          format="YYYY-MM-DD"
-          :disabled-date="visitRangeLimit.disabledDate"
-          @calendar-change="visitRangeLimit.onCalendarChange"
-          @open-change="(open) => !open && visitRangeLimit.clearSelecting()"
-        />
+        <QueryDatetimeRangePicker v-model="filterVisitRange" label="统计时间（最多 7 天）" precision="date" :disabled-date="visitRangeLimit.disabledDate" />
+      
       </div>
       <Button type="primary" :loading="loading" @click="handleSearch">
         查询

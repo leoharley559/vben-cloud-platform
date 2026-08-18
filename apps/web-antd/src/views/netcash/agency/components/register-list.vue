@@ -4,7 +4,9 @@ import type { AgencyRegisterItem } from '#/types/netcash';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, DatePicker, Input, message, Modal, Select, Space, Switch, Tag } from 'ant-design-vue';
+import { Button, Input, message, Modal, Select, Space, Switch, Tag } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -35,9 +37,9 @@ const selectedRows = ref<AgencyRegisterItem[]>([]);
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   return {
     Approve: approve.value,
-    BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
+    BeginTime: dateRange.value?.[0]?.unix() || '',
     Email: email.value,
-    EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
+    EndTime: dateRange.value?.[1]?.unix() || '',
     Mobile: mobile.value,
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -136,26 +138,57 @@ onMounted(() => canView.value && gridApi.reload());
 <template>
   <div v-if="canView">
     <div class="mb-3 flex flex-wrap items-center gap-2">
-      <Input v-model:value="username" allow-clear placeholder="代理账号" style="width: 220px">
-        <template #addonBefore>代理账号</template>
-      </Input>
-      <Input v-model:value="email" allow-clear placeholder="申请邮箱" style="width: 220px">
-        <template #addonBefore>申请邮箱</template>
-      </Input>
-      <Input v-model:value="regIp" allow-clear placeholder="注册 IP" style="width: 210px">
-        <template #addonBefore>注册 IP</template>
-      </Input>
-      <Input v-model:value="mobile" allow-clear placeholder="手机号" style="width: 210px">
-        <template #addonBefore>手机号</template>
-      </Input>
-      <Select
-        v-model:value="approve"
-        allow-clear
-        :options="[{ label: '待审核', value: 1 }, { label: '已通过', value: 2 }, { label: '已拒绝', value: 3 }]"
-        placeholder="审核状态"
-        style="width: 130px"
-      />
-      <DatePicker.RangePicker v-model:value="dateRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="username"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="email"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入申请邮箱"
+        >
+          <template #addonBefore>申请邮箱</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="regIp"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入注册 IP"
+        >
+          <template #addonBefore>注册 IP</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="mobile"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入手机号"
+        >
+          <template #addonBefore>手机号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">审核状态</span>
+        <Select
+          v-model:value="approve"
+          allow-clear
+          :options="[{ label: '待审核', value: 1 }, { label: '已通过', value: 2 }, { label: '已拒绝', value: 3 }]"
+          style="width: 130px"
+          placeholder="请选择审核状态"
+        />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="dateRange" />
       <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="reset">重置</Button>
     </div>

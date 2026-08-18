@@ -3,7 +3,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   message,
@@ -29,6 +28,7 @@ import {
   updateTeamApi,
 } from '#/api/netcash/team-manage';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatNetcashDateTime } from '#/utils/netcash';
@@ -78,8 +78,8 @@ const teamColumns = [
 ];
 
 function setTeamDates() {
-  teamQuery.BeginTime = teamDateRange.value?.[0]?.startOf('day').unix() || 0;
-  teamQuery.EndTime = teamDateRange.value?.[1]?.endOf('day').unix() || 0;
+  teamQuery.BeginTime = teamDateRange.value?.[0]?.unix() || 0;
+  teamQuery.EndTime = teamDateRange.value?.[1]?.unix() || 0;
 }
 async function loadTeams() {
   if (!canViewList.value) return;
@@ -422,21 +422,42 @@ onMounted(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-center gap-2">
-      <Input v-model:value="teamQuery.TeamName" allow-clear placeholder="团队名称" style="width: 220px">
-        <template #addonBefore>团队名称</template>
-      </Input>
-      <Input v-model:value="teamQuery.Username" allow-clear placeholder="主线账号" style="width: 220px">
-        <template #addonBefore>主线账号</template>
-      </Input>
-      <Input v-model:value="teamQuery.SubUserName" allow-clear placeholder="副线账号" style="width: 220px">
-        <template #addonBefore>副线账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="teamQuery.TeamName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入团队名称"
+        >
+          <template #addonBefore>团队名称</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="teamQuery.Username"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入主线账号"
+        >
+          <template #addonBefore>主线账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="teamQuery.SubUserName"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入副线账号"
+        >
+          <template #addonBefore>副线账号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="teamQuery.Type"
         :options="[{ label: '全部类型', value: -1 }, { label: '普通团队', value: 1 }, { label: '正式团队', value: 2 }]"
         style="width: 130px"
       />
-      <DatePicker.RangePicker v-model:value="teamDateRange" />
+      <QueryDatetimeRangePicker v-model="teamDateRange" />
       <Button type="primary" @click="searchTeams">查询</Button>
       <Button @click="resetTeams">重置</Button>
       <Button v-if="canTransfer" @click="openTransfer">转移副线</Button>
@@ -501,7 +522,7 @@ onMounted(() => {
             :filter-option="false"
             :loading="principalLoading"
             :options="principalOptions"
-            placeholder="输入账号远程查询"
+            placeholder="请输入账号"
             show-search
             style="width: 100%"
             @focus="searchPrincipals()"
@@ -526,7 +547,7 @@ onMounted(() => {
             :filter-option="false"
             :loading="principalLoading"
             :options="principalOptions"
-            placeholder="输入账号远程查询"
+            placeholder="请输入账号"
             show-search
             style="width: 100%"
             @focus="searchPrincipals()"

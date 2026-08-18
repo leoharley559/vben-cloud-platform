@@ -6,13 +6,14 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Result,
   Select,
   Space,
   Tag,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerRebateListApi } from '#/api/operationManage/player-detail-extra';
@@ -88,10 +89,9 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AwardStatus: filterAwardStatus.value,
-    AwardTimeBegin: begin
-      ? begin.startOf('day').unix()
+    AwardTimeBegin: begin ? begin.unix()
       : '',
-    AwardTimeEnd: end ? end.endOf('day').unix() : '',
+    AwardTimeEnd: end ? end.unix() : '',
     DataSearchType: 2,
     OrderId: filterOrderId.value,
     PlayerId: String(props.playerId),
@@ -211,28 +211,32 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">返水状态</span>
-        <Select
-          v-model:value="filterAwardStatus"
-          :options="REBATE_AWARD_STATUS_OPTIONS"
-          style="width: 140px"
-        />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">发放时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">返水状态</span>
+          <Select
+            v-model:value="filterAwardStatus"
+            :options="REBATE_AWARD_STATUS_OPTIONS"
+            style="width: 140px"
+            placeholder="请选择返水状态"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="发放时间" />
       </div>
 
       <Space>

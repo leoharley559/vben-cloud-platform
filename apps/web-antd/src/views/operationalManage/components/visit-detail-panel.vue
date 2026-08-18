@@ -8,10 +8,11 @@ import {
   Button,
   DatePicker,
   Input,
+  message,
   Modal,
   Select,
+  Space,
   TimePicker,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -22,6 +23,7 @@ import {
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import PassPopup from '#/components/security/pass-popup.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
@@ -120,8 +122,8 @@ function buildQuery(page?: { currentPage: number; pageSize: number }) {
     PlayerId:
       filterPlayerId.value.trim() === '' ? '-1' : filterPlayerId.value.trim(),
     SubGroup: filterSubGroup.value,
-    VisitBeginTime: visitBegin ? visitBegin.startOf('day').unix() : '',
-    VisitEndTime: visitEnd ? visitEnd.endOf('day').unix() : '',
+    VisitBeginTime: visitBegin ? visitBegin.unix() : '',
+    VisitEndTime: visitEnd ? visitEnd.unix() : '',
   };
   if (page) {
     query.Page = page.currentPage;
@@ -292,71 +294,69 @@ async function handleExport(payload: Record<string, unknown>) {
         <Input
           v-model:value="filterPlayerId"
           allow-clear
-          placeholder="请输入"
           style="width: 260px"
           @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">访问页面</span>
-        <Select
-          v-model:value="filterSubGroup"
-          show-search
-          style="width: 160px"
-          :options="pageSelectOptions"
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-        />
+        <Space.Compact>
+          <span class="query-field-addon">访问页面</span>
+          <Select
+            v-model:value="filterSubGroup"
+            show-search
+            style="width: 160px"
+            :options="pageSelectOptions"
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择访问页面"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">访问时间（最多 7 天）</span>
-        <DatePicker.RangePicker
-          v-model:value="filterVisitRange"
-          format="YYYY-MM-DD"
-          :disabled-date="visitRangeLimit.disabledDate"
-          @calendar-change="visitRangeLimit.onCalendarChange"
-          @open-change="(open) => !open && visitRangeLimit.clearSelecting()"
-        />
+        <QueryDatetimeRangePicker v-model="filterVisitRange" label="访问时间（最多 7 天）" :disabled-date="visitRangeLimit.disabledDate" />
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">离开时间</span>
-        <DatePicker.RangePicker
-          v-model:value="filterLeaveRange"
-          allow-clear
-          format="YYYY-MM-DD"
-          :disabled-date="leaveRangeLimit.disabledDate"
-          @calendar-change="leaveRangeLimit.onCalendarChange"
-          @open-change="(open) => !open && leaveRangeLimit.clearSelecting()"
-        />
+        <QueryDatetimeRangePicker v-model="filterLeaveRange" label="离开时间" :disabled-date="leaveRangeLimit.disabledDate" />
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">访问时长</span>
-        <TimePicker.RangePicker
-          v-model:value="filterDurationRange"
-          format="HH:mm:ss"
-          allow-clear
-        />
+        <Space.Compact>
+          <span class="query-field-addon">访问时长</span>
+          <TimePicker.RangePicker
+            v-model:value="filterDurationRange"
+            format="HH:mm:ss"
+            allow-clear
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">访问设备</span>
-        <Select
-          v-model:value="filterAppType"
-          show-search
-          style="width: 140px"
-          :options="deviceSelectOptions"
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-        />
+        <Space.Compact>
+          <span class="query-field-addon">访问设备</span>
+          <Select
+            v-model:value="filterAppType"
+            show-search
+            style="width: 140px"
+            :options="deviceSelectOptions"
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择访问设备"
+          />
+        </Space.Compact>
+      
       </div>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>

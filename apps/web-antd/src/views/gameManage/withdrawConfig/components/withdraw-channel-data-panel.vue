@@ -6,11 +6,11 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Empty,
   Input,
   Pagination,
   Select,
+  Space,
   Spin,
   Table,
 } from 'ant-design-vue';
@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 
 import { fetchWithdrawChannelDataApi } from '#/api/gameManage/withdraw-data';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -128,9 +129,9 @@ const columns = [
 function buildQuery() {
   return {
     Account: account.value.trim(),
-    BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
+    BeginTime: dateRange.value?.[0]?.unix() || '',
     DataSearchType: dataSearchType.value,
-    EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
+    EndTime: dateRange.value?.[1]?.unix() || '',
     Keyword: '',
     Page: page.value,
     PageSize: pageSize.value,
@@ -210,30 +211,32 @@ onMounted(() => {
 <template>
   <OpsListPanel v-if="canView">
     <template #filters>
-      <Input
-        v-model:value="account"
-        allow-clear
-        placeholder="请输入账户"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>账户</template>
-      </Input>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">日期</span>
-        <DatePicker.RangePicker
-          v-model:value="dateRange"
-          :allow-clear="false"
-          format="YYYY-MM-DD"
-        />
+        <Input
+          v-model:value="account"
+          allow-clear
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入账户"
+        >
+          <template #addonBefore>账户</template>
+        </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">数据类型</span>
-        <Select
-          v-model:value="dataSearchType"
-          :options="memberTypeOptions"
-          style="width: 120px"
-        />
+        <QueryDatetimeRangePicker v-model="dateRange" label="日期" />
+      
+      </div>
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="dataSearchType"
+            :options="memberTypeOptions"
+            style="width: 120px"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
+      
       </div>
       <Button type="primary" :loading="loading" @click="handleSearch">
         查询

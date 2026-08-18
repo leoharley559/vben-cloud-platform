@@ -4,7 +4,9 @@ import type { PlayerLogItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Input, Result, Space } from 'ant-design-vue';
+import { Button, Input, Result, Space } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerActionLogsApi } from '#/api/operationManage/player-detail-extra';
@@ -45,8 +47,8 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     PlayerId: String(props.playerId),
     Type: filterType.value,
     Username: filterUsername.value,
@@ -147,29 +149,32 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterUsername"
-        allow-clear
-        placeholder="操作人员"
-        style="width: 180px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>操作人员</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterUsername"
+          allow-clear
+          style="width: 180px"
+          @press-enter="handleSearch"
+          placeholder="请输入操作人员"
+        >
+          <template #addonBefore>操作人员</template>
+        </Input>
+      </div>
 
-      <Input
-        v-model:value="filterType"
-        allow-clear
-        placeholder="操作类型"
-        style="width: 160px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>类型</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterType"
+          allow-clear
+          style="width: 160px"
+          @press-enter="handleSearch"
+          placeholder="请输入类型"
+        >
+          <template #addonBefore>类型</template>
+        </Input>
+      </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">操作时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="操作时间" />
       </div>
 
       <Space>

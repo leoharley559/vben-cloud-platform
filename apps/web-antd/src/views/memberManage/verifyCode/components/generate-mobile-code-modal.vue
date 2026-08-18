@@ -123,20 +123,22 @@ async function handleGenerate() {
     width="720px"
   >
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="loginAccount"
-        allow-clear
-        placeholder="请输入"
-        style="width: 220px"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="loginAccount"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
       <Select
         v-model:value="packageName"
         :options="productNameOptions"
-        placeholder="所属产品"
         show-search
         style="width: 180px"
+        placeholder="请选择所属产品"
       />
       <Button :loading="searching" type="primary" @click="handleSearchPlayer">
         查询玩家

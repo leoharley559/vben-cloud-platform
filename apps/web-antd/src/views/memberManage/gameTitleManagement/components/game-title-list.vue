@@ -10,7 +10,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Dropdown,
   Input,
   Menu,
@@ -32,6 +31,7 @@ import {
 } from '#/api/memberManage/game-title';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getServiceImageUrl } from '#/utils/media';
 import {
@@ -213,9 +213,9 @@ async function handleSwitch(row: GameTitleItem, checked: boolean) {
 function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : undefined,
+    BeginTime: begin ? begin.unix() : undefined,
     CategoryId: filterCategoryId.value ? filterCategoryId.value : undefined,
-    EndTime: end ? end.endOf('day').unix() : undefined,
+    EndTime: end ? end.unix() : undefined,
     Name: filterName.value || undefined,
     Page: page.currentPage,
     PageSize: page.pageSize,
@@ -337,30 +337,34 @@ onMounted(async () => {
         <Input
           v-model:value="filterName"
           allow-clear
-          placeholder="请输入"
           style="width: 260px"
           @press-enter="handleSearch"
+          placeholder="请输入称号名称"
         >
           <template #addonBefore>称号名称</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">称号类别</span>
-        <Select
-          v-model:value="filterCategoryId"
-          style="width: 160px"
-          :options="[
-            { label: '全部', value: 0 },
-            ...groupOptions.map((item) => ({
-              label: item.Name,
-              value: item.Id,
-            })),
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">称号类别</span>
+          <Select
+            v-model:value="filterCategoryId"
+            style="width: 160px"
+            :options="[
+              { label: '全部', value: 0 },
+              ...groupOptions.map((item) => ({
+                label: item.Name,
+                value: item.Id,
+              })),
+            ]"
+            placeholder="请选择称号类别"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">获得时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="获得时间" />
+      
       </div>
       <Space wrap>
         <Button type="primary" @click="handleSearch">查询</Button>

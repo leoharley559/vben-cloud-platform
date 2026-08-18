@@ -4,7 +4,6 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import {
   Button,
   Card,
-  DatePicker,
   Form,
   Input,
   InputNumber,
@@ -19,6 +18,8 @@ import {
   Tabs,
   Tag,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import {
   addAgentRestrictionApi,
@@ -389,11 +390,22 @@ onMounted(loadTab);
 
       <Card class="mt-4" size="small" title="按代理账号限制">
         <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-          <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
-            <template #addonBefore>代理账号</template>
-          </Input>
-          <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="代理类型" style="width: 150px" />
-          <DatePicker.RangePicker v-model:value="createRange" />
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.AgentAccount"
+              allow-clear
+              @press-enter="search"
+              style="width: 220px"
+              placeholder="请输入代理账号"
+            >
+              <template #addonBefore>代理账号</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">代理类型</span>
+            <Select v-model:value="query.AccountType" :options="accountTypeOptions" style="width: 150px" placeholder="请选择代理类型" />
+          </Space.Compact>
+          <QueryDatetimeRangePicker v-model="createRange" />
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>
           <Button v-if="canExport" :loading="exporting" @click="handleExport">导出</Button>

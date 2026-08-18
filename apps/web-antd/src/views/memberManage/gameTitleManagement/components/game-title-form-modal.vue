@@ -730,6 +730,7 @@ async function handleSubmit() {
           v-if="validChannelMode === 1"
           v-model="validChannelIds"
           class="mt-2 w-full"
+          placeholder="请输入渠道号"
         />
       </Form.Item>
       <Form.Item label="屏蔽渠道">
@@ -741,6 +742,7 @@ async function handleSubmit() {
           v-if="shieldChannelMode === 1"
           v-model="shieldChannelIds"
           class="mt-2 w-full"
+          placeholder="请输入渠道号"
         />
       </Form.Item>
       <Form.Item label="生效包体">

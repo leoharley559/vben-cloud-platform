@@ -566,62 +566,76 @@ onBeforeUnmount(() => {
   <div>
     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
       <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-        <Input
-          v-model:value="filters.ChannelId"
-          allow-clear
-          placeholder="渠道号"
-          style="width: 210px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>渠道号</template>
-        </Input>
-        <Input
-          v-model:value="filters.ChannelName"
-          allow-clear
-          placeholder="渠道名称"
-          style="width: 230px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>渠道名称</template>
-        </Input>
-        <Input
-          v-model:value="filters.PromoterAdminUserName"
-          allow-clear
-          placeholder="推广账号"
-          style="width: 230px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>推广账号</template>
-        </Input>
-        <Input
-          v-model:value="filters.PromoterAdminName"
-          allow-clear
-          placeholder="推广名称"
-          style="width: 230px"
-          @press-enter="handleSearch"
-        >
-          <template #addonBefore>推广名称</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.ChannelId"
+            allow-clear
+            style="width: 210px"
+            @press-enter="handleSearch"
+            placeholder="请输入渠道号"
+          >
+            <template #addonBefore>渠道号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.ChannelName"
+            allow-clear
+            style="width: 230px"
+            @press-enter="handleSearch"
+            placeholder="请输入渠道名称"
+          >
+            <template #addonBefore>渠道名称</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.PromoterAdminUserName"
+            allow-clear
+            style="width: 230px"
+            @press-enter="handleSearch"
+            placeholder="请输入推广账号"
+          >
+            <template #addonBefore>推广账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.PromoterAdminName"
+            allow-clear
+            style="width: 230px"
+            @press-enter="handleSearch"
+            placeholder="请输入推广名称"
+          >
+            <template #addonBefore>推广名称</template>
+          </Input>
+        </div>
         <Select
           v-if="canVisibilityFilter"
           v-model:value="filters.IsHidden"
           :options="visibilityOptions"
           style="width: 125px"
         />
-        <Select
-          v-model:value="filters.PackStatus"
-          allow-clear
-          :options="packStatusOptions"
-          placeholder="打包状态"
-          style="width: 125px"
-        />
-        <Select
-          v-model:value="filters.Sort"
-          allow-clear
-          :options="sortOptions"
-          placeholder="排序"
-          style="width: 150px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">打包状态</span>
+          <Select
+            v-model:value="filters.PackStatus"
+            allow-clear
+            :options="packStatusOptions"
+            style="width: 125px"
+            placeholder="请选择打包状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">排序</span>
+          <Select
+            v-model:value="filters.Sort"
+            allow-clear
+            :options="sortOptions"
+            style="width: 150px"
+            placeholder="请选择排序"
+          />
+        </Space.Compact>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
       </div>

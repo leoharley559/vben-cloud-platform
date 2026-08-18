@@ -3,15 +3,16 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Pagination,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 
 import { fetchDebtListApi } from '#/api/netcash/credit-limit';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import {
   accountTypeMap,
@@ -106,12 +107,26 @@ onMounted(load);
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <Input v-model:value="query.AgentAccounts" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
-        <template #addonBefore>代理账号</template>
-      </Input>
-      <Select v-model:value="query.Type" :options="accountTypeOptions" placeholder="代理类型" style="width: 150px" />
-      <Select v-model:value="query.TransferType" :options="debtTypeOptions" placeholder="还款类型" style="width: 180px" />
-      <DatePicker.RangePicker v-model:value="timeRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="query.AgentAccounts"
+          allow-clear
+          @press-enter="search"
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">代理类型</span>
+        <Select v-model:value="query.Type" :options="accountTypeOptions" style="width: 150px" placeholder="请选择代理类型" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">还款类型</span>
+        <Select v-model:value="query.TransferType" :options="debtTypeOptions" style="width: 180px" placeholder="请选择还款类型" />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="timeRange" />
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
     </div>

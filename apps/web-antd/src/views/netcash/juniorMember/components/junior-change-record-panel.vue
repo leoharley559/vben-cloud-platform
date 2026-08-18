@@ -5,7 +5,16 @@ import type { Column, Option } from '../shared';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, DatePicker, Input, message, Select, Table } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  message,
+  Select,
+  Space,
+  Table,
+} from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import { fetchJuniorMemberChangeRecordApi } from '#/api/netcash/junior-member';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -107,26 +116,28 @@ onMounted(() => {
 
 <template>
   <div class="mb-4 flex flex-wrap items-end gap-2">
-    <Input
-      v-model:value="recordFilters.LoginAccount"
-      allow-clear
-      placeholder="游戏账号"
-      style="width: 220px"
-      @press-enter="loadRecords"
-    >
-      <template #addonBefore>游戏账号</template>
-    </Input>
-    <Select
-      v-model:value="recordFilters.PackageId"
-      allow-clear
-      :options="packageOptions"
-      placeholder="产品包"
-      style="width: 160px"
-    />
-    <DatePicker.RangePicker
-      v-model:value="recordFilters.Time"
-      :placeholder="['开始时间', '结束时间']"
-    />
+    <div class="flex flex-col gap-1">
+      <Input
+        v-model:value="recordFilters.LoginAccount"
+        allow-clear
+        style="width: 220px"
+        @press-enter="loadRecords"
+        placeholder="请输入游戏账号"
+      >
+        <template #addonBefore>游戏账号</template>
+      </Input>
+    </div>
+    <Space.Compact>
+      <span class="query-field-addon">产品包</span>
+      <Select
+        v-model:value="recordFilters.PackageId"
+        allow-clear
+        :options="packageOptions"
+        style="width: 160px"
+        placeholder="请选择产品包"
+      />
+    </Space.Compact>
+    <QueryDatetimeRangePicker v-model="recordFilters.Time" />
     <Button type="primary" @click="recordPage = 1; loadRecords()">查询</Button>
     <Button
       @click="

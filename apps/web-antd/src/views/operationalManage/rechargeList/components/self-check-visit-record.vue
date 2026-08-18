@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Radio, Result, Spin, Table } from 'ant-design-vue';
+import { Button, Radio, Result, Spin, Table } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchSelfReviewStatisticsListApi } from '#/api/operationManage/recharge-extra';
@@ -53,8 +55,8 @@ async function loadStats() {
   try {
     const [begin, end] = filterDateRange.value || [];
     const result = await fetchSelfReviewStatisticsListApi({
-      BeginTime: begin ? begin.startOf('day').unix() : '',
-      EndTime: end ? end.endOf('day').unix() : '',
+      BeginTime: begin ? begin.unix() : '',
+      EndTime: end ? end.unix() : '',
       Group: 'Cash',
       SubGroup: 'Recharge_Appeal_Click',
     });
@@ -101,7 +103,7 @@ const userTypeColumns = [
 
     <div v-else-if="pageType === 'stats' && canStats">
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
         <Button :loading="loading" type="primary" @click="loadStats">
           查询
         </Button>

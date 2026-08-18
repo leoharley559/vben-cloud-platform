@@ -3,15 +3,16 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Pagination,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 
 import { getCreditLimitApplyRecordListApi } from '#/api/netcash/credit-limit';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { CREDIT_APPROVE_STATUS_MAP } from '#/utils/netcash';
 
 import {
@@ -119,20 +120,51 @@ onMounted(load);
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
-        <template #addonBefore>代理账号</template>
-      </Input>
-      <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="代理类型" style="width: 150px" />
-      <Select v-model:value="query.TransferType" :options="transferTypeOptions" placeholder="申请类型" style="width: 150px" />
-      <Input v-model:value="query.ApplyAccount" allow-clear placeholder="申请人" style="width: 210px">
-        <template #addonBefore>申请人</template>
-      </Input>
-      <DatePicker.RangePicker v-model:value="applyRange" />
-      <Input v-model:value="query.FinishAccount" allow-clear placeholder="审核人" style="width: 210px">
-        <template #addonBefore>审核人</template>
-      </Input>
-      <Select v-model:value="query.Status" :options="statusOptions" placeholder="审核结果" style="width: 150px" />
-      <DatePicker.RangePicker v-model:value="finishRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="query.AgentAccount"
+          allow-clear
+          @press-enter="search"
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">代理类型</span>
+        <Select v-model:value="query.AccountType" :options="accountTypeOptions" style="width: 150px" placeholder="请选择代理类型" />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">申请类型</span>
+        <Select v-model:value="query.TransferType" :options="transferTypeOptions" style="width: 150px" placeholder="请选择申请类型" />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="query.ApplyAccount"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入申请人"
+        >
+          <template #addonBefore>申请人</template>
+        </Input>
+      </div>
+      <QueryDatetimeRangePicker v-model="applyRange" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="query.FinishAccount"
+          allow-clear
+          style="width: 210px"
+          placeholder="请输入审核人"
+        >
+          <template #addonBefore>审核人</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">审核结果</span>
+        <Select v-model:value="query.Status" :options="statusOptions" style="width: 150px" placeholder="请选择审核结果" />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="finishRange" />
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
     </div>

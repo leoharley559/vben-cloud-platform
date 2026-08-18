@@ -6,7 +6,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Modal,
   Result,
@@ -23,6 +22,7 @@ import {
 } from '#/api/operationManage/account-adjust';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
@@ -126,9 +126,9 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
   return {
     AdminUserName: filterAdminUserName.value.trim(),
     Approve: '1,4',
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     ChannelIds: channelIdsParam(),
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     HandleType: filterHandleType.value,
     LoginAccount: filterLoginAccount.value
       .trim()
@@ -490,86 +490,107 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <Input
-        v-model:value="filterLoginAccount"
-        allow-clear
-        placeholder="请输入"
-        style="width: 200px"
-        @change="normalizeLoginAccount"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Input
-        v-model:value="filterPlayerId"
-        allow-clear
-        placeholder="请输入"
-        style="width: 180px"
-      >
-        <template #addonBefore>玩家ID</template>
-      </Input>
-      <Input
-        v-model:value="filterPlayerName"
-        allow-clear
-        placeholder="请输入"
-        style="width: 180px"
-      >
-        <template #addonBefore>玩家昵称</template>
-      </Input>
-      <Select
-        v-model:value="filterPackageId"
-        allow-clear
-        :options="packageSelectOptions"
-        placeholder="产品名称"
-        style="width: 160px"
-        show-search
-        :filter-option="
-          (input, option) =>
-            String(option?.label ?? '')
-              .toLowerCase()
-              .includes(input.toLowerCase())
-        "
-      />
-      <ChannelSelect v-model="filterChannelIds" style="width: 220px" />
-      <Input
-        v-model:value="filterAdminUserName"
-        allow-clear
-        placeholder="请输入"
-        style="width: 180px"
-      >
-        <template #addonBefore>代理账号</template>
-      </Input>
-      <Select
-        v-model:value="filterReason"
-        :options="ADJUST_REASON_OPTIONS"
-        placeholder="调整类型"
-        style="width: 140px"
-      />
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="请输入"
-        style="width: 220px"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-      <Select
-        v-model:value="filterHandleType"
-        :options="ADJUST_AUDIT_HANDLE_TYPE_OPTIONS"
-        placeholder="调整方式"
-        style="width: 140px"
-      />
-      <Select
-        v-model:value="filterWaterType"
-        :options="ADJUST_AUDIT_WATER_TYPE_OPTIONS"
-        placeholder="流水类型"
-        style="width: 140px"
-      />
-      <div class="flex items-center gap-1">
-        <span class="text-xs text-gray-500">创建时间</span>
-        <DatePicker.RangePicker
-          v-model:value="filterCreateRange"
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
           allow-clear
+          style="width: 200px"
+          @change="normalizeLoginAccount"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPlayerId"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入玩家ID"
+        >
+          <template #addonBefore>玩家ID</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPlayerName"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入玩家昵称"
+        >
+          <template #addonBefore>玩家昵称</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品名称</span>
+        <Select
+          v-model:value="filterPackageId"
+          allow-clear
+          :options="packageSelectOptions"
+          style="width: 160px"
+          show-search
+          :filter-option="
+            (input, option) =>
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
+          "
+          placeholder="请选择产品名称"
         />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">渠道号</span>
+        <ChannelSelect v-model="filterChannelIds" style="width: 220px" placeholder="请输入渠道号" />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterAdminUserName"
+          allow-clear
+          style="width: 180px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">调整类型</span>
+        <Select
+          v-model:value="filterReason"
+          :options="ADJUST_REASON_OPTIONS"
+          style="width: 140px"
+          placeholder="请选择调整类型"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 220px"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">调整方式</span>
+        <Select
+          v-model:value="filterHandleType"
+          :options="ADJUST_AUDIT_HANDLE_TYPE_OPTIONS"
+          style="width: 140px"
+          placeholder="请选择调整方式"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">流水类型</span>
+        <Select
+          v-model:value="filterWaterType"
+          :options="ADJUST_AUDIT_WATER_TYPE_OPTIONS"
+          style="width: 140px"
+          placeholder="请选择流水类型"
+        />
+      </Space.Compact>
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterCreateRange" label="创建时间" />
       </div>
       <Button :loading="loading" type="primary" @click="gridApi.reload()">
         查询

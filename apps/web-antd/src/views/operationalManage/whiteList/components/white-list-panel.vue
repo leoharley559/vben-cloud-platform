@@ -8,11 +8,12 @@ import {
   DatePicker,
   Form,
   Input,
+  message,
   Modal,
   Result,
   Select,
+  Space,
   Switch,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -507,9 +508,9 @@ onMounted(() => {
           <Input
             v-model:value="filterWhiteIp"
             allow-clear
-            placeholder="请输入 IP"
             style="width: 250px"
             @press-enter="handleSearch"
+            placeholder="请输入IP地址"
           >
             <template #addonBefore>IP地址</template>
           </Input>
@@ -518,9 +519,9 @@ onMounted(() => {
           <Input
             v-model:value="filterWhiteUsername"
             allow-clear
-            placeholder="请输入使用者"
             style="width: 250px"
             @press-enter="handleSearch"
+            placeholder="请输入使用者"
           >
             <template #addonBefore>使用者</template>
           </Input>
@@ -530,22 +531,25 @@ onMounted(() => {
         <Input
           v-model:value="filterUserName"
           allow-clear
-          placeholder="请输入使用者名称"
           style="width: 260px"
           @press-enter="handleSearch"
+          placeholder="请输入使用者"
         >
           <template #addonBefore>使用者</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          placeholder="全部"
-          style="width: 120px"
-          :options="statusOptions"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            style="width: 120px"
+            :options="statusOptions"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+      
       </div>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>

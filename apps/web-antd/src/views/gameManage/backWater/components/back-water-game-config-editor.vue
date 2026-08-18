@@ -345,26 +345,28 @@ defineExpose({ buildConfig });
   <div>
     <div class="query-panel">
       <div class="query-fields">
-        <Input
-          v-model:value="query.GameName"
-          allow-clear
-          placeholder="输入游戏名称"
-          style="width: 240px"
-          @press-enter="searchGames"
-        >
-          <template #addonBefore>游戏名称</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.GameName"
+            allow-clear
+            style="width: 240px"
+            @press-enter="searchGames"
+            placeholder="请输入游戏名称"
+          >
+            <template #addonBefore>游戏名称</template>
+          </Input>
+        </div>
         <Select
           v-model:value="query.Category"
           :options="categoryOptions"
-          placeholder="游戏大类"
           show-search
+          placeholder="请选择游戏大类"
         />
         <Select
           v-model:value="query.Platform"
           :options="platformOptions"
-          placeholder="游戏平台"
           show-search
+          placeholder="请选择游戏平台"
         />
       </div>
       <Space>
@@ -455,7 +457,7 @@ defineExpose({ buildConfig });
               :max="100"
               :precision="2"
               addon-after="%"
-              placeholder="比例"
+              placeholder="请输入比例"
             />
             <Button @click="updateBatch('set')">批量编辑</Button>
             <InputNumber
@@ -464,7 +466,7 @@ defineExpose({ buildConfig });
               :max="100"
               :precision="2"
               addon-after="%"
-              placeholder="比例"
+              placeholder="请输入比例"
             />
             <Button @click="updateBatch('up')">批量上调</Button>
             <InputNumber
@@ -473,7 +475,7 @@ defineExpose({ buildConfig });
               :max="100"
               :precision="2"
               addon-after="%"
-              placeholder="比例"
+              placeholder="请输入比例"
             />
             <Button @click="updateBatch('down')">批量下调</Button>
           </Space>

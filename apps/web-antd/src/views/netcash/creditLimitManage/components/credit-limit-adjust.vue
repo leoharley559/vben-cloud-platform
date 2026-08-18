@@ -3,7 +3,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   InputNumber,
@@ -11,6 +10,7 @@ import {
   Modal,
   Pagination,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 
@@ -22,6 +22,7 @@ import {
 } from '#/api/netcash/credit-limit';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import SummaryCards from '#/components/global/summary-cards.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { createRequestHash } from '#/utils/crypto';
 
 import {
@@ -280,14 +281,25 @@ onMounted(load);
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-      <Input v-model:value="query.AgentAccount" allow-clear placeholder="代理账号" @press-enter="search" style="width: 220px">
-        <template #addonBefore>代理账号</template>
-      </Input>
-      <Select v-model:value="query.AccountTypes" :options="accountTypeOptions.slice(1)" mode="multiple" placeholder="代理类型" style="min-width: 220px" />
-      <DatePicker.RangePicker v-model:value="agentCreateRange" />
-      <InputNumber v-model:value="query.BeginCreditRange" :min="0" :precision="2" placeholder="最小额度（元）" />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="query.AgentAccount"
+          allow-clear
+          @press-enter="search"
+          style="width: 220px"
+          placeholder="请输入代理账号"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">代理类型</span>
+        <Select v-model:value="query.AccountTypes" :options="accountTypeOptions.slice(1)" mode="multiple" style="min-width: 220px" placeholder="请选择代理类型" />
+      </Space.Compact>
+      <QueryDatetimeRangePicker v-model="agentCreateRange" />
+      <InputNumber v-model:value="query.BeginCreditRange" :min="0" :precision="2" placeholder="请输入最小额度（元）" />
       <span>至</span>
-      <InputNumber v-model:value="query.EndCreditRange" :min="0" :precision="2" placeholder="最大额度（元）" />
+      <InputNumber v-model:value="query.EndCreditRange" :min="0" :precision="2" placeholder="请输入最大额度（元）" />
       <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
       <Button v-if="checkPermission(11_802)" :loading="exporting" @click="handleExport">导出</Button>

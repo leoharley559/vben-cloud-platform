@@ -427,9 +427,9 @@ onMounted(() => {
                   <Input
                     v-model:value="searchQuery[index]"
                     allow-clear
-                    placeholder="搜索语言"
                     size="small"
                     @change="filterGroup(index)"
+                    placeholder="请输入搜索语言"
                   />
                 </div>
 

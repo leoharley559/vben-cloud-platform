@@ -5,13 +5,15 @@ import { computed, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
+  message,
   Modal,
   Select,
+  Space,
   Tag,
-  message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -197,37 +199,38 @@ function handleOffshelf(row: OngoingActivityRow) {
 
     <template v-else>
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterId"
-          allow-clear
-          placeholder="活动ID"
-          style="width: 210px"
-        >
-          <template #addonBefore>活动ID</template>
-        </Input>
-        <Input
-          v-model:value="filterName"
-          allow-clear
-          placeholder="活动名称"
-          style="width: 260px"
-        >
-          <template #addonBefore>活动名称</template>
-        </Input>
-        <Select
-          v-model:value="filterType"
-          allow-clear
-          class="w-40"
-          :options="typeOptions"
-          placeholder="活动类型"
-        />
-        <DatePicker.RangePicker
-          v-model:value="showTimeRange"
-          :placeholder="['预热时间', '下架时间']"
-        />
-        <DatePicker.RangePicker
-          v-model:value="activityTimeRange"
-          :placeholder="['开始时间', '结束时间']"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterId"
+            allow-clear
+            style="width: 210px"
+            placeholder="请输入活动ID"
+          >
+            <template #addonBefore>活动ID</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterName"
+            allow-clear
+            style="width: 260px"
+            placeholder="请输入活动名称"
+          >
+            <template #addonBefore>活动名称</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">活动类型</span>
+          <Select
+            v-model:value="filterType"
+            allow-clear
+            class="w-40"
+            :options="typeOptions"
+            placeholder="请选择活动类型"
+          />
+        </Space.Compact>
+        <QueryDatetimeRangePicker v-model="showTimeRange" />
+        <QueryDatetimeRangePicker v-model="activityTimeRange" />
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
       </div>

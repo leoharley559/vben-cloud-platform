@@ -7,7 +7,6 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Checkbox,
-  DatePicker,
   Input,
   Select,
   Space,
@@ -21,6 +20,7 @@ import {
 } from '#/api/memberManage/e-wallet';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -74,8 +74,8 @@ function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     AccountNum: filterAccountNum.value.trim() || undefined,
-    BeginTime: begin ? begin.startOf('day').unix() : '',
-    EndTime: end ? end.endOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
+    EndTime: end ? end.unix() : '',
     LoginAccount: filterLoginAccount.value.trim() || undefined,
     PayType: filterPayType.value === '' ? undefined : filterPayType.value,
     ...extra,
@@ -198,9 +198,9 @@ onMounted(() => {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          placeholder="请输入"
           style="width: 240px"
           @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
         </Input>
@@ -209,24 +209,28 @@ onMounted(() => {
         <Input
           v-model:value="filterAccountNum"
           allow-clear
-          placeholder="请输入"
           style="width: 240px"
           @press-enter="handleSearch"
+          placeholder="请输入钱包账号"
         >
           <template #addonBefore>钱包账号</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">钱包类型</span>
-        <Select
-          v-model:value="filterPayType"
-          :options="[{ label: '全部', value: '' }, ...E_WALLET_PAY_TYPES]"
-          style="width: 140px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">钱包类型</span>
+          <Select
+            v-model:value="filterPayType"
+            :options="[{ label: '全部', value: '' }, ...E_WALLET_PAY_TYPES]"
+            style="width: 140px"
+            placeholder="请选择钱包类型"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">添加时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+      
       </div>
       <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">

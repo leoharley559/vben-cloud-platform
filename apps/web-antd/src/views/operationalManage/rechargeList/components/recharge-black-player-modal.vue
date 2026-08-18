@@ -5,7 +5,6 @@ import { computed, ref, watch } from 'vue';
 
 import {
   Checkbox,
-  DatePicker,
   Form,
   Input,
   InputNumber,
@@ -13,6 +12,8 @@ import {
   Select,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -193,8 +194,8 @@ async function handleOk() {
       }
       const [begin, end] = dateRange.value || [];
       await createRechargeBlackPlayerApi({
-        BeginTime: begin ? begin.startOf('day').unix() : '',
-        EndTime: end ? end.endOf('day').unix() : '',
+        BeginTime: begin ? begin.unix() : '',
+        EndTime: end ? end.unix() : '',
         MultiInfo: '',
         PayType: buildPayType(),
         PlayerId: playerId.value,
@@ -207,8 +208,8 @@ async function handleOk() {
       }
       const [begin, end] = dateRange.value || [];
       await updateRechargeBlackPlayerApi({
-        BeginTime: begin ? begin.startOf('day').unix() : 0,
-        EndTime: end ? end.endOf('day').unix() : 0,
+        BeginTime: begin ? begin.unix() : 0,
+        EndTime: end ? end.unix() : 0,
         Id: editId.value,
         PayType: buildPayType(),
         Remark: remark.value,
@@ -279,7 +280,7 @@ async function handleOk() {
         </div>
       </Form.Item>
       <Form.Item label="禁止日期">
-        <DatePicker.RangePicker v-model:value="dateRange" class="w-full" />
+        <QueryDatetimeRangePicker v-model="dateRange" />
       </Form.Item>
       <Form.Item label="备注">
         <Input.TextArea

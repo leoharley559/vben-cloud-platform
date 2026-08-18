@@ -600,14 +600,16 @@ onMounted(() => {
       width="800px"
     >
       <div class="mb-3 flex flex-wrap gap-2">
-        <Input
-          v-model:value="specialFilter"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 230px"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="specialFilter"
+            allow-clear
+            style="width: 230px"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
         <Button type="primary" @click="loadSpecialPlayers">查询</Button>
         <Button type="primary" @click="openAddModal">添加玩家</Button>
       </div>

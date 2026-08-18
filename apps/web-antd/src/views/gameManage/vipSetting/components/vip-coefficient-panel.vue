@@ -256,14 +256,16 @@ onMounted(loadData);
       title="游戏流水系数"
     >
       <div class="query-grid">
-        <Input
-          v-model:value="filters.GameName"
-          allow-clear
-          placeholder="输入游戏名称"
-          style="width: 240px"
-        >
-          <template #addonBefore>游戏名称</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.GameName"
+            allow-clear
+            style="width: 240px"
+            placeholder="请输入游戏名称"
+          >
+            <template #addonBefore>游戏名称</template>
+          </Input>
+        </div>
         <Select
           v-model:value="filters.Category"
           :options="categoryOptions"
@@ -315,8 +317,8 @@ onMounted(loadData);
                 :min="0"
                 :precision="2"
                 addon-after="%"
-                placeholder="系数"
                 style="width: 145px"
+                placeholder="请输入系数"
               />
             </div>
             <Empty

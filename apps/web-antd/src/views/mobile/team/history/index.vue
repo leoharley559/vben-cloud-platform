@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
 
-import { Card, DatePicker, Spin, Table } from 'ant-design-vue';
+import { Card, Spin, Table } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchTeamQueryListApi } from '#/api/promotion/team-query';
@@ -34,8 +36,8 @@ async function loadData() {
   try {
     const [begin, end] = dateRange.value || [];
     const result = await fetchTeamQueryListApi({
-      BeginTime: begin ? begin.startOf('day').unix() : '',
-      EndTime: end ? end.endOf('day').unix() : '',
+      BeginTime: begin ? begin.unix() : '',
+      EndTime: end ? end.unix() : '',
       Page: 1,
       PageSize: 50,
     });
@@ -51,11 +53,7 @@ onMounted(loadData);
 <template>
   <Spin :spinning="loading">
     <MobileMvpTip />
-    <DatePicker.RangePicker
-      v-model:value="dateRange"
-      class="mb-3 w-full"
-      @change="loadData"
-    />
+    <QueryDatetimeRangePicker v-model="dateRange" />
     <Card size="small">
       <Table
         :columns="columns"

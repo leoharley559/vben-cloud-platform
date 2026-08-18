@@ -395,14 +395,16 @@ watch(
   >
     <template v-if="canViewTable">
       <div class="mb-4 flex flex-wrap items-end gap-2">
-        <Input
-          v-model:value="filterAccount"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 240px"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAccount"
+            allow-clear
+            style="width: 240px"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
         <Select
           v-model:value="filterPackageId"
           allow-clear
@@ -413,7 +415,7 @@ watch(
               value: item.PackageId,
             }))
           "
-          placeholder="全部产品"
+          placeholder="请选择产品"
         />
         <Space wrap>
           <Button type="primary" @click="handleSearch">查询</Button>

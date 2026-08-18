@@ -6,13 +6,14 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Result,
   Select,
   Space,
   Tag,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerAdjustListApi } from '#/api/operationManage/account-adjust';
@@ -71,9 +72,9 @@ function getQueryParams() {
     Approve: -1,
     ApproveBeginTime: '',
     ApproveEndTime: '',
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     HandleType: filterHandleType.value,
     IsApprove: 1,
     IsExp: false,
@@ -248,37 +249,44 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">调整类型</span>
-        <Select
-          v-model:value="filterReason"
-          :options="ADJUST_REASON_OPTIONS"
-          style="width: 160px"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">调整类型</span>
+          <Select
+            v-model:value="filterReason"
+            :options="ADJUST_REASON_OPTIONS"
+            style="width: 160px"
+            placeholder="请选择调整类型"
+          />
+        </Space.Compact>
       </div>
 
-      <Input
-        v-model:value="filterOrderId"
-        allow-clear
-        placeholder="订单编号"
-        style="width: 220px"
-        @press-enter="handleSearch"
-      >
-        <template #addonBefore>订单编号</template>
-      </Input>
-
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">调整方式</span>
-        <Select
-          v-model:value="filterHandleType"
-          :options="ADJUST_HANDLE_TYPE_OPTIONS"
-          style="width: 140px"
-        />
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterOrderId"
+          allow-clear
+          style="width: 220px"
+          @press-enter="handleSearch"
+          placeholder="请输入订单编号"
+        >
+          <template #addonBefore>订单编号</template>
+        </Input>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">创建时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">调整方式</span>
+          <Select
+            v-model:value="filterHandleType"
+            :options="ADJUST_HANDLE_TYPE_OPTIONS"
+            style="width: 140px"
+            placeholder="请选择调整方式"
+          />
+        </Space.Compact>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
       </div>
 
       <Space>

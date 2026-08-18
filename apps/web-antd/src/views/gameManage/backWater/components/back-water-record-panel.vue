@@ -7,7 +7,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   message,
@@ -22,6 +21,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
@@ -578,55 +578,65 @@ onMounted(async () => {
 
     <div class="query-panel">
       <div class="query-grid">
-        <Input
-          v-if="activeType === 'summary'"
-          v-model:value="filters.OrderId"
-          allow-clear
-          placeholder="订单号"
-          style="width: 220px"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-        <Input
-          v-model:value="filters.LoginAccount"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 220px"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
+        <div v-if="activeType === 'summary'" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.OrderId"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.LoginAccount"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
         <Select v-model:value="filters.VipLevel" :options="vipOptions" />
         <Select
           v-model:value="filters.LevelId"
           :options="levelOptions"
           show-search
         />
-        <Input
-          v-if="activeType === 'summary'"
-          v-model:value="filters.AdminName"
-          allow-clear
-          placeholder="代理账号"
-          style="width: 220px"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
+        <div v-if="activeType === 'summary'" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.AdminName"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
         <Select
           v-model:value="filters.PackId"
           :options="packageSelectOptions"
           show-search
         />
-        <ChannelSelect v-model="filters.ChannelIds" />
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect v-model="filters.ChannelIds" placeholder="请输入渠道号" />
+        </Space.Compact>
         <Select
           v-model:value="filters.DataSearchType"
           :options="memberTypeOptions"
         />
-        <Select
-          v-if="activeType === 'detail'"
-          v-model:value="filters.GameType"
-          mode="multiple"
-          :options="venueOptions"
-          placeholder="场馆"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">场馆</span>
+          <Select
+            v-if="activeType === 'detail'"
+            v-model:value="filters.GameType"
+            mode="multiple"
+            :options="venueOptions"
+            placeholder="请选择场馆"
+          />
+        </Space.Compact>
         <Select v-model:value="filters.ConfigId" :options="schemeOptions" />
         <Select
           v-model:value="filters.RebateMode"
@@ -656,15 +666,14 @@ onMounted(async () => {
             { label: '手动', value: 1 },
           ]"
         />
-        <div v-if="activeType === 'summary'" class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">返水生成时间</span>
-          <DatePicker.RangePicker v-model:value="generationRange" />
+        <div v-if="activeType === 'summary'" class="flex flex-col gap-1">
+          <QueryDatetimeRangePicker v-model="generationRange" label="返水生成时间" />
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">{{
-            activeType === 'summary' ? '发放时间' : '游戏时间'
-          }}</span>
-          <DatePicker.RangePicker v-model:value="awardRange" />
+        <div class="flex flex-col gap-1">
+          <QueryDatetimeRangePicker
+            v-model="awardRange"
+            :label="activeType === 'summary' ? '发放时间' : '游戏时间'"
+          />
         </div>
       </div>
       <Space>

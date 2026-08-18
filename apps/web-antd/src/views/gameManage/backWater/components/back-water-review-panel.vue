@@ -7,7 +7,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   InputNumber,
@@ -22,6 +21,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   exportBackWaterRecordApi,
@@ -166,9 +166,9 @@ function reviewState(row: ReviewRow) {
 
 function queryParams(page: { currentPage: number; pageSize: number }) {
   const common = {
-    BeginTime: dateRange.value?.[0]?.startOf('day').unix() || '',
+    BeginTime: dateRange.value?.[0]?.unix() || '',
     ChannelIds: filters.ChannelIds.join(','),
-    EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
+    EndTime: dateRange.value?.[1]?.unix() || '',
     LoginAccount: filters.LoginAccount.trim().toLowerCase(),
     OrderId: filters.OrderId.trim(),
     Page: page.currentPage,
@@ -551,38 +551,51 @@ onMounted(async () => {
 
     <div class="query-panel">
       <div class="query-grid">
-        <Input v-model:value="filters.OrderId" allow-clear placeholder="订单号" style="width: 220px">
-          <template #addonBefore>订单号</template>
-        </Input>
-        <Input
-          v-model:value="filters.LoginAccount"
-          allow-clear
-          placeholder="游戏账号"
-          style="width: 220px"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.OrderId"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.LoginAccount"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
         <Select v-model:value="filters.VipLevel" :options="vipOptions" />
         <Select
           v-if="mode === 'system'"
           v-model:value="filters.LevelId"
           :options="levelOptions"
         />
-        <Input
-          v-if="mode === 'system'"
-          v-model:value="filters.AdminName"
-          allow-clear
-          placeholder="代理账号"
-          style="width: 220px"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
+        <div v-if="mode === 'system'" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.AdminName"
+            allow-clear
+            style="width: 220px"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
         <Select
           v-model:value="filters.PackId"
           :options="packageOptionsList"
           show-search
         />
-        <ChannelSelect v-model="filters.ChannelIds" />
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect v-model="filters.ChannelIds" placeholder="请输入渠道号" />
+        </Space.Compact>
         <Select
           v-if="mode === 'system'"
           v-model:value="filters.ConfigId"
@@ -602,19 +615,18 @@ onMounted(async () => {
           v-if="mode === 'manual'"
           v-model:value="filters.ApplyMin"
           :min="0"
-          placeholder="最小申请金额"
           class="!w-full"
+          placeholder="请输入最小申请金额"
         />
         <InputNumber
           v-if="mode === 'manual'"
           v-model:value="filters.ApplyMax"
           :min="0"
-          placeholder="最大申请金额"
           class="!w-full"
+          placeholder="请输入最大申请金额"
         />
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">返水生成时间</span>
-          <DatePicker.RangePicker v-model:value="dateRange" />
+        <div class="flex flex-col gap-1">
+          <QueryDatetimeRangePicker v-model="dateRange" label="返水生成时间" />
         </div>
       </div>
       <Space>

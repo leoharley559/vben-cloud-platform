@@ -116,8 +116,8 @@ const venueOptions = computed(() =>
         v-else
         v-model:value="categoriesCsvFallback"
         :disabled="disabled"
-        placeholder="场馆类型列表加载失败，可手动输入类型ID，逗号分隔"
         style="max-width: 480px"
+        placeholder="请输入场馆类型列表加载失败，可手动输入类型ID，逗号分隔"
       />
     </template>
 
@@ -137,8 +137,8 @@ const venueOptions = computed(() =>
         v-else
         v-model:value="venuesCsvFallback"
         :disabled="disabled"
-        placeholder="场馆列表加载失败，可手动输入场馆ID，逗号分隔"
         style="max-width: 480px"
+        placeholder="请输入场馆列表加载失败，可手动输入场馆ID，逗号分隔"
       />
     </template>
   </div>

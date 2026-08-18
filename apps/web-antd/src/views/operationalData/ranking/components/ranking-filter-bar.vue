@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue';
 
-import { Button, DatePicker, Input, Select, Space } from 'ant-design-vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
 
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { normalizeSearchValue } from '#/utils/everyday-report-format';
 import { defaultRankingDateRange, toUnixRange } from '#/utils/ranking';
@@ -104,21 +105,17 @@ const exportDisabled = computed(() => props.loading || props.exportLoading);
 
 <template>
   <div class="mb-4 flex flex-wrap items-center gap-2">
-    <DatePicker.RangePicker
-      v-model:value="dateRange"
-      :allow-clear="false"
-      format="YYYY-MM-DD"
-      style="width: 260px"
-    />
+    <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
 
     <Space.Compact>
       <Select
+        class="query-auto-select"
+        :popup-match-select-width="false"
         v-model:value="adminSearchType"
         :options="[
           { label: '账号模糊', value: 0 },
           { label: '账号精准', value: 1 },
         ]"
-        style="width: 110px"
       />
       <AccountSelect
         v-if="adminSearchType === 0"
@@ -129,40 +126,45 @@ const exportDisabled = computed(() => props.loading || props.exportLoading);
         v-else
         v-model:value="adminSearch as string"
         allow-clear
-        placeholder="请输入账号"
         style="width: 220px"
+        placeholder="请输入账号"
       />
     </Space.Compact>
 
     <Space.Compact>
       <Select
+        class="query-auto-select"
+        :popup-match-select-width="false"
         v-model:value="channelSearchType"
         :options="[
           { label: '渠道模糊', value: 0 },
           { label: '渠道精准', value: 1 },
         ]"
-        style="width: 110px"
       />
       <ChannelSelect
         v-if="channelSearchType === 0"
         v-model="channelSearch"
         style="width: 220px"
+        placeholder="请输入渠道号"
       />
       <Input
         v-else
         v-model:value="channelSearch as string"
         allow-clear
-        placeholder="请输入渠道"
         style="width: 220px"
+        placeholder="请输入渠道"
       />
     </Space.Compact>
 
-    <Select
-      v-if="showDataSearchType"
-      v-model:value="dataSearchType"
-      :options="dataSearchTypeOptions"
-      style="width: 100px"
-    />
+    <Space.Compact v-if="showDataSearchType">
+      <span class="query-field-addon">数据类型</span>
+      <Select
+        v-model:value="dataSearchType"
+        :options="dataSearchTypeOptions"
+        style="width: 120px"
+        placeholder="请选择数据类型"
+      />
+    </Space.Compact>
 
     <Space>
       <Button :loading="loading" type="primary" @click="handleSearch">

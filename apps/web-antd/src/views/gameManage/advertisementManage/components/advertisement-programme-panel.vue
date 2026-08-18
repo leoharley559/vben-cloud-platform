@@ -45,6 +45,7 @@ import {
   updateAdvertisementProgrammeApi,
 } from '#/api/gameManage/advertisement-manage';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -209,7 +210,7 @@ const activities = ref<SelectSource[]>([]);
 const notices = ref<SelectSource[]>([]);
 const filters = reactive({
   Status: '' as number | string,
-  Time: [] as Dayjs[],
+  Time: undefined as [Dayjs, Dayjs] | undefined,
   Title: '',
 });
 
@@ -423,8 +424,8 @@ async function loadRows() {
       params.Status = filters.Status;
     }
     if (isCarousel.value) {
-      params.BeginTime = filters.Time[0]?.startOf('day').unix() ?? '';
-      params.EndTime = filters.Time[1]?.endOf('day').unix() ?? '';
+      params.BeginTime = filters.Time?.[0]?.startOf('day').unix() ?? '';
+      params.EndTime = filters.Time?.[1]?.endOf('day').unix() ?? '';
     }
     rows.value = normalizeRows(
       await fetchAdvertisementListApi(params),
@@ -437,7 +438,7 @@ async function loadRows() {
 function resetFilters() {
   filters.Title = '';
   filters.Status = '';
-  filters.Time = [];
+  filters.Time = undefined;
   void loadRows();
 }
 
@@ -994,13 +995,17 @@ onMounted(async () => {
 
     <Card v-if="!isHomeDialog" class="query-card" size="small">
       <div class="query-grid">
-        <Input
-          v-model:value="filters.Title"
-          allow-clear
-          addon-before="标题"
-          placeholder="请输入"
-          @press-enter="loadRows"
-        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.Title"
+            allow-clear
+            style="width: 220px"
+            @press-enter="loadRows"
+            placeholder="请输入标题"
+          >
+            <template #addonBefore>标题</template>
+          </Input>
+        </div>
         <Select
           v-model:value="filters.Status"
           :options="[
@@ -1009,10 +1014,7 @@ onMounted(async () => {
             { label: '关闭', value: 2 },
           ]"
         />
-        <DatePicker.RangePicker
-          v-if="isCarousel"
-          v-model:value="filters.Time as [Dayjs, Dayjs]"
-        />
+        <QueryDatetimeRangePicker v-model="filters.Time" precision="date" />
         <Space>
           <Button type="primary" @click="loadRows">查询</Button>
           <Button @click="resetFilters">重置</Button>
@@ -1285,11 +1287,7 @@ onMounted(async () => {
           </template>
 
           <Form.Item v-if="isCarousel" label="选择日期">
-            <DatePicker.RangePicker
-              v-model:value="form.Time as [Dayjs, Dayjs]"
-              show-time
-              value-format=""
-            />
+            <DatePicker.RangePicker v-model:value="form.Time as [Dayjs, Dayjs]" />
           </Form.Item>
           <Form.Item v-if="isCarousel" label="展示设备">
             <Checkbox.Group
@@ -1437,11 +1435,13 @@ onMounted(async () => {
             <Form.Item label="生效渠道">
               <ChannelSelect
                 v-model="form.ValidChannels as Array<number | string>"
+                placeholder="请输入渠道号"
               />
             </Form.Item>
             <Form.Item label="屏蔽渠道">
               <ChannelSelect
                 v-model="form.ShieldChannels as Array<number | string>"
+                placeholder="请输入渠道号"
               />
             </Form.Item>
           </template>

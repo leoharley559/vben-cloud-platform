@@ -5,12 +5,12 @@ import { computed, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
+  message,
   Modal,
   Select,
+  Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -22,6 +22,7 @@ import {
 } from '#/api/operationManage/help-manage';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import {
@@ -176,8 +177,8 @@ const gridOptions: VxeTableGridOptions<HelpRow> = {
 
         const [begin, end] = filterDateRange.value || [];
         const result = await fetchHelpManageListApi({
-          BeginTime: begin ? begin.startOf('day').unix() : '',
-          EndTime: end ? end.endOf('day').unix() : '',
+          BeginTime: begin ? begin.unix() : '',
+          EndTime: end ? end.unix() : '',
           HelperAccount: filterHelperAccount.value.trim(),
           Page: page.currentPage,
           PageSize: page.pageSize,
@@ -255,30 +256,29 @@ function handleClose(row: HelpRow) {
         <Input
           v-model:value="filterHelperAccount"
           allow-clear
-          placeholder="请输入协助账号"
           style="width: 260px"
           @press-enter="handleSearch"
+          placeholder="请输入协助账号"
         >
           <template #addonBefore>协助账号</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          placeholder="全部"
-          style="width: 140px"
-          :options="statusOptions"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            style="width: 140px"
+            :options="statusOptions"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">申请时间</span>
-        <DatePicker.RangePicker
-          v-model:value="filterDateRange"
-          allow-clear
-          format="YYYY-MM-DD"
-        />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="申请时间" />
+      
       </div>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>

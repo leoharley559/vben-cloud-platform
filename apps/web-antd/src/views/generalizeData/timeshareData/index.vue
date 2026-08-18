@@ -8,16 +8,17 @@ import { Page } from '@vben/common-ui';
 import {
   Button,
   Card,
-  DatePicker,
   message,
   Radio,
   Result,
+  Space,
   Tabs,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchTimeshareDataApi } from '#/api/promotion/timeshare-data';
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -182,18 +183,19 @@ watch(visibleTabs, (tabs) => {
       <div class="timeshare-query">
         <div class="query-field">
           <span>推广账号</span>
-          <AccountSelect v-model="filterAdminIds" style="width: 240px" />
+          <Space.Compact>
+            <span class="query-field-addon">账号</span>
+            <AccountSelect v-model="filterAdminIds" style="width: 240px" />
+          </Space.Compact>
         </div>
         <div class="query-field">
           <span>渠道</span>
-          <ChannelSelect v-model="filterChannelIds" style="width: 240px" />
+          <Space.Compact>
+            <span class="query-field-addon">渠道号</span>
+            <ChannelSelect v-model="filterChannelIds" style="width: 240px" placeholder="请输入渠道号" />
+          </Space.Compact>
         </div>
-        <DatePicker.RangePicker
-          v-model:value="filterDateRange"
-          :disabled-date="disabledDate"
-          @calendar-change="onCalendarChange"
-          @open-change="(open) => !open && (rangeSelecting = undefined)"
-        />
+        <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" :disabled-date="disabledDate" />
         <Button type="primary" @click="loadData">查询</Button>
         <Button @click="reset">重置</Button>
         <div class="ml-auto">

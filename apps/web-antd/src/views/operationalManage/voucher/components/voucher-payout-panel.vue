@@ -5,7 +5,6 @@ import { computed, reactive, ref, watch } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   InputNumber,
@@ -15,6 +14,8 @@ import {
   Space,
   message,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 import { useRouter } from 'vue-router';
 
@@ -213,13 +214,13 @@ function buildIssueQuery(page: { currentPage: number; pageSize: number }) {
   const [regBegin, regEnd] = filterRegRange.value || [];
   const [issueBegin, issueEnd] = filterIssueRange.value || [];
   return {
-    IssueEndTime: issueEnd ? issueEnd.endOf('day').unix() : '',
-    IssueStartTime: issueBegin ? issueBegin.startOf('day').unix() : '',
+    IssueEndTime: issueEnd ? issueEnd.unix() : '',
+    IssueStartTime: issueBegin ? issueBegin.unix() : '',
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     Page: page.currentPage,
     PageSize: page.pageSize,
-    RegEndTime: regEnd ? regEnd.endOf('day').unix() : '',
-    RegStartTime: regBegin ? regBegin.startOf('day').unix() : '',
+    RegEndTime: regEnd ? regEnd.unix() : '',
+    RegStartTime: regBegin ? regBegin.unix() : '',
     VipLevel:
       filterVipLevel.value === -1 || filterVipLevel.value === ''
         ? ''
@@ -364,20 +365,23 @@ async function handleIssueExport(payload: Record<string, unknown>) {
     <div v-if="activeTab === 'single'" class="max-w-xl">
       <div class="mb-3 text-base font-medium">玩家信息</div>
       <Space class="mb-4" wrap>
-        <Select
-          v-model:value="singleForm.PackageId"
-          allow-clear
-          class="w-40"
-          :field-names="{ label: 'PackageName', value: 'PackageId' }"
-          :options="packageOptions"
-          placeholder="产品包"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="singleForm.PackageId"
+            allow-clear
+            class="w-40"
+            :field-names="{ label: 'PackageName', value: 'PackageId' }"
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
         <Input
           v-model:value="singleForm.LoginAccount"
           allow-clear
-          placeholder="玩家账号"
           style="width: 180px"
           @press-enter="searchSinglePlayer"
+          placeholder="请输入玩家账号"
         />
         <Button :loading="singleSearching" @click="searchSinglePlayer">
           查询玩家
@@ -454,25 +458,22 @@ async function handleIssueExport(payload: Record<string, unknown>) {
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
-            placeholder="游戏账号"
             style="width: 220px"
+            placeholder="请输入游戏账号"
           >
             <template #addonBefore>游戏账号</template>
           </Input>
-          <Select
-            v-model:value="filterVipLevel"
-            class="w-28"
-            :options="VIP_LEVEL_OPTIONS"
-            placeholder="VIP"
-          />
-          <DatePicker.RangePicker
-            v-model:value="filterRegRange"
-            placeholder="['注册开始','注册结束']"
-          />
-          <DatePicker.RangePicker
-            v-model:value="filterIssueRange"
-            placeholder="['发放开始','发放结束']"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">VIP</span>
+            <Select
+              v-model:value="filterVipLevel"
+              class="w-28"
+              :options="VIP_LEVEL_OPTIONS"
+              placeholder="请选择VIP"
+            />
+          </Space.Compact>
+          <QueryDatetimeRangePicker v-model="filterRegRange" label="注册时间" />
+          <QueryDatetimeRangePicker v-model="filterIssueRange" label="发放时间" />
           <Space>
             <Button type="primary" @click="handleIssueSearch">查询</Button>
             <Button @click="handleIssueReset">重置</Button>

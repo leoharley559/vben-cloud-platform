@@ -286,12 +286,13 @@ onMounted(() => {
     <div class="recoup-query">
       <Space.Compact>
         <Select
+          class="query-auto-select"
+          :popup-match-select-width="false"
           v-model:value="filterAdminSearchType"
           :options="[
             { label: '模糊', value: 0 },
             { label: '精确', value: 1 },
           ]"
-          style="width: 80px"
         />
         <AccountSelect
           v-if="filterAdminSearchType === 0"
@@ -302,40 +303,43 @@ onMounted(() => {
           v-else
           v-model:value="filterAdminSearch"
           allow-clear
-          placeholder="推广账号"
           style="width: 180px"
-        />
+          placeholder="请输入推广账号"
+          />
       </Space.Compact>
       <Space.Compact>
         <Select
+          class="query-auto-select"
+          :popup-match-select-width="false"
           v-model:value="filterChannelSearchType"
           :options="[
             { label: '模糊', value: 0 },
             { label: '精确', value: 1 },
           ]"
-          style="width: 80px"
         />
         <ChannelSelect
           v-if="filterChannelSearchType === 0"
           v-model="filterChannelIds"
           style="width: 220px"
+          placeholder="请输入渠道号"
         />
         <Input
           v-else
           v-model:value="filterChannelSearch"
           allow-clear
-          placeholder="渠道"
           style="width: 180px"
-        />
+          placeholder="请输入渠道"
+          />
       </Space.Compact>
       <Select
+        class="query-auto-select"
+        :popup-match-select-width="false"
         v-model:value="filterReportType"
         :options="[
           { label: '日报', value: 2 },
           { label: '周报', value: 3 },
           { label: '月报', value: 4 },
         ]"
-        style="width: 100px"
         @change="resetDateByReportType"
       />
       <DatePicker.RangePicker

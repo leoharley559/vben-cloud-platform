@@ -130,30 +130,33 @@ function handleReset() {
         <Input
           v-model:value="filterLoginAccount"
           allow-clear
-          placeholder="请输入"
           style="width: 240px"
           @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
         >
           <template #addonBefore>游戏账号</template>
         </Input>
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-xs text-gray-500">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          :options="packageSelectOptions"
-          placeholder="全部产品"
-          style="width: 160px"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            style="width: 160px"
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
+      
       </div>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterPhoneNum"
           allow-clear
-          placeholder="请输入"
           style="width: 250px"
           @press-enter="handleSearch"
+          placeholder="请输入手机号"
         >
           <template #addonBefore>手机号</template>
         </Input>

@@ -351,55 +351,71 @@ async function exportExcel() {
     <Card :bordered="false">
       <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div class="mb-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-          <Input
-            v-model:value="filters.Username"
-            allow-clear
-            placeholder="代理账号（精确匹配）"
-            style="width: 240px"
-            @press-enter="reloadFirstPage"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.Username"
+              allow-clear
+              style="width: 240px"
+              @press-enter="reloadFirstPage"
+              placeholder="请输入代理账号"
+            >
+              <template #addonBefore>代理账号</template>
+            </Input>
+          </div>
           <Select
             v-model:value="filters.Type"
             :options="typeOptions"
             style="width: 125px"
           />
-          <ChannelSelect
-            v-model="filters.ChannelId"
-            :multiple="false"
-            style="width: 220px"
-          />
-          <Input
-            v-model:value="filters.NetCashDomain"
-            allow-clear
-            placeholder="专属 APP 域名"
-            style="width: 260px"
-            @press-enter="reloadFirstPage"
-          >
-            <template #addonBefore>专属 APP 域名</template>
-          </Input>
-          <Input
-            v-model:value="filters.NetCashH5Domain"
-            allow-clear
-            placeholder="专属 H5 域名"
-            style="width: 260px"
-            @press-enter="reloadFirstPage"
-          >
-            <template #addonBefore>专属 H5 域名</template>
-          </Input>
-          <Select
-            v-model:value="filters.AdminStatus"
-            :options="statusOptions"
-            placeholder="账号状态"
-            style="width: 125px"
-          />
-          <Select
-            v-model:value="filters.Status"
-            :options="statusOptions"
-            placeholder="渠道状态"
-            style="width: 125px"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">渠道号</span>
+            <ChannelSelect
+              v-model="filters.ChannelId"
+              :multiple="false"
+              style="width: 220px"
+              placeholder="请输入渠道号"
+            />
+          </Space.Compact>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.NetCashDomain"
+              allow-clear
+              style="width: 260px"
+              @press-enter="reloadFirstPage"
+              placeholder="请输入专属 APP 域名"
+            >
+              <template #addonBefore>专属 APP 域名</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.NetCashH5Domain"
+              allow-clear
+              style="width: 260px"
+              @press-enter="reloadFirstPage"
+              placeholder="请输入专属 H5 域名"
+            >
+              <template #addonBefore>专属 H5 域名</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">账号状态</span>
+            <Select
+              v-model:value="filters.AdminStatus"
+              :options="statusOptions"
+              style="width: 125px"
+              placeholder="请选择账号状态"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">渠道状态</span>
+            <Select
+              v-model:value="filters.Status"
+              :options="statusOptions"
+              style="width: 125px"
+              placeholder="请选择渠道状态"
+            />
+          </Space.Compact>
           <Button type="primary" @click="reloadFirstPage">查询</Button>
           <Button @click="resetFilters">重置</Button>
         </div>

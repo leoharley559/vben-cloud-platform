@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 
-import { Button, DatePicker, Select, Space } from 'ant-design-vue';
+import { Button, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import AccountSelect from '#/components/global/account-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 
 defineOptions({ name: 'PromoteDataSearch' });
@@ -107,29 +108,31 @@ defineExpose({
   <div class="query-panel">
     <div class="query-field">
       <span>推广账号</span>
-      <AccountSelect v-model="filterAdminIds" style="width: 260px" />
+      <Space.Compact>
+        <span class="query-field-addon">账号</span>
+        <AccountSelect v-model="filterAdminIds" style="width: 260px" />
+      </Space.Compact>
     </div>
-    <div class="flex items-center gap-2">
-      <span class="text-sm text-gray-500">渠道</span>
-      <ChannelSelect v-model="filterChannelIds" style="width: 260px" />
+    <div class="flex flex-col gap-1">
+      <Space.Compact>
+        <span class="query-field-addon">渠道</span>
+        <ChannelSelect v-model="filterChannelIds" style="width: 260px" placeholder="请输入渠道号" />
+      </Space.Compact>
     </div>
-    <Select
-      v-if="showLanding"
-      v-model:value="filterTemplateId"
-      allow-clear
-      :options="landingOptions"
-      placeholder="落地页"
-      show-search
-      style="width: 180px"
-    />
-    <div class="flex items-center gap-2">
-      <span class="text-sm text-gray-500">日期</span>
-      <DatePicker.RangePicker
-        v-model:value="filterDateRange"
-        :disabled-date="disabledDate"
-        @calendar-change="onCalendarChange"
-        @open-change="(open) => !open && (rangeSelecting = undefined)"
+    <Space.Compact>
+      <span class="query-field-addon">落地页</span>
+      <Select
+        v-if="showLanding"
+        v-model:value="filterTemplateId"
+        allow-clear
+        :options="landingOptions"
+        show-search
+        style="width: 180px"
+        placeholder="请选择落地页"
       />
+    </Space.Compact>
+    <div class="flex flex-col gap-1">
+      <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" :disabled-date="disabledDate" />
     </div>
     <Space v-if="showSearchButton">
       <Button type="primary" @click="handleSearch">查询</Button>

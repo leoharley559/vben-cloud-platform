@@ -4,7 +4,9 @@ import type { PlayerBonusRewardItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, DatePicker, Result, Select, Space, Tag } from 'ant-design-vue';
+import { Button, Result, Select, Space, Tag } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchPlayerBonusRewardListApi } from '#/api/operationManage/bonus-reward';
@@ -57,10 +59,10 @@ function formatDateTime(value?: number | string) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    BeginTime: begin ? begin.startOf('day').unix() : '',
+    BeginTime: begin ? begin.unix() : '',
     BonusType: filterBonusTypes.value,
     DataSearchType: 2,
-    EndTime: end ? end.endOf('day').unix() : '',
+    EndTime: end ? end.unix() : '',
     OrderStatus: filterOrderStatus.value,
     PlayerId: String(props.playerId),
   };
@@ -266,31 +268,35 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="mb-4 flex flex-wrap items-end gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">红利类型</span>
-        <Select
-          v-model:value="filterBonusTypes"
-          allow-clear
-          mode="multiple"
-          :max-tag-count="1"
-          :options="BONUS_TYPE_OPTIONS"
-          placeholder="全部"
-          style="width: 220px"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">红利类型</span>
+          <Select
+            v-model:value="filterBonusTypes"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="BONUS_TYPE_OPTIONS"
+            placeholder="请选择红利类型"
+            style="width: 220px"
+          />
+        </Space.Compact>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">订单状态</span>
-        <Select
-          v-model:value="filterOrderStatus"
-          :options="BONUS_ORDER_STATUS_OPTIONS"
-          style="width: 140px"
-        />
+      <div class="flex flex-col gap-1">
+        <Space.Compact>
+          <span class="query-field-addon">订单状态</span>
+          <Select
+            v-model:value="filterOrderStatus"
+            :options="BONUS_ORDER_STATUS_OPTIONS"
+            style="width: 140px"
+            placeholder="请选择订单状态"
+          />
+        </Space.Compact>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">申请时间</span>
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
+      <div class="flex flex-col gap-1">
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="申请时间" />
       </div>
 
       <Space>

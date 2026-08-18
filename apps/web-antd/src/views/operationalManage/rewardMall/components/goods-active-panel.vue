@@ -5,7 +5,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   Select,
   Space,
@@ -13,6 +12,8 @@ import {
   message,
   Modal,
 } from 'ant-design-vue';
+
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -121,8 +122,8 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
     ProductName: filterName.value.trim(),
     ProductTag: filterTag.value === '' ? '' : filterTag.value,
     ProductType: filterType.value === '' ? '' : filterType.value,
-    ProductValidEndTime: end ? end.endOf('day').unix() : '',
-    ProductValidStartTime: begin ? begin.startOf('day').unix() : '',
+    ProductValidEndTime: end ? end.unix() : '',
+    ProductValidStartTime: begin ? begin.unix() : '',
   };
 }
 
@@ -321,29 +322,37 @@ async function handleSort(
   <div>
     <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
       <div class="flex flex-wrap items-end gap-2">
-        <DatePicker.RangePicker v-model:value="filterDateRange" />
-        <Input
-          v-model:value="filterName"
-          allow-clear
-          placeholder="商品名称"
-          style="width: 240px"
-        >
-          <template #addonBefore>商品名称</template>
-        </Input>
-        <Select
-          v-model:value="filterType"
-          allow-clear
-          class="w-32"
-          :options="PRODUCT_TYPE_OPTIONS"
-          placeholder="商品类型"
-        />
-        <Select
-          v-model:value="filterTag"
-          allow-clear
-          class="w-32"
-          :options="tagOptions"
-          placeholder="商品页签"
-        />
+        <QueryDatetimeRangePicker v-model="filterDateRange" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterName"
+            allow-clear
+            style="width: 240px"
+            placeholder="请输入商品名称"
+          >
+            <template #addonBefore>商品名称</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">商品类型</span>
+          <Select
+            v-model:value="filterType"
+            allow-clear
+            class="w-32"
+            :options="PRODUCT_TYPE_OPTIONS"
+            placeholder="请选择商品类型"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">商品页签</span>
+          <Select
+            v-model:value="filterTag"
+            allow-clear
+            class="w-32"
+            :options="tagOptions"
+            placeholder="请选择商品页签"
+          />
+        </Space.Compact>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
       </div>
