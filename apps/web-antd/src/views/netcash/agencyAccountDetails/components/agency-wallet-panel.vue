@@ -452,7 +452,7 @@ onMounted(load);
       :description="`无${activeTab === 'commission' ? '佣金' : activeTab === 'bonus' ? '红利' : '帐变'}查看权限`"
     />
     <template v-else>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <DatePicker
         v-if="activeTab === 'commission'"

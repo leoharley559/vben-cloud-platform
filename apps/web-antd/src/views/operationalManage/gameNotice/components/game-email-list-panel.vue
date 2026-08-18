@@ -424,7 +424,7 @@ async function openReadPlayers(row: EmailRow) {
 <template>
   <div v-if="canViewTable || canCreate">
     <!-- 查询区与旧站 email.vue 对齐：发送人 / 代理推广账号 / 日期 / 查询重置 / 新增 -->
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Input

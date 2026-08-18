@@ -397,7 +397,7 @@ function handleDelete(row: NoticeRow) {
 <template>
   <div v-if="canViewTable || canCreate">
     <!-- 查询区与旧站 notice.vue Filters 对齐：发布者 / 状态 / 公告标题 / 日期 / 查询重置 / 新增 -->
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Input

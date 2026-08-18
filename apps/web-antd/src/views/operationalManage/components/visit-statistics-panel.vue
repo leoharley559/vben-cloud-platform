@@ -217,7 +217,7 @@ onMounted(() => {
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterVisitRange" label="统计时间（最多 7 天）" precision="date" :disabled-date="visitRangeLimit.disabledDate" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" :loading="loading" @click="handleSearch">
         查询
       </Button>

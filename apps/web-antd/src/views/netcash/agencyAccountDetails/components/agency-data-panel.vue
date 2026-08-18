@@ -530,7 +530,7 @@ watch(
 <template>
   <div class="space-y-5">
     <div>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" />

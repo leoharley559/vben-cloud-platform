@@ -266,7 +266,7 @@ onMounted(() => {
     title="403"
   />
   <template v-else>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Input
@@ -308,7 +308,7 @@ onMounted(() => {
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="auditRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="searchAudit">查询</Button>
       <Button @click="resetAudit">重置</Button>
         </div>

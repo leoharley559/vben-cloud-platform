@@ -104,7 +104,7 @@ const exportDisabled = computed(() => props.loading || props.exportLoading);
 </script>
 
 <template>
-  <div class="ops-query-scope mb-4">
+  <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
           <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" precision="date" />

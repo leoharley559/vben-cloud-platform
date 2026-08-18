@@ -109,7 +109,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       无编辑记录查看权限 (12102)
     </div>
     <template v-else>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -142,7 +142,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="updateTimeRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
     </div>

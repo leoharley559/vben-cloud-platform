@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 import {
   Button,
+  Descriptions,
   Form,
   Input,
   InputNumber,
@@ -12,7 +13,6 @@ import {
   Select,
   Space,
   Table,
-  Tabs,
 } from 'ant-design-vue';
 
 import {
@@ -28,6 +28,7 @@ import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { formatMemberType } from '#/utils/player-status';
 
 defineOptions({ name: 'GoldGrantPanel' });
 
@@ -81,6 +82,7 @@ const form = reactive({
 const batchText = ref('');
 const batchFileInput = ref<HTMLInputElement | null>(null);
 const batchRows = ref<BatchRow[]>([]);
+const batchResultOpen = ref(false);
 const batchResult = ref<{
   Count?: number;
   FailCount?: number;
@@ -110,6 +112,16 @@ const packageSelectOptions = computed(() =>
       label: item.PackageName,
       value: item.PackageName,
     })),
+);
+
+watch(
+  packageSelectOptions,
+  (options) => {
+    if (!queryForm.PackageName && options[0]?.value) {
+      queryForm.PackageName = String(options[0].value);
+    }
+  },
+  { immediate: true },
 );
 
 const validBatchCount = computed(
@@ -257,9 +269,34 @@ async function queryPlayer() {
 function resetSingle() {
   playerReady.value = false;
   playerInfo.PlayerId = '';
+  playerInfo.LoginAccount = '';
+  playerInfo.PackageName = '';
   playerInfo.Gold = 0;
   playerInfo.DataFlag = null;
   form.Amount = undefined;
+}
+
+function resetFormFields() {
+  form.Amount = undefined;
+  form.HandleDesc = '';
+  form.Reason = undefined;
+  form.RedType = 1;
+  form.Title = '';
+  form.Water = undefined;
+  form.WaterAmount = undefined;
+  form.WaterType = 1;
+}
+
+function handleReset() {
+  if (grantMode.value === 'single') {
+    queryForm.LoginAccount = '';
+    resetSingle();
+  } else {
+    batchText.value = '';
+    batchRows.value = [];
+    batchResult.value = null;
+  }
+  resetFormFields();
 }
 
 async function submitGrant() {
@@ -281,6 +318,14 @@ async function submitGrant() {
   }
   if (form.Amount > 100_000) {
     message.warning('金额最大不能超过十万');
+    return;
+  }
+  if (!form.Title.trim()) {
+    message.warning(form.RedType === 2 ? '请选择红利标题' : '请输入红利标题');
+    return;
+  }
+  if (!form.HandleDesc.trim()) {
+    message.warning('请输入备注');
     return;
   }
   if (!validateWater()) {
@@ -392,6 +437,14 @@ async function submitBatch() {
     message.warning('请选择红利类型');
     return;
   }
+  if (!form.Title.trim()) {
+    message.warning(form.RedType === 2 ? '请选择红利标题' : '请输入红利标题');
+    return;
+  }
+  if (!form.HandleDesc.trim()) {
+    message.warning('请输入备注');
+    return;
+  }
   if (!validateWater()) {
     return;
   }
@@ -440,6 +493,7 @@ async function submitBatch() {
           FailItems: failItems,
           SuccessCount: Number(result?.SuccessCount ?? validRows.length),
         };
+        batchResultOpen.value = true;
         message.success('批量发放完成');
       } finally {
         submitting.value = false;
@@ -453,225 +507,266 @@ void loadRedTitles();
 </script>
 
 <template>
-  <div v-if="canView" class="max-w-4xl space-y-4">
-    <div class="text-xs text-gray-400">
-      金额单位为元，提交时按分换算。批量格式：每行
-      <code>游戏账号,产品包名,金额</code>
+  <div v-if="canView">
+    <div class="mb-3">
+      <Radio.Group v-model:value="grantMode" button-style="solid">
+        <Radio.Button v-if="canSingle" value="single">单人发放</Radio.Button>
+        <Radio.Button v-if="canBatch" value="batch">批量发放</Radio.Button>
+      </Radio.Group>
     </div>
-    <Tabs v-model:active-key="grantMode" type="line" size="small">
-      <Tabs.TabPane v-if="canSingle" key="single" tab="单人发放">
-        <div class="pt-2">
-          <div class="mb-4 flex flex-wrap items-end gap-2">
-            <div class="flex flex-col gap-1">
-              <Input
-                v-model:value="queryForm.LoginAccount"
-                allow-clear
-                style="width: 240px"
-                @blur="
-                  () => {
-                    if (queryForm.LoginAccount && queryForm.PackageName) {
-                      void queryPlayer();
-                    }
-                  }
-                "
-                placeholder="请输入游戏账号"
-              >
-                <template #addonBefore>游戏账号</template>
-              </Input>
-            </div>
-            <Space.Compact>
-              <span class="query-field-addon">产品</span>
-              <Select
-                v-model:value="queryForm.PackageName"
-                allow-clear
-                class="w-48"
-                :options="packageSelectOptions"
-                placeholder="请选择产品"
-                show-search
-              />
-            </Space.Compact>
-            <Button type="primary" :loading="querying" @click="queryPlayer">
-              查询玩家
-            </Button>
-          </div>
-          <div
-            v-if="playerReady"
-            class="mb-2 rounded border border-dashed px-3 py-2 text-sm text-gray-600"
-          >
-            玩家ID：{{ playerInfo.PlayerId }} ｜ 账号：{{
-              playerInfo.LoginAccount
-            }}
-            ｜ 余额：{{ formatAmountFromCent(playerInfo.Gold) }}
-            <span
-              v-if="Number(playerInfo.DataFlag) === 1"
-              class="ml-2 text-red-500"
-            >
-              （测试账号）
-            </span>
-          </div>
-        </div>
-      </Tabs.TabPane>
 
-      <Tabs.TabPane v-if="canBatch" key="batch" tab="批量发放">
-        <div class="pt-2">
-          <div class="mb-3 flex flex-wrap gap-2">
-            <Button @click="downloadBatchTemplate">下载模板</Button>
-            <Button @click="batchFileInput?.click()">导入CSV</Button>
-            <input
-              ref="batchFileInput"
-              accept=".csv,text/csv"
-              class="hidden"
-              type="file"
-              @change="onBatchFileChange"
-            />
+    <div class="mb-6">
+      <div class="mb-3 text-base font-medium">玩家信息</div>
+      <template v-if="grantMode === 'single'">
+        <div class="mb-4 flex flex-wrap items-end gap-2">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="queryForm.LoginAccount"
+              allow-clear
+              style="width: 260px"
+              @blur="
+                () => {
+                  if (queryForm.LoginAccount && queryForm.PackageName) {
+                    void queryPlayer();
+                  }
+                }
+              "
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
           </div>
-          <Form layout="vertical">
-            <Form.Item label="批量数据（也可粘贴）">
-              <Input.TextArea
-                v-model:value="batchText"
-                :rows="6"
-                placeholder="每行：账号,产品包,金额&#10;例如：player01,乐赢网,100"
-              />
-            </Form.Item>
-          </Form>
-          <Button class="mb-3" :loading="querying" @click="previewBatch">
+          <Space.Compact>
+            <span class="query-field-addon">产品</span>
+            <Select
+              v-model:value="queryForm.PackageName"
+              allow-clear
+              class="w-48"
+              :options="packageSelectOptions"
+              placeholder="请选择产品"
+              show-search
+              @change="
+                () => {
+                  if (queryForm.LoginAccount && queryForm.PackageName) {
+                    void queryPlayer();
+                  }
+                }
+              "
+            />
+          </Space.Compact>
+          <Button type="primary" :loading="querying" @click="queryPlayer">
+            查询玩家
+          </Button>
+        </div>
+        <Descriptions
+          bordered
+          class="mb-2 max-w-md"
+          :column="1"
+          size="small"
+          :label-style="{ width: '96px', whiteSpace: 'nowrap' }"
+          :content-style="{ width: 'auto' }"
+        >
+          <Descriptions.Item label="玩家 ID">
+            {{ playerInfo.PlayerId || '-' }}
+          </Descriptions.Item>
+          <Descriptions.Item label="游戏账号">
+            {{ playerInfo.LoginAccount || '-' }}
+          </Descriptions.Item>
+          <Descriptions.Item label="会员类型">
+            {{
+              playerInfo.DataFlag === null || playerInfo.DataFlag === undefined
+                ? '-'
+                : formatMemberType(playerInfo.DataFlag)
+            }}
+          </Descriptions.Item>
+          <Descriptions.Item label="账户余额">
+            {{
+              playerReady
+                ? formatAmountFromCent(playerInfo.Gold)
+                : '-'
+            }}
+          </Descriptions.Item>
+        </Descriptions>
+      </template>
+
+      <template v-else>
+        <div class="mb-3 flex flex-wrap gap-2">
+          <Button @click="downloadBatchTemplate">下载模板</Button>
+          <Button @click="batchFileInput?.click()">导入CSV</Button>
+          <input
+            ref="batchFileInput"
+            accept=".csv,text/csv"
+            class="hidden"
+            type="file"
+            @change="onBatchFileChange"
+          />
+          <Button :loading="querying" type="primary" @click="previewBatch">
             预览匹配
           </Button>
-          <Table
-            v-if="batchRows.length"
-            size="small"
-            :pagination="false"
-            :data-source="batchRows"
-            :row-key="
-              (row: BatchRow) => `${row.LoginAccount}-${row.PackageName}`
-            "
-            :columns="[
-              { title: '账号', dataIndex: 'LoginAccount' },
-              { title: '产品包', dataIndex: 'PackageName' },
-              { title: '玩家ID', dataIndex: 'PlayerId' },
-              { title: '金额(元)', dataIndex: 'AmountYuan' },
-              {
-                title: '状态',
-                dataIndex: 'valid',
-                customRender: ({ text }: { text: boolean }) =>
-                  text ? '有效' : '无效/测试号',
-              },
-            ]"
-          />
-          <div v-if="batchResult" class="mt-3 space-y-2 text-sm text-gray-600">
-            <div>
-              结果：总数 {{ batchResult.Count }} ／ 成功
-              {{ batchResult.SuccessCount }} ／ 失败
-              {{ batchResult.FailCount }}
-            </div>
-            <Table
-              v-if="batchResult.FailItems?.length"
-              size="small"
-              :pagination="false"
-              :data-source="batchResult.FailItems"
-              :row-key="(row: { LoginAccount?: string; Msg?: string }) => `${row.LoginAccount || 'fail'}-${row.Msg ?? ''}`"
-              :columns="[
-                { title: '账号', dataIndex: 'LoginAccount' },
-                {
-                  title: '金额(元)',
-                  dataIndex: 'Amount',
-                  customRender: ({ text }: { text: number }) =>
-                    formatAmountFromCent(Number(text || 0)),
-                },
-                { title: '失败原因', dataIndex: 'Msg' },
-              ]"
-            />
-          </div>
         </div>
-      </Tabs.TabPane>
-    </Tabs>
+        <div class="mb-2 text-sm text-gray-500">
+          每行一条：游戏账号,产品包名,存入金额（元）；也可粘贴
+        </div>
+        <Input.TextArea
+          v-model:value="batchText"
+          :rows="6"
+          placeholder="示例：&#10;player01,乐赢网,100&#10;player02,乐赢网,50"
+        />
+        <Table
+          v-if="batchRows.length"
+          class="mt-3"
+          size="small"
+          :pagination="false"
+          :data-source="batchRows"
+          :row-key="(row: BatchRow) => `${row.LoginAccount}-${row.PackageName}`"
+          :columns="[
+            { title: '游戏账号', dataIndex: 'LoginAccount' },
+            { title: '产品包', dataIndex: 'PackageName' },
+            { title: '玩家ID', dataIndex: 'PlayerId' },
+            { title: '存入金额(元)', dataIndex: 'AmountYuan' },
+            {
+              title: '状态',
+              dataIndex: 'valid',
+              customRender: ({ text }: { text: boolean }) =>
+                text ? '有效' : '无效/测试号',
+            },
+          ]"
+        />
+      </template>
+    </div>
 
-    <Form layout="vertical" class="max-w-3xl">
-      <Form.Item v-if="grantMode === 'single'" label="存入金额（元）" required>
-        <InputNumber
-          v-model:value="form.Amount"
-          :min="0.01"
-          :max="100000"
-          class="w-60"
-          :precision="2"
-          placeholder="请输入金额"
-        />
-      </Form.Item>
-      <Form.Item label="红利标题类型">
-        <Radio.Group v-model:value="form.RedType" @change="onRedTypeChange">
-          <Radio :value="1">自定义</Radio>
-          <Radio :value="2">活动标题</Radio>
-        </Radio.Group>
-      </Form.Item>
-      <Form.Item label="红利标题">
-        <Select
-          v-if="form.RedType === 2"
-          v-model:value="form.Title"
-          class="w-full"
-          :options="redTitles.map((item) => ({ label: item, value: item }))"
-          placeholder="请选择活动标题"
-        />
-        <Input
-          v-else
-          v-model:value="form.Title"
-          allow-clear
-          placeholder="请输入自定义标题"
-        />
-      </Form.Item>
-      <Form.Item label="存入类型" required>
-        <Select
-          v-model:value="form.Reason"
-          allow-clear
-          class="w-full"
-          :options="reasonOptions"
-          placeholder="请选择"
-        />
-      </Form.Item>
-      <Form.Item label="流水要求类型">
-        <Radio.Group v-model:value="form.WaterType">
-          <Radio :value="1">倍数</Radio>
-          <Radio :value="2">金额</Radio>
-        </Radio.Group>
-      </Form.Item>
-      <Form.Item v-if="form.WaterType === 1" label="流水倍数" required>
-        <InputNumber
-          v-model:value="form.Water"
-          :min="0"
-          class="!w-full"
-          :precision="0"
-          placeholder="仅支持整数"
-        />
-      </Form.Item>
-      <Form.Item v-else label="流水金额（元）" required>
-        <InputNumber
-          v-model:value="form.WaterAmount"
-          :min="0"
-          class="!w-full"
-          :precision="2"
-        />
-      </Form.Item>
-      <Form.Item label="备注">
-        <Input.TextArea v-model:value="form.HandleDesc" :rows="3" />
-      </Form.Item>
-      <Button
-        v-if="grantMode === 'single'"
-        type="primary"
-        :disabled="!playerReady"
-        :loading="submitting"
-        @click="submitGrant"
+    <div>
+      <div class="mb-3 text-base font-medium">红利发放</div>
+      <Form
+        class="max-w-xl"
+        :label-col="{ span: 5 }"
+        :wrapper-col="{ span: 16 }"
       >
-        确认发放
-      </Button>
-      <Button
-        v-else
-        type="primary"
-        :disabled="!validBatchCount"
-        :loading="submitting"
-        @click="submitBatch"
-      >
-        确认批量发放（{{ validBatchCount }}）
-      </Button>
-    </Form>
+        <Form.Item v-if="grantMode === 'single'" label="存入金额" required>
+          <InputNumber
+            v-model:value="form.Amount"
+            :min="0.01"
+            :max="100000"
+            :precision="2"
+            placeholder="请输入存入金额"
+            style="width: 100%"
+          />
+        </Form.Item>
+        <Form.Item label="标题类型">
+          <Radio.Group v-model:value="form.RedType" @change="onRedTypeChange">
+            <Radio :value="1">自定义</Radio>
+            <Radio :value="2">活动标题</Radio>
+          </Radio.Group>
+        </Form.Item>
+        <Form.Item label="红利标题" required>
+          <Select
+            v-if="form.RedType === 2"
+            v-model:value="form.Title"
+            :options="redTitles.map((item) => ({ label: item, value: item }))"
+            placeholder="请选择活动标题"
+          />
+          <Input
+            v-else
+            v-model:value="form.Title"
+            allow-clear
+            placeholder="请输入自定义标题"
+          />
+        </Form.Item>
+        <Form.Item label="存入类型" required>
+          <Select
+            v-model:value="form.Reason"
+            allow-clear
+            :options="reasonOptions"
+            placeholder="请选择存入类型"
+          />
+        </Form.Item>
+        <Form.Item label="流水类型">
+          <Radio.Group v-model:value="form.WaterType">
+            <Radio :value="1">倍数</Radio>
+            <Radio :value="2">金额</Radio>
+          </Radio.Group>
+        </Form.Item>
+        <Form.Item v-if="form.WaterType === 1" label="流水倍数" required>
+          <InputNumber
+            v-model:value="form.Water"
+            :min="0"
+            :precision="0"
+            placeholder="请输入流水倍数"
+            style="width: 100%"
+          />
+        </Form.Item>
+        <Form.Item v-else label="流水金额" required>
+          <InputNumber
+            v-model:value="form.WaterAmount"
+            :min="0"
+            :precision="2"
+            placeholder="请输入流水金额"
+            style="width: 100%"
+          />
+        </Form.Item>
+        <Form.Item label="备注" required>
+          <Input v-model:value="form.HandleDesc" placeholder="请输入备注" />
+        </Form.Item>
+        <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
+          <Space>
+            <Button
+              v-if="grantMode === 'single'"
+              :loading="submitting"
+              class="w-28"
+              type="primary"
+              @click="submitGrant"
+            >
+              确认发放
+            </Button>
+            <Button
+              v-else
+              :loading="submitting"
+              class="w-28"
+              type="primary"
+              @click="submitBatch"
+            >
+              确认发放
+            </Button>
+            <Button class="w-28" @click="handleReset">重置</Button>
+          </Space>
+        </Form.Item>
+      </Form>
+    </div>
+
+    <Modal
+      v-model:open="batchResultOpen"
+      title="导入结果"
+      :footer="null"
+      width="720px"
+    >
+      <div v-if="batchResult" class="mb-3 flex flex-wrap gap-4 text-sm">
+        <span>导入总数：{{ batchResult.Count }}</span>
+        <span>成功：{{ batchResult.SuccessCount }}</span>
+        <span>失败：{{ batchResult.FailCount }}</span>
+      </div>
+      <Table
+        size="small"
+        :pagination="false"
+        :data-source="batchResult?.FailItems || []"
+        :row-key="
+          (row: { LoginAccount?: string; Msg?: string }) =>
+            `${row.LoginAccount || 'fail'}-${row.Msg ?? ''}`
+        "
+        :columns="[
+          { title: '游戏账号', dataIndex: 'LoginAccount' },
+          {
+            title: '存入金额',
+            dataIndex: 'Amount',
+            customRender: ({ text }: { text: number }) =>
+              formatAmountFromCent(Number(text || 0)),
+          },
+          { title: '失败原因', dataIndex: 'Msg' },
+        ]"
+      />
+      <div class="mt-4 flex justify-end gap-2">
+        <Button type="primary" @click="batchResultOpen = false">关闭</Button>
+      </div>
+    </Modal>
   </div>
   <div v-else class="text-sm text-gray-400">无红利发放权限</div>
 </template>

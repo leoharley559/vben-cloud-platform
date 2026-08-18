@@ -163,7 +163,7 @@ onMounted(() => {
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="统计时间" precision="date" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="handleSearch">
         查询
       </Button>

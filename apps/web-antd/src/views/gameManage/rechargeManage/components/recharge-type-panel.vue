@@ -615,7 +615,7 @@ onMounted(() => void load(true));
                 <template #addonBefore>通道名称</template>
               </Input>
             </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="query"
               >查询</Button
             >

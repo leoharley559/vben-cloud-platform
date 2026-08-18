@@ -604,7 +604,7 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
     title="产品配置"
   >
     <Card>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
                 <div class="flex flex-col gap-1">
             <Input
@@ -616,7 +616,7 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
               <template #addonBefore>产品名称</template>
             </Input>
           </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
           <span v-if="canViewList" class="text-sm text-gray-500">

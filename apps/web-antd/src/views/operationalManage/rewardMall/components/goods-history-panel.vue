@@ -179,7 +179,7 @@ function openDetails(row: GoodsRow) {
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
@@ -213,7 +213,7 @@ function openDetails(row: GoodsRow) {
           placeholder="请选择商品页签"
         />
       </Space.Compact>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
         </div>

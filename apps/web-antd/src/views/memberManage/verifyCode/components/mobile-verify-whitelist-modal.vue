@@ -181,7 +181,7 @@ function handleTableChange(pagination: {
     title="手机验证码白名单"
     width="860px"
   >
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <Input
         v-model:value="filterAccount"
@@ -210,7 +210,7 @@ function handleTableChange(pagination: {
       >
         <template #addonBefore>渠道ID</template>
       </Input>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询
@@ -223,7 +223,7 @@ function handleTableChange(pagination: {
 
     <div class="mb-4 rounded border p-3">
       <div class="mb-2 font-medium">新增白名单</div>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <Input
           v-model:value="addAccount"

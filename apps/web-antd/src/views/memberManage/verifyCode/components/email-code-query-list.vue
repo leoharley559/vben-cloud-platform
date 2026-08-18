@@ -173,7 +173,7 @@ function handleReset() {
           <template #addonBefore>邮箱</template>
         </Input>
       </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询

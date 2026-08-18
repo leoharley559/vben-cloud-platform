@@ -347,7 +347,7 @@ onUnmounted(() => {
     title="导出管理"
   >
     <Card>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -377,18 +377,18 @@ onUnmounted(() => {
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="resetFilters">重置</Button>
-        <div v-if="canAutoRefresh" class="flex items-center gap-2">
+        </div>
+    </div>
+    <div v-if="canAutoRefresh" class="flex items-center gap-2 mt-2">
           <span class="text-sm text-gray-500">自动刷新</span>
           <Switch :checked="autoRefresh" @change="handleAutoRefreshChange" />
           <Tooltip title="开启后每 15 秒自动刷新；开启时日期仅能查询当天数据">
             <span class="cursor-help text-xs text-gray-400">说明</span>
           </Tooltip>
         </div>
-        </div>
-    </div>
   </div>
 
       <Grid>

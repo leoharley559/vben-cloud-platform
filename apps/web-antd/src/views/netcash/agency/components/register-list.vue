@@ -187,7 +187,7 @@ onMounted(() => canView.value && gridApi.reload());
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="reset">重置</Button>
         </div>

@@ -169,7 +169,7 @@ watch(
           })),
         ]"
       />
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
     </div>

@@ -110,7 +110,7 @@ onMounted(load);
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Input
@@ -129,7 +129,7 @@ onMounted(load);
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="transferRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
         </div>

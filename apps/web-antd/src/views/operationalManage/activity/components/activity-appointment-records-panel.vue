@@ -128,7 +128,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       无预约取款明细查看权限 (11912)
     </div>
     <template v-else>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -178,7 +178,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="awardTimeRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button
           @click="

@@ -88,7 +88,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
     <div class="mb-3 text-xs text-gray-400">
       优惠码 upsert / 全局配置 / 补码尚未迁移，创建与编辑按钮已禁用。
     </div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Input
@@ -111,7 +111,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="activeTimeRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button disabled type="primary">添加优惠码</Button>
         </div>

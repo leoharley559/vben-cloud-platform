@@ -107,7 +107,7 @@ defineExpose({ buildQuery, handleSearch });
 </script>
 
 <template>
-  <ReportQueryCard title="查询条件">
+  <ReportQueryCard actions-single title="查询条件">
     <Space.Compact>
       <span class="query-field-addon">代理模板</span>
       <Select

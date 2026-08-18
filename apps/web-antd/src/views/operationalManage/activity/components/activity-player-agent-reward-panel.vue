@@ -106,7 +106,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Input
@@ -139,7 +139,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="finishTimeRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
     </div>

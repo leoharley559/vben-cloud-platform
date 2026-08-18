@@ -291,7 +291,7 @@ onMounted(async () => {
     @back="showDetails = false"
   />
   <div v-else>
-    <ReportQueryCard>
+    <ReportQueryCard actions-single>
       <Space.Compact>
         <Select
           class="query-auto-select"

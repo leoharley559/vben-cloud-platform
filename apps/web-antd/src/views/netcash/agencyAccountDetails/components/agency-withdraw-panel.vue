@@ -186,7 +186,7 @@ onMounted(load);
 <template>
   <div v-if="canView" class="space-y-3">
     <div class="mb-3">
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input

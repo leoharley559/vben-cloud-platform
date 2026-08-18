@@ -565,7 +565,7 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -630,7 +630,7 @@ onBeforeUnmount(() => {
             placeholder="请选择排序"
           />
         </Space.Compact>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
         </div>

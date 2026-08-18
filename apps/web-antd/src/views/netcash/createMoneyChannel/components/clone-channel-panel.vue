@@ -217,7 +217,7 @@ onMounted(() => void initialize());
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <Space.Compact>
           <span class="query-field-addon">产品名称</span>
@@ -253,7 +253,7 @@ onMounted(() => void initialize());
             placeholder="请选择渠道号"
           />
         </Space.Compact>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.query()">查询</Button>
         <Button
           @click="

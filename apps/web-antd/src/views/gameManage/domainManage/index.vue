@@ -448,7 +448,7 @@ async function exportDomains() {
       </div>
 
       <div class="query-panel">
-        <div class="ops-query-scope mb-4">
+        <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
                 <div class="flex flex-col gap-1">
             <Input
@@ -474,7 +474,7 @@ async function exportDomains() {
               placeholder="请选择使用状态"
             />
           </Space.Compact>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
         </div>

@@ -314,7 +314,7 @@ onMounted(() => {
     </div>
 
     <div v-if="canDetail">
-      <ReportQueryCard title="库存明细">
+      <ReportQueryCard actions-single title="库存明细">
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" />
         </div>

@@ -132,14 +132,15 @@ defineExpose({
         :precision="dateTimeType === 'datetimerange' ? 'datetime' : 'date'"
       />
     </div>
-        <div class="query-filter-actions">
-          <Button :loading="loading" type="primary" @click="handleSearch">
-      查询
-    </Button>
-    <Button :disabled="loading" @click="handleReset">重置</Button>
-    <Button v-if="showAdd" type="primary" @click="emit('add')">
-      {{ addText }}
-    </Button>
+        <div
+          class="query-filter-actions"
+          :class="{ 'query-filter-actions-single': !showAdd }"
+        >
+          <Button :loading="loading" type="primary" @click="handleSearch">查询</Button>
+          <Button :disabled="loading" @click="handleReset">重置</Button>
+          <Button v-if="showAdd" type="primary" @click="emit('add')">
+            {{ addText }}
+          </Button>
         </div>
     </div>
   </div>

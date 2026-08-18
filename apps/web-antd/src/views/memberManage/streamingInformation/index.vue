@@ -67,7 +67,7 @@ function handleReset() {
     title="流水信息"
   >
     <Card>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -97,7 +97,7 @@ function handleReset() {
             />
           </Space.Compact>
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Space>
           <Button :loading="searchLoading" type="primary" @click="handleSearch"> 查询 </Button>
           <Button @click="handleReset">重置</Button>

@@ -350,7 +350,7 @@ async function exportExcel() {
   >
     <Card :bordered="false">
       <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div class="ops-query-scope mb-4">
+        <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
                 <div class="flex flex-col gap-1">
             <Input
@@ -410,7 +410,7 @@ async function exportExcel() {
               placeholder="请选择渠道状态"
             />
           </Space.Compact>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="reloadFirstPage">查询</Button>
           <Button @click="resetFilters">重置</Button>
         </div>

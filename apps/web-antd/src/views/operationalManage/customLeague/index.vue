@@ -274,7 +274,7 @@ function handlePreview(path?: string) {
 <template>
   <Page auto-content-height description="运营管理 · 杯赛专题" title="杯赛专题">
     <Card>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Space.Compact>

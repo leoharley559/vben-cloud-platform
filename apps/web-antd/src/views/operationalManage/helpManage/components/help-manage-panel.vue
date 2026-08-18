@@ -276,7 +276,7 @@ function handleClose(row: HelpRow) {
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="申请时间" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
         </div>

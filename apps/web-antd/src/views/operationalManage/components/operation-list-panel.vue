@@ -256,7 +256,7 @@ defineExpose({ reload: () => gridApi.reload() });
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div v-if="enabledFilters.has('login')" class="flex flex-col gap-1">
         <Input
@@ -309,7 +309,7 @@ defineExpose({ reload: () => gridApi.reload() });
         :precision="config.dateValueFormat === 'dateString' ? 'date' : 'datetime'"
       />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
     </div>

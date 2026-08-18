@@ -166,7 +166,7 @@ onMounted(loadAll);
 
 <template>
   <div class="space-y-4">
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <Select
         v-model:value="createTime"

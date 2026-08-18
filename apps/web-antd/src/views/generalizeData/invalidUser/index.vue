@@ -103,12 +103,12 @@ onMounted(() => {
     title="无效用户"
   >
     <Card :loading="loading">
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="loadData">查询</Button>
         </div>
     </div>

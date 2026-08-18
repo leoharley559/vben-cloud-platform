@@ -296,7 +296,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col ">
     <div class="mb-1">
       <div class="mb-3">
         <Radio.Group
@@ -309,9 +309,8 @@ onMounted(() => {
         </Radio.Group>
       </div>
 
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
-              
           <Space.Compact>
           <Select
             class="query-auto-select"
@@ -409,16 +408,17 @@ onMounted(() => {
           </Space.Compact>
         </div>
 
-        <Select
-          class="query-auto-select"
-          :popup-match-select-width="false"
-          v-if="isHistory"
-          v-model:value="reportType"
-          :options="[
-            { label: '日报', value: 1 },
-            { label: '月报', value: 2 },
-          ]"
-        />
+        <Space.Compact v-if="isHistory">
+          <span class="query-field-addon">报表类型</span>
+          <Select
+            v-model:value="reportType"
+            :options="[
+              { label: '日报', value: 1 },
+              { label: '月报', value: 2 },
+            ]"
+            placeholder="请选择报表类型"
+          />
+        </Space.Compact>
 
         <div v-if="isHistory">
           <div class="query-filter-wide">

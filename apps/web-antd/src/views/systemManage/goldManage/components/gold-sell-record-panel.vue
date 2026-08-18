@@ -194,7 +194,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportQueryCard>
+    <ReportQueryCard actions-single>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterUsername"

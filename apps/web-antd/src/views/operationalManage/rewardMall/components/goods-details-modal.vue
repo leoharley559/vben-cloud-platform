@@ -184,7 +184,7 @@ async function handleExport(payload: Record<string, unknown>) {
 
 <template>
   <Modal v-model:open="open" :footer="null" :title="title" width="92%">
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterExchangeDateRange" label="兑换时间" />

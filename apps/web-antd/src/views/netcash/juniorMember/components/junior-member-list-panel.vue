@@ -516,7 +516,7 @@ onMounted(async () => {
 
 <template>
   <template v-if="canViewTable">
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Input
@@ -592,7 +592,7 @@ onMounted(async () => {
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filters.StatisticsTime" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="searchMembers">查询</Button>
       <Button @click="resetFilters">重置</Button>
         </div>

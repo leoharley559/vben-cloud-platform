@@ -364,7 +364,7 @@ async function handleIssueExport(payload: Record<string, unknown>) {
 
     <div v-if="activeTab === 'single'" class="max-w-xl">
       <div class="mb-3 text-base font-medium">玩家信息</div>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <Space.Compact>
           <span class="query-field-addon">产品包</span>
@@ -383,7 +383,7 @@ async function handleIssueExport(payload: Record<string, unknown>) {
           @press-enter="searchSinglePlayer"
           placeholder="请输入玩家账号"
         />
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="singleSearching" @click="searchSinglePlayer">
           查询玩家
         </Button>
@@ -456,7 +456,7 @@ async function handleIssueExport(payload: Record<string, unknown>) {
     </div>
 
     <div v-else-if="activeTab === 'record'">
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
                 <Input
             v-model:value="filterLoginAccount"

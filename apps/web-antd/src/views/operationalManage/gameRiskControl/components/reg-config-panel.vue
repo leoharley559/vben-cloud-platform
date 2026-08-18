@@ -3,10 +3,10 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  Card,
   InputNumber,
   Result,
   Space,
+  Spin,
   Switch,
   Tooltip,
   message,
@@ -142,61 +142,65 @@ onMounted(() => {
 
 <template>
   <div v-if="canEdit">
-    <Card class="mb-4" size="small" title="IP 设置" :loading="loading">
-      <div class="flex flex-wrap items-center gap-4">
-        <span class="text-sm font-medium">IP 注册上限开关</span>
-        <Tooltip title="开启后，同一 IP 注册次数超过上限将受限">
-          <span class="cursor-help text-xs text-gray-400">说明</span>
-        </Tooltip>
-        <Switch v-model:checked="ipForm.IsOn" />
-        <span class="text-sm">同一 IP 注册上限</span>
-        <Space>
-          <InputNumber
-            v-model:value="ipForm.LimitAmt"
-            :min="0"
-            :precision="0"
-            style="width: 120px"
-          />
-          <span class="text-sm text-gray-500">次</span>
-        </Space>
-        <Button
-          :disabled="!ipChanged"
-          :loading="ipSaving"
-          type="primary"
-          @click="handleSave(1)"
-        >
-          保存
-        </Button>
+    <Spin :spinning="loading">
+      <div class="mb-6">
+        <div class="mb-3 text-base font-medium">IP 设置</div>
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="text-sm font-medium">IP 注册上限开关</span>
+          <Tooltip title="开启后，同一 IP 注册次数超过上限将受限">
+            <span class="cursor-help text-xs text-gray-400">说明</span>
+          </Tooltip>
+          <Switch v-model:checked="ipForm.IsOn" />
+          <span class="text-sm">同一 IP 注册上限</span>
+          <Space>
+            <InputNumber
+              v-model:value="ipForm.LimitAmt"
+              :min="0"
+              :precision="0"
+              style="width: 120px"
+            />
+            <span class="text-sm text-gray-500">次</span>
+          </Space>
+          <Button
+            :disabled="!ipChanged"
+            :loading="ipSaving"
+            type="primary"
+            @click="handleSave(1)"
+          >
+            保存
+          </Button>
+        </div>
       </div>
-    </Card>
 
-    <Card size="small" title="设备设置" :loading="loading">
-      <div class="flex flex-wrap items-center gap-4">
-        <span class="text-sm font-medium">设备注册上限开关</span>
-        <Tooltip title="开启后，同一设备注册次数超过上限将受限">
-          <span class="cursor-help text-xs text-gray-400">说明</span>
-        </Tooltip>
-        <Switch v-model:checked="deviceForm.IsOn" />
-        <span class="text-sm">同一设备注册上限</span>
-        <Space>
-          <InputNumber
-            v-model:value="deviceForm.LimitAmt"
-            :min="0"
-            :precision="0"
-            style="width: 120px"
-          />
-          <span class="text-sm text-gray-500">次</span>
-        </Space>
-        <Button
-          :disabled="!deviceChanged"
-          :loading="deviceSaving"
-          type="primary"
-          @click="handleSave(2)"
-        >
-          保存
-        </Button>
+      <div>
+        <div class="mb-3 text-base font-medium">设备设置</div>
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="text-sm font-medium">设备注册上限开关</span>
+          <Tooltip title="开启后，同一设备注册次数超过上限将受限">
+            <span class="cursor-help text-xs text-gray-400">说明</span>
+          </Tooltip>
+          <Switch v-model:checked="deviceForm.IsOn" />
+          <span class="text-sm">同一设备注册上限</span>
+          <Space>
+            <InputNumber
+              v-model:value="deviceForm.LimitAmt"
+              :min="0"
+              :precision="0"
+              style="width: 120px"
+            />
+            <span class="text-sm text-gray-500">次</span>
+          </Space>
+          <Button
+            :disabled="!deviceChanged"
+            :loading="deviceSaving"
+            type="primary"
+            @click="handleSave(2)"
+          >
+            保存
+          </Button>
+        </div>
       </div>
-    </Card>
+    </Spin>
   </div>
 
   <Result v-else status="403" sub-title="需要权限 12973" title="无权限" />

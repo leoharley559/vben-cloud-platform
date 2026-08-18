@@ -378,7 +378,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <template v-if="kind === 'standard'">
         <div class="flex flex-col gap-1">

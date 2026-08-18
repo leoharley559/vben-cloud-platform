@@ -535,7 +535,7 @@ onMounted(() => {
             <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button
               type="primary"
               :loading="statisticsLoading"

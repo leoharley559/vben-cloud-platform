@@ -102,12 +102,12 @@ const userTypeColumns = [
     <SelfCheckVisitDetails v-if="pageType === 'details' && canDetails" />
 
     <div v-else-if="pageType === 'stats' && canStats">
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="loadStats">
           查询
         </Button>

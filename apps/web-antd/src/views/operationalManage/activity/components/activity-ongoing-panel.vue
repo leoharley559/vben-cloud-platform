@@ -198,7 +198,7 @@ function handleOffshelf(row: OngoingActivityRow) {
     </div>
 
     <template v-else>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -234,7 +234,7 @@ function handleOffshelf(row: OngoingActivityRow) {
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="activityTimeRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
         </div>

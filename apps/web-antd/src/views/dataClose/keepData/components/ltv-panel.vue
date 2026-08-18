@@ -226,7 +226,7 @@ onMounted(() => {
             placeholder="请选择显示更多数据"
           />
         </Space.Compact>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button v-if="canExport" type="primary" @click="handleExport">
           导出Excel
         </Button>

@@ -139,7 +139,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <!-- <InputNumber
         v-model:value="filterPlayerId"
@@ -199,7 +199,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="createTimeRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
         </div>

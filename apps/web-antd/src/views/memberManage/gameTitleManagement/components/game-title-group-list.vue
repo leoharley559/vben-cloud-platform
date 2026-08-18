@@ -195,7 +195,7 @@ onMounted(() => {
           <template #addonBefore>类别名称</template>
         </Input>
       </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Space>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button v-if="canAdd" type="primary" @click="openForm('add')">

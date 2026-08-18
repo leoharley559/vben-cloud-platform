@@ -203,7 +203,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Space.Compact>
@@ -220,7 +220,7 @@ onMounted(() => {
         <Radio :value="1">设备统计</Radio>
         <Radio :value="2">IP 统计</Radio>
       </Radio.Group>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询

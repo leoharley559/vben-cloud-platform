@@ -207,7 +207,7 @@ defineExpose({
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div v-if="enabledFilters.has('username')" class="flex flex-col gap-1">
         <Input
@@ -273,7 +273,7 @@ defineExpose({
         v-model="filterDateRange"
       />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
     </div>

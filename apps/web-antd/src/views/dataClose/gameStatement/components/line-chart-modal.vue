@@ -139,12 +139,12 @@ watch(
     destroy-on-close
   >
     <Spin :spinning="loading">
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="loadChart">查询</Button>
         <Button @click="handleReset">重置</Button>
         </div>

@@ -207,7 +207,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Input
@@ -277,7 +277,7 @@ onMounted(() => {
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="historyApproveRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="searchHistory">查询</Button>
       <Button @click="resetHistory">重置</Button>
         </div>

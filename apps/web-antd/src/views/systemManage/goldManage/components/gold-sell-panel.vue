@@ -269,7 +269,7 @@ function handleLookRecord(row: SellRow) {
           <template #addonBefore>包网账号</template>
         </Input>
       </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
         </div>

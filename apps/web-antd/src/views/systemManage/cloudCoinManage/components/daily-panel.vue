@@ -129,12 +129,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable" class="space-y-4">
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="云币日报" precision="date" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Space>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>

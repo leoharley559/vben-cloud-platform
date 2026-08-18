@@ -234,7 +234,7 @@ onMounted(() => {
           />
         </Space.Compact>
       </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" :loading="loading" @click="handleSearch">
         查询
       </Button>

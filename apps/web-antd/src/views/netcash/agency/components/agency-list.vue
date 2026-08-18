@@ -670,7 +670,7 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewList">
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Input

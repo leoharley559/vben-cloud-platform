@@ -142,7 +142,7 @@ onMounted(() => {
 
 <template>
   <div v-if="canView">
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <Select
         v-model:value="filterKey"

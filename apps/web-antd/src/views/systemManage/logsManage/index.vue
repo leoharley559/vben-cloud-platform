@@ -255,7 +255,7 @@ onMounted(async () => {
 <template>
   <Page v-if="canViewList" auto-content-height description="系统管理 · 日志管理" title="日志管理">
     <Card>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <Space.Compact>
           <span class="query-field-addon">操作人员</span>

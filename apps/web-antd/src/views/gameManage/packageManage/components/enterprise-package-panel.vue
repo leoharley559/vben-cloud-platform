@@ -413,7 +413,7 @@ void loadGames();
     />
     <template v-else>
       <div class="query-panel">
-        <div class="ops-query-scope mb-4">
+        <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
                 <div class="flex flex-col gap-1">
             <Input
@@ -426,7 +426,7 @@ void loadGames();
               <template #addonBefore>游戏名称</template>
             </Input>
           </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" :loading="gameLoading" @click="searchGames">
             查询
           </Button>

@@ -259,7 +259,7 @@ onMounted(() => {
     title="溢出管理"
   >
     <Card>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -318,7 +318,7 @@ onMounted(() => {
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="search">查询</Button>
         <Button @click="resetQuery">重置</Button>
         </div>

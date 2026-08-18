@@ -145,7 +145,7 @@ function handleSearch() {
           <template #addonBefore>代理账号</template>
         </Input>
       </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
         </div>
     </div>

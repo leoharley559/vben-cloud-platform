@@ -315,10 +315,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col">
     <div class="ops-query-scope mb-1">
     <div class="ops-query-filters">
-              
           <Space.Compact>
           <Select
             class="query-auto-select"
@@ -378,16 +377,18 @@ onMounted(() => {
             />
           </Space.Compact>
 
-        <Select
-          class="query-auto-select"
-          :popup-match-select-width="false"
-          v-model:value="reportType"
-          :options="[
-            { label: '日报', value: 1 },
-            { label: '周报', value: 4 },
-            { label: '月报', value: 2 },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">报表类型</span>
+          <Select
+            v-model:value="reportType"
+            :options="[
+              { label: '日报', value: 1 },
+              { label: '周报', value: 4 },
+              { label: '月报', value: 2 },
+            ]"
+            placeholder="请选择报表类型"
+          />
+        </Space.Compact>
 
         <div class="query-filter-wide">
           <Space.Compact>
@@ -400,7 +401,7 @@ onMounted(() => {
           </Space.Compact>
         </div>
         
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
         </div>

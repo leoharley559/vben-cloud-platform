@@ -340,7 +340,7 @@ function handleHelp(row: HelpOrderRow) {
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="创建日期" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>
         </div></template>

@@ -543,7 +543,7 @@ function handleReset() {
 <template>
   <div>
     <div class="query-panel">
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -556,7 +556,7 @@ function handleReset() {
             <template #addonBefore>场馆名称</template>
           </Input>
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
         </div>

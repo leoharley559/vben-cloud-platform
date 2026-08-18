@@ -300,7 +300,7 @@ function handleOffshelf(row: VoucherRow) {
 
 <template>
   <div v-if="canViewTable">
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input

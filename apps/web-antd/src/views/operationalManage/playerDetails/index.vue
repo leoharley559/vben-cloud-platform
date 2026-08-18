@@ -321,7 +321,7 @@ onMounted(async () => {
 <template>
   <Page auto-content-height :title="pageTitle">
     <Card class="mb-4">
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -360,7 +360,7 @@ onMounted(async () => {
             <template #addonBefore>玩家 ID</template>
           </Input>
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Space>
           <Button
             :loading="searchLoading || loading"

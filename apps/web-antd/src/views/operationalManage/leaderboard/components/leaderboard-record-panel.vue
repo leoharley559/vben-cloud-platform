@@ -296,7 +296,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <Space.Compact>
         <span class="query-field-addon">产品包</span>

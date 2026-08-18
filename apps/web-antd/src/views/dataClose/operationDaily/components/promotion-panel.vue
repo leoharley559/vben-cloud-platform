@@ -290,7 +290,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportQueryCard title="查询条件">
+    <ReportQueryCard actions-single title="查询条件">
       <Space.Compact>
         <span class="query-field-addon">数据类型</span>
         <Select

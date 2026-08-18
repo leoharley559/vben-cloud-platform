@@ -400,7 +400,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportQueryCard title="查询条件">
+    <ReportQueryCard actions-single title="查询条件">
       <RadioGroup
         :value="reportType"
         button-style="solid"

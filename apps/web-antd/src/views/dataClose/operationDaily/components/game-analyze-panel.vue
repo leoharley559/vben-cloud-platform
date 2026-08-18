@@ -236,7 +236,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportQueryCard title="游戏分析">
+    <ReportQueryCard actions-single title="游戏分析">
       <RadioGroup
         :value="reportType"
         button-style="solid"

@@ -167,7 +167,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <div class="flex flex-col gap-1">
         <Space.Compact>
@@ -195,7 +195,7 @@ onMounted(() => {
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Space>
         <Button :loading="loading" type="primary" @click="handleSearch">
           查询

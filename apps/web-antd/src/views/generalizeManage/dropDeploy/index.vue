@@ -149,7 +149,7 @@ onMounted(async () => {
     title="落地页配置"
   >
     <Card>
-      <div class="ops-query-scope mb-4">
+      <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
               <div class="flex flex-col gap-1">
           <Input
@@ -160,7 +160,7 @@ onMounted(async () => {
             <template #addonBefore>模板名称</template>
           </Input>
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         <Button v-if="canCreate" type="primary" @click="handleCreate">
           新增落地

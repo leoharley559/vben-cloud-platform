@@ -69,7 +69,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       type="info"
       message="存款优惠完整规则编辑器（VIP 分层/首存周期等）尚未迁移，当前为方案列表只读。"
     />
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <Space.Compact>
         <span class="query-field-addon">产品包</span>
@@ -81,7 +81,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           placeholder="请选择产品包"
         />
       </Space.Compact>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
     </div>

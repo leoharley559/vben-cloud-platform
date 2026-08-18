@@ -208,7 +208,7 @@ watch(open, (visible) => {
         v-model:value="filterPackageId"
         :options="packageSelectOptions"
       />
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
       <Button
         danger

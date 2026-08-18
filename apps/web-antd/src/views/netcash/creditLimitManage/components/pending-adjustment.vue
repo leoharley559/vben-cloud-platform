@@ -193,7 +193,7 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
 
 <template>
   <div>
-    <div class="ops-query-scope mb-4">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
             <Tag color="blue">平台可用额度：{{ amount(platformCredit) }}</Tag>
       <Button @click="loadPlatformCredit">刷新额度</Button>
