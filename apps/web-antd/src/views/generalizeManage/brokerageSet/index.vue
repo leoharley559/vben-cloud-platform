@@ -15,6 +15,7 @@ import {
   Modal,
   Result,
   Select,
+  Space,
 } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -341,10 +342,10 @@ onMounted(async () => {
     description="推广管理 · 代理设定"
     title="代理设定"
   >
-    <div class="brokerage-card">
-      <div class="action-bar">
+    <Card size="small">
+      <div class="mb-3 flex items-center justify-between gap-3">
         <div class="text-base font-medium">游戏佣金设置</div>
-        <div class="flex gap-2">
+        <Space>
           <Button
             v-if="canReset"
             :loading="resetLoading"
@@ -355,7 +356,7 @@ onMounted(async () => {
           <Button v-if="canBatch" type="primary" @click="openBatch">
             批量设置
           </Button>
-        </div>
+        </Space>
       </div>
 
       <Grid v-if="canViewTable">
@@ -376,7 +377,7 @@ onMounted(async () => {
         sub-title="无代理设定列表查看权限"
         title="403"
       />
-    </div>
+    </Card>
 
     <Modal
       v-model:open="editOpen"
@@ -443,22 +444,3 @@ onMounted(async () => {
   <Result v-else status="403" sub-title="无代理设定查看权限" title="403" />
 </template>
 
-<style scoped>
-.brokerage-card {
-  min-height: calc(100vh - 180px);
-  padding: 16px;
-  background: hsl(var(--card));
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
-}
-
-.action-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  margin-bottom: 16px;
-  background: hsl(var(--muted) / 35%);
-  border-radius: 10px;
-}
-</style>

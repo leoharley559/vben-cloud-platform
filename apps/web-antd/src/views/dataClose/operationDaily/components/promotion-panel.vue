@@ -2,11 +2,10 @@
 import type { TableColumnType } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, h, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   message,
   RadioButton,
   RadioGroup,
@@ -17,47 +16,48 @@ import {
 import dayjs from 'dayjs';
 
 import { fetchOperationPromotionAnalyzeApi } from '#/api/dataClose/operation-daily';
-import AccountSelect from '#/components/global/account-select.vue';
-import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { calcArppu } from '#/utils/promotion-data';
 import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import { arrayToCsvParam } from '#/views/dataClose/shared/report-utils';
 
-import { num, percentText, pickTwoDayItem } from '../utils';
+import { disabledBeforeToday, num, percentText, pickTwoDayItem } from '../utils';
 
 defineOptions({ name: 'PromotionAnalyzePanel' });
 
 type Row = Record<string, unknown>;
 
-const { dataSearchTypeOptions, iosAppStoreOptions, packageOptions } =
-  useReportOptions();
+const { dataSearchTypeOptions } = useReportOptions();
 
 const loading = ref(false);
 const showMode = ref<'data' | 'percent'>('data');
 const today = ref<Row>({});
 const yesterday = ref<Row>({});
 const rawChannelItems = ref<Row[]>([]);
+const yesterdayChannelItems = ref<Row[]>([]);
 const sortRegItems = ref<Row[]>([]);
+const yesterdaySortRegItems = ref<Row[]>([]);
 const sortPayItems = ref<Row[]>([]);
+const yesterdaySortPayItems = ref<Row[]>([]);
 const countChannel = ref<Row>({});
 const filters = reactive({
-  AdminIds: [] as Array<number | string>,
-  AppUrl: [] as string[],
-  ChannelIds: [] as Array<number | string>,
   DataSearchType: 0 as number,
-  PackageId: '' as number | string,
   beginDate: dayjs().subtract(2, 'day') as Dayjs,
   endDate: dayjs().subtract(1, 'day') as Dayjs,
 });
 
-const packageSelectOptions = computed(() => [
-  { label: '全部产品', value: '' },
-  ...packageOptions.value,
-]);
+const dateRange = computed<[Dayjs, Dayjs] | undefined>({
+  get: () => [filters.beginDate, filters.endDate],
+  set: (value) => {
+    if (value?.[0] && value[1]) {
+      filters.beginDate = value[0];
+      filters.endDate = value[1];
+    }
+  },
+});
 
 const summaryItems = computed(() => {
   const t = today.value;
@@ -98,6 +98,37 @@ const summaryItems = computed(() => {
   ];
 });
 
+function trendRender(
+  todayVal: number,
+  yesterdayVal: number,
+  display: string,
+  mode: 'ratio' | 'diff' = 'ratio',
+) {
+  const up = todayVal - yesterdayVal >= 0;
+  const pct =
+    mode === 'diff'
+      ? (todayVal - yesterdayVal).toFixed(2)
+      : yesterdayVal
+        ? (((todayVal - yesterdayVal) / yesterdayVal) * 100).toFixed(2)
+        : '0.00';
+  return h('div', [
+    h('div', display),
+    h(
+      'div',
+      { class: up ? 'text-xs text-green-600' : 'text-xs text-red-500' },
+      `环比 ${pct}%`,
+    ),
+  ]);
+}
+
+function channelPayNum(item: Row) {
+  return num(item.PayNum) + num(item.AgentPayNum) || num(item.TodayPayNum);
+}
+
+function channelPayMoney(item: Row) {
+  return num(item.PayMoney) + num(item.AgentPayMoney) || num(item.TodayPayMoney);
+}
+
 const columns = computed<TableColumnType<Row>[]>(() => [
   {
     align: 'center',
@@ -105,52 +136,129 @@ const columns = computed<TableColumnType<Row>[]>(() => [
     key: 'ChannelName',
     title: '渠道',
   },
-  { align: 'center', dataIndex: 'Reg', key: 'Reg', title: '今日新增注册' },
   {
     align: 'center',
-    dataIndex: 'TodayPayRate',
-    key: 'TodayPayRate',
-    title: '今日新增付费率',
+    customRender: ({ record }) =>
+      trendRender(
+        num(record._todayReg),
+        num(record._yesterdayReg),
+        String(record.Reg),
+      ),
+    key: 'Reg',
+    title: '新增注册',
   },
   {
     align: 'center',
-    dataIndex: 'PayNum',
+    customRender: ({ record }) =>
+      trendRender(
+        num(record._todayPayNum),
+        num(record._yesterdayPayNum),
+        String(record.PayNum),
+      ),
     key: 'PayNum',
-    title: '今日新增付费人数',
+    title: '新增付费人数',
   },
   {
     align: 'center',
-    dataIndex: 'PayMoneyText',
+    customRender: ({ record }) =>
+      trendRender(
+        num(record._todayPayRate),
+        num(record._yesterdayPayRate),
+        String(record.TodayPayRate),
+        'diff',
+      ),
+    key: 'TodayPayRate',
+    title: '新增付费率',
+  },
+  {
+    align: 'center',
+    customRender: ({ record }) =>
+      trendRender(
+        num(record._todayPayMoney),
+        num(record._yesterdayPayMoney),
+        String(record.PayMoneyText),
+      ),
     key: 'PayMoneyText',
-    title: '今日新增付费金额',
+    title: '新增付费金额',
   },
   {
     align: 'center',
-    dataIndex: 'TodayArppu',
+    customRender: ({ record }) =>
+      trendRender(
+        num(record._todayArppu),
+        num(record._yesterdayArppu),
+        String(record.TodayArppu),
+        'diff',
+      ),
     key: 'TodayArppu',
-    title: '今日新增ARPPU',
+    title: '新增ARPPU',
   },
   {
     align: 'center',
-    dataIndex: 'DiffText',
+    customRender: ({ record }) =>
+      trendRender(
+        num(record._todayWithdraw),
+        num(record._yesterdayWithdraw),
+        String(record.WithdrawText),
+      ),
+    key: 'WithdrawText',
+    title: '新增兑换金额',
+  },
+  {
+    align: 'center',
+    customRender: ({ record }) =>
+      trendRender(
+        num(record._todayDiff),
+        num(record._yesterdayDiff),
+        String(record.DiffText),
+      ),
     key: 'DiffText',
     title: '充兑差',
   },
 ]);
 
 const channelRows = computed(() => {
-  const sumTemp = { Reg: 0, PayNum: 0, PayMoney: 0, Diff: 0 };
+  const yesterdayById = new Map(
+    yesterdayChannelItems.value.map((item) => [
+      String(item.ChannelId ?? item.ChannelName),
+      item,
+    ]),
+  );
+  const sumTemp = {
+    Reg: 0,
+    PayNum: 0,
+    PayMoney: 0,
+    Withdraw: 0,
+    Diff: 0,
+  };
   const rows = rawChannelItems.value.map((item) => {
+    const yest =
+      yesterdayById.get(String(item.ChannelId ?? item.ChannelName)) || {};
     const Reg = num(item.Reg || item.SumReg || item.TodayReg);
-    const PayNum =
-      num(item.PayNum) + num(item.AgentPayNum) || num(item.TodayPayNum);
-    const PayMoney =
-      num(item.PayMoney) + num(item.AgentPayMoney) || num(item.TodayPayMoney);
+    const PayNumOnly = num(item.PayNum);
+    const PayNum = channelPayNum(item);
+    const PayMoney = channelPayMoney(item);
     const WithdrawMoney = num(item.WithdrawMoney || item.SumWithdrawMoney);
     const Diff = WithdrawMoney - PayMoney;
+    const YesterdayReg = num(yest.Reg || yest.SumReg || yest.YesterdayReg);
+    const YesterdayPayNum = channelPayNum(yest);
+    const YesterdayPayMoney = channelPayMoney(yest);
+    const YesterdayWithdraw = num(
+      yest.WithdrawMoney || yest.SumWithdrawMoney,
+    );
+    const YesterdayDiff = YesterdayWithdraw - YesterdayPayMoney;
+    const TodayPayRateNum = Reg ? (PayNum / Reg) * 100 : 0;
+    const YesterdayPayRateNum = YesterdayReg
+      ? (YesterdayPayNum / YesterdayReg) * 100
+      : 0;
+    const TodayArppuNum = Number(calcArppu(PayNumOnly, PayMoney));
+    const YesterdayArppuNum = Number(
+      calcArppu(num(yest.PayNum), YesterdayPayMoney),
+    );
     sumTemp.Reg += Reg;
     sumTemp.PayNum += PayNum;
     sumTemp.PayMoney += PayMoney;
+    sumTemp.Withdraw += WithdrawMoney;
     sumTemp.Diff += Diff;
     return {
       ...item,
@@ -159,86 +267,115 @@ const channelRows = computed(() => {
       PayNum,
       PayMoney,
       TodayPayRate: percentText(PayNum, Reg),
-      TodayArppu: calcArppu(PayNum, PayMoney),
+      TodayArppu: calcArppu(PayNumOnly, PayMoney),
       PayMoneyText: formatAmountFromCent(PayMoney),
+      WithdrawText: formatAmountFromCent(WithdrawMoney),
       DiffText: formatAmountFromCent(Diff),
-      _rawPayMoney: PayMoney,
-      _rawDiff: Diff,
+      _todayReg: Reg,
+      _yesterdayReg: YesterdayReg,
+      _todayPayNum: PayNum,
+      _yesterdayPayNum: YesterdayPayNum,
+      _todayPayRate: TodayPayRateNum,
+      _yesterdayPayRate: YesterdayPayRateNum,
+      _todayPayMoney: PayMoney,
+      _yesterdayPayMoney: YesterdayPayMoney,
+      _todayArppu: TodayArppuNum,
+      _yesterdayArppu: YesterdayArppuNum,
+      _todayWithdraw: WithdrawMoney,
+      _yesterdayWithdraw: YesterdayWithdraw,
+      _todayDiff: Diff,
+      _yesterdayDiff: YesterdayDiff,
     };
   });
   if (showMode.value !== 'percent') return rows;
   return rows.map((row) => ({
     ...row,
     Reg: sumTemp.Reg
-      ? `${((num(row.Reg) / sumTemp.Reg) * 100).toFixed(2)}%`
+      ? `${((num(row._todayReg) / sumTemp.Reg) * 100).toFixed(2)}%`
       : '0%',
     PayNum: sumTemp.PayNum
-      ? `${((num(row.PayNum) / sumTemp.PayNum) * 100).toFixed(2)}%`
+      ? `${((num(row._todayPayNum) / sumTemp.PayNum) * 100).toFixed(2)}%`
       : '0%',
     PayMoneyText: sumTemp.PayMoney
-      ? `${((num(row._rawPayMoney) / sumTemp.PayMoney) * 100).toFixed(2)}%`
+      ? `${((num(row._todayPayMoney) / sumTemp.PayMoney) * 100).toFixed(2)}%`
+      : '0%',
+    WithdrawText: sumTemp.Withdraw
+      ? `${((num(row._todayWithdraw) / sumTemp.Withdraw) * 100).toFixed(2)}%`
       : '0%',
     DiffText: sumTemp.Diff
-      ? `${((num(row._rawDiff) / sumTemp.Diff) * 100).toFixed(2)}%`
+      ? `${((num(row._todayDiff) / sumTemp.Diff) * 100).toFixed(2)}%`
       : '0%',
   }));
 });
 
-const topRegChart = computed(() => {
-  const source =
-    sortRegItems.value.length > 0 ? sortRegItems.value : rawChannelItems.value;
-  const list = [...source]
+function top10Dual(
+  todayList: Row[],
+  yesterdayList: Row[],
+  pickValue: (item: Row) => number,
+  todayName: string,
+  yesterdayName: string,
+) {
+  const list = [...todayList]
     .map((item) => ({
-      name: String(item.ChannelName || item.ChannelId),
-      value: num(item.SumReg ?? item.Reg ?? item.TodayReg),
+      name: String(item.ChannelName || item.ChannelId || '-'),
+      value: pickValue(item),
     }))
     .toSorted((a, b) => b.value - a.value)
     .slice(0, 10);
+  const yesterdayByName = new Map(
+    yesterdayList.map((item) => [
+      String(item.ChannelName || item.ChannelId || '-'),
+      pickValue(item),
+    ]),
+  );
   return {
     categories: list.map((item) => item.name),
     series: [
       {
         data: list.map((item) => item.value),
-        name: '新增注册',
+        name: todayName,
+        type: 'bar' as const,
+      },
+      {
+        data: list.map((item) => yesterdayByName.get(item.name) || 0),
+        name: yesterdayName,
         type: 'bar' as const,
       },
     ],
   };
-});
+}
 
-const topPayChart = computed(() => {
-  const source =
-    sortPayItems.value.length > 0 ? sortPayItems.value : rawChannelItems.value;
-  const list = [...source]
-    .map((item) => ({
-      name: String(item.ChannelName || item.ChannelId),
-      value:
-        (num(item.SumNewPayMoney) ||
-          num(item.PayMoney) + num(item.AgentPayMoney) ||
-          num(item.TodayPayMoney)) / 100,
-    }))
-    .toSorted((a, b) => b.value - a.value)
-    .slice(0, 10);
-  return {
-    categories: list.map((item) => item.name),
-    series: [
-      {
-        data: list.map((item) => item.value),
-        name: '新增付费金额',
-        type: 'bar' as const,
-      },
-    ],
-  };
-});
+const topRegChart = computed(() =>
+  top10Dual(
+    sortRegItems.value.length > 0 ? sortRegItems.value : rawChannelItems.value,
+    yesterdaySortRegItems.value.length > 0
+      ? yesterdaySortRegItems.value
+      : yesterdayChannelItems.value,
+    (item) => num(item.SumReg ?? item.Reg ?? item.TodayReg),
+    filters.endDate.format('YYYY-MM-DD'),
+    filters.beginDate.format('YYYY-MM-DD'),
+  ),
+);
+
+const topPayChart = computed(() =>
+  top10Dual(
+    sortPayItems.value.length > 0 ? sortPayItems.value : rawChannelItems.value,
+    yesterdaySortPayItems.value.length > 0
+      ? yesterdaySortPayItems.value
+      : yesterdayChannelItems.value,
+    (item) =>
+      (num(item.SumNewPayMoney) ||
+        num(item.PayMoney) + num(item.AgentPayMoney) ||
+        num(item.TodayPayMoney)) / 100,
+    filters.endDate.format('YYYY-MM-DD'),
+    filters.beginDate.format('YYYY-MM-DD'),
+  ),
+);
 
 function buildQuery() {
   return {
     BeginTime: filters.beginDate.format('YYYY-MM-DD'),
     EndTime: filters.endDate.format('YYYY-MM-DD'),
-    ChannelIds: arrayToCsvParam(filters.ChannelIds) || '',
-    AdminIds: arrayToCsvParam(filters.AdminIds) || '',
-    AppUrl: arrayToCsvParam(filters.AppUrl) || '',
-    PackageId: filters.PackageId || '',
     DataSearchType: filters.DataSearchType,
   };
 }
@@ -256,15 +393,25 @@ async function loadData() {
     rawChannelItems.value = (data.TodayChannelDauTable ||
       data.TodayChannelItems ||
       []) as Row[];
+    yesterdayChannelItems.value = (data.YesterdayChannelDauTable ||
+      data.YesterdayChannelItems ||
+      []) as Row[];
     sortRegItems.value = (data.TodayChannelItemsSortReg || []) as Row[];
+    yesterdaySortRegItems.value = (data.YesterdayChannelItemsSortReg ||
+      []) as Row[];
     sortPayItems.value = (data.TodayChannelItemsSortPay || []) as Row[];
+    yesterdaySortPayItems.value = (data.YesterdayChannelItemsSortPay ||
+      []) as Row[];
     countChannel.value = (data.CountChannelNum || {}) as Row;
   } catch {
     today.value = {};
     yesterday.value = {};
     rawChannelItems.value = [];
+    yesterdayChannelItems.value = [];
     sortRegItems.value = [];
+    yesterdaySortRegItems.value = [];
     sortPayItems.value = [];
+    yesterdaySortPayItems.value = [];
     countChannel.value = {};
     message.error('推广分析加载失败');
   } finally {
@@ -273,11 +420,7 @@ async function loadData() {
 }
 
 function handleReset() {
-  filters.AdminIds = [];
-  filters.AppUrl = [];
-  filters.ChannelIds = [];
   filters.DataSearchType = 0;
-  filters.PackageId = '';
   filters.beginDate = dayjs().subtract(2, 'day');
   filters.endDate = dayjs().subtract(1, 'day');
   void loadData();
@@ -300,40 +443,15 @@ onMounted(() => {
           placeholder="请选择数据类型"
         />
       </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">账号</span>
-        <AccountSelect v-model="filters.AdminIds" class="min-w-[180px]" />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filters.ChannelIds" class="min-w-[180px]" placeholder="请输入渠道号" />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">产品</span>
-        <Select
-          v-model:value="filters.PackageId"
-          :options="packageSelectOptions"
-          allow-clear
-          class="w-40"
-          show-search
-          option-filter-prop="label"
-          placeholder="请选择产品"
+      <div class="query-filter-wide">
+        <QueryDatetimeRangePicker
+          v-model="dateRange"
+          :disabled-date="disabledBeforeToday"
+          :max-range-days="1"
+          label="时间范围"
+          precision="date"
         />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">上架包</span>
-        <Select
-          v-model:value="filters.AppUrl"
-          :max-tag-count="1"
-          :options="iosAppStoreOptions"
-          allow-clear
-          class="min-w-[160px]"
-          mode="multiple"
-          placeholder="请选择上架包"
-        />
-      </Space.Compact>
-      <DatePicker v-model:value="filters.beginDate" placeholder="开始日期" />
-      <DatePicker v-model:value="filters.endDate" placeholder="结束日期" />
+      </div>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadData">
           查询

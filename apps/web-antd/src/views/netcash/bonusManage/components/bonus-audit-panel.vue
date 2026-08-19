@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import type { Dayjs } from 'dayjs';
-
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { BonusManageItem } from '#/types/netcash';
 
 import { computed, onMounted, reactive, ref } from 'vue';
@@ -12,14 +11,13 @@ import {
   InputNumber,
   message,
   Modal,
-  Pagination,
   Result,
   Select,
   Space,
-  Table,
   Tag,
 } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   adjustBonusApi,
   approveBonusApi,
@@ -71,12 +69,7 @@ const auditFilters = reactive({
   Username: '',
   WalletType: '' as number | string,
 });
-const auditRange = ref<[Dayjs, Dayjs] | null>(todayRange());
-const auditRows = ref<BonusManageItem[]>([]);
-const auditLoading = ref(false);
-const auditPage = ref(1);
-const auditPageSize = ref(20);
-const auditTotal = ref(0);
+const auditRange = ref(todayRange());
 const auditTotalAmount = ref(0);
 const selectedAuditRows = ref<BonusManageItem[]>([]);
 
@@ -84,45 +77,147 @@ const auditSummaryItems = computed(() => [
   {
     label: '申请金额汇总',
     value: formatAmountFromCent(auditTotalAmount.value),
-    valueClass: 'text-red-500',
   },
 ]);
 
-function auditQuery() {
+function auditQuery(page?: { currentPage: number; pageSize: number }) {
   const [begin, end] = auditRange.value || [];
   return {
     ...auditFilters,
     BeginTime: begin ? begin.unix() : '',
     EndTime: end ? end.unix() : '',
     IsExp: false,
-    Page: auditPage.value,
-    PageSize: auditPageSize.value,
+    Page: page?.currentPage ?? 1,
+    PageSize: page?.pageSize ?? 20,
   };
 }
 
-async function loadAudit() {
-  if (!canAuditList.value) return;
-  auditLoading.value = true;
-  try {
-    const result = await fetchBonusApproveListApi(auditQuery());
-    auditRows.value = result.Items || [];
-    auditTotal.value = Number(result.Pagination?.MaxCount || 0);
-    auditTotalAmount.value = Number(result.Total?.Total || 0);
-    selectedAuditRows.value = [];
-  } catch {
-    auditRows.value = [];
-    auditTotal.value = 0;
-    auditTotalAmount.value = 0;
-    selectedAuditRows.value = [];
-  } finally {
-    auditLoading.value = false;
-  }
+function canOperateAuditRow(row: BonusManageItem) {
+  return (
+    Number(row.Approve) === 1 &&
+    !isSameAcctActionRestricted(47, row.CreateAdminId)
+  );
 }
 
-function searchAudit() {
-  auditPage.value = 1;
-  void loadAudit();
-}
+const gridOptions: VxeTableGridOptions<BonusManageItem> = {
+  checkboxConfig: {
+    checkMethod: ({ row }) => canOperateAuditRow(row as BonusManageItem),
+  },
+  columns: [
+    { type: 'checkbox', width: 50 },
+    {
+      field: 'Approve',
+      minWidth: 100,
+      slots: { default: 'approve' },
+      title: '状态',
+    },
+    {
+      field: 'OrderId',
+      minWidth: 160,
+      showOverflow: 'tooltip',
+      title: '订单编号',
+    },
+    {
+      field: 'Username',
+      minWidth: 130,
+      slots: { default: 'username' },
+      title: '代理账号',
+    },
+    {
+      field: 'WalletType',
+      formatter: ({ cellValue }) =>
+        Number(cellValue) === 1 ? '佣金钱包' : '-',
+      minWidth: 110,
+      title: '钱包类型',
+    },
+    {
+      field: 'BonusType',
+      formatter: ({ cellValue }) =>
+        Number(cellValue) === 1 ? '代理红利' : '-',
+      minWidth: 110,
+      title: '红利类型',
+    },
+    {
+      field: 'CreateTime',
+      formatter: ({ cellValue }) => formatNetcashDateTime(cellValue),
+      minWidth: 170,
+      title: '申请时间',
+    },
+    { field: 'ApplyName', minWidth: 120, title: '申请账号' },
+    {
+      field: 'Amount',
+      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+      minWidth: 120,
+      title: '申请金额',
+    },
+    {
+      field: 'ApplyDesc',
+      minWidth: 160,
+      showOverflow: 'tooltip',
+      title: '申请备注',
+    },
+    {
+      field: 'ChangeDesc',
+      minWidth: 160,
+      showOverflow: 'tooltip',
+      title: '变更备注',
+    },
+    {
+      field: 'actions',
+      fixed: 'right',
+      minWidth: 180,
+      slots: { default: 'actions' },
+      title: '操作',
+    },
+  ],
+  height: 'auto',
+  pagerConfig: { pageSize: 20 },
+  proxyConfig: {
+    autoLoad: false,
+    ajax: {
+      query: async ({ page }) => {
+        const result = await fetchBonusApproveListApi(auditQuery(page));
+        auditTotalAmount.value = Number(result?.Total?.Total || 0);
+        selectedAuditRows.value = [];
+        return {
+          items: result?.Items || [],
+          total: result?.Pagination?.MaxCount || 0,
+        };
+      },
+    },
+  },
+  showFooter: true,
+  footerMethod: () => [
+    [
+      '',
+      '合计',
+      '-',
+      '-',
+      '-',
+      '-',
+      '-',
+      '-',
+      formatAmountFromCent(auditTotalAmount.value),
+      '-',
+      '-',
+      '',
+    ],
+  ],
+};
+
+const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {
+    checkboxAll: ({ records }: { records: BonusManageItem[] }) => {
+      selectedAuditRows.value = records;
+    },
+    checkboxChange: ({ records }: { records: BonusManageItem[] }) => {
+      selectedAuditRows.value = records;
+    },
+  },
+  gridOptions,
+});
+
+const loading = computed(() => gridApi.grid?.loading ?? false);
 
 function resetAudit() {
   Object.assign(auditFilters, {
@@ -133,41 +228,8 @@ function resetAudit() {
     WalletType: '',
   });
   auditRange.value = todayRange();
-  searchAudit();
+  gridApi.reload();
 }
-
-function canOperateAuditRow(row: BonusManageItem) {
-  return (
-    Number(row.Approve) === 1 &&
-    !isSameAcctActionRestricted(47, row.CreateAdminId)
-  );
-}
-
-const auditRowSelection = computed(() => ({
-  getCheckboxProps: (row: BonusManageItem) => ({
-    disabled: !canOperateAuditRow(row),
-  }),
-  onChange: (_keys: Array<number | string>, rows: BonusManageItem[]) => {
-    selectedAuditRows.value = rows;
-  },
-  selectedRowKeys: selectedAuditRows.value
-    .map((row) => row.Id)
-    .filter((id): id is number | string => id !== undefined),
-}));
-
-const auditColumns = [
-  { dataIndex: 'Approve', key: 'Approve', title: '状态', width: 100 },
-  { dataIndex: 'OrderId', key: 'OrderId', title: '订单编号', width: 160 },
-  { dataIndex: 'Username', key: 'Username', title: '代理账号', width: 130 },
-  { dataIndex: 'WalletType', key: 'WalletType', title: '钱包类型', width: 110 },
-  { dataIndex: 'BonusType', key: 'BonusType', title: '红利类型', width: 110 },
-  { dataIndex: 'CreateTime', key: 'CreateTime', title: '申请时间', width: 170 },
-  { dataIndex: 'ApplyName', key: 'ApplyName', title: '申请账号', width: 120 },
-  { dataIndex: 'Amount', key: 'Amount', title: '申请金额', width: 120 },
-  { dataIndex: 'ApplyDesc', key: 'ApplyDesc', title: '申请备注', width: 180 },
-  { dataIndex: 'ChangeDesc', key: 'ChangeDesc', title: '变更备注', width: 160 },
-  { fixed: 'right', key: 'actions', title: '操作', width: 190 },
-];
 
 const auditModalOpen = ref(false);
 const auditAction = ref<AuditAction>('singleApprove');
@@ -245,7 +307,8 @@ async function submitAuditAction() {
     }
     message.success('操作成功');
     auditModalOpen.value = false;
-    await loadAudit();
+    selectedAuditRows.value = [];
+    gridApi.reload();
   } catch {
     // requestClient 已提示业务错误
   } finally {
@@ -254,161 +317,129 @@ async function submitAuditAction() {
 }
 
 onMounted(() => {
-  void loadAudit();
+  if (canAuditList.value) {
+    gridApi.reload();
+  }
 });
 </script>
 
 <template>
-  <Result
-    v-if="!canAuditList"
-    status="403"
-    sub-title="无审核列表查看权限(11360)"
-    title="403"
-  />
-  <template v-else>
+  <div v-if="canAuditList">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="auditFilters.Username"
-          allow-clear
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="auditFilters.WalletType"
-       
-        :options="walletOptions"
-      />
-      <Select
-        v-model:value="auditFilters.BonusType"
-       
-        :options="bonusOptions"
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="auditFilters.ApplyName"
-          allow-clear
-          placeholder="请输入申请账号"
-        >
-          <template #addonBefore>申请账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="auditFilters.ApplyDesc"
-          allow-clear
-          placeholder="请输入申请备注"
-        >
-          <template #addonBefore>申请备注</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="auditRange" />
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="auditFilters.Username"
+            allow-clear
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
         </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="searchAudit">查询</Button>
-      <Button @click="resetAudit">重置</Button>
-        </div>
-    </div>
-  </div>
-    <div class="mb-3 flex items-center justify-between">
-      <SummaryCards :items="auditSummaryItems" />
-      <Space>
-        <Button
-          v-if="canBatchApprove"
-          type="primary"
-          :disabled="selectedAuditRows.length === 0"
-          @click="openAuditAction('batchApprove')"
-        >
-          批量通过
-        </Button>
-        <Button
-          v-if="canBatchReject"
-          danger
-          :disabled="selectedAuditRows.length === 0"
-          @click="openAuditAction('batchReject')"
-        >
-          批量拒绝
-        </Button>
-      </Space>
-    </div>
-    <Table
-      :columns="auditColumns"
-      :data-source="auditRows"
-      :loading="auditLoading"
-      :pagination="false"
-      :row-key="(row: BonusManageItem) => String(row.Id)"
-      :row-selection="auditRowSelection"
-      :scroll="{ x: 1550 }"
-      size="small"
-    >
-      <template #bodyCell="{ column, record }">
-        <Tag v-if="column.key === 'Approve'" :color="statusColor(record.Approve)">
-          {{ statusText(record.Approve) }}
-        </Tag>
-        <template v-else-if="column.key === 'Username'">
-          <AgencyAccountLink
-            :admin-id="resolveAgencyAdminId(record)"
-            :username="record.Username"
+        <Space.Compact>
+          <span class="query-field-addon">钱包类型</span>
+          <Select
+            v-model:value="auditFilters.WalletType"
+            :options="walletOptions"
+            placeholder="请选择钱包类型"
           />
-        </template>
-        <template v-else-if="column.key === 'WalletType'">
-          {{ Number(record.WalletType) === 1 ? '佣金钱包' : '-' }}
-        </template>
-        <template v-else-if="column.key === 'BonusType'">
-          {{ Number(record.BonusType) === 1 ? '代理红利' : '-' }}
-        </template>
-        <template v-else-if="column.key === 'CreateTime'">
-          {{ formatNetcashDateTime(record.CreateTime) }}
-        </template>
-        <template v-else-if="column.key === 'Amount'">
-          {{ formatAmountFromCent(Number(record.Amount || 0)) }}
-        </template>
-        <Space v-else-if="column.key === 'actions'" :size="0">
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">红利类型</span>
+          <Select
+            v-model:value="auditFilters.BonusType"
+            :options="bonusOptions"
+            placeholder="请选择红利类型"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="auditFilters.ApplyName"
+            allow-clear
+            placeholder="请输入申请账号"
+          >
+            <template #addonBefore>申请账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="auditFilters.ApplyDesc"
+            allow-clear
+            placeholder="请输入申请备注"
+          >
+            <template #addonBefore>申请备注</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="auditRange" label="申请时间" />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
+            查询
+          </Button>
+          <Button @click="resetAudit">重置</Button>
           <Button
-            v-if="canSingleApprove"
-            type="link"
+            v-if="canBatchApprove"
+            type="primary"
+            @click="openAuditAction('batchApprove')"
+          >
+            批量通过
+          </Button>
+          <Button
+            v-if="canBatchReject"
+            danger
+            @click="openAuditAction('batchReject')"
+          >
+            批量拒绝
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    <SummaryCards :items="auditSummaryItems" />
+
+    <Grid>
+      <template #approve="{ row }">
+        <Tag :color="statusColor(row.Approve)">
+          {{ statusText(row.Approve) }}
+        </Tag>
+      </template>
+      <template #username="{ row }">
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.Username"
+        />
+      </template>
+      <template #actions="{ row }">
+        <Space :size="0">
+          <Button
+            v-if="canSingleApprove && canOperateAuditRow(row)"
             size="small"
-            :disabled="!canOperateAuditRow(record)"
-            @click="openAuditAction('singleApprove', record)"
+            type="link"
+            @click="openAuditAction('singleApprove', row)"
           >
             通过
           </Button>
           <Button
-            v-if="canAdjust"
-            type="link"
+            v-if="canAdjust && canOperateAuditRow(row)"
             size="small"
-            :disabled="!canOperateAuditRow(record)"
-            @click="openAuditAction('adjust', record)"
+            type="link"
+            @click="openAuditAction('adjust', row)"
           >
             调整
           </Button>
           <Button
-            v-if="canSingleReject"
+            v-if="canSingleReject && canOperateAuditRow(row)"
             danger
-            type="link"
             size="small"
-            :disabled="!canOperateAuditRow(record)"
-            @click="openAuditAction('singleReject', record)"
+            type="link"
+            @click="openAuditAction('singleReject', row)"
           >
             拒绝
           </Button>
         </Space>
       </template>
-    </Table>
-    <div class="mt-4 flex justify-end">
-      <Pagination
-        v-model:current="auditPage"
-        v-model:page-size="auditPageSize"
-        :total="auditTotal"
-        show-size-changer
-        show-quick-jumper
-        @change="loadAudit"
-      />
-    </div>
+    </Grid>
 
     <Modal
       v-model:open="auditModalOpen"
@@ -461,5 +492,12 @@ onMounted(() => {
         </Form.Item>
       </Form>
     </Modal>
-  </template>
+  </div>
+
+  <Result
+    v-else
+    status="403"
+    sub-title="需要权限 11360 才能查看审核列表"
+    title="无权限"
+  />
 </template>

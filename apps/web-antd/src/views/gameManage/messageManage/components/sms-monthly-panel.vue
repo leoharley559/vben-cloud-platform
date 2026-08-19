@@ -84,16 +84,23 @@ function reset() {
 
 <template>
   <div>
-    <div class="query-panel">
-      <DatePicker.RangePicker
-        v-model:value="monthRange"
-        picker="month"
-        :placeholder="['开始月份', '结束月份']"
-      />
-      <Space>
-        <Button type="primary" @click="search">查询</Button>
-        <Button @click="reset">重置</Button>
-      </Space>
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
+        <div class="query-filter-wide">
+          <Space.Compact>
+            <span class="query-field-addon">月份</span>
+            <DatePicker.RangePicker
+              v-model:value="monthRange"
+              picker="month"
+              :placeholder="['开始月份', '结束月份']"
+            />
+          </Space.Compact>
+        </div>
+        <div class="query-filter-actions query-filter-actions-single">
+          <Button type="primary" @click="search">查询</Button>
+          <Button @click="reset">重置</Button>
+        </div>
+      </div>
     </div>
     <SummaryCards :items="summaryItems" />
     <div class="data-grid"><Grid /></div>
@@ -101,18 +108,6 @@ function reset() {
 </template>
 
 <style scoped>
-.query-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 18px;
-  margin-bottom: 14px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
 .data-grid {
   overflow: hidden;
   border: 1px solid hsl(var(--border));

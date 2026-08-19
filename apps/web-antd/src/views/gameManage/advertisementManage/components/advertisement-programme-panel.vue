@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import {
   Button,
-  Card,
   Checkbox,
   DatePicker,
   Descriptions,
@@ -20,13 +21,13 @@ import {
   Select,
   Space,
   Switch,
-  Table,
   Tabs,
   Tag,
   TimePicker,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   createAdvertisementApi,
   createAdvertisementProgrammeApi,
@@ -45,6 +46,7 @@ import {
   updateAdvertisementProgrammeApi,
 } from '#/api/gameManage/advertisement-manage';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
@@ -293,50 +295,6 @@ const openTypeOptions = [
   { label: '安装应用', value: 12 },
 ];
 
-const columns = computed(() => {
-  const result: Array<Record<string, unknown>> = [
-    { key: 'index', title: '序号', width: 60 },
-    { dataIndex: 'Title', key: 'Title', title: '标题', width: 130 },
-    { key: 'Status', title: '状态', width: 90 },
-  ];
-  if (isCarousel.value) {
-    result.push(
-      { key: 'time', title: '有效时间', width: 230 },
-      { key: 'ImageUrl', title: '手机版竖版', width: 190 },
-      { key: 'CrossImageUrl', title: 'Web 横版', width: 190 },
-      { key: 'NarrowImageUrl', title: '手机窄版', width: 190 },
-      { key: 'OpenType', title: '跳转类型', width: 110 },
-      { dataIndex: 'Jump', key: 'Jump', title: '跳转参数', width: 130 },
-      { key: 'guest', title: '游客展示', width: 100 },
-      { dataIndex: 'Vip', key: 'Vip', title: 'VIP 等级', width: 140 },
-      { key: 'registerDays', title: '注册时间限制(天)', width: 140 },
-    );
-  } else if (isHomeDialog.value) {
-    result.push(
-      { key: 'ImageUrl', title: '首页弹窗竖版', width: 190 },
-      { key: 'CrossImageUrl', title: '首页弹窗横版', width: 190 },
-      { key: 'OpenType', title: '跳转类型', width: 110 },
-      { dataIndex: 'Jump', key: 'Jump', title: '跳转参数', width: 130 },
-      { key: 'guest', title: '游客展示', width: 100 },
-      { key: 'daily', title: '展示机制', width: 130 },
-      { key: 'total', title: '总展示数', width: 110 },
-      { dataIndex: 'Vip', key: 'Vip', title: 'VIP 等级', width: 140 },
-    );
-  } else {
-    result.push(
-      { key: 'ImageUrl', title: '手机版竖版', width: 320 },
-      { key: 'firstDeposit', title: '首存后不展示', width: 130 },
-      { dataIndex: 'Vip', key: 'Vip', title: 'VIP 等级', width: 160 },
-    );
-  }
-  result.push(
-    { dataIndex: 'OperateName', key: 'OperateName', title: '操作人', width: 120 },
-    { key: 'UpdateTime', title: '操作时间', width: 170 },
-    { fixed: 'right', key: 'action', title: '操作', width: 190 },
-  );
-  return result;
-});
-
 function toItems(data: unknown) {
   if (data == null) return [] as Record<string, unknown>[];
   if (Array.isArray(data)) return data as Record<string, unknown>[];
@@ -410,6 +368,7 @@ async function loadProgrammes(preferredId?: number | string) {
 async function loadRows() {
   if (!activeProgrammeId.value || !checkPermission(permission.value.list)) {
     rows.value = [];
+    await gridApi.reload();
     return;
   }
   loading.value = true;
@@ -430,6 +389,7 @@ async function loadRows() {
     rows.value = normalizeRows(
       await fetchAdvertisementListApi(params),
     ) as AdvertisementRow[];
+    await gridApi.reload();
   } finally {
     loading.value = false;
   }
@@ -853,6 +813,133 @@ function libraryImage(item: Record<string, unknown>) {
   return getServiceImageUrl(String(item.Path || ''));
 }
 
+function rowIndex(row: AdvertisementRow) {
+  return rows.value.findIndex((item) => String(item.Id) === String(row.Id));
+}
+
+const gridOptions: VxeTableGridOptions<AdvertisementRow> = {
+  columns: [
+    { type: 'seq', title: '序号', width: 60 },
+    { field: 'Title', minWidth: 130, showOverflow: 'tooltip', title: '标题' },
+    { field: 'Status', slots: { default: 'status' }, title: '状态', width: 90 },
+    {
+      field: 'time',
+      minWidth: 230,
+      slots: { default: 'time' },
+      title: '有效时间',
+      visible: isCarousel.value,
+    },
+    {
+      field: 'ImageUrl',
+      minWidth: isCarousel.value || isHomeDialog.value ? 190 : 320,
+      showOverflow: false,
+      slots: { default: 'imageUrl' },
+      title: isHomeDialog.value ? '首页弹窗竖版' : '手机版竖版',
+    },
+    {
+      field: 'CrossImageUrl',
+      minWidth: 190,
+      showOverflow: false,
+      slots: { default: 'crossImageUrl' },
+      title: isHomeDialog.value ? '首页弹窗横版' : 'Web 横版',
+      visible: isCarousel.value || isHomeDialog.value,
+    },
+    {
+      field: 'NarrowImageUrl',
+      minWidth: 190,
+      showOverflow: false,
+      slots: { default: 'narrowImageUrl' },
+      title: '手机窄版',
+      visible: isCarousel.value,
+    },
+    {
+      field: 'OpenType',
+      slots: { default: 'openType' },
+      title: '跳转类型',
+      visible: isCarousel.value || isHomeDialog.value,
+      width: 110,
+    },
+    {
+      field: 'Jump',
+      minWidth: 130,
+      showOverflow: 'tooltip',
+      title: '跳转参数',
+      visible: isCarousel.value || isHomeDialog.value,
+    },
+    {
+      field: 'guest',
+      slots: { default: 'guest' },
+      title: '游客展示',
+      visible: isCarousel.value || isHomeDialog.value,
+      width: 100,
+    },
+    {
+      field: 'Vip',
+      minWidth: isCarousel.value || isHomeDialog.value ? 140 : 160,
+      showOverflow: 'tooltip',
+      title: 'VIP 等级',
+    },
+    {
+      field: 'registerDays',
+      slots: { default: 'registerDays' },
+      title: '注册时间限制(天)',
+      visible: isCarousel.value,
+      width: 140,
+    },
+    {
+      field: 'daily',
+      slots: { default: 'daily' },
+      title: '展示机制',
+      visible: isHomeDialog.value,
+      width: 130,
+    },
+    {
+      field: 'total',
+      slots: { default: 'total' },
+      title: '总展示数',
+      visible: isHomeDialog.value,
+      width: 110,
+    },
+    {
+      field: 'firstDeposit',
+      slots: { default: 'firstDeposit' },
+      title: '首存后不展示',
+      visible: !isCarousel.value && !isHomeDialog.value,
+      width: 130,
+    },
+    { field: 'OperateName', minWidth: 120, title: '操作人' },
+    {
+      field: 'UpdateTime',
+      formatter: ({ cellValue }) => formatTime(cellValue as number),
+      minWidth: 170,
+      title: '操作时间',
+    },
+    {
+      field: 'action',
+      fixed: 'right',
+      slots: { default: 'action' },
+      title: '操作',
+      width: 190,
+    },
+  ],
+  height: 'auto',
+  pagerConfig: { enabled: false },
+  proxyConfig: {
+    autoLoad: false,
+    ajax: {
+      query: async () => ({ items: rows.value, total: rows.value.length }),
+    },
+  },
+  cellConfig: { height: 90 },
+  showOverflow: false,
+};
+
+const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
+
+watch(loading, (value) => {
+  gridApi.setGridOptions({ loading: value });
+});
+
 const previewImages = computed(() =>
   rows.value
     .map((row) =>
@@ -927,9 +1014,8 @@ onMounted(async () => {
         </Button>
       </Space>
     </div>
-
-    <Card class="scheme-card" size="small">
-      <div class="scheme-header">
+ 
+      <div class="scheme-header mb-3">
         <Descriptions bordered size="small">
           <Descriptions.Item label="方案名称">
             {{ currentProgramme?.TemplateName || '-' }}
@@ -990,130 +1076,121 @@ onMounted(async () => {
             恢复系统预设
           </Button>
         </Space>
-      </div>
-    </Card>
+      </div> 
 
-    <Card v-if="!isHomeDialog" class="query-card" size="small">
-      <div class="query-grid">
-        <div class="flex flex-col gap-1">
+    <OpsListPanel>
+      <template v-if="!isHomeDialog" #filters>
+        <Space.Compact>
+          <span class="query-field-addon">标题</span>
           <Input
             v-model:value="filters.Title"
             allow-clear
-            style="width: 220px"
-            @press-enter="loadRows"
             placeholder="请输入标题"
-          >
-            <template #addonBefore>标题</template>
-          </Input>
-        </div>
-        <Select
-          v-model:value="filters.Status"
-          :options="[
-            { label: '全部状态', value: '' },
-            { label: '开启', value: 1 },
-            { label: '关闭', value: 2 },
-          ]"
-        />
+            @press-enter="loadRows"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filters.Status"
+            :options="[
+              { label: '全部状态', value: '' },
+              { label: '开启', value: 1 },
+              { label: '关闭', value: 2 },
+            ]"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filters.Time" precision="date" />
         </div>
-        <Space>
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="loadRows">查询</Button>
           <Button @click="resetFilters">重置</Button>
-        </Space>
-      </div>
-    </Card>
+        </div>
+      </template>
 
-    <Card class="table-card" :bordered="false">
-      <Table
-        :columns="columns"
-        :data-source="rows"
-        :loading="loading"
-        :pagination="false"
-        :row-key="(row) => String(row.Id)"
-        :scroll="{ x: 1700 }"
-        size="small"
-      >
-        <template #bodyCell="{ column, record, index }">
-          <template v-if="column.key === 'index'">{{ index + 1 }}</template>
+      <Grid>
+        <template #status="{ row }">
           <Switch
-            v-else-if="column.key === 'Status'"
-            v-model:checked="record.Status"
+            v-model:checked="row.Status"
             :checked-value="1"
-            :disabled="
-              !isHomeDialog && !checkPermission(permission.switch)
-            "
+            :disabled="!isHomeDialog && !checkPermission(permission.switch)"
             :un-checked-value="2"
-            @change="changeStatus(record)"
+            @change="() => changeStatus(row)"
           />
-          <span v-else-if="column.key === 'time'">
-            {{ formatTime(record.BeginTime) }} ~
-            {{ formatTime(record.EndTime) }}
-          </span>
+        </template>
+        <template #time="{ row }">
+          {{ formatTime(row.BeginTime) }} ~ {{ formatTime(row.EndTime) }}
+        </template>
+        <template #imageUrl="{ row }">
+          <Image :height="70" :src="rowImage(row, 'ImageUrl')" :width="150" />
+        </template>
+        <template #crossImageUrl="{ row }">
           <Image
-            v-else-if="
-              ['ImageUrl', 'CrossImageUrl', 'NarrowImageUrl'].includes(
-                String(column.key),
-              )
-            "
             :height="70"
-            :src="rowImage(record, column.key)"
+            :src="rowImage(row, 'CrossImageUrl')"
             :width="150"
           />
-          <Tag v-else-if="column.key === 'OpenType'">
-            {{ openTypeName(record.OpenType) }}
-          </Tag>
-          <span v-else-if="column.key === 'guest'">
-            {{
-              Number(record.IsShowForGuest) === 0
-                ? '是'
-                : Number(record.IsShowForGuest) === 1
-                  ? '否'
-                  : '仅游客'
-            }}
-          </span>
-          <span v-else-if="column.key === 'registerDays'">
-            {{
-              Number(record.RegStartDate) === 0 &&
-              Number(record.RegEndDate) === 0
-                ? '不限'
-                : `${record.RegStartDate}-${record.RegEndDate}`
-            }}
-          </span>
-          <span v-else-if="column.key === 'daily'">
-            {{
-              Number(record.DailyCount) === 0
-                ? '每次登录'
-                : `每日前 ${record.DailyCountValue} 次`
-            }}
-          </span>
-          <span v-else-if="column.key === 'total'">
-            {{ record.IsTotalCount ? record.TotalCount : '-' }}
-          </span>
-          <span v-else-if="column.key === 'firstDeposit'">
-            {{ record.IsNoFirstDeposit ? '是' : '-' }}
-          </span>
-          <span v-else-if="column.key === 'UpdateTime'">
-            {{ formatTime(record.UpdateTime) }}
-          </span>
-          <Space v-else-if="column.key === 'action'" size="small">
+        </template>
+        <template #narrowImageUrl="{ row }">
+          <Image
+            :height="70"
+            :src="rowImage(row, 'NarrowImageUrl')"
+            :width="150"
+          />
+        </template>
+        <template #openType="{ row }">
+          <Tag>{{ openTypeName(row.OpenType) }}</Tag>
+        </template>
+        <template #guest="{ row }">
+          {{
+            Number(row.IsShowForGuest) === 0
+              ? '是'
+              : Number(row.IsShowForGuest) === 1
+                ? '否'
+                : '仅游客'
+          }}
+        </template>
+        <template #registerDays="{ row }">
+          {{
+            Number(row.RegStartDate) === 0 && Number(row.RegEndDate) === 0
+              ? '不限'
+              : `${row.RegStartDate}-${row.RegEndDate}`
+          }}
+        </template>
+        <template #daily="{ row }">
+          {{
+            Number(row.DailyCount) === 0
+              ? '每次登录'
+              : `每日前 ${row.DailyCountValue} 次`
+          }}
+        </template>
+        <template #total="{ row }">
+          {{ row.IsTotalCount ? row.TotalCount : '-' }}
+        </template>
+        <template #firstDeposit="{ row }">
+          {{ row.IsNoFirstDeposit ? '是' : '-' }}
+        </template>
+        <template #action="{ row }">
+          <Space size="small">
             <Button
               v-if="checkPermission(permission.sort)"
-              :disabled="index === 0 || Number(record.Status) === 2"
+              :disabled="rowIndex(row) === 0 || Number(row.Status) === 2"
               size="small"
-              @click="move(index, -1)"
+              @click="move(rowIndex(row), -1)"
             >
               上移
             </Button>
             <Button
               v-if="checkPermission(permission.sort)"
               :disabled="
-                index === rows.length - 1 ||
-                Number(record.Status) === 2 ||
-                Number(rows[index + 1]?.Status) === 2
+                rowIndex(row) === rows.length - 1 ||
+                Number(row.Status) === 2 ||
+                Number(rows[rowIndex(row) + 1]?.Status) === 2
               "
               size="small"
-              @click="move(index, 1)"
+              @click="move(rowIndex(row), 1)"
             >
               下移
             </Button>
@@ -1121,7 +1198,7 @@ onMounted(async () => {
               v-if="checkPermission(permission.editAd)"
               size="small"
               type="primary"
-              @click="openForm(record)"
+              @click="openForm(row)"
             >
               编辑
             </Button>
@@ -1129,14 +1206,14 @@ onMounted(async () => {
               v-if="checkPermission(permission.deleteAd)"
               danger
               size="small"
-              @click="removeRow(record)"
+              @click="removeRow(row)"
             >
               删除
             </Button>
           </Space>
         </template>
-      </Table>
-    </Card>
+      </Grid>
+    </OpsListPanel> 
 
     <Modal
       v-model:open="programmeVisible"
@@ -1477,11 +1554,13 @@ onMounted(async () => {
       title="预览"
       width="900px"
     >
-      <Radio.Group v-if="isCarousel" v-model:value="previewMode" class="mb-4">
-        <Radio :value="1">横版</Radio>
-        <Radio :value="2">竖版</Radio>
-        <Radio :value="3">手机窄版</Radio>
-      </Radio.Group>
+      <div v-if="isCarousel" class="mb-3">
+        <Radio.Group v-model:value="previewMode">
+          <Radio :value="1">横版</Radio>
+          <Radio :value="2">竖版</Radio>
+          <Radio :value="3">手机窄版</Radio>
+        </Radio.Group>
+      </div>
       <div class="preview-list">
         <Image
           v-for="path in previewImages"
@@ -1496,17 +1575,8 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.programme-bar,
-.scheme-card,
-.query-card,
-.table-card {
+.programme-bar {
   margin-bottom: 14px;
-}
-
-.scheme-card,
-.query-card,
-.table-card {
-  border-radius: 10px;
 }
 
 .scheme-header {
@@ -1518,12 +1588,6 @@ onMounted(async () => {
 
 .scheme-header :deep(.ant-descriptions) {
   width: 360px;
-}
-
-.query-grid {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) 180px 220px auto;
-  gap: 12px;
 }
 
 .form-scroll {
@@ -1565,10 +1629,6 @@ onMounted(async () => {
   .scheme-header {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .query-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>

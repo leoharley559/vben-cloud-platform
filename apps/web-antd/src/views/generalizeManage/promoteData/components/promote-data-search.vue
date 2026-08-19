@@ -105,61 +105,42 @@ defineExpose({
 </script>
 
 <template>
-  <div class="query-panel">
-    <div class="query-field">
-      <span>推广账号</span>
+  <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
       <Space.Compact>
         <span class="query-field-addon">账号</span>
-        <AccountSelect v-model="filterAdminIds" style="width: 260px" />
+        <AccountSelect v-model="filterAdminIds" />
       </Space.Compact>
-    </div>
-    <div class="flex flex-col gap-1">
       <Space.Compact>
         <span class="query-field-addon">渠道</span>
-        <ChannelSelect v-model="filterChannelIds" style="width: 260px" placeholder="请输入渠道号" />
+        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
       </Space.Compact>
+      <Space.Compact v-if="showLanding">
+        <span class="query-field-addon">落地页</span>
+        <Select
+          v-model:value="filterTemplateId"
+          allow-clear
+          :options="landingOptions"
+          placeholder="请选择落地页"
+          show-search
+        />
+      </Space.Compact>
+      <div class="query-filter-wide">
+        <QueryDatetimeRangePicker
+          v-model="filterDateRange"
+          label="日期"
+          precision="date"
+          :disabled-date="disabledDate"
+        />
+      </div>
+      <slot></slot>
+      <div
+        v-if="showSearchButton"
+        class="query-filter-actions query-filter-actions-single"
+      >
+        <Button type="primary" @click="handleSearch">查询</Button>
+        <Button @click="handleReset">重置</Button>
+      </div>
     </div>
-    <Space.Compact>
-      <span class="query-field-addon">落地页</span>
-      <Select
-        v-if="showLanding"
-        v-model:value="filterTemplateId"
-        allow-clear
-        :options="landingOptions"
-        show-search
-        style="width: 180px"
-        placeholder="请选择落地页"
-      />
-    </Space.Compact>
-    <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" :disabled-date="disabledDate" />
-        </div>
-    <Space v-if="showSearchButton">
-      <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
-    </Space>
-    <slot></slot>
   </div>
 </template>
-
-<style scoped>
-.query-panel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-end;
-  padding: 14px;
-  margin-bottom: 16px;
-  background: hsl(var(--muted) / 35%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.query-field {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 13px;
-  color: hsl(var(--muted-foreground));
-}
-</style>

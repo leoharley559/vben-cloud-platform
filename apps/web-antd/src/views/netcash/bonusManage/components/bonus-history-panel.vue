@@ -1,21 +1,13 @@
 <script lang="ts" setup>
-import type { Dayjs } from 'dayjs';
-
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { BonusManageItem } from '#/types/netcash';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  message,
-  Pagination,
-  Select,
-  Table,
-  Tag,
-} from 'ant-design-vue';
+import { Button, Input, message, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchBonusHistoryListApi } from '#/api/netcash/bonus-manage';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
@@ -50,31 +42,27 @@ const historyFilters = reactive({
   Username: '',
   WalletType: '' as number | string,
 });
-const historyApplyRange = ref<[Dayjs, Dayjs] | null>(todayRange());
-const historyApproveRange = ref<[Dayjs, Dayjs] | null>(todayRange());
-const historyRows = ref<BonusManageItem[]>([]);
-const historyLoading = ref(false);
-const historyExporting = ref(false);
-const historyPage = ref(1);
-const historyPageSize = ref(20);
-const historyTotal = ref(0);
+const historyApplyRange = ref(todayRange());
+const historyApproveRange = ref(todayRange());
 const historyTotalAmount = ref(0);
 const historyTotalRealAmount = ref(0);
+const exportLoading = ref(false);
 
 const historySummaryItems = computed(() => [
   {
     label: '申请金额汇总',
     value: formatAmountFromCent(historyTotalAmount.value),
-    valueClass: 'text-red-500',
   },
   {
     label: '支付金额汇总',
     value: formatAmountFromCent(historyTotalRealAmount.value),
-    valueClass: 'text-red-500',
   },
 ]);
 
-function historyQuery(isExport = false) {
+function historyQuery(
+  page?: { currentPage: number; pageSize: number },
+  isExport = false,
+) {
   const [applyBegin, applyEnd] = historyApplyRange.value || [];
   const [approveBegin, approveEnd] = historyApproveRange.value || [];
   return {
@@ -84,33 +72,122 @@ function historyQuery(isExport = false) {
     BeginTime: applyBegin ? applyBegin.unix() : '',
     EndTime: applyEnd ? applyEnd.unix() : '',
     IsExp: isExport,
-    Page: isExport ? 1 : historyPage.value,
-    PageSize: isExport ? 9999 : historyPageSize.value,
+    Page: isExport ? 1 : (page?.currentPage ?? 1),
+    PageSize: isExport ? 10_000 : (page?.pageSize ?? 20),
   };
 }
 
-async function loadHistory() {
-  historyLoading.value = true;
-  try {
-    const result = await fetchBonusHistoryListApi(historyQuery());
-    historyRows.value = result.Items || [];
-    historyTotal.value = Number(result.Pagination?.MaxCount || 0);
-    historyTotalAmount.value = Number(result.Total?.Total || 0);
-    historyTotalRealAmount.value = Number(result.Total?.TotalReal || 0);
-  } catch {
-    historyRows.value = [];
-    historyTotal.value = 0;
-    historyTotalAmount.value = 0;
-    historyTotalRealAmount.value = 0;
-  } finally {
-    historyLoading.value = false;
-  }
-}
+const gridOptions: VxeTableGridOptions<BonusManageItem> = {
+  columns: [
+    {
+      field: 'Approve',
+      minWidth: 100,
+      slots: { default: 'approve' },
+      title: '状态',
+    },
+    {
+      field: 'OrderId',
+      minWidth: 160,
+      showOverflow: 'tooltip',
+      title: '订单编号',
+    },
+    {
+      field: 'Username',
+      minWidth: 130,
+      slots: { default: 'username' },
+      title: '代理账号',
+    },
+    {
+      field: 'WalletType',
+      formatter: ({ cellValue }) =>
+        Number(cellValue) === 1 ? '佣金钱包' : '-',
+      minWidth: 110,
+      title: '钱包类型',
+    },
+    {
+      field: 'BonusType',
+      formatter: ({ cellValue }) =>
+        Number(cellValue) === 1 ? '代理红利' : '-',
+      minWidth: 110,
+      title: '红利类型',
+    },
+    {
+      field: 'CreateTime',
+      formatter: ({ cellValue }) => formatNetcashDateTime(cellValue),
+      minWidth: 170,
+      title: '申请时间',
+    },
+    { field: 'ApplyName', minWidth: 120, title: '申请账号' },
+    {
+      field: 'Amount',
+      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+      minWidth: 120,
+      title: '申请金额',
+    },
+    {
+      field: 'ApplyDesc',
+      minWidth: 160,
+      showOverflow: 'tooltip',
+      title: '申请备注',
+    },
+    {
+      field: 'ApproveTime',
+      formatter: ({ cellValue }) => formatNetcashDateTime(cellValue),
+      minWidth: 170,
+      title: '审核时间',
+    },
+    { field: 'ApproveName', minWidth: 120, title: '审核账号' },
+    {
+      field: 'RealAmount',
+      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+      minWidth: 120,
+      title: '支付金额',
+    },
+    {
+      field: 'ApproveDesc',
+      minWidth: 160,
+      showOverflow: 'tooltip',
+      title: '审核备注',
+    },
+  ],
+  height: 'auto',
+  pagerConfig: { pageSize: 20 },
+  proxyConfig: {
+    autoLoad: false,
+    ajax: {
+      query: async ({ page }) => {
+        const result = await fetchBonusHistoryListApi(historyQuery(page));
+        historyTotalAmount.value = Number(result?.Total?.Total || 0);
+        historyTotalRealAmount.value = Number(result?.Total?.TotalReal || 0);
+        return {
+          items: result?.Items || [],
+          total: result?.Pagination?.MaxCount || 0,
+        };
+      },
+    },
+  },
+  showFooter: true,
+  footerMethod: () => [
+    [
+      '合计',
+      '-',
+      '-',
+      '-',
+      '-',
+      '-',
+      '-',
+      formatAmountFromCent(historyTotalAmount.value),
+      '-',
+      '-',
+      '-',
+      formatAmountFromCent(historyTotalRealAmount.value),
+      '-',
+    ],
+  ],
+};
 
-function searchHistory() {
-  historyPage.value = 1;
-  void loadHistory();
-}
+const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
+const loading = computed(() => gridApi.grid?.loading ?? false);
 
 function resetHistory() {
   Object.assign(historyFilters, {
@@ -125,16 +202,16 @@ function resetHistory() {
   });
   historyApplyRange.value = todayRange();
   historyApproveRange.value = todayRange();
-  searchHistory();
+  gridApi.reload();
 }
 
 async function exportHistory() {
-  historyExporting.value = true;
+  exportLoading.value = true;
   try {
-    const result = await fetchBonusHistoryListApi(historyQuery(true));
+    const result = await fetchBonusHistoryListApi(historyQuery(undefined, true));
     const rows = result.Items || [];
     if (rows.length === 0) {
-      message.warning('没有可导出的数据');
+      message.warning('暂无数据可导出');
       return;
     }
     exportWorkbook(
@@ -173,175 +250,131 @@ async function exportHistory() {
   } catch {
     message.error('导出失败');
   } finally {
-    historyExporting.value = false;
+    exportLoading.value = false;
   }
 }
 
-const historyColumns = [
-  {
-    customRender: ({ index }: { index: number }) =>
-      (historyPage.value - 1) * historyPageSize.value + index + 1,
-    key: 'index',
-    title: '序号',
-    width: 70,
-  },
-  { dataIndex: 'Approve', key: 'Approve', title: '状态', width: 100 },
-  { dataIndex: 'OrderId', key: 'OrderId', title: '订单编号', width: 160 },
-  { dataIndex: 'Username', key: 'Username', title: '代理账号', width: 130 },
-  { dataIndex: 'WalletType', key: 'WalletType', title: '钱包类型', width: 110 },
-  { dataIndex: 'BonusType', key: 'BonusType', title: '红利类型', width: 110 },
-  { dataIndex: 'CreateTime', key: 'CreateTime', title: '申请时间', width: 170 },
-  { dataIndex: 'ApplyName', key: 'ApplyName', title: '申请账号', width: 120 },
-  { dataIndex: 'Amount', key: 'Amount', title: '申请金额', width: 120 },
-  { dataIndex: 'ApplyDesc', key: 'ApplyDesc', title: '申请备注', width: 180 },
-  { dataIndex: 'ApproveTime', key: 'ApproveTime', title: '审核时间', width: 170 },
-  { dataIndex: 'ApproveName', key: 'ApproveName', title: '审核账号', width: 120 },
-  { dataIndex: 'RealAmount', key: 'RealAmount', title: '支付金额', width: 120 },
-  { dataIndex: 'ApproveDesc', key: 'ApproveDesc', title: '审核备注', width: 180 },
-];
-
 onMounted(() => {
-  void loadHistory();
+  gridApi.reload();
 });
 </script>
 
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="historyFilters.Username"
-          allow-clear
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="historyFilters.WalletType"
-       
-        :options="walletOptions"
-      />
-      <Select
-        v-model:value="historyFilters.BonusType"
-       
-        :options="bonusOptions"
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="historyFilters.ApplyName"
-          allow-clear
-          placeholder="请输入申请账号"
-        >
-          <template #addonBefore>申请账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="historyFilters.ApplyDesc"
-          allow-clear
-          placeholder="请输入申请备注"
-        >
-          <template #addonBefore>申请备注</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="historyFilters.Approve"
-       
-        :options="statusOptions"
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="historyFilters.ApproveName"
-          allow-clear
-          placeholder="请输入审核账号"
-        >
-          <template #addonBefore>审核账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="historyFilters.ApproveDesc"
-          allow-clear
-          placeholder="请输入审核备注"
-        >
-          <template #addonBefore>审核备注</template>
-        </Input>
-      </div>
-      <span class="text-gray-500">申请时间</span>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="historyApplyRange" />
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="historyFilters.Username"
+            allow-clear
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
         </div>
-      <span class="text-gray-500">审核时间</span>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="historyApproveRange" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="searchHistory">查询</Button>
-      <Button @click="resetHistory">重置</Button>
-        </div>
-    </div>
-  </div>
-    <div class="mb-3 flex items-center justify-between">
-      <SummaryCards :items="historySummaryItems" />
-      <Button
-        v-if="canExportHistory"
-        type="primary"
-        :loading="historyExporting"
-        @click="exportHistory"
-      >
-        导出 Excel
-      </Button>
-    </div>
-    <Table
-      :columns="historyColumns"
-      :data-source="historyRows"
-      :loading="historyLoading"
-      :pagination="false"
-      :row-key="(row: BonusManageItem) => String(row.Id || row.OrderId || '')"
-      :scroll="{ x: 1900 }"
-      size="small"
-    >
-      <template #bodyCell="{ column, record }">
-        <Tag v-if="column.key === 'Approve'" :color="statusColor(record.Approve)">
-          {{ statusText(record.Approve) }}
-        </Tag>
-        <template v-else-if="column.key === 'Username'">
-          <AgencyAccountLink
-            :admin-id="resolveAgencyAdminId(record)"
-            :username="record.Username"
+        <Space.Compact>
+          <span class="query-field-addon">钱包类型</span>
+          <Select
+            v-model:value="historyFilters.WalletType"
+            :options="walletOptions"
+            placeholder="请选择钱包类型"
           />
-        </template>
-        <template v-else-if="column.key === 'WalletType'">
-          {{ Number(record.WalletType) === 1 ? '佣金钱包' : '-' }}
-        </template>
-        <template v-else-if="column.key === 'BonusType'">
-          {{ Number(record.BonusType) === 1 ? '代理红利' : '-' }}
-        </template>
-        <template
-          v-else-if="
-            column.key === 'CreateTime' || column.key === 'ApproveTime'
-          "
-        >
-          {{ formatNetcashDateTime(record[column.key]) }}
-        </template>
-        <template
-          v-else-if="column.key === 'Amount' || column.key === 'RealAmount'"
-        >
-          {{ formatAmountFromCent(Number(record[column.key] || 0)) }}
-        </template>
-      </template>
-    </Table>
-    <div class="mt-4 flex justify-end">
-      <Pagination
-        v-model:current="historyPage"
-        v-model:page-size="historyPageSize"
-        :total="historyTotal"
-        show-size-changer
-        show-quick-jumper
-        @change="loadHistory"
-      />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">红利类型</span>
+          <Select
+            v-model:value="historyFilters.BonusType"
+            :options="bonusOptions"
+            placeholder="请选择红利类型"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="historyFilters.ApplyName"
+            allow-clear
+            placeholder="请输入申请账号"
+          >
+            <template #addonBefore>申请账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="historyFilters.ApplyDesc"
+            allow-clear
+            placeholder="请输入申请备注"
+          >
+            <template #addonBefore>申请备注</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">审核状态</span>
+          <Select
+            v-model:value="historyFilters.Approve"
+            :options="statusOptions"
+            placeholder="请选择审核状态"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="historyFilters.ApproveName"
+            allow-clear
+            placeholder="请输入审核账号"
+          >
+            <template #addonBefore>审核账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="historyFilters.ApproveDesc"
+            allow-clear
+            placeholder="请输入审核备注"
+          >
+            <template #addonBefore>审核备注</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="historyApplyRange"
+            label="申请时间"
+          />
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="historyApproveRange"
+            label="审核时间"
+          />
+        </div>
+        <div class="query-filter-actions">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
+            查询
+          </Button>
+          <Button @click="resetHistory">重置</Button>
+          <Button
+            v-if="canExportHistory"
+            :loading="exportLoading"
+            type="primary"
+            @click="exportHistory"
+          >
+            导出
+          </Button>
+        </div>
+      </div>
     </div>
+
+    <SummaryCards :items="historySummaryItems" />
+
+    <Grid>
+      <template #approve="{ row }">
+        <Tag :color="statusColor(row.Approve)">
+          {{ statusText(row.Approve) }}
+        </Tag>
+      </template>
+      <template #username="{ row }">
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.Username"
+        />
+      </template>
+    </Grid>
   </div>
 </template>

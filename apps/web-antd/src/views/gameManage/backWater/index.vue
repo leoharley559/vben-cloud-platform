@@ -68,7 +68,7 @@ watch(
     description="游戏管理 · 返水设置"
     title="返水设置"
   >
-    <Card class="back-water-card" :bordered="false">
+    <Card size="small">
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <BackWaterReviewPanel
@@ -91,10 +91,3 @@ watch(
   </Page>
   <Result v-else status="403" sub-title="无返水设置查看权限" title="403" />
 </template>
-
-<style scoped>
-.back-water-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgb(15 23 42 / 6%);
-}
-</style>

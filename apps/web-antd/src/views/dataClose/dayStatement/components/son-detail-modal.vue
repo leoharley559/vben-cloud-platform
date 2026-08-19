@@ -28,7 +28,7 @@ const emit = defineEmits<{
   'update:open': [value: boolean];
 }>();
 
-const { ensureGameConfig, platformGameTypeMap } = useReportOptions();
+const { ensureGameConfig, gameConfig } = useReportOptions();
 
 const loading = ref(false);
 const detailTable = ref<StatementRow[]>([]);
@@ -100,10 +100,7 @@ async function loadDetail() {
       if (NegativeProfit > 0) negativeCount += 1;
       return {
         ...item,
-        PlatforName: venueName(
-          platformGameTypeMap.value,
-          item.PlatformGameType,
-        ),
+        PlatforName: venueName(gameConfig.value, item.PlatformGameType),
         ProfitLoss: Number((SelfBetGold - SelfWinGold).toFixed(2)),
         NegativeProfit,
         PositiveProfit,

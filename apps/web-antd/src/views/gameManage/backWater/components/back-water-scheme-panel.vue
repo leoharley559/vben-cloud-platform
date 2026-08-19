@@ -723,54 +723,54 @@ onMounted(async () => {
 
 <template>
   <div v-if="canView">
-    <div class="query-panel">
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="searchName"
-          allow-clear
-          class="max-w-sm"
-          style="width: 240px"
-          placeholder="请输入方案名称"
-        >
-          <template #addonBefore>方案名称</template>
-        </Input>
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">方案名称</span>
+          <Input
+            v-model:value="searchName"
+            allow-clear
+            placeholder="请输入方案名称"
+          />
+        </Space.Compact>
+        <div class="query-filter-actions query-filter-actions-single">
+          <Button
+            v-if="canCreate"
+            :loading="creating"
+            type="primary"
+            @click="createScheme"
+          >
+            新增自定义方案
+          </Button>
+          <Button
+            danger
+            :disabled="schemes.length <= 1 || !currentId"
+            @click="deleteScheme"
+          >
+            删除方案
+          </Button>
+        </div>
       </div>
-      <Space>
-        <Button
-          v-if="canCreate"
-          :loading="creating"
-          type="primary"
-          @click="createScheme"
-        >
-          新增自定义方案
-        </Button>
-        <Button
-          danger
-          :disabled="schemes.length <= 1 || !currentId"
-          @click="deleteScheme"
-        >
-          删除方案
-        </Button>
-      </Space>
     </div>
 
     <Spin :spinning="listLoading || detailLoading">
       <div v-if="schemes.length > 0" class="scheme-layout">
         <Card class="scheme-nav" size="small" title="方案列表">
-          <Radio.Group
-            :value="currentId"
-            class="flex w-full flex-col gap-2"
-            @change="(event) => selectScheme(event.target.value)"
-          >
-            <Radio.Button
-              v-for="item in filteredSchemes"
-              :key="item.Id"
-              :value="item.Id"
-              class="!rounded-md"
+          <div class="scheme-radio-list">
+            <Radio.Group
+              :value="currentId"
+              @change="(event) => selectScheme(event.target.value)"
             >
-              {{ item.Name || `方案 ${item.Id}` }}
-            </Radio.Button>
-          </Radio.Group>
+              <Radio.Button
+                v-for="item in filteredSchemes"
+                :key="item.Id"
+                :value="item.Id"
+                class="!rounded-md"
+              >
+                {{ item.Name || `方案 ${item.Id}` }}
+              </Radio.Button>
+            </Radio.Group>
+          </div>
         </Card>
 
         <div class="min-w-0 flex-1">
@@ -1262,18 +1262,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.query-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px;
-  margin-bottom: 14px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
 .scheme-layout {
   display: flex;
   align-items: flex-start;
@@ -1286,6 +1274,13 @@ onMounted(async () => {
   width: 220px;
   max-height: calc(100vh - 220px);
   overflow: auto;
+}
+
+.scheme-radio-list :deep(.ant-radio-group) {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .section-card {

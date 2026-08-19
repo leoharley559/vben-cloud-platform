@@ -1216,28 +1216,29 @@ onBeforeUnmount(() =>
               </Button>
             </div>
             <Spin :spinning="resourcesLoading">
-              <Radio.Group
-                :value="form.StyleType"
-                class="resource-grid"
-                @change="selectSkin('app', $event.target.value)"
-              >
-                <Radio
-                  v-for="item in visibleAppResources"
-                  :key="String(item.Id)"
-                  class="resource-option"
-                  :value="item.PictureStyle ?? item.Id"
+              <div class="resource-grid">
+                <Radio.Group
+                  :value="form.StyleType"
+                  @change="selectSkin('app', $event.target.value)"
                 >
-                  <Image
-                    :fallback="undefined"
-                    :preview="false"
-                    :src="resolveUrl(item.PictureIp || item.SmallPictureIp)"
-                  />
-                  <span
-                    >皮肤
-                    {{ item.PictureStyle ?? item.PictureName ?? item.Id }}</span
+                  <Radio
+                    v-for="item in visibleAppResources"
+                    :key="String(item.Id)"
+                    class="resource-option"
+                    :value="item.PictureStyle ?? item.Id"
                   >
-                </Radio>
-              </Radio.Group>
+                    <Image
+                      :fallback="undefined"
+                      :preview="false"
+                      :src="resolveUrl(item.PictureIp || item.SmallPictureIp)"
+                    />
+                    <span
+                      >皮肤
+                      {{ item.PictureStyle ?? item.PictureName ?? item.Id }}</span
+                    >
+                  </Radio>
+                </Radio.Group>
+              </div>
               <Pagination
                 v-if="appTotal > 5"
                 v-model:current="appPage"
@@ -1271,27 +1272,28 @@ onBeforeUnmount(() =>
               </Button>
             </div>
             <Spin :spinning="resourcesLoading">
-              <Radio.Group
-                :value="form.StyleTypePc"
-                class="resource-grid pc"
-                @change="selectSkin('pc', $event.target.value)"
-              >
-                <Radio
-                  v-for="item in visiblePcResources"
-                  :key="String(item.Id)"
-                  class="resource-option"
-                  :value="item.PictureStyle ?? item.Id"
+              <div class="resource-grid pc">
+                <Radio.Group
+                  :value="form.StyleTypePc"
+                  @change="selectSkin('pc', $event.target.value)"
                 >
-                  <Image
-                    :preview="false"
-                    :src="resolveUrl(item.PictureIp || item.SmallPictureIp)"
-                  />
-                  <span
-                    >皮肤
-                    {{ item.PictureStyle ?? item.PictureName ?? item.Id }}</span
+                  <Radio
+                    v-for="item in visiblePcResources"
+                    :key="String(item.Id)"
+                    class="resource-option"
+                    :value="item.PictureStyle ?? item.Id"
                   >
-                </Radio>
-              </Radio.Group>
+                    <Image
+                      :preview="false"
+                      :src="resolveUrl(item.PictureIp || item.SmallPictureIp)"
+                    />
+                    <span
+                      >皮肤
+                      {{ item.PictureStyle ?? item.PictureName ?? item.Id }}</span
+                    >
+                  </Radio>
+                </Radio.Group>
+              </div>
               <Pagination
                 v-if="pcTotal > 3"
                 v-model:current="pcPage"
@@ -1366,21 +1368,23 @@ onBeforeUnmount(() =>
                     :tab="`分类 ${style}`"
                   />
                 </Tabs>
-                <Radio.Group v-model:value="form.Icon" class="icon-grid">
-                  <Radio
-                    v-for="item in visibleIcons"
-                    :key="String(item.Id)"
-                    class="icon-option"
-                    :value="item.Id"
-                  >
-                    <Avatar
-                      :size="48"
-                      shape="square"
-                      :src="resolveUrl(item.SmallPictureIp || item.PictureIp)"
-                    />
-                    <span>{{ item.PictureName || `图标 ${item.Id}` }}</span>
-                  </Radio>
-                </Radio.Group>
+                <div class="icon-grid">
+                  <Radio.Group v-model:value="form.Icon">
+                    <Radio
+                      v-for="item in visibleIcons"
+                      :key="String(item.Id)"
+                      class="icon-option"
+                      :value="item.Id"
+                    >
+                      <Avatar
+                        :size="48"
+                        shape="square"
+                        :src="resolveUrl(item.SmallPictureIp || item.PictureIp)"
+                      />
+                      <span>{{ item.PictureName || `图标 ${item.Id}` }}</span>
+                    </Radio>
+                  </Radio.Group>
+                </div>
                 <Empty
                   v-if="!resourcesLoading && iconResources.length === 0"
                   description="暂无图标资源"
@@ -1924,15 +1928,15 @@ onBeforeUnmount(() =>
   width: 100%;
 }
 
-.resource-grid,
-.icon-grid {
+.resource-grid :deep(.ant-radio-group),
+.icon-grid :deep(.ant-radio-group) {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   width: 100%;
 }
 
-.resource-grid.pc {
+.resource-grid.pc :deep(.ant-radio-group) {
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 

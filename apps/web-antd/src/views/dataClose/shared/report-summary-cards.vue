@@ -20,5 +20,15 @@ const cards = computed(() =>
 </script>
 
 <template>
-  <SummaryCards :items="cards" />
+  <div
+    class="mb-2 flex flex-wrap items-center justify-between gap-2"
+  >
+    <SummaryCards class="!mb-0 min-w-0 flex-1" :items="cards" />
+    <div
+      v-if="$slots.extra"
+      class="flex shrink-0 items-center gap-2"
+    >
+      <slot name="extra"></slot>
+    </div>
+  </div>
 </template>

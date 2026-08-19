@@ -427,12 +427,12 @@ onMounted(async () => {
       </template>
     </ReportQueryCard>
 
-    <ReportSummaryCards :items="summaryItems" />
-
-    <div class="mb-3 flex flex-wrap items-center justify-end gap-2">
-      <UpdateReportBtn />
-      <Button type="primary" ghost @click="handleExport">导出 Excel</Button>
-    </div>
+    <ReportSummaryCards :items="summaryItems">
+      <template #extra>
+        <UpdateReportBtn />
+        <Button type="primary" ghost @click="handleExport">导出 Excel</Button>
+      </template>
+    </ReportSummaryCards>
 
     <Table
       :columns="columns"

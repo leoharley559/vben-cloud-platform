@@ -26,14 +26,17 @@ const columns = [
     dataIndex: 'CreateTime',
     key: 'CreateTime',
     title: '登录时间',
+    width: 180,
   },
   {
     dataIndex: 'Ip',
     key: 'Ip',
     title: '登录 IP',
+    width: 160,
   },
   {
     dataIndex: 'Address',
+    ellipsis: true,
     key: 'Address',
     title: '登录地址',
   },
@@ -81,15 +84,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="min-w-0 overflow-hidden">
     <Table
       :columns="columns"
       :data-source="tableData"
       :loading="loading"
       :pagination="false"
+      :scroll="{ x: 'max-content' }"
       bordered
       row-key="_rowKey"
-      size="middle"
+      size="small"
     />
     <div class="mt-4 flex justify-end">
       <Pagination

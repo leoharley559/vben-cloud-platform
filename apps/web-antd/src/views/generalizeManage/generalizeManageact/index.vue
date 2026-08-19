@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import type { TableColumnsType, TableProps } from 'ant-design-vue';
-
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type {
   PromoterDetail,
   PromoterListItem,
@@ -8,26 +7,30 @@ import type {
   PromoterTotalItem,
 } from '#/types/promotion';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+
+import { Page } from '@vben/common-ui';
 
 import {
   Button,
   Card,
+  Dropdown,
   Form,
   Input,
   InputNumber,
+  Menu,
   message,
   Modal,
   Popover,
   Result,
   Select,
   Space,
-  Table,
   Tag,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getProjectConfigApi } from '#/api/core/project';
 import {
   createPromoterCostOddApi,
@@ -38,9 +41,8 @@ import {
   updatePromoterApi,
   updatePromoterTeamApi,
 } from '#/api/promotion/manage';
-import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   PROMOTER_FUNCTION_MAP,
   PROMOTER_SETTLE_TYPE_MAP,
@@ -58,11 +60,10 @@ interface TeamForm extends PromoterDetail {
 
 const router = useRouter();
 const { adminInfo, checkPermission, projectConfig } = useCloudPermission();
+const canViewPage = computed(() => checkPermission(10_908));
 const loading = ref(false);
 const saving = ref(false);
-const rows = ref<PromoterListItem[]>([]);
 const allRows = ref<PromoterListItem[]>([]);
-const total = ref(0);
 const currentDomain = ref('');
 const query = reactive<PromoterListQuery>({
   Keyword: '',
@@ -86,7 +87,6 @@ const costForm = reactive({
 const domainVisible = ref(false);
 const domainList = ref<Array<{ Domain?: string; Id?: number | string }>>([]);
 const domainForm = reactive({ Domain: '' });
-const expandedKeys = ref<Array<number | string>>([]);
 
 const realAdminType = computed(() => {
   const admin = adminInfo.value as undefined | { realAdminType?: number };
@@ -118,35 +118,6 @@ const childRateRange = computed(() => {
 const settleOptions = Object.entries(PROMOTER_SETTLE_TYPE_MAP)
   .filter(([value]) => value !== '2')
   .map(([value, label]) => ({ label, value: Number(value) }));
-const columns = computed<TableColumnsType<PromoterListItem>>(() => [
-  { key: 'Status', title: '状态', width: 90 },
-  {
-    dataIndex: 'CreateTime',
-    key: 'CreateTime',
-    sorter: true,
-    title: '创建时间',
-    width: 170,
-  },
-  { key: 'AccountType', title: '账号类型', width: 160 },
-  { dataIndex: 'Username', key: 'Username', title: '账号用户名', width: 140 },
-  { dataIndex: 'Name', key: 'Name', title: '账号名称', width: 140 },
-  { key: 'Commission', title: '分成比例', width: 130 },
-  ...(realAdminType.value === 1
-    ? [
-        { key: 'PayPeriod', title: '结算周期', width: 110 },
-        { key: 'ChildRate', title: '下放比例', width: 160 },
-      ]
-    : []),
-  { dataIndex: 'ContactInf', key: 'ContactInf', title: '联系方式', width: 140 },
-  { key: 'SettleType', title: '结算方式', width: 130 },
-  { key: 'SettlePrice', title: '结算参数', width: 130 },
-  { key: 'Total', title: '总数量/总金额', width: 150 },
-  { key: 'Permission', title: '管理权限', width: 110 },
-  { dataIndex: 'Note', key: 'Note', title: '备注', ellipsis: true, width: 160 },
-  ...(checkPermission(10_909) || checkPermission(10_910)
-    ? [{ fixed: 'right' as const, key: 'action', title: '操作', width: 180 }]
-    : []),
-]);
 
 function parseFunctions(value: PromoterListItem['RoleDataField']) {
   try {
@@ -198,8 +169,8 @@ function calculateTotal(
 }
 
 function normalizeRows(
-  items: PromoterListItem[] | null | undefined = [],
-  totals: PromoterTotalItem[] | null | undefined = [],
+  items: null | PromoterListItem[] | undefined = [],
+  totals: null | PromoterTotalItem[] | undefined = [],
   child = false,
 ) {
   const list = Array.isArray(items) ? items : [];
@@ -208,29 +179,28 @@ function normalizeRows(
     ...item,
     IsOneTui: child ? false : item.IsOneTui,
     Total: calculateTotal(item, totalList),
-    hasChildren:
-      realAdminType.value === 1 &&
-      Boolean(item.HasChildren ?? item.hasChildren ?? true),
+    hasChildren: realAdminType.value === 1,
   }));
 }
 
-async function loadData() {
-  loading.value = true;
-  try {
-    query.ParentId = '';
-    const result = (await fetchPromoterListApi(query)) || {};
-    rows.value = normalizeRows(result.Items, result.ItemsTotal);
-    allRows.value = [...rows.value];
-    total.value = Number(result.Pagination?.MaxCount || 0);
-    currentDomain.value = result.Config?.Domain || '';
-    domainForm.Domain = currentDomain.value;
-  } finally {
-    loading.value = false;
-  }
+async function fetchList(page: { currentPage: number; pageSize: number }) {
+  query.ParentId = '';
+  query.Page = page.currentPage;
+  query.PageSize = page.pageSize;
+  const result = (await fetchPromoterListApi(query)) || {};
+  const items = normalizeRows(result.Items, result.ItemsTotal);
+  allRows.value = [...items];
+  currentDomain.value = result.Config?.Domain || '';
+  domainForm.Domain = currentDomain.value;
+  return {
+    items,
+    total: Number(result.Pagination?.MaxCount || 0),
+  };
 }
 
-async function loadChildren(row: PromoterListItem) {
-  if (row.children || row.Id === undefined) return;
+async function loadTreeChildren(row: PromoterListItem) {
+  if (row.children) return row.children;
+  if (row.Id === undefined) return [];
   const result =
     (await fetchPromoterListApi({
       ...query,
@@ -238,23 +208,18 @@ async function loadChildren(row: PromoterListItem) {
       PageSize: 9999,
       ParentId: row.Id,
     })) || {};
-  row.children = normalizeRows(result.Items, result.ItemsTotal, true);
-  allRows.value.push(...row.children);
-  if (row.children.length === 0) message.info('暂无下级推广账号');
-}
-
-async function onExpand(expanded: boolean, row: PromoterListItem) {
-  if (expanded) await loadChildren(row);
-  expandedKeys.value = expanded
-    ? [...new Set([...expandedKeys.value, row.Id!])]
-    : expandedKeys.value.filter((key) => String(key) !== String(row.Id));
+  const children = normalizeRows(result.Items, result.ItemsTotal, true);
+  row.children = children;
+  allRows.value.push(...children);
+  if (children.length === 0) message.info('暂无下级推广账号');
+  return children;
 }
 
 function search() {
   query.Page = 1;
   query.Username = query.Username?.trim();
   query.Name = query.Name?.trim();
-  loadData();
+  void gridApi.reload();
 }
 
 function reset() {
@@ -268,25 +233,13 @@ function reset() {
     Status: '',
     Username: '',
   });
-  expandedKeys.value = [];
-  loadData();
+  try {
+    gridApi.grid?.clearFilter?.();
+  } catch {
+    /* ignore */
+  }
+  void gridApi.reload();
 }
-
-const changeTable: TableProps['onChange'] = (pagination, _filters, sorter) => {
-  const currentSorter = Array.isArray(sorter) ? sorter[0] : sorter;
-  query.Page = pagination.current || 1;
-  query.PageSize = pagination.pageSize || 20;
-  const sortField = String(
-    currentSorter?.field || currentSorter?.columnKey || 'CreateTime',
-  );
-  query.Sort =
-    currentSorter?.order === 'ascend'
-      ? sortField
-      : currentSorter?.order === 'descend'
-        ? `-${sortField}`
-        : '';
-  loadData();
-};
 
 function createChannel() {
   router.push({ path: '/generalizeManage/addGeneralize' });
@@ -406,7 +359,7 @@ async function saveTeam() {
       });
       teamVisible.value = false;
       message.success('编辑成功');
-      await loadData();
+      await gridApi.reload();
     } finally {
       saving.value = false;
     }
@@ -433,7 +386,7 @@ async function saveTeam() {
     await getProjectConfigApi();
     teamVisible.value = false;
     message.success('编辑成功');
-    await loadData();
+    await gridApi.reload();
   } finally {
     saving.value = false;
   }
@@ -453,7 +406,7 @@ async function switchStatus(row: PromoterListItem, status: number) {
       });
       await getProjectConfigApi();
       message.success('操作成功');
-      await loadData();
+      await gridApi.reload();
     },
     title: status === 1 ? '启用推广账号' : '停用推广账号',
   });
@@ -513,7 +466,7 @@ async function saveDomain() {
     await createPromoterDomainApi({ Domain: domainForm.Domain });
     domainVisible.value = false;
     message.success('保存成功');
-    await loadData();
+    await gridApi.reload();
   } finally {
     saving.value = false;
   }
@@ -546,266 +499,369 @@ function settleValue(row: PromoterListItem) {
     : `${value}%`;
 }
 
+function commissionText(row: PromoterListItem) {
+  if (row.IsTeamAccount !== 1) return '-';
+  const rate =
+    row.TeamType === 2
+      ? Number(row.ProfitCommissionRate || 0)
+      : Number(row.CommissionRate || 0);
+  return `${rate / 10}%`;
+}
+
+function childRateText(row: PromoterListItem) {
+  if (row.IsTeamAccount !== 1 || row.IsOneTui === false) return '-';
+  return `${Number(row.ChildMinCommissionRate || 0) / 10}% - ${
+    Number(row.ChildMaxCommissionRate || 0) / 10
+  }%`;
+}
+
+function buildColumns(): VxeTableGridOptions<PromoterListItem>['columns'] {
+  return [
+    {
+      field: 'Status',
+      filterMultiple: true,
+      filters: [
+        { label: '启用', value: 1 },
+        { label: '停用', value: 2 },
+      ],
+      slots: { default: 'status' },
+      title: '状态',
+      treeNode: true,
+      width: 110,
+    },
+    {
+      field: 'CreateTime',
+      formatter: ({ cellValue }) => formatTime(cellValue),
+      minWidth: 170,
+      sortable: true,
+      title: '创建时间',
+    },
+    {
+      field: 'AccountType',
+      minWidth: 160,
+      slots: { default: 'accountType' },
+      title: '账号类型',
+    },
+    {
+      field: 'Username',
+      minWidth: 140,
+      showOverflow: 'tooltip',
+      title: '账号用户名',
+    },
+    { field: 'Name', minWidth: 140, showOverflow: 'tooltip', title: '账号名称' },
+    {
+      field: 'Commission',
+      minWidth: 130,
+      slots: { default: 'commission' },
+      title: '分成比例',
+    },
+    {
+      field: 'PayPeriod',
+      minWidth: 110,
+      slots: { default: 'payPeriod' },
+      title: '结算周期',
+      visible: realAdminType.value === 1,
+    },
+    {
+      field: 'ChildRate',
+      minWidth: 160,
+      slots: { default: 'childRate' },
+      title: '下放比例',
+      visible: realAdminType.value === 1,
+    },
+    {
+      field: 'ContactInf',
+      minWidth: 140,
+      showOverflow: 'tooltip',
+      title: '联系方式',
+    },
+    {
+      field: 'SettleType',
+      filterMultiple: true,
+      filters: settleOptions.map((item) => ({
+        label: item.label,
+        value: item.value,
+      })),
+      formatter: ({ row }) =>
+        row.IsTeamAccount === 1
+          ? '-'
+          : PROMOTER_SETTLE_TYPE_MAP[row.SettleType || 0] || '-',
+      minWidth: 130,
+      title: '结算方式',
+    },
+    {
+      field: 'SettlePrice',
+      formatter: ({ row }) =>
+        row.IsTeamAccount === 1 ? '-' : settleValue(row),
+      minWidth: 130,
+      title: '结算参数',
+    },
+    {
+      field: 'Total',
+      formatter: ({ cellValue }) => Number(cellValue || 0).toFixed(2),
+      minWidth: 150,
+      title: '总数量/总金额',
+    },
+    {
+      field: 'Permission',
+      slots: { default: 'permission' },
+      title: '管理权限',
+      width: 110,
+    },
+    { field: 'Note', minWidth: 160, showOverflow: 'tooltip', title: '备注' },
+    {
+      field: 'action',
+      fixed: 'right',
+      slots: { default: 'action' },
+      title: '操作',
+      visible: checkPermission(10_909) || checkPermission(10_910),
+      width: 90,
+    },
+  ];
+}
+
+function applyListParams(
+  sort?: { field?: string; order?: null | string },
+  filters?: Array<{ field?: string; values?: unknown[] }>,
+) {
+  const sortField = sort?.field;
+  const sortOrder = sort?.order;
+  if (sortField && sortOrder) {
+    query.Sort = sortOrder === 'asc' ? String(sortField) : `-${String(sortField)}`;
+  } else {
+    query.Sort = '';
+  }
+  const statusValues =
+    filters?.find((item) => item.field === 'Status')?.values || [];
+  query.Status = statusValues.length > 0 ? statusValues.join(',') : '';
+  const settleValues =
+    filters?.find((item) => item.field === 'SettleType')?.values || [];
+  query.SettleType = settleValues.length > 0 ? settleValues.join(',') : '';
+}
+
+const gridOptions: VxeTableGridOptions<PromoterListItem> = {
+  columns: buildColumns(),
+  filterConfig: { remote: true },
+  height: 'auto',
+  pagerConfig: { pageSize: 20 },
+  proxyConfig: {
+    autoLoad: false,
+    ajax: {
+      query: async ({ page, sort, filters }) => {
+        if (!canViewPage.value) return { items: [], total: 0 };
+        applyListParams(sort, filters);
+        return fetchList(page);
+      },
+    },
+  },
+  rowConfig: { keyField: 'Id' },
+  sortConfig: { remote: true },
+  treeConfig: {
+    childrenField: 'children',
+    hasChildField: 'hasChildren',
+    lazy: true,
+    loadMethod: async ({ row }) => loadTreeChildren(row as PromoterListItem),
+    transform: false,
+  },
+};
+
+const [Grid, gridApi] = useVbenVxeGrid({
+  gridOptions,
+});
+
+watch(realAdminType, () => {
+  gridApi.setGridOptions({ columns: buildColumns() });
+});
+
 onMounted(() => {
-  if (checkPermission(10_908)) loadData();
+  if (canViewPage.value) void gridApi.reload();
 });
 </script>
 
 <template>
-  <div v-if="checkPermission(10_908)" class="promoter-page">
-    <Card class="query-card" size="small">
-      <div class="query-grid">
-        <div class="flex flex-col gap-1">
+  <Page
+    v-if="canViewPage"
+    auto-content-height
+    description="推广管理 · 推广列表"
+    title="推广列表"
+  >
+    <Card size="small">
+      <OpsListPanel>
+        <template #filters>
           <Input
             v-model:value="query.Username"
             allow-clear
-            @press-enter="search"
-            style="width: 220px"
             placeholder="请输入账号用户名"
+            @press-enter="search"
           >
             <template #addonBefore>账号用户名</template>
           </Input>
-        </div>
-        <div class="flex flex-col gap-1">
           <Input
             v-model:value="query.Name"
             allow-clear
-            @press-enter="search"
-            style="width: 220px"
             placeholder="请输入账号名称"
+            @press-enter="search"
           >
             <template #addonBefore>账号名称</template>
           </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select
-            v-model:value="query.Status"
-            allow-clear
-            :options="[
-              { label: '启用', value: 1 },
-              { label: '停用', value: 2 },
-            ]"
-            @clear="query.Status = ''"
-            placeholder="请选择状态"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">结算方式</span>
-          <Select
-            v-model:value="query.SettleType"
-            allow-clear
-            :options="settleOptions"
-            @clear="query.SettleType = ''"
-            placeholder="请选择结算方式"
-          />
-        </Space.Compact>
-        <Space wrap>
-          <Button type="primary" @click="search">查询</Button>
-          <Button @click="reset">重置</Button>
-        </Space>
-      </div>
-      <div class="action-bar">
-        <Space wrap>
-          <Button v-if="checkPermission(10_911)" @click="openCost">
-            分摊成本设置
-          </Button>
-          <Button v-if="checkPermission(11_917)" @click="openDomain">
-            设置推广后台域名
-          </Button>
-          <Button
-            v-if="
-              checkPermission(10_912) &&
-              ((Number(teamInfo.Id) > 0 && Number(teamInfo.AgentId) > 0) ||
-                realAdminType === 1)
-            "
-            type="primary"
-            @click="createTeam"
-          >
-            创建下级代理
-          </Button>
-          <Button
-            v-if="
-              checkPermission(10_913) &&
-              Number(teamInfo.Id || 0) === 0 &&
-              Number(teamInfo.AgentId || 0) === 0
-            "
-            type="primary"
-            @click="createChannel"
-          >
-            创建渠道推广
-          </Button>
-        </Space>
-      </div>
-    </Card>
-
-    <Card class="table-card" :bordered="false">
-      <Table
-        :columns="columns"
-        :data-source="rows"
-        :expanded-row-keys="expandedKeys"
-        :loading="loading"
-        :pagination="{
-          current: query.Page,
-          pageSize: query.PageSize,
-          showSizeChanger: true,
-          total,
-        }"
-        :row-key="(row) => String(row.Id)"
-        :scroll="{ x: 1650 }"
-        children-column-name="children"
-        size="small"
-        @change="changeTable"
-        @expand="onExpand"
-      >
-        <template #bodyCell="{ column, record }">
-          <AgencyAccountLink
-            v-if="column.key === 'Username'"
-            :admin-id="resolveAgencyAdminId(record)"
-            :username="record.Username"
-          />
-          <Tag
-            v-else-if="column.key === 'Status'"
-            :color="record.Status === 1 ? 'green' : 'red'"
-          >
-            {{ record.Status === 1 ? '启用' : '停用' }}
-          </Tag>
-          <span v-else-if="column.key === 'CreateTime'">
-            {{ formatTime(record.CreateTime) }}
-          </span>
-          <Space v-else-if="column.key === 'AccountType'" size="small">
-            <Tag :color="record.IsTeamAccount === 1 ? 'blue' : 'orange'">
-              {{ record.IsTeamAccount === 1 ? '团队推广' : '渠道推广' }}
-            </Tag>
-            <Tag v-if="record.TeamType === 2" color="red">代理管理</Tag>
-          </Space>
-          <Button
-            v-else-if="
-              column.key === 'Commission' &&
-              record.IsTeamAccount === 1 &&
-              checkPermission(10_909)
-            "
-            size="small"
-            type="link"
-            @click="editTeamRate(record)"
-          >
-            {{
-              (record.TeamType === 2
-                ? Number(record.ProfitCommissionRate || 0)
-                : Number(record.CommissionRate || 0)) / 10
-            }}%
-          </Button>
-          <span v-else-if="column.key === 'Commission'">
-            {{
-              record.IsTeamAccount === 1
-                ? `${
-                    (record.TeamType === 2
-                      ? Number(record.ProfitCommissionRate || 0)
-                      : Number(record.CommissionRate || 0)) / 10
-                  }%`
-                : '-'
-            }}
-          </span>
-          <Button
-            v-else-if="
-              column.key === 'PayPeriod' &&
-              record.IsTeamAccount === 1 &&
-              record.IsOneTui !== false &&
-              checkPermission(10_909)
-            "
-            size="small"
-            type="link"
-            @click="editTeamRate(record)"
-          >
-            {{ record.PayPeriod }}
-          </Button>
-          <span v-else-if="column.key === 'PayPeriod'">
-            {{ record.IsTeamAccount === 1 && record.IsOneTui !== false ? record.PayPeriod : '-' }}
-          </span>
-          <Button
-            v-else-if="
-              column.key === 'ChildRate' &&
-              record.IsTeamAccount === 1 &&
-              record.IsOneTui !== false &&
-              checkPermission(10_909)
-            "
-            size="small"
-            type="link"
-            @click="editTeamRate(record)"
-          >
-            {{ Number(record.ChildMinCommissionRate || 0) / 10 }}% -
-            {{ Number(record.ChildMaxCommissionRate || 0) / 10 }}%
-          </Button>
-          <span v-else-if="column.key === 'ChildRate'">
-            {{
-              record.IsTeamAccount === 1 && record.IsOneTui !== false
-                ? `${Number(record.ChildMinCommissionRate || 0) / 10}% - ${
-                    Number(record.ChildMaxCommissionRate || 0) / 10
-                  }%`
-                : '-'
-            }}
-          </span>
-          <span v-else-if="column.key === 'SettleType'">
-            {{
-              record.IsTeamAccount === 1
-                ? '-'
-                : PROMOTER_SETTLE_TYPE_MAP[record.SettleType || 0] || '-'
-            }}
-          </span>
-          <span v-else-if="column.key === 'SettlePrice'">
-            {{ record.IsTeamAccount === 1 ? '-' : settleValue(record) }}
-          </span>
-          <span v-else-if="column.key === 'Total'">
-            {{ Number(record.Total || 0).toFixed(2) }}
-          </span>
-          <Popover
-            v-else-if="
-              column.key === 'Permission' && record.IsTeamAccount !== 1
-            "
-            placement="left"
-            title="功能权限"
-          >
-            <template #content>
-              <Space wrap>
-                <Tag
-                  v-for="id in parseFunctions(record.RoleDataField)"
-                  :key="id"
-                  color="green"
-                >
-                  {{ PROMOTER_FUNCTION_MAP[id] || id }}
-                </Tag>
-              </Space>
-            </template>
-            <Button size="small" type="link">查看</Button>
-          </Popover>
-          <Space v-else-if="column.key === 'action'">
-            <Button
-              v-if="checkPermission(10_909)"
-              size="small"
-              type="primary"
-              @click="editRow(record)"
-            >
-              编辑
-            </Button>
-            <Button
-              v-if="checkPermission(10_910) && record.Status === 1"
-              danger
-              size="small"
-              @click="switchStatus(record, 2)"
-            >
-              停用
-            </Button>
-            <Button
-              v-if="checkPermission(10_910) && record.Status === 2"
-              size="small"
-              @click="switchStatus(record, 1)"
-            >
-              启用
-            </Button>
-          </Space>
+          <div class="query-filter-actions">
+            <Button type="primary" @click="search">查询</Button>
+            <Button @click="reset">重置</Button>
+          </div>
         </template>
-      </Table>
-    </Card>
+        <div class="mb-3 flex flex-wrap items-center justify-end gap-2"> 
+            <Button v-if="checkPermission(10_911)" @click="openCost">
+              分摊成本设置
+            </Button>
+            <Button v-if="checkPermission(11_917)" @click="openDomain">
+              设置推广后台域名
+            </Button>
+            <Button
+              v-if="
+                checkPermission(10_912) &&
+                ((Number(teamInfo.Id) > 0 && Number(teamInfo.AgentId) > 0) ||
+                  realAdminType === 1)
+              "
+              type="primary"
+              @click="createTeam"
+            >
+              创建下级代理
+            </Button>
+            <Button
+              v-if="
+                checkPermission(10_913) &&
+                Number(teamInfo.Id || 0) === 0 &&
+                Number(teamInfo.AgentId || 0) === 0
+              "
+              type="primary"
+              @click="createChannel"
+            >
+              创建渠道推广
+            </Button>
+          </div>
+        <Grid>
+          <template #status="{ row }">
+            <Tag :color="row.Status === 1 ? 'success' : 'error'">
+              {{ row.Status === 1 ? '启用' : '停用' }}
+            </Tag>
+          </template>
+          <template #accountType="{ row }">
+            <Space size="small">
+              <Tag :color="row.IsTeamAccount === 1 ? 'blue' : 'orange'">
+                {{ row.IsTeamAccount === 1 ? '团队推广' : '渠道推广' }}
+              </Tag>
+              <Tag v-if="row.TeamType === 2" color="red">代理管理</Tag>
+            </Space>
+          </template>
+          <template #commission="{ row }">
+            <Button
+              v-if="row.IsTeamAccount === 1 && checkPermission(10_909)"
+              size="small"
+              type="link"
+              @click="editTeamRate(row)"
+            >
+              {{ commissionText(row) }}
+            </Button>
+            <span v-else>{{ commissionText(row) }}</span>
+          </template>
+          <template #payPeriod="{ row }">
+            <Button
+              v-if="
+                row.IsTeamAccount === 1 &&
+                row.IsOneTui !== false &&
+                checkPermission(10_909)
+              "
+              size="small"
+              type="link"
+              @click="editTeamRate(row)"
+            >
+              {{ row.PayPeriod }}
+            </Button>
+            <span v-else>
+              {{
+                row.IsTeamAccount === 1 && row.IsOneTui !== false
+                  ? row.PayPeriod
+                  : '-'
+              }}
+            </span>
+          </template>
+          <template #childRate="{ row }">
+            <Button
+              v-if="row.IsTeamAccount === 1 && row.IsOneTui !== false"
+              size="small"
+              type="link"
+              @click="editTeamRate(row)"
+            >
+              {{ childRateText(row) }}
+            </Button>
+            <span v-else>{{ childRateText(row) }}</span>
+          </template>
+          <template #permission="{ row }">
+            <Popover
+              v-if="row.IsTeamAccount !== 1"
+              placement="left"
+              trigger="hover"
+            >
+              <template #content>
+                <table class="permission-table">
+                  <thead>
+                    <tr>
+                      <th>管理权限</th>
+                      <th>内容</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>功能权限</td>
+                      <td>
+                        <Space wrap>
+                          <Tag
+                            v-for="id in parseFunctions(row.RoleDataField)"
+                            :key="id"
+                            color="success"
+                          >
+                            {{ PROMOTER_FUNCTION_MAP[id] || id }}
+                          </Tag>
+                        </Space>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+              <Button size="small" type="link">查看</Button>
+            </Popover>
+            <span v-else>-</span>
+          </template>
+          <template #action="{ row }">
+            <Dropdown :trigger="['click']">
+              <a class="text-primary">操作</a>
+              <template #overlay>
+                <Menu>
+                  <Menu.Item
+                    v-if="checkPermission(10_909)"
+                    @click="editRow(row)"
+                  >
+                    编辑
+                  </Menu.Item>
+                  <Menu.Item
+                    v-if="checkPermission(10_910) && row.Status === 1"
+                    @click="switchStatus(row, 2)"
+                  >
+                    停用
+                  </Menu.Item>
+                  <Menu.Item
+                    v-if="checkPermission(10_910) && row.Status === 2"
+                    @click="switchStatus(row, 1)"
+                  >
+                    启用
+                  </Menu.Item>
+                </Menu>
+              </template>
+            </Dropdown>
+          </template>
+        </Grid>
+      </OpsListPanel>
+    </Card> 
 
     <Modal
       v-model:open="teamVisible"
@@ -968,36 +1024,11 @@ onMounted(() => {
         <Button type="link" @click="purchaseDomain">购买新域名</Button>
       </Form>
     </Modal>
-  </div>
+  </Page>
   <Result v-else status="403" sub-title="无推广列表查看权限" title="403" />
 </template>
 
 <style scoped>
-.promoter-page {
-  min-height: 100%;
-  padding: 16px;
-}
-
-.query-card,
-.table-card {
-  margin-bottom: 14px;
-  border-radius: 10px;
-}
-
-.query-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(190px, 1fr)) auto;
-  gap: 12px;
-}
-
-.action-bar {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 12px;
-  margin-top: 12px;
-  border-top: 1px solid hsl(var(--border));
-}
-
 .modal-tip {
   padding: 10px 12px;
   font-size: 12px;
@@ -1006,9 +1037,19 @@ onMounted(() => {
   border-radius: 6px;
 }
 
-@media (max-width: 1200px) {
-  .query-grid {
-    grid-template-columns: repeat(2, minmax(220px, 1fr));
-  }
+.permission-table {
+  min-width: 360px;
+  border-collapse: collapse;
+}
+
+.permission-table th,
+.permission-table td {
+  padding: 8px 12px;
+  text-align: center;
+  border: 1px solid hsl(var(--border));
+}
+
+.permission-table th {
+  background: hsl(var(--muted) / 40%);
 }
 </style>

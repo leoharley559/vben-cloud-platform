@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { FormInstance } from 'ant-design-vue';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -82,12 +84,28 @@ const vipLevel = computed(() =>
 );
 const editorKey = ref(0);
 const editorRef = ref<{ buildConfig?: () => BackWaterVipConfig } | null>(null);
+const formRef = ref<FormInstance>();
 const loading = ref(false);
 const saving = ref(false);
 const scheme = ref<SchemeDetail>({});
 const rows = ref<BackWaterVipConfig[]>([]);
 const resolvedIndex = ref(-1);
 const form = reactive<DisplayConfig>({});
+const hasRow = computed(() => resolvedIndex.value >= 0);
+
+function isNonNegativeInteger(value: unknown, max?: number) {
+  const num = Number(value);
+  return (
+    Number.isInteger(num) &&
+    num >= 0 &&
+    (max === undefined || num <= max)
+  );
+}
+
+function isPercent(value: unknown) {
+  const num = Number(value);
+  return Number.isFinite(num) && num >= 0 && num <= 100;
+}
 
 const pageTitle = computed(() => {
   const name = scheme.value.Name ? `「${scheme.value.Name}」` : '';
@@ -102,8 +120,8 @@ const rules = {
   DefaultWater: [
     { message: '请正确输入未设置游戏返水比例', required: true },
     {
-      validator: (_rule: unknown, value: number) =>
-        value >= 0 && value <= 100
+      validator: (_rule: unknown, value: unknown) =>
+        isPercent(value)
           ? Promise.resolve()
           : Promise.reject(new Error('格式错误,正确输入未设置游戏返水比例')),
     },
@@ -111,8 +129,8 @@ const rules = {
   MaxWater: [
     { message: '请输入每日最高返水', required: true },
     {
-      validator: (_rule: unknown, value: number) =>
-        Number.isInteger(value) && value >= 0 && value <= 2_100_000_000
+      validator: (_rule: unknown, value: unknown) =>
+        isNonNegativeInteger(value, 2_100_000_000)
           ? Promise.resolve()
           : Promise.reject(new Error('格式错误,请正确输入每日最高返水')),
     },
@@ -120,8 +138,8 @@ const rules = {
   MinTurnover: [
     { message: '请输入最低流水要求', required: true },
     {
-      validator: (_rule: unknown, value: number) =>
-        Number.isInteger(value) && value >= 0
+      validator: (_rule: unknown, value: unknown) =>
+        isNonNegativeInteger(value)
           ? Promise.resolve()
           : Promise.reject(new Error('格式错误,请正确输入最低流水要求')),
     },
@@ -129,8 +147,8 @@ const rules = {
   MinTurnoverMultiple: [
     { message: '请正确输入领取要求流水倍数', required: true },
     {
-      validator: (_rule: unknown, value: number) =>
-        Number.isInteger(value) && value >= 0
+      validator: (_rule: unknown, value: unknown) =>
+        isNonNegativeInteger(value)
           ? Promise.resolve()
           : Promise.reject(new Error('格式错误,请正确输入领取要求流水倍数')),
     },
@@ -150,6 +168,7 @@ function parseConfig(value: SchemeDetail['Config']) {
 
 async function loadDetail() {
   loading.value = true;
+  resolvedIndex.value = -1;
   try {
     if (!schemeId.value) {
       const schemes = (await fetchBackWaterSchemesApi()) || [];
@@ -162,17 +181,17 @@ async function loadDetail() {
     const result = (await fetchBackWaterSchemeApi(schemeId.value)) as SchemeDetail;
     scheme.value = result;
     rows.value = parseConfig(result.Config);
-    resolvedIndex.value =
+    let nextIndex =
       vipLevel.value === ''
         ? configIndex.value
         : rows.value.findIndex(
             (item) => String(item.VipLevel) === vipLevel.value,
           );
-    if (resolvedIndex.value < 0) resolvedIndex.value = configIndex.value;
-    if (!rows.value[resolvedIndex.value] && rows.value.length > 0) {
-      resolvedIndex.value = 0;
+    if (nextIndex < 0) nextIndex = configIndex.value;
+    if (!rows.value[nextIndex] && rows.value.length > 0) {
+      nextIndex = 0;
     }
-    const row = rows.value[resolvedIndex.value];
+    const row = rows.value[nextIndex];
     if (!row) {
       message.error('未找到对应的 VIP 返水配置');
       return;
@@ -182,7 +201,10 @@ async function loadDetail() {
       MaxWater: Number(row.MaxWater || 0) / 100,
       MinTurnover: Number(row.MinTurnover || 0) / 100,
     });
+    resolvedIndex.value = nextIndex;
     editorKey.value += 1;
+  } catch {
+    resolvedIndex.value = -1;
   } finally {
     loading.value = false;
   }
@@ -211,6 +233,11 @@ function goBack() {
 
 async function save() {
   if (!schemeId.value || resolvedIndex.value < 0) return;
+  try {
+    await formRef.value?.validate();
+  } catch {
+    return;
+  }
   const latest = editorRef.value?.buildConfig?.();
   if (latest) {
     updateGameConfig(latest);
@@ -236,6 +263,8 @@ async function save() {
     });
     message.success('编辑成功');
     goBack();
+  } catch {
+    // request interceptor already surfaces the error
   } finally {
     saving.value = false;
   }
@@ -257,12 +286,12 @@ onMounted(loadDetail);
     :title="pageTitle"
   >
     <Spin :spinning="loading">
-      <Card :bordered="false" class="config-card" title="基础配置">
+      <Card size="small" title="基础配置">
         <Form
+          ref="formRef"
           :model="form"
           :rules="rules"
           :label-col="{ style: { width: '180px' } }"
-          @finish="save"
         >
           <div class="base-grid">
             <FormItem label="周期最高返水" name="MaxWater">
@@ -306,7 +335,9 @@ onMounted(loadDetail);
               />
             </FormItem>
           </div>
+        </Form>
 
+        <template v-if="hasRow">
           <div class="section-title">游戏返水比例</div>
           <BackWaterGameConfigEditor
             :key="editorKey"
@@ -314,27 +345,22 @@ onMounted(loadDetail);
             :config="form"
             @change="updateGameConfig"
           />
+        </template>
 
-          <div class="footer-actions">
-            <Space>
-              <Button html-type="submit" :loading="saving" type="primary">
-                保存配置
-              </Button>
-              <Button @click="goBack">返回</Button>
-            </Space>
-          </div>
-        </Form>
+        <div class="footer-actions">
+          <Space>
+            <Button :loading="saving" type="primary" @click="save">
+              保存配置
+            </Button>
+            <Button @click="goBack">返回</Button>
+          </Space>
+        </div>
       </Card>
     </Spin>
   </Page>
 </template>
 
 <style scoped>
-.config-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgb(15 23 42 / 6%);
-}
-
 .base-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(240px, 1fr));

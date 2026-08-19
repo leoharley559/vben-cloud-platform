@@ -377,68 +377,68 @@ onMounted(() => {
     description="推广管理 · 分销结算报表"
     title="分销结算报表"
   >
-    <Card class="close-order-card" :bordered="false">
-      <div class="query-panel">
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterAdminUserName"
-            allow-clear
-            style="width: 250px"
-            @keydown.space.prevent
-            @press-enter="reloadGrid"
-            placeholder="请输入推广账号"
-          >
-            <template #addonBefore>推广账号</template>
-          </Input>
+    <Card size="small">
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <Space.Compact>
+            <span class="query-field-addon">推广账号</span>
+            <Input
+              v-model:value="filterAdminUserName"
+              allow-clear
+              placeholder="请输入推广账号"
+              @keydown.space.prevent
+              @press-enter="reloadGrid"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">订单编号</span>
+            <Input
+              v-model:value="filterOrderId"
+              allow-clear
+              placeholder="请输入订单编号"
+              @keydown.space.prevent
+              @press-enter="reloadGrid"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="filterStatus"
+              allow-clear
+              mode="multiple"
+              :options="[
+                { label: '申请中', value: 1 },
+                { label: '处理中', value: 2 },
+                { label: '已完成', value: 3 },
+                { label: '已拒绝', value: 4 },
+              ]"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
+          </div>
+          <div class="query-filter-wide">
+            <Space.Compact>
+              <span class="query-field-addon">显示更多列</span>
+              <Select
+                v-model:value="moreColumns"
+                mode="multiple"
+                :options="[
+                  { label: '接收申请时间', value: 0 },
+                  { label: '接收申请账号', value: 1 },
+                  { label: '完成时间', value: 2 },
+                ]"
+                placeholder="请选择显示更多列"
+                @change="handleMoreColumnsChange"
+              />
+            </Space.Compact>
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="reloadGrid">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterOrderId"
-            allow-clear
-            style="width: 250px"
-            @keydown.space.prevent
-            @press-enter="reloadGrid"
-            placeholder="请输入订单编号"
-          >
-            <template #addonBefore>订单编号</template>
-          </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select
-            v-model:value="filterStatus"
-            allow-clear
-            class="w-48"
-            mode="multiple"
-            :options="[
-              { label: '申请中', value: 1 },
-              { label: '处理中', value: 2 },
-              { label: '已完成', value: 3 },
-              { label: '已拒绝', value: 4 },
-            ]"
-            placeholder="请选择状态"
-          />
-        </Space.Compact>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">显示更多列</span>
-          <Select
-            v-model:value="moreColumns"
-            class="w-52"
-            mode="multiple"
-            @change="handleMoreColumnsChange"
-            :options="[
-              { label: '接收申请时间', value: 0 },
-              { label: '接收申请账号', value: 1 },
-              { label: '完成时间', value: 2 },
-            ]"
-            placeholder="请选择显示更多列"
-          />
-        </Space.Compact>
-        <Button type="primary" @click="reloadGrid">查询</Button>
-        <Button @click="handleReset">重置</Button>
       </div>
 
       <SummaryCards :items="summaryItems" />
@@ -491,22 +491,3 @@ onMounted(() => {
   <Result v-else status="403" sub-title="无分销结算报表查看权限" title="403" />
 </template>
 
-<style scoped>
-.close-order-card {
-  min-height: calc(100vh - 180px);
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
-}
-
-.query-panel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  padding: 14px;
-  margin-bottom: 16px;
-  background: hsl(var(--muted) / 35%);
-  border-radius: 10px;
-}
-
-</style>

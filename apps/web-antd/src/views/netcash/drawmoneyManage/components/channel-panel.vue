@@ -364,17 +364,19 @@ onMounted(() => {
     title="403"
   />
   <div v-else>
-    <Space class="mb-4" wrap>
-      <Card
-        v-for="(item, index) in types"
-        :key="String(item.Id)"
-        size="small"
-        hoverable
-        :class="{
-          'border-primary': String(channelType) === String(item.WithdrawType),
-        }"
-        @click="selectType(item)"
-      >
+    <div class="ops-query-scope mb-4">
+      <div class="ops-summary-cards">
+        <Card
+          v-for="(item, index) in types"
+          :key="String(item.Id)"
+          size="small"
+          hoverable
+          class="cursor-pointer"
+          :class="{
+            'border-primary': String(channelType) === String(item.WithdrawType),
+          }"
+          @click="selectType(item)"
+        >
         <Space direction="vertical">
           <Space>
             <b>
@@ -421,7 +423,8 @@ onMounted(() => {
           </Space>
         </Space>
       </Card>
-    </Space>
+      </div>
+    </div>
 
     <ChannelGrid v-if="canViewAccounts">
       <template #switch="{ row }">

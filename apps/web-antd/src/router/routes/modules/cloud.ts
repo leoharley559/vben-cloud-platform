@@ -24,6 +24,7 @@ const routes: RouteRecordRaw[] = [
   {
     meta: {
       activePath: '/gameManage/backWater',
+      fullPathKey: false,
       hideInMenu: true,
       title: 'VIP 返水配置',
     },

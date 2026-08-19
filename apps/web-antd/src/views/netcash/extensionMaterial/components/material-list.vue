@@ -491,8 +491,8 @@ onMounted(async () => {
 
 <template>
   <div v-if="checkPermission(10_571)" class="material-page">
-    <Card size="small" class="filter-card">
-      <div class="filter-grid">
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
         <Space.Compact>
           <span class="query-field-addon">产品包</span>
           <Select
@@ -547,14 +547,17 @@ onMounted(async () => {
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" />
         </div>
-        <Select
-          v-model:value="query.Sort"
-          :options="[
-            { label: '创建时间倒序', value: '-CreateTime' },
-            { label: '创建时间正序', value: 'CreateTime' },
-          ]"
-        />
-        <Space wrap>
+        <Space.Compact>
+          <span class="query-field-addon">排序</span>
+          <Select
+            v-model:value="query.Sort"
+            :options="[
+              { label: '创建时间倒序', value: '-CreateTime' },
+              { label: '创建时间正序', value: 'CreateTime' },
+            ]"
+          />
+        </Space.Compact>
+        <div class="query-filter-actions">
           <Button type="primary" :loading="loading" @click="search">查询</Button>
           <Button @click="resetQuery">重置</Button>
           <Button
@@ -565,12 +568,12 @@ onMounted(async () => {
           >
             添加图片
           </Button>
-        </Space>
+        </div>
       </div>
-      <div v-if="activeLanguages?.length" class="language-tip">
-        当前语言组：{{ activeLanguages.join('、') }}
-      </div>
-    </Card>
+    </div>
+    <div v-if="activeLanguages?.length" class="language-tip mb-3">
+      当前语言组：{{ activeLanguages.join('、') }}
+    </div>
 
     <Spin :spinning="loading">
       <div v-if="rows.length > 0" class="material-grid">
@@ -771,8 +774,6 @@ onMounted(async () => {
 
 <style scoped>
 .material-page { display: flex; flex-direction: column; gap: 14px; }
-.filter-card { border-radius: 10px; }
-.filter-grid { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 10px; align-items: center; }
 .language-tip { margin-top: 6px; font-size: 12px; color: hsl(var(--muted-foreground)); }
 .material-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
 .material-card { min-width: 0; border-radius: 10px; }
@@ -783,6 +784,4 @@ onMounted(async () => {
 .modal-scroll { max-height: 70vh; padding-right: 8px; overflow: auto; }
 .upload-grid { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .upload-item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-@media (max-width: 1100px) { .filter-grid { grid-template-columns: repeat(2, minmax(150px, 1fr)); } }
-@media (max-width: 640px) { .filter-grid { grid-template-columns: 1fr; } }
 </style>

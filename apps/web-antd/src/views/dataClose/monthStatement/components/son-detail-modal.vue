@@ -26,7 +26,7 @@ const emit = defineEmits<{
   'update:open': [value: boolean];
 }>();
 
-const { ensureGameConfig, platformGameTypeMap } = useReportOptions();
+const { ensureGameConfig, gameConfig } = useReportOptions();
 
 const loading = ref(false);
 const detailTable = ref<StatementRow[]>([]);
@@ -109,10 +109,7 @@ async function loadDetail() {
       return {
         ...item,
         NegativeProfit,
-        PlatforName: venueName(
-          platformGameTypeMap.value,
-          item.PlatformGameType,
-        ),
+        PlatforName: venueName(gameConfig.value, item.PlatformGameType),
         PositiveProfit,
         ProfitLoss: SumSelfBetGold - SumSelfWinGold,
         SumSelfBetGold,

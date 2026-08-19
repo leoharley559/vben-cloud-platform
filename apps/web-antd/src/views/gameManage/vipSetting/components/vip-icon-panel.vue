@@ -198,8 +198,8 @@ onMounted(async () => {
       <Button v-if="checkPermission(13_162)" @click="resetTemplate">恢复默认值</Button>
     </div>
   </Card>
-  <Card class="table-card" :bordered="false">
     <Table
+    bordered
       :columns="columns"
       :data-source="rows"
       :loading="loading"
@@ -250,8 +250,7 @@ onMounted(async () => {
           编辑
         </Button>
       </template>
-    </Table>
-  </Card>
+    </Table> 
 
   <Modal v-model:open="editVisible" :confirm-loading="saving" title="编辑 VIP 图标" width="920px" @ok="saveIcon">
     <div class="form-scroll">
@@ -288,8 +287,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.scheme-card,
-.table-card {
+.scheme-card{
   margin-bottom: 14px;
   border-radius: 10px;
 }

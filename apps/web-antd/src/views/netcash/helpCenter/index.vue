@@ -299,20 +299,20 @@ watch(activeLangGroupId, async (value, oldValue) => {
     <div class="help-toolbar">
       <div>
         <strong>内容语言组</strong>
-        <Radio.Group
-          v-if="langGroups.length > 0"
-          v-model:value="activeLangGroupId"
-          button-style="solid"
-          class="lang-switch"
-        >
-          <Radio.Button
-            v-for="group in langGroups"
-            :key="group.Id"
-            :value="group.Id"
+        <span v-if="langGroups.length > 0" class="lang-switch">
+          <Radio.Group
+            v-model:value="activeLangGroupId"
+            button-style="solid"
           >
-            {{ group.Name }}
-          </Radio.Button>
-        </Radio.Group>
+            <Radio.Button
+              v-for="group in langGroups"
+              :key="group.Id"
+              :value="group.Id"
+            >
+              {{ group.Name }}
+            </Radio.Button>
+          </Radio.Group>
+        </span>
         <span v-else class="muted">未配置语言组，将使用后端默认语言</span>
       </div>
       <span v-if="activeLanguages.length > 0" class="muted">

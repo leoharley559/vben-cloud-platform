@@ -3,12 +3,11 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Space } from 'ant-design-vue';
+import { Button, Card } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchCloudCoinStockApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
@@ -119,10 +118,25 @@ const gridOptions: VxeTableGridOptions<StockRow> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
-const bannerSummaryItems = computed(() => [
-  { label: '云币库存', value: keepTwoDecimal(banner.value.Stock) },
-  { label: '今日入库', value: keepTwoDecimal(banner.value.Buy) },
-  { label: '今日消耗', value: keepTwoDecimal(banner.value.Consume) },
+const bannerOverviewCards = computed(() => [
+  {
+    accent: '#febf5b',
+    key: 'stock',
+    label: '云币库存',
+    value: keepTwoDecimal(banner.value.Stock),
+  },
+  {
+    accent: '#34bfa3',
+    key: 'buy',
+    label: '今日入库',
+    value: keepTwoDecimal(banner.value.Buy),
+  },
+  {
+    accent: '#f4516c',
+    key: 'consume',
+    label: '今日消耗',
+    value: keepTwoDecimal(banner.value.Consume),
+  },
 ]);
 
 async function loadBannerOnly() {
@@ -169,26 +183,50 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <SummaryCards :items="bannerSummaryItems" />
-      <CloudCoinBuyModal @success="handleBuySuccess" />
+  <div>
+    <div class="mb-4">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div class="text-base font-medium text-gray-800">云币库存</div>
+        <CloudCoinBuyModal @success="handleBuySuccess" />
+      </div>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Card
+          v-for="card in bannerOverviewCards"
+          :key="card.key"
+          class="border-0 shadow-sm"
+          size="small"
+        >
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <div class="mb-1 text-xs text-gray-500">{{ card.label }}</div>
+              <div class="truncate text-xl font-semibold text-gray-900">
+                {{ card.value }}
+              </div>
+            </div>
+            <span
+              class="mt-1 inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+              :style="{ background: card.accent }"
+            />
+          </div>
+        </Card>
+      </div>
     </div>
 
     <template v-if="canViewTable">
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="时间范围" />
+        <div class="ops-query-filters">
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker
+              v-model="filterDateRange"
+              label="时间范围"
+            />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </div>
         </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Space>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-        </Space>
-        </div>
-    </div>
-  </div>
+      </div>
       <Grid />
     </template>
   </div>

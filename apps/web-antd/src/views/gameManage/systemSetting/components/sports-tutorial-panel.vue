@@ -276,15 +276,17 @@ onMounted(loadData);
     width="720px"
     @ok="saveTutorial"
   >
-    <Radio.Group v-model:value="selectedLangGroup" button-style="solid">
-      <Radio.Button
-        v-for="group in langGroups"
-        :key="group.Id"
-        :value="group.Id"
-      >
-        {{ group.Name }}
-      </Radio.Button>
-    </Radio.Group>
+    <div class="mb-3">
+      <Radio.Group v-model:value="selectedLangGroup" button-style="solid">
+        <Radio.Button
+          v-for="group in langGroups"
+          :key="group.Id"
+          :value="group.Id"
+        >
+          {{ group.Name }}
+        </Radio.Button>
+      </Radio.Group>
+    </div>
     <div class="form-scroll">
       <Form
         v-for="item in langForms"

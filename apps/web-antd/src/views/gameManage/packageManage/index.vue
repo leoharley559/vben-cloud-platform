@@ -55,7 +55,7 @@ watchEffect(() => {
     description="维护企业签名包及 iOS、Android 上架包配置"
     title="包体管理"
   >
-    <Card class="package-manage-card" :bordered="false">
+    <Card size="small">
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane
           v-for="item in tabs"
@@ -74,10 +74,3 @@ watchEffect(() => {
   </Page>
   <Result v-else status="403" sub-title="无包体管理查看权限" title="403" />
 </template>
-
-<style scoped>
-.package-manage-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgb(15 23 42 / 6%);
-}
-</style>

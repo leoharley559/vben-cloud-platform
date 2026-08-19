@@ -35,8 +35,11 @@ defineOptions({ name: 'TimeshareData' });
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
+/** 对齐旧站 getBeforeDateStr(7)～getBeforeDateStr(0)：近 7 个自然日（含今天） */
 const defaultBegin = dayjs().subtract(6, 'day');
 const defaultEnd = dayjs();
+/** 对齐旧站 SearchTypeOne limit-number=7 */
+const MAX_RANGE_DAYS = 7;
 
 const loading = ref(false);
 const chartType = ref<TimeshareChartType>('bar');
@@ -48,26 +51,7 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   defaultEnd,
 ]);
 const rawData = ref<TimeshareHourItem[][]>([]);
-const rangeSelecting = ref<dayjs.Dayjs>();
 let latestRequestId = 0;
-
-function disabledDate(current: dayjs.Dayjs) {
-  if (!rangeSelecting.value) return false;
-  const min = rangeSelecting.value.subtract(6, 'day');
-  const max = rangeSelecting.value.add(6, 'day');
-  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
-}
-
-function onCalendarChange(
-  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
-) {
-  const first = dates?.[0];
-  rangeSelecting.value = first
-    ? dayjs.isDayjs(first)
-      ? first
-      : dayjs(first)
-    : undefined;
-}
 
 const realAdminType = computed(() => {
   const parentInfo = projectConfig.value?.ParentInfo as
@@ -100,9 +84,7 @@ const metricOrder: TimeshareMetricKey[] = [
   'addExchangeNum',
 ];
 const visibleTabs = computed(() =>
-  metricOrder.filter((metric) =>
-    canViewMetric(metric),
-  ),
+  metricOrder.filter((metric) => canViewMetric(metric)),
 );
 
 const canViewPage = computed(() => visibleTabs.value.length > 0);
@@ -125,7 +107,7 @@ async function loadData() {
     message.warning('请选择日期范围');
     return;
   }
-  if (end.diff(begin, 'day') > 6) {
+  if (end.startOf('day').diff(begin.startOf('day'), 'day') > MAX_RANGE_DAYS) {
     message.warning('日期范围最多选择 7 天');
     return;
   }
@@ -135,9 +117,6 @@ async function loadData() {
     const result = await fetchTimeshareDataApi(getQueryParams());
     if (requestId !== latestRequestId) return;
     rawData.value = Array.isArray(result.Items) ? result.Items : [];
-    if (rawData.value.length === 0) {
-      message.info('暂无数据');
-    }
   } catch {
     if (requestId === latestRequestId) {
       rawData.value = [];
@@ -179,38 +158,41 @@ watch(visibleTabs, (tabs) => {
     description="推广数据 · 时段报表"
     title="时段报表"
   >
-    <Card :loading="loading" class="timeshare-card" :bordered="false">
-      <div class="timeshare-query">
-        <div class="query-field">
-          <span>推广账号</span>
+    <Card size="small" :loading="loading">
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
           <Space.Compact>
-            <span class="query-field-addon">账号</span>
-            <AccountSelect v-model="filterAdminIds" style="width: 240px" />
+            <span class="query-field-addon">代理账号</span>
+            <AccountSelect v-model="filterAdminIds" />
           </Space.Compact>
-        </div>
-        <div class="query-field">
-          <span>渠道</span>
           <Space.Compact>
-            <span class="query-field-addon">渠道号</span>
-            <ChannelSelect v-model="filterChannelIds" style="width: 240px" placeholder="请输入渠道号" />
+            <span class="query-field-addon">渠道</span>
+            <ChannelSelect
+              v-model="filterChannelIds"
+              placeholder="请输入渠道号"
+            />
           </Space.Compact>
-        </div>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" :disabled-date="disabledDate" />
-        </div>
-        <Button type="primary" @click="loadData">查询</Button>
-        <Button @click="reset">重置</Button>
-        <div class="ml-auto">
-          <Radio.Group v-model:value="chartType" button-style="solid">
-            <Radio.Button value="bar">柱状图</Radio.Button>
-            <Radio.Button value="line">折线图</Radio.Button>
-            <Radio.Button value="table">表格</Radio.Button>
-          </Radio.Group>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker
+              v-model="filterDateRange"
+              label="日期"
+              precision="date"
+              :max-range-days="MAX_RANGE_DAYS"
+            />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="loadData">查询</Button>
+            <Button @click="reset">重置</Button>
+          </div>
         </div>
       </div>
-
-      <div class="mb-3 text-xs text-gray-500">
-        * 日期范围最多 7 天，按小时维度展示各指标趋势
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <div class="text-xs text-gray-500">*图表每小时记录一次</div>
+        <Radio.Group v-model:value="chartType" button-style="solid" size="small">
+          <Radio.Button title="点击切换柱形图" value="bar">柱状图</Radio.Button>
+          <Radio.Button title="点击切换折线图" value="line">折线图</Radio.Button>
+          <Radio.Button title="点击切换表格" value="table">表格</Radio.Button>
+        </Radio.Group>
       </div>
 
       <Tabs v-model:active-key="activeTab" type="line" size="small">
@@ -231,31 +213,3 @@ watch(visibleTabs, (tabs) => {
   </Page>
   <Result v-else status="403" sub-title="无时段报表查看权限" title="403" />
 </template>
-
-<style scoped>
-.timeshare-card {
-  min-height: calc(100vh - 180px);
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
-}
-
-.timeshare-query {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-end;
-  padding: 14px;
-  margin-bottom: 16px;
-  background: hsl(var(--muted) / 35%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.query-field {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 13px;
-  color: hsl(var(--muted-foreground));
-}
-</style>

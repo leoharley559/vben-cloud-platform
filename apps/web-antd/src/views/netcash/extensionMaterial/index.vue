@@ -46,7 +46,7 @@ onMounted(() => {
     description="代理网赚 · 推广素材"
     title="推广素材"
   >
-    <Card class="page-card">
+    <Card size="small">
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <component :is="item.component" v-if="activeTab === item.key" />
@@ -56,10 +56,3 @@ onMounted(() => {
   </Page>
   <Result v-else status="403" sub-title="无推广素材查看权限" title="403" />
 </template>
-
-<style scoped>
-.page-card {
-  min-height: 620px;
-  border-radius: 10px;
-}
-</style>

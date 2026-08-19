@@ -8,8 +8,7 @@ import {
   Button,
   DatePicker,
   message,
-  RadioButton,
-  RadioGroup,
+  Radio,
   Select,
   Space,
   Table,
@@ -26,6 +25,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { formatVenueName } from '#/utils/game-config';
 import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
@@ -55,15 +55,12 @@ const CONTRAST_OPTIONS = [
 ];
 
 const { checkPermission } = useCloudPermission();
-const { iosAppStoreOptions, packageOptions, platformGameTypeMap } =
-  useReportOptions();
+const { packageOptions, gameConfig, ensureGameConfig } = useReportOptions();
 
 const loading = ref(false);
 const reportType = ref<1 | 2>(1);
-const dataSearchType = ref(0);
 const filters = reactive({
   AdminIds: [] as Array<number | string>,
-  AppUrl: [] as string[],
   ChannelIds: [] as Array<number | string>,
   PackageId: '' as number | string,
   beginDate: dayjs().subtract(1, 'day') as Dayjs,
@@ -76,8 +73,11 @@ const beforeItems = ref<Row>({});
 const hourItems = ref<Row[]>([]);
 const beforeHourItems = ref<Row[]>([]);
 const venueItems = ref<Row[]>([]);
+const beforeVenueItems = ref<Row[]>([]);
 const winPlayers = ref<Row[]>([]);
 const losePlayers = ref<Row[]>([]);
+const beforeWinPlayers = ref<Row[]>([]);
+const beforeLosePlayers = ref<Row[]>([]);
 const incomeData = ref<Row>({});
 const lineMetric = ref('SumPayMergerMoney');
 
@@ -133,6 +133,12 @@ const summaryItems = computed(() => {
         value: percentText(t.SumWithdrawMoney, t.SumPayMergerMoney),
       },
       {
+        title: '存兑差',
+        value: formatAmountFromCent(
+          num(t.SumPayMergerMoney) - num(t.SumWithdrawMoney),
+        ),
+      },
+      {
         title: '注册转化率',
         value: percentText(t.SumFirstPayNum, t.SumReg),
       },
@@ -168,13 +174,25 @@ const chartSeries = computed(() => {
   ];
 });
 
+function venueProfit(record: Row) {
+  if (record.SumBet !== undefined || record.SumWin !== undefined) {
+    return num(record.SumBet) - num(record.SumWin);
+  }
+  return num(record.SumBetWin ?? record.SumBetWinGold);
+}
+
+function playerProfit(record: Row) {
+  return num(record.SumBetWinGold ?? record.SumBetWin ?? record.SumWinGold);
+}
+
 const venueColumns: TableColumnType<Row>[] = [
   {
     align: 'center',
     customRender: ({ record }) =>
-      (platformGameTypeMap.value as Record<string, string>)[
-        String(record.GameType)
-      ] || String(record.GameType || '-'),
+      formatVenueName(
+        record.GameType as number | string,
+        gameConfig.value,
+      ),
     key: 'GameType',
     title: '场馆',
   },
@@ -198,14 +216,14 @@ const venueColumns: TableColumnType<Row>[] = [
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumBetWin),
+    customRender: ({ record }) => formatAmountFromCent(venueProfit(record)),
     key: 'SumBetWin',
     title: '盈亏',
   },
   {
     align: 'center',
     customRender: ({ record }) =>
-      percentText(num(record.SumBet) - num(record.SumWin), record.SumBet),
+      percentText(venueProfit(record), record.SumBet),
     key: 'Surplus',
     title: '盈利率',
   },
@@ -220,7 +238,7 @@ const playerColumns: TableColumnType<Row>[] = [
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumBetWin),
+    customRender: ({ record }) => formatAmountFromCent(playerProfit(record)),
     key: 'SumBetWin',
     title: '盈亏',
   },
@@ -268,7 +286,7 @@ function applyCompareType() {
   const type = Number(filters.compareType) || 1;
   switch (type) {
     case 2: {
-      filters.beforeDate = begin.subtract(30, 'day');
+      filters.beforeDate = begin.subtract(31, 'day');
       break;
     }
     case 3: {
@@ -307,8 +325,6 @@ function buildQuery() {
     BeforeTime: before,
     ChannelIds: arrayToCsvParam(filters.ChannelIds) || '',
     AdminIds: arrayToCsvParam(filters.AdminIds) || '',
-    AppUrl: arrayToCsvParam(filters.AppUrl) || '',
-    DataSearchType: dataSearchType.value,
     PackageId: filters.PackageId || '',
     ContrastType: filters.compareType || '',
     ReportType: reportType.value,
@@ -367,9 +383,16 @@ async function loadData() {
             raw.TodayGameItems ||
             raw.GameItems ||
             []) as Row[];
+          beforeVenueItems.value = (raw.BeforeGameTypeItems ||
+            raw.BeforeGameItems ||
+            []) as Row[];
           winPlayers.value = (raw.TodayPlayerItemsWin || []) as Row[];
           losePlayers.value = (raw.TodayPlayerItemsLose ||
             raw.TodayPlayerItemsLoss ||
+            []) as Row[];
+          beforeWinPlayers.value = (raw.BeforePlayerItemsWin || []) as Row[];
+          beforeLosePlayers.value = (raw.BeforePlayerItemsLose ||
+            raw.BeforePlayerItemsLoss ||
             []) as Row[];
         }),
       );
@@ -383,7 +406,6 @@ async function loadData() {
           EndTime: query.BeforeTime,
           ChannelIds: query.ChannelIds,
           AdminIds: query.AdminIds,
-          AppUrl: query.AppUrl,
           PackageId: query.PackageId,
           ReportType: query.ReportType,
         }).then((data) => {
@@ -406,8 +428,11 @@ async function loadData() {
     hourItems.value = [];
     beforeHourItems.value = [];
     venueItems.value = [];
+    beforeVenueItems.value = [];
     winPlayers.value = [];
     losePlayers.value = [];
+    beforeWinPlayers.value = [];
+    beforeLosePlayers.value = [];
     incomeData.value = {};
     message.error('运营日报加载失败');
   } finally {
@@ -431,7 +456,6 @@ function onReportTypeChange(value: 1 | 2) {
 
 function handleReset() {
   filters.AdminIds = [];
-  filters.AppUrl = [];
   filters.ChannelIds = [];
   filters.PackageId = '';
   onReportTypeChange(reportType.value);
@@ -449,22 +473,24 @@ function onCompareTypeChange() {
 
 onMounted(() => {
   applyCompareType();
+  void ensureGameConfig();
   void loadData();
 });
 </script>
 
 <template>
   <div>
-    <ReportQueryCard actions-single title="查询条件">
-      <RadioGroup
+    <div class="mb-3">
+      <Radio.Group
         :value="reportType"
         button-style="solid"
-        size="small"
         @update:value="onReportTypeChange"
       >
-        <RadioButton :value="1">日报</RadioButton>
-        <RadioButton :value="2">月报</RadioButton>
-      </RadioGroup>
+        <Radio.Button :value="1">日报</Radio.Button>
+        <Radio.Button :value="2">月报</Radio.Button>
+      </Radio.Group>
+    </div>
+    <ReportQueryCard actions-single title="查询条件">
       <Space.Compact>
         <span class="query-field-addon">账号</span>
         <AccountSelect v-model="filters.AdminIds" class="min-w-[180px]" />
@@ -485,36 +511,15 @@ onMounted(() => {
           placeholder="请选择产品"
         />
       </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">上架包</span>
-        <Select
-          v-model:value="filters.AppUrl"
-          :max-tag-count="1"
-          :options="iosAppStoreOptions"
-          allow-clear
-          class="min-w-[160px]"
-          mode="multiple"
-          placeholder="请选择上架包"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">数据类型</span>
-        <Select
-          v-model:value="dataSearchType"
-          :options="[
-            { label: '正式数据', value: 0 },
-            { label: '全部', value: 2 },
-          ]"
-          class="w-32"
-          placeholder="请选择数据类型"
-        />
-      </Space.Compact>
       <template v-if="reportType === 1">
-        <DatePicker
-          v-model:value="filters.beginDate"
-          placeholder="当前时间"
-          @change="onBeginDateChange"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">当前时间</span>
+          <DatePicker
+            v-model:value="filters.beginDate"
+            placeholder="请选择当前时间"
+            @change="onBeginDateChange"
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">对比类型</span>
           <Select
@@ -525,22 +530,31 @@ onMounted(() => {
             placeholder="请选择对比类型"
           />
         </Space.Compact>
-        <DatePicker
-          v-model:value="filters.beforeDate"
-          placeholder="对比时间"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">对比时间</span>
+          <DatePicker
+            v-model:value="filters.beforeDate"
+            placeholder="请选择对比时间"
+          />
+        </Space.Compact>
       </template>
       <template v-else>
-        <DatePicker
-          v-model:value="filters.beginDate"
-          picker="month"
-          placeholder="当前月"
-        />
-        <DatePicker
-          v-model:value="filters.beforeDate"
-          picker="month"
-          placeholder="对比月"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">当前月</span>
+          <DatePicker
+            v-model:value="filters.beginDate"
+            picker="month"
+            placeholder="请选择当前月"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">对比月</span>
+          <DatePicker
+            v-model:value="filters.beforeDate"
+            picker="month"
+            placeholder="请选择对比月"
+          />
+        </Space.Compact>
       </template>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadData">
@@ -574,38 +588,82 @@ onMounted(() => {
 
     <div v-if="canGame" class="mb-4">
       <div class="mb-2 text-base font-medium">游戏盈亏概况 · 场馆盈亏</div>
-      <Table
-        :columns="venueColumns"
-        :data-source="venueItems"
-        :loading="loading"
-        :pagination="false"
-        bordered
-        row-key="GameType"
-        size="small"
-        class="mb-3"
-      />
-      <div class="grid gap-3 md:grid-cols-2">
+      <div
+        :class="reportType === 2 ? 'grid gap-3 md:grid-cols-2' : ''"
+      >
         <div>
-          <div class="mb-2 font-medium">大额盈利玩家</div>
+          <div v-if="reportType === 2" class="mb-2 font-medium">当前数据</div>
           <Table
-            :columns="playerColumns"
-            :data-source="winPlayers"
+            :columns="venueColumns"
+            :data-source="venueItems"
+            :loading="loading"
             :pagination="false"
             bordered
-            :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+            row-key="GameType"
             size="small"
+            class="mb-3"
           />
+          <div class="grid gap-3 md:grid-cols-2">
+            <div>
+              <div class="mb-2 font-medium">大额盈利玩家</div>
+              <Table
+                :columns="playerColumns"
+                :data-source="winPlayers"
+                :pagination="false"
+                bordered
+                :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+                size="small"
+              />
+            </div>
+            <div>
+              <div class="mb-2 font-medium">大额亏损玩家</div>
+              <Table
+                :columns="playerColumns"
+                :data-source="losePlayers"
+                :pagination="false"
+                bordered
+                :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+                size="small"
+              />
+            </div>
+          </div>
         </div>
-        <div>
-          <div class="mb-2 font-medium">大额亏损玩家</div>
+        <div v-if="reportType === 2">
+          <div class="mb-2 font-medium">对比数据</div>
           <Table
-            :columns="playerColumns"
-            :data-source="losePlayers"
+            :columns="venueColumns"
+            :data-source="beforeVenueItems"
+            :loading="loading"
             :pagination="false"
             bordered
-            :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+            row-key="GameType"
             size="small"
+            class="mb-3"
           />
+          <div class="grid gap-3 md:grid-cols-2">
+            <div>
+              <div class="mb-2 font-medium">大额盈利玩家</div>
+              <Table
+                :columns="playerColumns"
+                :data-source="beforeWinPlayers"
+                :pagination="false"
+                bordered
+                :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+                size="small"
+              />
+            </div>
+            <div>
+              <div class="mb-2 font-medium">大额亏损玩家</div>
+              <Table
+                :columns="playerColumns"
+                :data-source="beforeLosePlayers"
+                :pagination="false"
+                bordered
+                :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+                size="small"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -13,6 +13,11 @@ const props = withDefaults(
   defineProps<{
     disabledDate?: (current: Dayjs) => boolean;
     label?: string;
+    /**
+     * 对齐旧站 rangeDate2 limit-number：选中起始日后，另一端最多间隔 N 天。
+     * 0 表示不限制。
+     */
+    maxRangeDays?: number;
     placeholder?: string;
     /** date=日历日；datetime=时分秒。按接口精度选择，不要混用。 */
     precision?: 'date' | 'datetime';
@@ -20,6 +25,7 @@ const props = withDefaults(
   {
     disabledDate: undefined,
     label: '时间范围',
+    maxRangeDays: 0,
     placeholder: '请选择时间范围',
     precision: 'datetime',
   },
@@ -91,7 +97,7 @@ function toggleOpen() {
   open.value = !open.value;
 }
 
-const presets = [
+const allPresets = [
   {
     label: '今日',
     range: () => [dayjs().startOf('day'), dayjs().endOf('day')] as [Dayjs, Dayjs],
@@ -119,6 +125,42 @@ const presets = [
     },
   },
 ];
+
+const presets = computed(() => {
+  if (!props.maxRangeDays) {
+    return allPresets;
+  }
+  return allPresets.filter((item) => {
+    const [begin, end] = item.range();
+    return (
+      end.startOf('day').diff(begin.startOf('day'), 'day') <= props.maxRangeDays
+    );
+  });
+});
+
+function isRangeTooLong(begin: Dayjs, end: Dayjs) {
+  if (!props.maxRangeDays) {
+    return false;
+  }
+  const [from, to] = begin.isAfter(end, 'day') ? [end, begin] : [begin, end];
+  return to.startOf('day').diff(from.startOf('day'), 'day') > props.maxRangeDays;
+}
+
+function isDayDisabled(day: Dayjs) {
+  if (props.disabledDate?.(day)) {
+    return true;
+  }
+  if (
+    !props.maxRangeDays ||
+    !draftStart.value ||
+    draftEnd.value
+  ) {
+    return false;
+  }
+  const min = draftStart.value.subtract(props.maxRangeDays, 'day');
+  const max = draftStart.value.add(props.maxRangeDays, 'day');
+  return day.isBefore(min, 'day') || day.isAfter(max, 'day');
+}
 
 function applyTime(date: Dayjs, time: Dayjs | string, fallback: string) {
   const clock = typeof time === 'string' ? dayjs(time, 'HH:mm:ss') : time;
@@ -181,7 +223,7 @@ function inSelectedRange(day: Dayjs) {
 
 function cellClass(day: Dayjs, month: Dayjs) {
   return {
-    'is-disabled': Boolean(props.disabledDate?.(day)),
+    'is-disabled': isDayDisabled(day),
     'is-out': !day.isSame(month, 'month'),
     'is-start': isSameDay(day, draftStart.value),
     'is-end': isSameDay(day, draftEnd.value),
@@ -191,7 +233,7 @@ function cellClass(day: Dayjs, month: Dayjs) {
 }
 
 function pickDay(day: Dayjs) {
-  if (props.disabledDate?.(day)) {
+  if (isDayDisabled(day)) {
     return;
   }
   if (!draftStart.value || draftEnd.value) {
@@ -260,6 +302,9 @@ function updateEndTime(value: Dayjs | null) {
 
 function applyPreset(range: () => [Dayjs, Dayjs]) {
   const [begin, end] = range();
+  if (isRangeTooLong(begin, end)) {
+    return;
+  }
   modelValue.value = [begin, end];
   open.value = false;
 }
@@ -280,6 +325,9 @@ function handleConfirm() {
   }
   const start = draftStart.value;
   const end = draftEnd.value;
+  if (isRangeTooLong(start, end)) {
+    return;
+  }
   modelValue.value = start.isAfter(end) ? [end, start] : [start, end];
   open.value = false;
 }
@@ -389,6 +437,7 @@ function getPopupContainer(node: HTMLElement) {
                   :key="day.format('YYYY-MM-DD')"
                   class="day-cell"
                   :class="cellClass(day, leftMonth)"
+                  :disabled="isDayDisabled(day)"
                   type="button"
                   @click="pickDay(day)"
                   @mouseenter="hoverDay = day"
@@ -414,6 +463,7 @@ function getPopupContainer(node: HTMLElement) {
                   :key="day.format('YYYY-MM-DD')"
                   class="day-cell"
                   :class="cellClass(day, rightMonth)"
+                  :disabled="isDayDisabled(day)"
                   type="button"
                   @click="pickDay(day)"
                   @mouseenter="hoverDay = day"
@@ -631,6 +681,7 @@ function getPopupContainer(node: HTMLElement) {
 .day-cell.is-disabled {
   color: hsl(var(--foreground) / 25%);
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 .day-cell span {

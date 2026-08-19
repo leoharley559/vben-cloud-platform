@@ -542,26 +542,22 @@ function handleReset() {
 
 <template>
   <div>
-    <div class="query-panel">
-      <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">场馆名称</span>
           <Input
             v-model:value="filterName"
             allow-clear
-            class="!w-[280px]"
-            @press-enter="handleSearch"
             placeholder="请输入场馆名称"
-          >
-            <template #addonBefore>场馆名称</template>
-          </Input>
-        </div>
+            @press-enter="handleSearch"
+          />
+        </Space.Compact>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
+          <Button @click="handleReset">重置</Button>
         </div>
-    </div>
-  </div>
+      </div>
     </div>
 
     <div class="venue-grid">
@@ -721,17 +717,8 @@ function handleReset() {
 </template>
 
 <style scoped>
-.query-panel {
-  padding: 18px;
-  margin-bottom: 18px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
 .venue-grid {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
+  overflow: hidden; 
   border-radius: 10px;
 }
 </style>

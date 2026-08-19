@@ -39,9 +39,9 @@ defineOptions({ name: 'MonthStatementSelfPanel' });
 const { checkPermission } = useCloudPermission();
 const {
   ensureGameConfig,
+  gameConfig,
   iosAppStoreOptions,
   packageOptions,
-  platformGameTypeMap,
   platformGameTypeOptions,
 } = useReportOptions();
 
@@ -141,7 +141,7 @@ async function loadList() {
       nextTotal.SumSelfValidWater += asNumber(row.SumSelfValidWater);
       return {
         ...row,
-        AgentName: venueName(platformGameTypeMap.value, row.PlatformGameType),
+        AgentName: venueName(gameConfig.value, row.PlatformGameType),
         Percent,
         ProfitLose,
         SelfBetGold,
@@ -235,7 +235,6 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportSummaryCards :items="summaryItems" />
     <ReportQueryCard>
       <Space.Compact>
         <span class="query-field-addon">账号</span>
@@ -279,7 +278,12 @@ onMounted(() => {
           placeholder="请选择场馆"
         />
       </Space.Compact>
-      <DatePicker.RangePicker v-model:value="monthRange" picker="month" />
+      <div class="query-filter-wide">
+        <Space.Compact>
+          <span class="query-field-addon">时间范围</span>
+          <DatePicker.RangePicker v-model:value="monthRange" picker="month" />
+        </Space.Compact>
+      </div>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
         <Button :disabled="loading" @click="reset">重置</Button>
@@ -293,6 +297,8 @@ onMounted(() => {
         </div>
       </template>
     </ReportQueryCard>
+
+    <ReportSummaryCards :items="summaryItems" />
 
     <Table
       v-if="canList"

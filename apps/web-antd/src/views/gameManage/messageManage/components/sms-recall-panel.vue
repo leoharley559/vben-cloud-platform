@@ -357,14 +357,16 @@ async function exportDetail() {
       <Button type="link" @click="messageVisible = true">查看召回短信</Button>
     </Space>
   </div>
-  <div class="query-panel">
-    <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
-        </div>
-    <Space>
-      <Button type="primary" @click="reloadFirstPage">查询</Button>
-      <Button @click="reset">重置</Button>
-    </Space>
+  <div class="ops-query-scope mb-3">
+    <div class="ops-query-filters">
+      <div class="query-filter-wide">
+        <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+      </div>
+      <div class="query-filter-actions query-filter-actions-single">
+        <Button type="primary" @click="reloadFirstPage">查询</Button>
+        <Button @click="reset">重置</Button>
+      </div>
+    </div>
   </div>
   <div class="data-grid">
     <Grid>
@@ -487,8 +489,7 @@ async function exportDetail() {
 </template>
 
 <style scoped>
-.switch-panel,
-.query-panel {
+.switch-panel {
   padding: 16px 18px;
   margin-bottom: 14px;
   background: hsl(var(--muted) / 45%);
@@ -496,7 +497,6 @@ async function exportDetail() {
   border-radius: 10px;
 }
 
-.query-panel,
 .detail-header,
 .detail-pagination {
   display: flex;

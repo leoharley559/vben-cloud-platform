@@ -620,79 +620,64 @@ onBeforeUnmount(() => {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-      <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.ChannelId"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入渠道号"
-          >
-            <template #addonBefore>渠道号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.ChannelName"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入渠道名称"
-          >
-            <template #addonBefore>渠道名称</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.PromoterAdminUserName"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入代理账号"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.PromoterAdminName"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入代理名称"
-          >
-            <template #addonBefore>代理名称</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.InvitationCode"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入邀请码"
-          >
-            <template #addonBefore>邀请码</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.NetCashDomain"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入专属 APP 域名"
-          >
-            <template #addonBefore>专属 APP 域名</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.NetCashH5Domain"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入专属 H5 域名"
-          >
-            <template #addonBefore>专属 H5 域名</template>
-          </Input>
-        </div>
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
+        <Input
+          v-model:value="filters.ChannelId"
+          allow-clear
+          placeholder="请输入渠道号"
+          @press-enter="search"
+        >
+          <template #addonBefore>渠道号</template>
+        </Input>
+        <Input
+          v-model:value="filters.ChannelName"
+          allow-clear
+          placeholder="请输入渠道名称"
+          @press-enter="search"
+        >
+          <template #addonBefore>渠道名称</template>
+        </Input>
+        <Input
+          v-model:value="filters.PromoterAdminUserName"
+          allow-clear
+          placeholder="请输入代理账号"
+          @press-enter="search"
+        >
+          <template #addonBefore>代理账号</template>
+        </Input>
+        <Input
+          v-model:value="filters.PromoterAdminName"
+          allow-clear
+          placeholder="请输入代理名称"
+          @press-enter="search"
+        >
+          <template #addonBefore>代理名称</template>
+        </Input>
+        <Input
+          v-model:value="filters.InvitationCode"
+          allow-clear
+          placeholder="请输入邀请码"
+          @press-enter="search"
+        >
+          <template #addonBefore>邀请码</template>
+        </Input>
+        <Input
+          v-model:value="filters.NetCashDomain"
+          allow-clear
+          placeholder="请输入专属 APP 域名"
+          @press-enter="search"
+        >
+          <template #addonBefore>专属 APP 域名</template>
+        </Input>
+        <Input
+          v-model:value="filters.NetCashH5Domain"
+          allow-clear
+          placeholder="请输入专属 H5 域名"
+          @press-enter="search"
+        >
+          <template #addonBefore>专属 H5 域名</template>
+        </Input>
         <Space.Compact>
           <span class="query-field-addon">推广模式</span>
           <Select
@@ -702,19 +687,25 @@ onBeforeUnmount(() => {
             placeholder="请选择推广模式"
           />
         </Space.Compact>
-        <Select
-          v-if="checkPermission(props.isTest ? 12_498 : 12_341)"
-          v-model:value="filters.IsHiddenAgent"
-          :options="[
-            { label: '启用代理', value: 1 },
-            { label: '显示停用代理', value: 2 },
-          ]"
-        />
-        <Select
-          v-if="checkPermission(props.isTest ? 12_498 : 12_341)"
-          v-model:value="filters.IsHidden"
-          :options="visibilityOptions"
-        />
+        <Space.Compact v-if="checkPermission(props.isTest ? 12_498 : 12_341)">
+          <span class="query-field-addon">代理状态</span>
+          <Select
+            v-model:value="filters.IsHiddenAgent"
+            :options="[
+              { label: '启用代理', value: 1 },
+              { label: '显示停用代理', value: 2 },
+            ]"
+            placeholder="请选择代理状态"
+          />
+        </Space.Compact>
+        <Space.Compact v-if="checkPermission(props.isTest ? 12_498 : 12_341)">
+          <span class="query-field-addon">渠道状态</span>
+          <Select
+            v-model:value="filters.IsHidden"
+            :options="visibilityOptions"
+            placeholder="请选择渠道状态"
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">打包状态</span>
           <Select
@@ -724,25 +715,22 @@ onBeforeUnmount(() => {
             placeholder="请选择打包状态"
           />
         </Space.Compact>
-        <div class="query-filter-actions query-filter-actions-single">
+        <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
-        <Button @click="reset">重置</Button>
+          <Button @click="reset">重置</Button>
+          <Button v-if="can('batch') && can('list')" @click="openBatch">
+            批量设置
+          </Button>
+          <Button
+            v-if="can('create')"
+            :disabled="createDisabled"
+            type="primary"
+            @click="createChannel"
+          >
+            创建渠道
+          </Button>
         </div>
-    </div>
-  </div>
-      <Space>
-        <Button v-if="can('batch') && can('list')" @click="openBatch">
-          批量设置
-        </Button>
-        <Button
-          v-if="can('create')"
-          :disabled="createDisabled"
-          type="primary"
-          @click="createChannel"
-        >
-          创建渠道
-        </Button>
-      </Space>
+      </div>
     </div>
 
     <div

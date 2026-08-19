@@ -223,27 +223,28 @@ async function submitEdit() {
     show-icon
     type="info"
   />
-  <div class="query-panel">
-    <div class="ops-query-scope mb-3">
+  <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
-            <Select
-        v-model:value="status"
-        class="!w-[160px]"
-        :options="[
-          { label: '全部状态', value: '' },
-          { label: '启用', value: 1 },
-          { label: '停用', value: 2 },
-        ]"
-      />
+      <Space.Compact>
+        <span class="query-field-addon">状态</span>
+        <Select
+          v-model:value="status"
+          :options="[
+            { label: '全部状态', value: '' },
+            { label: '启用', value: 1 },
+            { label: '停用', value: 2 },
+          ]"
+          placeholder="请选择状态"
+        />
+      </Space.Compact>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="search">查询</Button>
-      <Button @click="reset">重置</Button>
-        </div>
+        <QueryDatetimeRangePicker v-model="dateRange" />
+      </div>
+      <div class="query-filter-actions query-filter-actions-single">
+        <Button type="primary" @click="search">查询</Button>
+        <Button @click="reset">重置</Button>
+      </div>
     </div>
-  </div>
   </div>
   <div class="data-grid">
     <Grid>
@@ -292,14 +293,6 @@ async function submitEdit() {
 </template>
 
 <style scoped>
-.query-panel {
-  padding: 18px;
-  margin-bottom: 14px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
 .data-grid {
   overflow: hidden;
   border: 1px solid hsl(var(--border));

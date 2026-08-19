@@ -466,6 +466,7 @@ onMounted(() => {
     </div>
   </div>
     <Table
+    bordered
       v-if="canViewList"
       :columns="teamColumns"
       :data-source="teamRows"

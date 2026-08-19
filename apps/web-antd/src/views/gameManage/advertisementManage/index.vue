@@ -63,7 +63,7 @@ watch(
 
 <template>
   <Page auto-content-height title="广告管理">
-    <Card :bordered="false" class="advertisement-card">
+    <Card size="small">
       <Empty
         v-if="tabs.length === 0"
         description="当前账号没有广告管理查看权限"
@@ -92,14 +92,3 @@ watch(
     </Card>
   </Page>
 </template>
-
-<style scoped>
-.advertisement-card {
-  min-height: 500px;
-  border-radius: 12px;
-}
-
-.advertisement-card :deep(.ant-tabs-nav) {
-  margin-bottom: 18px;
-}
-</style>

@@ -1,4 +1,7 @@
+import type { Dayjs } from 'dayjs';
+
 import BigNumber from 'bignumber.js';
+import dayjs from 'dayjs';
 
 import { formatPercent, formatSeconds } from '#/views/dataClose/shared/report-utils';
 
@@ -21,6 +24,11 @@ const MONEY_FIELDS = [
 
 export function num(value: unknown) {
   return Number(value || 0);
+}
+
+/** 对齐旧站 date-module-type=beforeToday：今天及以后不可选 */
+export function disabledBeforeToday(current: Dayjs) {
+  return current.startOf('day').valueOf() >= dayjs().startOf('day').valueOf();
 }
 
 /** 从 TwoDayBaseItems 按 ReportDay 精确匹配一行（收入/推广/充值详情） */
@@ -67,11 +75,16 @@ export function resolveChartFieldValue(
       return w ? Number(((w / (pay || 1)) * 100).toFixed(2)) : 0;
     }
     case 'FirmBunko': {
-      return Number((-num(row.SumTransWinMoney1) / 100).toFixed(2));
+      return Number(
+        (
+          (num(row.SumTransBetMoney1) - num(row.SumTransWinMoney1)) /
+          100
+        ).toFixed(2),
+      );
     }
     case 'Surplus': {
       const bet = num(row.SumTransBetMoney1);
-      const firm = -num(row.SumTransWinMoney1);
+      const firm = bet - num(row.SumTransWinMoney1);
       return bet ? Number(((firm / bet) * 100).toFixed(2)) : 0;
     }
     case 'FullBring': {
@@ -84,8 +97,9 @@ export function resolveChartFieldValue(
     }
     case 'Income': {
       const income =
-        -num(row.SumTransWinMoney1) +
-        -Math.abs(num(row.SumAccountChangeSumNum)) -
+        num(row.SumTransBetMoney1) -
+        num(row.SumTransWinMoney1) -
+        Math.abs(num(row.SumAccountChangeSumNum)) -
         num(row.SumRedSumNum) -
         num(row.SumBetWaterMoney) -
         num(row.SumAgentCommissionSumNum);
@@ -167,7 +181,8 @@ export function applyCompareFormulas(data: Record<string, CompareBucket>) {
           100
         ).toFixed(2)
       : '0.00';
-    const firm = -num(bucket.SumTransWinMoney1);
+    const firm =
+      num(bucket.SumTransBetMoney1) - num(bucket.SumTransWinMoney1);
     next.FirmBunko = firm.toFixed(2);
     next.Surplus = num(bucket.SumTransBetMoney1)
       ? ((firm / num(bucket.SumTransBetMoney1)) * 100).toFixed(2)
@@ -176,7 +191,7 @@ export function applyCompareFormulas(data: Record<string, CompareBucket>) {
       num(bucket.SumPayMergerMoney) - num(bucket.SumWithdrawMoney)
     ).toFixed(2);
     next.Income = (
-      -num(bucket.SumTransWinMoney1) +
+      firm +
       num(bucket.SumAccountChangeSumNum) -
       num(bucket.SumRedSumNum) -
       num(bucket.SumBetWaterMoney) -
@@ -233,7 +248,7 @@ export function buildMetricRow(
   return row;
 }
 
-/** 公司收入（运营日报）：公司输赢(-派送) - change - red - water - commission */
+/** 公司收入（运营日报）：投注-派送 - 账户调整 - 红利 - 返水 - 佣金 */
 export function calcCompanyIncome(item: CompareBucket) {
   return (
     calcCompanyWin(item) -
@@ -244,9 +259,9 @@ export function calcCompanyIncome(item: CompareBucket) {
   );
 }
 
-/** 公司输赢 = -派送金额 */
+/** 公司输赢 = 投注金额 - 派送金额（对齐旧站 alwaysWin / setPerNeedVal） */
 export function calcCompanyWin(item: CompareBucket) {
-  return -num(item.SumTransWinMoney1);
+  return num(item.SumTransBetMoney1) - num(item.SumTransWinMoney1);
 }
 
 export function calcOperatingCost(item: CompareBucket) {

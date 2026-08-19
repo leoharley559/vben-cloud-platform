@@ -338,30 +338,26 @@ function handleReset() {
 
 <template>
   <div>
-    <div class="query-panel">
-      <div class="query-fields">
-        <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">游戏 ID</span>
           <Input
             v-model:value="filters.SubGameId"
             allow-clear
-            @press-enter="handleSearch"
-            style="width: 220px"
             placeholder="请输入游戏 ID"
-          >
-            <template #addonBefore>游戏 ID</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
+            @press-enter="handleSearch"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">游戏名称</span>
           <Input
             v-model:value="filters.SubGameName"
             allow-clear
-            @press-enter="handleSearch"
-            style="width: 220px"
             placeholder="请输入游戏名称"
-          >
-            <template #addonBefore>游戏名称</template>
-          </Input>
-        </div>
+            @press-enter="handleSearch"
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">游戏标签</span>
           <Select
@@ -375,18 +371,18 @@ function handleReset() {
           <Select
             v-model:value="filters.GameId"
             :options="venueOptions"
-            show-search
             placeholder="请选择场馆名称"
+            show-search
           />
         </Space.Compact>
+        <div class="query-filter-actions query-filter-actions-single">
+          <Button type="primary" @click="handleSearch">查询</Button>
+          <Button @click="handleReset">重置</Button>
+        </div>
       </div>
-      <Space wrap>
-        <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
     </div>
 
-    <div class="action-bar">
+    <div class="mb-3 flex items-center justify-between gap-3">
       <Space wrap>
         <Button v-if="canEdit" type="primary" @click="openBatch(1)">
           批量编辑标签
@@ -527,36 +523,8 @@ function handleReset() {
 </template>
 
 <style scoped>
-.query-panel {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px;
-  margin-bottom: 14px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.query-fields {
-  display: grid;
-  flex: 1;
-  grid-template-columns: repeat(4, minmax(170px, 1fr));
-  gap: 12px;
-}
-
-.action-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
 .game-grid {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
+  overflow: hidden; 
   border-radius: 10px;
 }
 
@@ -567,13 +535,6 @@ function handleReset() {
 }
 
 @media (max-width: 1000px) {
-  .query-panel,
-  .action-bar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .query-fields,
   .form-grid {
     grid-template-columns: 1fr;
   }

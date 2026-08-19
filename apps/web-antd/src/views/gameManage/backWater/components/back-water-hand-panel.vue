@@ -12,6 +12,7 @@ import {
   message,
   Modal,
   Select,
+  Space,
   Table,
   Tag,
 } from 'ant-design-vue';
@@ -241,44 +242,45 @@ onMounted(() => {
 
 <template>
   <div>
-    <Form layout="inline" class="mb-4 flex flex-wrap gap-2">
-      <Form.Item label="游戏账号">
-        <Input
-          v-model:value="query.LoginAccount"
-          allow-clear
-          placeholder="可按游戏账号查询"
-          style="width: 180px"
-          @press-enter="handleQuery"
-        />
-      </Form.Item>
-      <Form.Item label="产品包">
-        <Select
-          v-model:value="query.PackageName"
-          :options="packageSelectOptions"
-          placeholder="请选择"
-          style="width: 180px"
-        />
-      </Form.Item>
-      <Form.Item label="发放日期">
-        <DatePicker
-          v-model:value="query.Time"
-          :disabled-date="
-            (date) =>
-              Boolean(
-                date &&
-                  date.startOf('day').isAfter(dayjs().startOf('day')),
-              )
-          "
-          style="width: 160px"
-        />
-      </Form.Item>
-      <Form.Item>
-        <Button :loading="loading" type="primary" @click="handleQuery">
-          查询返水
-        </Button>
-        <Button class="ml-2" @click="handleReset">重置</Button>
-      </Form.Item>
-    </Form>
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">游戏账号</span>
+          <Input
+            v-model:value="query.LoginAccount"
+            allow-clear
+            placeholder="可按游戏账号查询"
+            @press-enter="handleQuery"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="query.PackageName"
+            :options="packageSelectOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">发放日期</span>
+          <DatePicker
+            v-model:value="query.Time"
+            :disabled-date="
+              (date) =>
+                Boolean(
+                  date && date.startOf('day').isAfter(dayjs().startOf('day')),
+                )
+            "
+          />
+        </Space.Compact>
+        <div class="query-filter-actions query-filter-actions-single">
+          <Button :loading="loading" type="primary" @click="handleQuery">
+            查询返水
+          </Button>
+          <Button @click="handleReset">重置</Button>
+        </div>
+      </div>
+    </div>
 
     <div v-if="playerInfo?.PlayerId" class="mb-4">
       <div class="mb-2 font-medium">基本信息</div>

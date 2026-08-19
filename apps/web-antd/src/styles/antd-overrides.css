@@ -249,8 +249,13 @@
   height: var(--ant-control-height, 32px);
 }
 
-.ops-query-filters .ant-space-compact > .query-auto-select {
+.ops-query-filters .ant-space-compact > .query-auto-select.ant-select {
   flex: none !important;
+  width: max-content !important;
+  min-width: max-content !important;
+}
+
+.ops-query-filters .ant-space-compact > .query-auto-select .ant-select-selector {
   width: max-content !important;
 }
 
@@ -265,7 +270,7 @@
 /* 查询区模式选择（账号模糊/精准等）：按文案撑开，避免省略号 */
 .query-auto-select.ant-select {
   width: max-content !important;
-  min-width: 0;
+  min-width: max-content !important;
   flex: none !important;
 }
 
@@ -278,4 +283,38 @@
   overflow: visible !important;
   max-width: none !important;
   text-overflow: clip !important;
+}
+
+.ant-select-dropdown:has(.query-auto-select-dropdown) .ant-select-item-option-content,
+.query-auto-select-dropdown .ant-select-item-option-content {
+  overflow: visible;
+  white-space: nowrap;
+}
+
+/* 列表数据对齐游戏记录：Ant Design Table 用 vxe 同款 4px 圆角，不再用 borderRadiusLG */
+.ant-table-wrapper {
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.ant-table-wrapper .ant-table,
+.ant-table-wrapper .ant-table table {
+  border-radius: 4px 4px 0 0;
+}
+
+.ant-table-wrapper .ant-table-container {
+  border-start-start-radius: 4px;
+  border-start-end-radius: 4px;
+}
+
+.ant-table-wrapper .ant-table-container table > thead > tr:first-child > *:first-child {
+  border-start-start-radius: 4px;
+}
+
+.ant-table-wrapper .ant-table-container table > thead > tr:first-child > *:last-child {
+  border-start-end-radius: 4px;
+}
+
+.ant-table-wrapper .ant-table-footer {
+  border-radius: 0 0 4px 4px;
 }

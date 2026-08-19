@@ -8,8 +8,6 @@ import { Card, Result, Tabs } from 'ant-design-vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import DataComparePanel from './components/data-compare-panel.vue';
-import DataReportPanel from './components/data-report-panel.vue';
-import GameAnalyzePanel from './components/game-analyze-panel.vue';
 import IncomeAnalyzePanel from './components/income-panel.vue';
 import OperationDailyPanel from './components/operation-daily-panel.vue';
 import PromotionAnalyzePanel from './components/promotion-panel.vue';
@@ -19,8 +17,8 @@ defineOptions({ name: 'OperationDaily' });
 const { checkPermission } = useCloudPermission();
 
 /**
- * 对齐旧站 operationDaily.vue Tab + 权限
- * 游戏分析 189、数据报表 12358 旧版已注释，新站按权限恢复可见
+ * 对齐旧站 operationDaily.vue Tab + 权限。
+ * 游戏分析 189、数据报表 12358 旧站已注释，不展示。
  */
 const tabs = computed(() =>
   [
@@ -43,22 +41,10 @@ const tabs = computed(() =>
       tab: '收入分析',
     },
     {
-      component: GameAnalyzePanel,
-      key: 'game',
-      show: checkPermission(189),
-      tab: '游戏分析',
-    },
-    {
       component: PromotionAnalyzePanel,
       key: 'promotion',
       show: checkPermission(10_517),
       tab: '推广分析',
-    },
-    {
-      component: DataReportPanel,
-      key: 'report',
-      show: checkPermission(12_358),
-      tab: '数据报表',
     },
   ].filter((item) => item.show),
 );
@@ -66,10 +52,14 @@ const tabs = computed(() =>
 const canViewPage = computed(() => tabs.value.length > 0);
 const activeTab = ref('');
 
+/** 旧站 created 优先顺序：比较 → 收入 → 推广 → 日报 */
+const TAB_PRIORITY = ['compare', 'income', 'promotion', 'daily'];
+
 watchEffect(() => {
   const keys = tabs.value.map((item) => item.key);
   if (!keys.includes(activeTab.value)) {
-    activeTab.value = keys[0] || '';
+    activeTab.value =
+      TAB_PRIORITY.find((key) => keys.includes(key)) || keys[0] || '';
   }
 });
 </script>

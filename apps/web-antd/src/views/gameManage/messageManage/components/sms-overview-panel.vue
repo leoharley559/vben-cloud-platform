@@ -229,14 +229,16 @@ void loadSummary();
     </div>
 
     <template v-if="canDaily">
-      <div class="query-panel">
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" />
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="dateRange" />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="search">查询</Button>
+            <Button @click="reset">重置</Button>
+          </div>
         </div>
-        <Space>
-          <Button type="primary" @click="search">查询</Button>
-          <Button @click="reset">重置</Button>
-        </Space>
       </div>
       <SummaryCards :items="dailySummaryItems" />
       <div v-if="canDailyList" class="data-grid"><Grid /></div>
@@ -278,28 +280,9 @@ void loadSummary();
 </template>
 
 <style scoped>
-.query-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 18px;
-  margin-bottom: 14px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
 .data-grid {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
   border-radius: 10px;
-}
-
-@media (max-width: 800px) {
-  .query-panel {
-    align-items: stretch;
-    flex-direction: column;
-  }
 }
 </style>

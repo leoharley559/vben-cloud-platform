@@ -348,24 +348,25 @@ async function exportExcel() {
     description="代理网赚 · 渠道域名管理"
     title="渠道域名管理"
   >
-    <Card :bordered="false">
-      <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-                <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="filters.Username"
-              allow-clear
-              @press-enter="reloadFirstPage"
-              placeholder="请输入代理账号"
-            >
-              <template #addonBefore>代理账号</template>
-            </Input>
-          </div>
-          <Select
-            v-model:value="filters.Type"
-            :options="typeOptions"
-          />
+    <Card>
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <Input
+            v-model:value="filters.Username"
+            allow-clear
+            placeholder="请输入代理账号"
+            @press-enter="reloadFirstPage"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+          <Space.Compact>
+            <span class="query-field-addon">代理类型</span>
+            <Select
+              v-model:value="filters.Type"
+              :options="typeOptions"
+              placeholder="请选择代理类型"
+            />
+          </Space.Compact>
           <Space.Compact>
             <span class="query-field-addon">渠道号</span>
             <ChannelSelect
@@ -374,26 +375,22 @@ async function exportExcel() {
               placeholder="请输入渠道号"
             />
           </Space.Compact>
-          <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="filters.NetCashDomain"
-              allow-clear
-              @press-enter="reloadFirstPage"
-              placeholder="请输入专属 APP 域名"
-            >
-              <template #addonBefore>专属 APP 域名</template>
-            </Input>
-          </div>
-          <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="filters.NetCashH5Domain"
-              allow-clear
-              @press-enter="reloadFirstPage"
-              placeholder="请输入专属 H5 域名"
-            >
-              <template #addonBefore>专属 H5 域名</template>
-            </Input>
-          </div>
+          <Input
+            v-model:value="filters.NetCashDomain"
+            allow-clear
+            placeholder="请输入专属 APP 域名"
+            @press-enter="reloadFirstPage"
+          >
+            <template #addonBefore>专属 APP 域名</template>
+          </Input>
+          <Input
+            v-model:value="filters.NetCashH5Domain"
+            allow-clear
+            placeholder="请输入专属 H5 域名"
+            @press-enter="reloadFirstPage"
+          >
+            <template #addonBefore>专属 H5 域名</template>
+          </Input>
           <Space.Compact>
             <span class="query-field-addon">账号状态</span>
             <Select
@@ -410,21 +407,18 @@ async function exportExcel() {
               placeholder="请选择渠道状态"
             />
           </Space.Compact>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="reloadFirstPage">查询</Button>
-          <Button @click="resetFilters">重置</Button>
+          <div class="query-filter-actions">
+            <Button type="primary" @click="reloadFirstPage">查询</Button>
+            <Button @click="resetFilters">重置</Button>
+            <Button
+              v-if="canExport"
+              :loading="exporting"
+              @click="exportExcel"
+            >
+              导出 Excel
+            </Button>
+          </div>
         </div>
-    </div>
-  </div>
-        <Space>
-          <Button
-            v-if="canExport"
-            :loading="exporting"
-            @click="exportExcel"
-          >
-            导出 Excel
-          </Button>
-        </Space>
       </div>
 
       <Grid>

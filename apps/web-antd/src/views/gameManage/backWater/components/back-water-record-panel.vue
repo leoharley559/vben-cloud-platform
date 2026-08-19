@@ -566,108 +566,131 @@ onMounted(async () => {
 
 <template>
   <div>
-    <Radio.Group
-      :value="activeType"
-      button-style="solid"
-      class="mb-4"
-      @change="(event) => switchType(event.target.value)"
-    >
-      <Radio.Button v-if="canSummary" value="summary">统计数据</Radio.Button>
-      <Radio.Button v-if="canDetail" value="detail">明细数据</Radio.Button>
-    </Radio.Group>
+    <div class="mb-3">
+      <Radio.Group
+        :value="activeType"
+        button-style="solid"
+        @change="(event) => switchType(event.target.value)"
+      >
+        <Radio.Button v-if="canSummary" value="summary">统计数据</Radio.Button>
+        <Radio.Button v-if="canDetail" value="detail">明细数据</Radio.Button>
+      </Radio.Group>
+    </div>
 
-    <div class="query-panel">
-      <div class="query-grid">
-        <div v-if="activeType === 'summary'" class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
+        <Space.Compact v-if="activeType === 'summary'">
+          <span class="query-field-addon">订单号</span>
           <Input
             v-model:value="filters.OrderId"
             allow-clear
-            style="width: 220px"
             placeholder="请输入订单号"
-          >
-            <template #addonBefore>订单号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">游戏账号</span>
           <Input
             v-model:value="filters.LoginAccount"
             allow-clear
-            style="width: 220px"
             placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
-        <Select v-model:value="filters.VipLevel" :options="vipOptions" />
-        <Select
-          v-model:value="filters.LevelId"
-          :options="levelOptions"
-          show-search
-        />
-        <div v-if="activeType === 'summary'" class="flex flex-col gap-1">
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">VIP</span>
+          <Select v-model:value="filters.VipLevel" :options="vipOptions" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">层级</span>
+          <Select
+            v-model:value="filters.LevelId"
+            :options="levelOptions"
+            show-search
+          />
+        </Space.Compact>
+        <Space.Compact v-if="activeType === 'summary'">
+          <span class="query-field-addon">代理账号</span>
           <Input
             v-model:value="filters.AdminName"
             allow-clear
-            style="width: 220px"
             placeholder="请输入代理账号"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
-        </div>
-        <Select
-          v-model:value="filters.PackId"
-          :options="packageSelectOptions"
-          show-search
-        />
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filters.PackId"
+            :options="packageSelectOptions"
+            placeholder="请选择产品"
+            show-search
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">渠道号</span>
-          <ChannelSelect v-model="filters.ChannelIds" placeholder="请输入渠道号" />
+          <ChannelSelect
+            v-model="filters.ChannelIds"
+            placeholder="请输入渠道号"
+          />
         </Space.Compact>
-        <Select
-          v-model:value="filters.DataSearchType"
-          :options="memberTypeOptions"
-        />
         <Space.Compact>
+          <span class="query-field-addon">会员类型</span>
+          <Select
+            v-model:value="filters.DataSearchType"
+            :options="memberTypeOptions"
+          />
+        </Space.Compact>
+        <Space.Compact v-if="activeType === 'detail'">
           <span class="query-field-addon">场馆</span>
           <Select
-            v-if="activeType === 'detail'"
             v-model:value="filters.GameType"
             mode="multiple"
             :options="venueOptions"
             placeholder="请选择场馆"
           />
         </Space.Compact>
-        <Select v-model:value="filters.ConfigId" :options="schemeOptions" />
-        <Select
-          v-model:value="filters.RebateMode"
-          :options="[
-            { label: '全部周期', value: -1 },
-            { label: '日结', value: 0 },
-            { label: '按天', value: 1 },
-            { label: '周结', value: 2 },
-          ]"
-        />
-        <Select
-          v-if="activeType === 'summary'"
-          v-model:value="filters.AwardStatus"
-          :options="[
-            { label: '全部返水状态', value: -1 },
-            { label: '待发放', value: 0 },
-            { label: '成功', value: 1 },
-            { label: '失败', value: 2 },
-          ]"
-        />
-        <Select
-          v-if="activeType === 'summary'"
-          v-model:value="filters.AwardType"
-          :options="[
-            { label: '全部发放类型', value: -1 },
-            { label: '自动', value: 0 },
-            { label: '手动', value: 1 },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">方案</span>
+          <Select v-model:value="filters.ConfigId" :options="schemeOptions" />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">周期</span>
+          <Select
+            v-model:value="filters.RebateMode"
+            :options="[
+              { label: '全部周期', value: -1 },
+              { label: '日结', value: 0 },
+              { label: '按天', value: 1 },
+              { label: '周结', value: 2 },
+            ]"
+          />
+        </Space.Compact>
+        <Space.Compact v-if="activeType === 'summary'">
+          <span class="query-field-addon">返水状态</span>
+          <Select
+            v-model:value="filters.AwardStatus"
+            :options="[
+              { label: '全部返水状态', value: -1 },
+              { label: '待发放', value: 0 },
+              { label: '成功', value: 1 },
+              { label: '失败', value: 2 },
+            ]"
+          />
+        </Space.Compact>
+        <Space.Compact v-if="activeType === 'summary'">
+          <span class="query-field-addon">发放类型</span>
+          <Select
+            v-model:value="filters.AwardType"
+            :options="[
+              { label: '全部发放类型', value: -1 },
+              { label: '自动', value: 0 },
+              { label: '手动', value: 1 },
+            ]"
+          />
+        </Space.Compact>
         <div v-if="activeType === 'summary'" class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="generationRange" label="返水生成时间" />
+          <QueryDatetimeRangePicker
+            v-model="generationRange"
+            label="返水生成时间"
+          />
         </div>
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker
@@ -675,12 +698,15 @@ onMounted(async () => {
             :label="activeType === 'summary' ? '发放时间' : '游戏时间'"
           />
         </div>
+        <div
+          class="query-filter-actions"
+          :class="{ 'query-filter-actions-single': !canExport }"
+        >
+          <Button type="primary" @click="search">查询</Button>
+          <Button @click="reset">重置</Button>
+          <Button v-if="canExport" @click="requestExport">后台导出</Button>
+        </div>
       </div>
-      <Space>
-        <Button type="primary" @click="search">查询</Button>
-        <Button @click="reset">重置</Button>
-        <Button v-if="canExport" @click="requestExport">后台导出</Button>
-      </Space>
     </div>
 
     <SummaryCards :items="summaryItems" />
@@ -798,39 +824,9 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.query-panel {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px;
-  margin-bottom: 14px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.query-grid {
-  display: grid;
-  flex: 1;
-  grid-template-columns: repeat(4, minmax(170px, 1fr));
-  gap: 12px;
-}
-
 .data-grid {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
   border-radius: 10px;
-}
-
-@media (max-width: 1100px) {
-  .query-panel {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .query-grid {
-    grid-template-columns: repeat(2, minmax(170px, 1fr));
-  }
 }
 </style>

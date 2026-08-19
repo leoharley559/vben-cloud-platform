@@ -400,43 +400,43 @@ void loadReport();
 
 <template>
   <div>
-    <Radio.Group v-model:value="activeType" button-style="solid" class="mb-4">
-      <Radio.Button :value="1">日报</Radio.Button>
-      <Radio.Button :value="2">明细</Radio.Button>
-    </Radio.Group>
+    <div class="mb-3">
+      <Radio.Group v-model:value="activeType" button-style="solid">
+        <Radio.Button :value="1">日报</Radio.Button>
+        <Radio.Button :value="2">明细</Radio.Button>
+      </Radio.Group>
+    </div>
 
     <template v-if="activeType === 1">
-      <div class="query-panel">
-        <div class="query-fields">
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
           <Space.Compact>
             <span class="query-field-addon">选择产品</span>
             <Select
               v-model:value="reportFilters.PackageIds"
               :options="packageOptions"
+              placeholder="请选择产品"
               show-search
-              placeholder="请选择选择产品"
             />
           </Space.Compact>
-          <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">渠道号</span>
             <Input
               v-model:value="reportFilters.ChannelIds"
               allow-clear
-              style="width: 220px"
               placeholder="请输入渠道号"
-            >
-              <template #addonBefore>渠道号</template>
-            </Input>
-          </div>
+            />
+          </Space.Compact>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="reportRange" />
+            <QueryDatetimeRangePicker v-model="reportRange" />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" :loading="reportLoading" @click="loadReport">
+              查询
+            </Button>
+            <Button @click="resetReport">重置</Button>
+          </div>
         </div>
-        </div>
-        <Space>
-          <Button type="primary" :loading="reportLoading" @click="loadReport">
-            查询
-          </Button>
-          <Button @click="resetReport">重置</Button>
-        </Space>
       </div>
       <div class="section-title">实时数据</div>
       <Table
@@ -548,37 +548,33 @@ void loadReport();
     </template>
 
     <template v-else>
-      <div class="query-panel">
-        <div class="detail-query-fields">
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
           <Space.Compact>
             <span class="query-field-addon">选择产品</span>
             <Select
               v-model:value="detailFilters.PackageIds"
               :options="packageOptions"
+              placeholder="请选择产品"
               show-search
-              placeholder="请选择选择产品"
             />
           </Space.Compact>
-          <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">渠道号</span>
             <Input
               v-model:value="detailFilters.ChannelIds"
               allow-clear
-              style="width: 220px"
               placeholder="请输入渠道号"
-            >
-              <template #addonBefore>渠道号</template>
-            </Input>
-          </div>
-          <div class="flex flex-col gap-1">
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">手机号</span>
             <Input
               v-model:value="detailFilters.PhoneNum"
               allow-clear
-              style="width: 210px"
               placeholder="请输入手机号"
-            >
-              <template #addonBefore>手机号</template>
-            </Input>
-          </div>
+            />
+          </Space.Compact>
           <Space.Compact>
             <span class="query-field-addon">注册来源</span>
             <Select
@@ -588,23 +584,27 @@ void loadReport();
               placeholder="请选择注册来源"
             />
           </Space.Compact>
-          <Select
-            v-model:value="detailFilters.IsRegistered"
-            :options="[
-              { label: '全部注册状态', value: '' },
-              { label: '是', value: 1 },
-              { label: '否', value: 2 },
-            ]"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">注册状态</span>
+            <Select
+              v-model:value="detailFilters.IsRegistered"
+              :options="[
+                { label: '全部注册状态', value: '' },
+                { label: '是', value: 1 },
+                { label: '否', value: 2 },
+              ]"
+              placeholder="请选择注册状态"
+            />
+          </Space.Compact>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="detailRange" />
+            <QueryDatetimeRangePicker v-model="detailRange" />
+          </div>
+          <div class="query-filter-actions">
+            <Button type="primary" @click="reloadDetail">查询</Button>
+            <Button @click="resetDetail">重置</Button>
+            <Button @click="exportDetail">导出 CSV</Button>
+          </div>
         </div>
-        </div>
-        <Space>
-          <Button type="primary" @click="reloadDetail">查询</Button>
-          <Button @click="resetDetail">重置</Button>
-          <Button @click="exportDetail">导出 CSV</Button>
-        </Space>
       </div>
       <SummaryCards :items="detailSummaryItems" />
       <div class="data-grid">
@@ -615,32 +615,6 @@ void loadReport();
 </template>
 
 <style scoped>
-.query-panel {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 18px;
-  margin-bottom: 16px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.query-fields {
-  display: grid;
-  flex: 1;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.detail-query-fields {
-  display: grid;
-  flex: 1;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
-  gap: 12px;
-}
-
 .section-title {
   margin: 16px 0 10px;
   font-size: 16px;
@@ -658,17 +632,5 @@ void loadReport();
   overflow: hidden;
   border: 1px solid hsl(var(--border));
   border-radius: 10px;
-}
-
-@media (max-width: 900px) {
-  .query-panel {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .query-fields,
-  .detail-query-fields {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

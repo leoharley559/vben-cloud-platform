@@ -30,6 +30,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { formatVenueName } from '#/utils/game-config';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
@@ -48,7 +49,7 @@ const VIEW_BY_OPTIONS = [
 ];
 
 const { checkPermission, projectConfig } = useCloudPermission();
-const { ensureGameConfig, packageOptions, platformGameTypeMap } = useReportOptions();
+const { ensureGameConfig, gameConfig, packageOptions } = useReportOptions();
 
 const canView = computed(() => checkPermission(10_492));
 const canExport = computed(() => checkPermission(10_493));
@@ -109,16 +110,9 @@ function deliveryGold(row: Row) {
   return num(row.SumWinGold) - num(row.SumProfitGold);
 }
 
-/** 玩家盈亏 = SumWinGold - SumProfitGold - SumBetGold */
-function playerWinLoss(row: Row) {
-  return num(row.SumWinGold) - num(row.SumProfitGold) - num(row.SumBetGold);
-}
-
 function formatVenue(gameType: unknown) {
   if (filters.ViewBy !== 'game') return '-';
-  const map = platformGameTypeMap.value as Record<string, string>;
-  const key = String(gameType ?? '');
-  return map[key] || key || '-';
+  return formatVenueName(gameType as number | string, gameConfig.value);
 }
 
 function rowKey(row: Row) {
@@ -186,14 +180,15 @@ const summaryItems = computed(() => {
   const m = moreItems.value;
   return [
     { title: '投注总计', value: formatAmountFromCent(m.SumBetGold) },
+    { title: '有效投注总计', value: formatAmountFromCent(m.SumValidWater) },
     {
       title: '派送总计',
       value: formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold)),
     },
-    { title: '有效投注总计', value: formatAmountFromCent(m.SumValidWater) },
+    
     {
       title: '玩家盈亏总计',
-      value: formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold) - num(m.SumBetGold)),
+      value: formatAmountFromCent(m.SumWinGold),
     },
   ];
 });
@@ -278,7 +273,7 @@ function getSummary() {
     String(m.SumBetCount ?? '-'),
     formatAmountFromCent(m.SumValidWater),
     formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold)),
-    formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold) - num(m.SumBetGold)),
+    formatAmountFromCent(m.SumWinGold),
   ];
 }
 
@@ -396,7 +391,7 @@ async function handleExport() {
           row.SumBetCount,
           formatAmountFromCent(row.SumValidWater),
           formatAmountFromCent(deliveryGold(row)),
-          formatAmountFromCent(playerWinLoss(row)),
+          formatAmountFromCent(row.SumWinGold),
         ];
       },
     );
@@ -547,10 +542,10 @@ onMounted(async () => {
           <template v-else-if="column.key === 'SumBetWin'">
             <span
               :style="{
-                color: playerWinLoss(record) < 0 ? '#f5222d' : '#52c41a',
+                color: num(record.SumWinGold) < 0 ? '#f5222d' : '#52c41a',
               }"
             >
-              {{ formatAmountFromCent(playerWinLoss(record)) }}
+              {{ formatAmountFromCent(record.SumWinGold) }}
             </span>
           </template>
         </template>

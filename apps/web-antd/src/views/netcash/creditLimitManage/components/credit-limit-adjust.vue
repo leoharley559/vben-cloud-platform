@@ -292,16 +292,35 @@ onMounted(load);
           <template #addonBefore>代理账号</template>
         </Input>
       </div>
-      <Space.Compact>
-        <span class="query-field-addon">代理类型</span>
-        <Select v-model:value="query.AccountTypes" :options="accountTypeOptions.slice(1)" mode="multiple" placeholder="请选择代理类型" />
-      </Space.Compact>
+      <div class="query-filter-wide">
+        <Space.Compact>
+          <span class="query-field-addon">代理类型</span>
+          <Select
+            v-model:value="query.AccountTypes"
+            :options="accountTypeOptions.slice(1)"
+            mode="multiple"
+            placeholder="请选择代理类型"
+          />
+        </Space.Compact>
+      </div>
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="agentCreateRange" />
         </div>
-      <InputNumber v-model:value="query.BeginCreditRange" :min="0" :precision="2" placeholder="请输入最小额度（元）" />
-      <span>至</span>
-      <InputNumber v-model:value="query.EndCreditRange" :min="0" :precision="2" placeholder="请输入最大额度（元）" />
+      <Space.Compact>
+        <span class="query-field-addon">额度</span>
+        <InputNumber
+          v-model:value="query.BeginCreditRange"
+          :min="0"
+          :precision="2"
+          placeholder="请输入起"
+        />
+        <InputNumber
+          v-model:value="query.EndCreditRange"
+          :min="0"
+          :precision="2"
+          placeholder="请输入止"
+        />
+      </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
@@ -314,7 +333,7 @@ onMounted(load);
 
     <SummaryCards :items="summaryItems" />
 
-    <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="AgentAccount" :scroll="{ x: 1200 }" size="small">
+    <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="AgentAccount" :scroll="{ x: 1200 }" size="small">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>
         <template v-else-if="column.key === 'Type'">{{ accountTypeMap[Number(record.Type)] || '-' }}</template>

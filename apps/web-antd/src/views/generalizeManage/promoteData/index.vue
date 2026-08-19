@@ -57,8 +57,8 @@ onMounted(() => {
     description="推广管理 · 推广报表"
     title="推广报表"
   >
-    <Card class="report-card" :bordered="false">
-      <Tabs v-model:active-key="activeTab" class="report-tabs" type="line" size="small">
+    <Card size="small">
+      <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-if="canAccountData" key="account" tab="账户数据">
           <KeepAlive>
             <ChannelDataList v-if="activeTab === 'account'" />
@@ -89,16 +89,3 @@ onMounted(() => {
   </Page>
   <Result v-else status="403" sub-title="无推广报表查看权限" title="403" />
 </template>
-
-<style scoped>
-.report-card {
-  min-height: calc(100vh - 180px);
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
-}
-
-.report-tabs :deep(.ant-tabs-nav) {
-  padding: 0 8px;
-  margin-bottom: 16px;
-}
-</style>

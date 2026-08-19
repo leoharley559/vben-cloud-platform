@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -15,50 +15,57 @@ defineOptions({ name: 'BonusManage' });
 
 const { checkPermission } = useCloudPermission();
 
-const tabs = computed(() =>
-  [
-    { key: 'provide', label: '红利发放', permission: 11_355 },
-    { key: 'audit', label: '审核列表', permission: 11_356 },
-    { key: 'history', label: '历史记录', permission: 11_357 },
-  ].filter((item) => checkPermission(item.permission)),
+const canProvide = computed(() => checkPermission(11_355));
+const canAudit = computed(() => checkPermission(11_356));
+const canHistory = computed(() => checkPermission(11_357));
+
+const canViewAny = computed(
+  () => canProvide.value || canAudit.value || canHistory.value,
 );
 
-const canViewPage = computed(() => tabs.value.length > 0);
-const activeTab = ref('');
+const activeTab = ref('provide');
 
-watch(
-  tabs,
-  (items) => {
-    if (!items.some((item) => item.key === activeTab.value)) {
-      activeTab.value = items[0]?.key || '';
-    }
-  },
-  { immediate: true },
-);
+function resolveDefaultTab() {
+  const tabs = [
+    { key: 'provide', visible: canProvide.value },
+    { key: 'audit', visible: canAudit.value },
+    { key: 'history', visible: canHistory.value },
+  ];
+  activeTab.value = tabs.find((item) => item.visible)?.key || 'provide';
+}
+
+onMounted(() => {
+  resolveDefaultTab();
+});
 </script>
 
 <template>
   <Page
-    v-if="canViewPage"
+    v-if="canViewAny"
     auto-content-height
     description="代理网赚 · 红利管理"
     title="红利管理"
   >
     <Card>
       <Tabs v-model:active-key="activeTab" type="line" size="small">
-        <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.label">
-          <BonusProvidePanel
-            v-if="activeTab === 'provide' && item.key === 'provide'"
-          />
-          <BonusAuditPanel
-            v-else-if="activeTab === 'audit' && item.key === 'audit'"
-          />
-          <BonusHistoryPanel
-            v-else-if="activeTab === 'history' && item.key === 'history'"
-          />
+        <Tabs.TabPane v-if="canProvide" key="provide" tab="红利发放">
+          <BonusProvidePanel v-if="activeTab === 'provide'" />
+        </Tabs.TabPane>
+        <Tabs.TabPane v-if="canAudit" key="audit" tab="审核列表">
+          <BonusAuditPanel v-if="activeTab === 'audit'" />
+        </Tabs.TabPane>
+        <Tabs.TabPane v-if="canHistory" key="history" tab="历史记录">
+          <BonusHistoryPanel v-if="activeTab === 'history'" />
         </Tabs.TabPane>
       </Tabs>
     </Card>
   </Page>
-  <Result v-else status="403" sub-title="无红利管理查看权限" title="403" />
+
+  <Page v-else auto-content-height title="红利管理">
+    <Result
+      status="403"
+      sub-title="需要红利管理相关权限才能访问此页面"
+      title="无权限"
+    />
+  </Page>
 </template>

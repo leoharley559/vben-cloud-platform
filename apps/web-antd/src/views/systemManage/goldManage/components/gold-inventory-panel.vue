@@ -4,7 +4,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Tooltip } from 'ant-design-vue';
+import { Button, Card, Tooltip } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import {
@@ -82,6 +82,52 @@ const bannerPlayerOut = computed(
     100,
 );
 
+function formatBannerValue(value: number | string) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) {
+    return '0';
+  }
+  return amount.toLocaleString('zh-CN', { maximumFractionDigits: 2 });
+}
+
+const bannerOverviewCards = computed(() => [
+  {
+    accent: '#febf5b',
+    hint: '',
+    key: 'stock',
+    label: '剩余库存',
+    value: formatBannerValue(bannerScoreChange.value.AvailScores),
+  },
+  {
+    accent: '#34bfa3',
+    hint: '上级包网',
+    key: 'income',
+    label: '今日进货',
+    value: formatBannerValue(bannerScoreChange.value.IncomeScores),
+  },
+  {
+    accent: '#36a3f7',
+    hint: '玩家',
+    key: 'player',
+    label: '今日出货',
+    value: formatBannerValue(bannerPlayerOut.value),
+  },
+  {
+    accent: '#716aca',
+    hint: '币商',
+    key: 'dealer',
+    label: '今日出货',
+    value: formatBannerValue(bannerScoreChange.value.OutCoinDealerScores),
+  },
+  {
+    accent: '#f4516c',
+    hint: '子包网',
+    key: 'agent',
+    label: '今日出货',
+    value: formatBannerValue(bannerScoreChange.value.OutAgentScores),
+  },
+]);
+
 const summaryIncoming = computed(
   () =>
     Number(totalData.value.SumInPlatformScores || 0) +
@@ -101,23 +147,6 @@ const summaryShipments = computed(
     Number(totalData.value.SumOutSellCoinDealer || 0) +
     summaryPlayerOut.value,
 );
-
-const bannerSummaryItems = computed(() => [
-  { label: '剩余库存', value: bannerScoreChange.value.AvailScores },
-  {
-    label: '今日进货(上级包网)',
-    value: bannerScoreChange.value.IncomeScores,
-  },
-  { label: '今日出货(玩家)', value: bannerPlayerOut.value.toFixed(2) },
-  {
-    label: '今日出货(币商)',
-    value: bannerScoreChange.value.OutCoinDealerScores,
-  },
-  {
-    label: '今日出货(子包网)',
-    value: bannerScoreChange.value.OutAgentScores,
-  },
-]);
 
 const detailSummaryItems = computed(() => [
   { label: '进货合计', value: summaryIncoming.value },
@@ -306,11 +335,36 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="mb-4">
-      <div class="mb-3 text-sm font-medium text-gray-700">
+    <div v-if="canBanner" class="mb-4">
+      <div class="mb-3 text-base font-medium text-gray-800">
         今日金币库存变化
       </div>
-      <SummaryCards :items="bannerSummaryItems" />
+      <div class="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5">
+        <Card
+          v-for="card in bannerOverviewCards"
+          :key="card.key"
+          class="border-0 shadow-sm"
+          size="small"
+        >
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <div class="mb-1 text-xs text-gray-500">
+                {{ card.label }}
+                <span v-if="card.hint" class="text-gray-400">
+                  （{{ card.hint }}）
+                </span>
+              </div>
+              <div class="truncate text-xl font-semibold text-gray-900">
+                {{ card.value }}
+              </div>
+            </div>
+            <span
+              class="mt-1 inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+              :style="{ background: card.accent }"
+            />
+          </div>
+        </Card>
+      </div>
     </div>
 
     <div v-if="canDetail">

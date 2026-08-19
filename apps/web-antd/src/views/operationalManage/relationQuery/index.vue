@@ -16,7 +16,6 @@ import {
   Input,
   message,
   Modal,
-  Radio,
   Result,
   Select,
   Space,
@@ -357,15 +356,15 @@ onMounted(() => {
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
-              <span class="query-field-addon">渠道查询</span>
-              <Radio.Group
+              <Select
+                class="query-auto-select"
+                :popup-match-select-width="false"
                 v-model:value="channelSearchType"
-                button-style="solid"
-                size="small"
-              >
-                <Radio.Button :value="0">模糊</Radio.Button>
-                <Radio.Button :value="1">精准</Radio.Button>
-              </Radio.Group>
+                :options="[
+                  { label: '渠道模糊', value: 0 },
+                  { label: '渠道精准', value: 1 },
+                ]"
+              />
               <ChannelSelect
                 v-if="channelSearchType === 0"
                 v-model="filterChannelIds"
@@ -375,7 +374,7 @@ onMounted(() => {
                 v-else
                 v-model:value="filterChannelExact"
                 allow-clear
-                placeholder="请输入渠道号"
+                placeholder="请输入渠道"
               />
             </Space.Compact>
           </div>

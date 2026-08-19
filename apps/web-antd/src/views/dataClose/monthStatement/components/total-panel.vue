@@ -43,9 +43,9 @@ defineOptions({ name: 'MonthStatementTotalPanel' });
 const { checkPermission } = useCloudPermission();
 const {
   ensureGameConfig,
+  gameConfig,
   iosAppStoreOptions,
   packageOptions,
-  platformGameTypeMap,
   platformGameTypeOptions,
 } = useReportOptions();
 
@@ -113,7 +113,7 @@ async function loadList() {
     const result = await fetchMonthStatementTotalListApi(buildQuery());
     const items = Array.isArray(result.Items) ? result.Items : [];
     tableData.value = items.map((row, index) => ({
-      ...mapMonthMoneyRow(row, platformGameTypeMap.value),
+      ...mapMonthMoneyRow(row, gameConfig.value),
       _rowKey: `${row.ReportMonth}-${row.PlatformGameType}-${index}`,
     }));
     totalSum.value = resolveTotalSum(result.MoreItems);
@@ -197,7 +197,6 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportSummaryCards :items="summaryItems" />
     <ReportQueryCard>
       <Space.Compact>
         <span class="query-field-addon">账号</span>
@@ -241,7 +240,12 @@ onMounted(() => {
           placeholder="请选择场馆"
         />
       </Space.Compact>
-      <DatePicker.RangePicker v-model:value="monthRange" picker="month" />
+      <div class="query-filter-wide">
+        <Space.Compact>
+          <span class="query-field-addon">时间范围</span>
+          <DatePicker.RangePicker v-model:value="monthRange" picker="month" />
+        </Space.Compact>
+      </div>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
         <Button :disabled="loading" @click="reset">重置</Button>
@@ -255,6 +259,8 @@ onMounted(() => {
         </div>
       </template>
     </ReportQueryCard>
+
+    <ReportSummaryCards :items="summaryItems" />
 
     <Table
       v-if="canList"

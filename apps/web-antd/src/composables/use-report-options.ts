@@ -116,6 +116,7 @@ export function useReportOptions() {
     dataSearchTypeOptions,
     devicePlatformOptions,
     ensureGameConfig,
+    gameConfig,
     inviteSiteOptions,
     iosAppStoreOptions,
     packageOptions,

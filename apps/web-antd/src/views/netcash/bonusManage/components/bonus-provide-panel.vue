@@ -14,7 +14,6 @@ import {
   Select,
   Space,
   Table,
-  Tabs,
   Tag,
 } from 'ant-design-vue';
 import * as XLSX from 'xlsx';
@@ -317,101 +316,125 @@ function exportBatchFailures() {
 </script>
 
 <template>
-  <div class="space-y-4">
-    <Tabs v-model:active-key="provideMode" type="line" size="small">
-      <Tabs.TabPane v-if="canSingleProvide" key="single" tab="单笔发放" />
-      <Tabs.TabPane v-if="canBatchProvide" key="batch" tab="批量发放" />
-    </Tabs>
-
-    <div
-      v-if="provideMode === 'batch'"
-      class="rounded border border-dashed p-4"
-    >
-      <Space wrap>
-        <Button @click="downloadBatchTemplate">下载 Excel 模板</Button>
-        <Button :loading="provideQuerying" @click="pickBatchFile">
-          上传并验证 Excel
-        </Button>
-        <Button
-          :disabled="batchSource.length === 0"
-          :loading="provideQuerying"
-          @click="validateBatchFile"
-        >
-          重新验证
-        </Button>
-        <span v-if="batchUsed && validBatchRows.length > 0" class="text-green-600">
-          已使用 {{ validBatchRows.length }} 条有效数据
-        </span>
-      </Space>
-      <input
-        ref="batchInput"
-        accept=".xlsx,.xls,.csv"
-        class="hidden"
-        type="file"
-        @change="handleBatchFile"
-      />
-      <div class="mt-2 text-xs text-gray-400">
-        文件不超过 1MB；表头必须包含“代理账号、申请金额”。
-      </div>
+  <div>
+    <div class="mb-3">
+      <Radio.Group v-model:value="provideMode" button-style="solid">
+        <Radio.Button v-if="canSingleProvide" value="single">单笔发放</Radio.Button>
+        <Radio.Button v-if="canBatchProvide" value="batch">批量发放</Radio.Button>
+      </Radio.Group>
     </div>
 
-    <Form class="max-w-2xl" layout="vertical">
-      <Form.Item v-if="provideMode === 'single'" label="代理账号" required>
-        <Input
-          v-model:value="provideForm.AdminName"
-          allow-clear
-          :maxlength="100"
-          placeholder="请输入代理账号"
-        />
-      </Form.Item>
-      <Form.Item label="钱包类型">
-        <Radio.Group v-model:value="provideForm.WalletType">
-          <Radio :value="1">佣金钱包</Radio>
-        </Radio.Group>
-      </Form.Item>
-      <Form.Item label="红利类型">
-        <Select
-          v-model:value="provideForm.BonusType"
-          :options="[{ label: '代理红利', value: 1 }]"
-        />
-      </Form.Item>
-      <Form.Item
-        v-if="provideMode === 'single'"
-        label="申请金额（元）"
-        required
+    <div class="mb-6">
+      <div class="mb-3 text-base font-medium">代理信息</div>
+      <template v-if="provideMode === 'single'">
+        <div class="mb-4 flex flex-wrap items-end gap-2">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="provideForm.AdminName"
+              allow-clear
+              :maxlength="100"
+              placeholder="请输入代理账号"
+              style="width: 260px"
+            >
+              <template #addonBefore>代理账号</template>
+            </Input>
+          </div>
+        </div>
+      </template>
+      <template v-else>
+        <div class="mb-3 flex flex-wrap gap-2">
+          <Button @click="downloadBatchTemplate">下载模板</Button>
+          <Button :loading="provideQuerying" @click="pickBatchFile">
+            导入Excel
+          </Button>
+          <input
+            ref="batchInput"
+            accept=".xlsx,.xls,.csv"
+            class="hidden"
+            type="file"
+            @change="handleBatchFile"
+          />
+          <Button
+            :disabled="batchSource.length === 0"
+            :loading="provideQuerying"
+            type="primary"
+            @click="validateBatchFile"
+          >
+            预览匹配
+          </Button>
+          <span
+            v-if="batchUsed && validBatchRows.length > 0"
+            class="self-center text-sm text-green-600"
+          >
+            已使用 {{ validBatchRows.length }} 条有效数据
+          </span>
+        </div>
+        <div class="mb-2 text-sm text-gray-500">
+          文件不超过 1MB；表头必须包含「代理账号、申请金额」
+        </div>
+      </template>
+    </div>
+
+    <div>
+      <div class="mb-3 text-base font-medium">红利发放</div>
+      <Form
+        class="max-w-xl"
+        :label-col="{ span: 5 }"
+        :wrapper-col="{ span: 16 }"
       >
-        <InputNumber
-          v-model:value="provideForm.Amount"
-          class="!w-full"
-          :max="100000"
-          :precision="2"
-          placeholder="最多两位小数，不能为 0"
-        />
-      </Form.Item>
-      <Form.Item label="申请备注">
-        <Input.TextArea
-          v-model:value="provideForm.HandleDesc"
-          :maxlength="400"
-          placeholder="最多 400 个字符"
-          :rows="3"
-          show-count
-        />
-      </Form.Item>
-      <Space>
-        <Button
-          type="primary"
-          :loading="provideSubmitting || provideQuerying"
-          @click="
-            provideMode === 'single'
-              ? submitSingleProvide()
-              : submitBatchProvide()
-          "
+        <Form.Item label="钱包类型">
+          <Radio.Group v-model:value="provideForm.WalletType">
+            <Radio :value="1">佣金钱包</Radio>
+          </Radio.Group>
+        </Form.Item>
+        <Form.Item label="红利类型">
+          <Select
+            v-model:value="provideForm.BonusType"
+            :options="[{ label: '代理红利', value: 1 }]"
+            placeholder="请选择红利类型"
+          />
+        </Form.Item>
+        <Form.Item
+          v-if="provideMode === 'single'"
+          label="申请金额"
+          required
         >
-          {{ provideMode === 'single' ? '确认发放' : '确认批量发放' }}
-        </Button>
-        <Button @click="resetProvide">取消</Button>
-      </Space>
-    </Form>
+          <InputNumber
+            v-model:value="provideForm.Amount"
+            :max="100000"
+            :precision="2"
+            placeholder="最多两位小数，不能为 0"
+            style="width: 100%"
+          />
+        </Form.Item>
+        <Form.Item label="申请备注">
+          <Input.TextArea
+            v-model:value="provideForm.HandleDesc"
+            :maxlength="400"
+            placeholder="最多 400 个字符"
+            :rows="3"
+            show-count
+          />
+        </Form.Item>
+        <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
+          <Space>
+            <Button
+              class="w-28"
+              type="primary"
+              :loading="provideSubmitting || provideQuerying"
+              @click="
+                provideMode === 'single'
+                  ? submitSingleProvide()
+                  : submitBatchProvide()
+              "
+            >
+              {{ provideMode === 'single' ? '确认发放' : '批量发放' }}
+            </Button>
+            <Button class="w-28" @click="resetProvide">重置</Button>
+          </Space>
+        </Form.Item>
+      </Form>
+    </div>
 
     <Modal
       v-model:open="batchPreviewOpen"

@@ -388,36 +388,30 @@ void loadList();
       type="warning"
     />
     <template v-else>
-      <div class="query-panel">
-        <div class="query-fields">
-          <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <Space.Compact>
+            <span class="query-field-addon">上架包名称</span>
             <Input
               v-model:value="filters.AppName"
               allow-clear
-              @press-enter="handleSearch"
-              style="width: 220px"
               placeholder="请输入上架包名称"
-            >
-              <template #addonBefore>上架包名称</template>
-            </Input>
-          </div>
-          <div class="flex flex-col gap-1">
+              @press-enter="handleSearch"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">上架包编码</span>
             <Input
               v-model:value="filters.AppUrl"
               allow-clear
-              @press-enter="handleSearch"
-              style="width: 220px"
               placeholder="请输入上架包编码"
-            >
-              <template #addonBefore>上架包编码</template>
-            </Input>
-          </div>
+              @press-enter="handleSearch"
+            />
+          </Space.Compact>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.DateRange" />
-        </div>
-        </div>
-        <div class="query-actions">
-          <Space>
+            <QueryDatetimeRangePicker v-model="filters.DateRange" />
+          </div>
+          <div class="query-filter-actions">
             <Button type="primary" :loading="listLoading" @click="handleSearch">
               查询
             </Button>
@@ -425,7 +419,7 @@ void loadList();
             <Button v-if="canCreate" type="primary" ghost @click="openCreate">
               新增
             </Button>
-          </Space>
+          </div>
         </div>
       </div>
 
@@ -613,29 +607,6 @@ void loadList();
 </template>
 
 <style scoped>
-.query-panel {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px;
-  margin-bottom: 18px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.query-fields {
-  display: grid;
-  flex: 1;
-  grid-template-columns: repeat(3, minmax(220px, 1fr));
-  gap: 12px;
-}
-
-.query-actions {
-  flex: none;
-}
-
 .table-card {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
@@ -662,12 +633,6 @@ void loadList();
 }
 
 @media (max-width: 900px) {
-  .query-panel {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .query-fields,
   .form-grid {
     grid-template-columns: 1fr;
   }

@@ -458,10 +458,14 @@ onMounted(() => {
                   :login-account="String(row.LoginAccount || '')"
                   :player-id="row.PlayerId as number | string | undefined"
                 />
-                <div class="mt-1">
+                <div
+                  v-if="
+                    item.key === 'bonus' && Number(row.PlayerStatus || 0) !== 0
+                  "
+                  class="mt-1"
+                >
                   <PlayerStatusTag
                     :status="row.PlayerStatus as number | string | null"
-                    hide-normal
                   />
                 </div>
               </div>

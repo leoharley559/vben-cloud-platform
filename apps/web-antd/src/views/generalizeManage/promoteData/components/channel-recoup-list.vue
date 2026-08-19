@@ -283,71 +283,78 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewPage">
-    <div class="recoup-query">
-      <Space.Compact>
-        <Select
-          class="query-auto-select"
-          :popup-match-select-width="false"
-          v-model:value="filterAdminSearchType"
-          :options="[
-            { label: '模糊', value: 0 },
-            { label: '精确', value: 1 },
-          ]"
-        />
-        <AccountSelect
-          v-if="filterAdminSearchType === 0"
-          v-model="filterAdminIds"
-          style="width: 220px"
-        />
-        <Input
-          v-else
-          v-model:value="filterAdminSearch"
-          allow-clear
-          style="width: 180px"
-          placeholder="请输入推广账号"
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <Select
+            class="query-auto-select"
+            :popup-match-select-width="false"
+            v-model:value="filterAdminSearchType"
+            :options="[
+              { label: '账号模糊', value: 0 },
+              { label: '账号精准', value: 1 },
+            ]"
           />
-      </Space.Compact>
-      <Space.Compact>
-        <Select
-          class="query-auto-select"
-          :popup-match-select-width="false"
-          v-model:value="filterChannelSearchType"
-          :options="[
-            { label: '模糊', value: 0 },
-            { label: '精确', value: 1 },
-          ]"
-        />
-        <ChannelSelect
-          v-if="filterChannelSearchType === 0"
-          v-model="filterChannelIds"
-          style="width: 220px"
-          placeholder="请输入渠道号"
-        />
-        <Input
-          v-else
-          v-model:value="filterChannelSearch"
-          allow-clear
-          style="width: 180px"
-          placeholder="请输入渠道"
+          <AccountSelect
+            v-if="filterAdminSearchType === 0"
+            v-model="filterAdminIds"
           />
-      </Space.Compact>
-      <Select
-        class="query-auto-select"
-        :popup-match-select-width="false"
-        v-model:value="filterReportType"
-        :options="[
-          { label: '日报', value: 2 },
-          { label: '周报', value: 3 },
-          { label: '月报', value: 4 },
-        ]"
-        @change="resetDateByReportType"
-      />
-      <DatePicker.RangePicker
-        v-model:value="filterDateRange"
-        :picker="datePickerMode"
-      />
-      <Button type="primary" @click="loadData">查询</Button>
-      <Button @click="reset">重置</Button>
+          <Input
+            v-else
+            v-model:value="filterAdminSearch"
+            allow-clear
+            placeholder="请输入推广账号"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <Select
+            class="query-auto-select"
+            :popup-match-select-width="false"
+            v-model:value="filterChannelSearchType"
+            :options="[
+              { label: '渠道模糊', value: 0 },
+              { label: '渠道精准', value: 1 },
+            ]"
+          />
+          <ChannelSelect
+            v-if="filterChannelSearchType === 0"
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+          <Input
+            v-else
+            v-model:value="filterChannelSearch"
+            allow-clear
+            placeholder="请输入渠道"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">报表类型</span>
+          <Select
+            v-model:value="filterReportType"
+            :options="[
+              { label: '日报', value: 2 },
+              { label: '周报', value: 3 },
+              { label: '月报', value: 4 },
+            ]"
+            placeholder="请选择报表类型"
+            @change="resetDateByReportType"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
+          <Space.Compact>
+            <span class="query-field-addon">日期</span>
+            <DatePicker.RangePicker
+              v-model:value="filterDateRange"
+              :picker="datePickerMode"
+            />
+          </Space.Compact>
+        </div>
+        <div class="query-filter-actions query-filter-actions-single">
+          <Button type="primary" @click="loadData">查询</Button>
+          <Button @click="reset">重置</Button>
+        </div>
+      </div>
     </div>
     <div class="recoup-toolbar">
       <Space wrap>
@@ -360,11 +367,11 @@ onMounted(() => {
         </Radio.Group>
         <Select
           v-model:value="filterIsTotal"
+          class="query-auto-select"
           :options="[
             { label: '不累计', value: 0 },
             { label: '累计', value: 1 },
           ]"
-          style="width: 100px"
         />
       </Space>
       <Button
@@ -423,22 +430,13 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.recoup-query,
 .recoup-toolbar {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  padding: 14px;
-  margin-bottom: 12px;
-  background: hsl(var(--muted) / 35%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.recoup-toolbar {
   justify-content: space-between;
-  background: transparent;
+  margin-bottom: 12px;
 }
 
 .positive-value {

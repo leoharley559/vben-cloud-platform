@@ -21,8 +21,8 @@ export const TIMESHARE_METRIC_MAP: Record<
   { label: string; permission: number }
 > = {
   addDevice: { label: '新增设备', permission: 10_880 },
-  addExchangeMoney: { label: '兑换金额', permission: 10_884 },
-  addExchangeNum: { label: '兑换人数', permission: 10_885 },
+  addExchangeMoney: { label: '新增兑换金额', permission: 10_884 },
+  addExchangeNum: { label: '新增兑换人数', permission: 10_885 },
   addNumber: { label: '新增用户', permission: 10_878 },
   addPayMoney: { label: '付费金额', permission: 10_882 },
   addPayNum: { label: '付费人数', permission: 10_883 },
@@ -39,13 +39,17 @@ function sortDayGroups(data: TimeshareHourItem[][]) {
     });
 }
 
+function keepDayGroups(data: TimeshareHourItem[][]) {
+  return data.filter((group) => Array.isArray(group) && group.length > 0);
+}
+
 function getMetricValue(item: TimeshareHourItem, metric: TimeshareMetricKey) {
   switch (metric) {
     case 'addDevice': {
       return Number(item.SumDevice ?? 0);
     }
     case 'addExchangeMoney': {
-      return Number((Number(item.SumWithdrawMoney ?? 0) / 100).toFixed(2));
+      return Number(item.SumWithdrawMoney ?? 0) / 100;
     }
     case 'addExchangeNum': {
       return Number(item.SumWithdrawNum ?? 0);
@@ -54,18 +58,13 @@ function getMetricValue(item: TimeshareHourItem, metric: TimeshareMetricKey) {
       return Number(item.SumReg ?? 0);
     }
     case 'addPayMoney': {
-      return Number(
-        (
-          (Number(item.SumAgentPayMoney ?? 0) +
-            Number(item.SumPayMoney ?? 0)) /
-          100
-        ).toFixed(2),
+      return (
+        (Number(item.SumAgentPayMoney ?? 0) + Number(item.SumPayMoney ?? 0)) /
+        100
       );
     }
     case 'addPayNum': {
-      return (
-        Number(item.SumAgentPayNum ?? 0) + Number(item.SumPayNum ?? 0)
-      );
+      return Number(item.SumAgentPayNum ?? 0) + Number(item.SumPayNum ?? 0);
     }
     case 'allLogin': {
       return Number(item.SumLogin ?? 0);
@@ -76,16 +75,17 @@ function getMetricValue(item: TimeshareHourItem, metric: TimeshareMetricKey) {
   }
 }
 
+/** 表格按接口返回日顺序；小时列对齐旧站 0–23 */
 export function buildTimeshareTable(
   data: TimeshareHourItem[][],
   metric: TimeshareMetricKey,
 ) {
-  const groups = sortDayGroups(data);
+  const groups = keepDayGroups(data);
   const reportDays = groups.map((group) => group[0]?.ReportDay || '-');
-  const rows = HOUR_LABELS.map((hour, hourIndex) => {
+  const rows = Array.from({ length: 24 }, (_, hour) => {
     const row: Record<string, number | string> = { hour };
     groups.forEach((group, index) => {
-      const hourData = group.find((item) => Number(item.Hours) === hourIndex);
+      const hourData = group.find((item) => Number(item.Hours) === hour);
       row[`day_${index}`] = hourData ? getMetricValue(hourData, metric) : '-';
     });
     return row;
@@ -93,6 +93,7 @@ export function buildTimeshareTable(
   return { reportDays, rows };
 }
 
+/** 图表按日期倒序，缺小时补 0，保证与 0:00–23:00 横轴对齐 */
 export function buildTimeshareChart(
   data: TimeshareHourItem[][],
   metric: TimeshareMetricKey,
@@ -101,6 +102,8 @@ export function buildTimeshareChart(
   const groups = sortDayGroups(data);
   const legend = groups.map((group) => group[0]?.ReportDay || '-');
   const series = groups.map((group) => ({
+    animationDuration: 1000,
+    animationEasing: 'cubicInOut' as const,
     data: HOUR_LABELS.map((_, hourIndex) => {
       const hourData = group.find((item) => Number(item.Hours) === hourIndex);
       return hourData ? getMetricValue(hourData, metric) : 0;

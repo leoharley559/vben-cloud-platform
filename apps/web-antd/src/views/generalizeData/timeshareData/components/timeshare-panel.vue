@@ -3,13 +3,12 @@ import type { EchartsUIType } from '@vben/plugins/echarts';
 
 import type { TimeshareHourItem } from '#/types/promotion';
 
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 
 import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
 
 import { Empty, Table } from 'ant-design-vue';
 
-import { antTableScrollY } from '#/utils/table-height';
 import {
   buildTimeshareChart,
   buildTimeshareTable,
@@ -26,12 +25,13 @@ const props = defineProps<{
 }>();
 
 const chartRef = ref<EchartsUIType>();
-const { renderEcharts } = useEcharts(chartRef);
+const { renderEcharts, resize } = useEcharts(chartRef);
 
 const tableData = computed(() => buildTimeshareTable(props.data, props.metric));
 
 const tableColumns = computed(() => {
   const columns: Array<{
+    align: 'center';
     dataIndex: string;
     fixed?: 'left';
     key: string;
@@ -39,6 +39,7 @@ const tableColumns = computed(() => {
     width: number;
   }> = [
     {
+      align: 'center',
       dataIndex: 'hour',
       fixed: 'left',
       key: 'hour',
@@ -48,6 +49,7 @@ const tableColumns = computed(() => {
   ];
   tableData.value.reportDays.forEach((day, index) => {
     columns.push({
+      align: 'center',
       dataIndex: `day_${index}`,
       key: `day_${index}`,
       title: day,
@@ -61,6 +63,7 @@ async function renderChart() {
   if (props.chartType === 'table' || props.data.length === 0) {
     return;
   }
+  await nextTick();
   const chart = buildTimeshareChart(props.data, props.metric, props.chartType);
   const selected = Object.fromEntries(
     chart.legend.map((day, index) => [
@@ -70,48 +73,60 @@ async function renderChart() {
   );
   const instance = await renderEcharts({
     grid: {
-      bottom: 20,
+      bottom: 15,
       containLabel: true,
-      left: '2%',
-      right: '2%',
+      left: 15,
+      right: 15,
       top: 40,
     },
     legend: {
       data: chart.legend,
+      icon: 'roundRect',
+      itemGap: 14,
+      itemHeight: 14,
+      itemWidth: 24,
       selected,
       top: 0,
     },
     series: chart.series,
     title: {
-      left: 'center',
+      left: 20,
       text: TIMESHARE_METRIC_MAP[props.metric].label,
-      top: 24,
+      textStyle: {
+        color: '#36a3f7',
+        fontSize: 18,
+        fontWeight: 400,
+      },
+      top: 0,
     },
-    tooltip: { axisPointer: { type: 'cross' }, trigger: 'axis' },
+    tooltip: {
+      axisPointer: { type: 'cross' },
+      padding: [5, 10],
+      trigger: 'axis',
+    },
     xAxis: {
+      axisTick: { show: true },
       data: chart.xAxis,
       type: 'category',
     },
     yAxis: {
+      axisTick: { show: true },
       minInterval: 1,
-      splitNumber: 4,
       type: 'value',
     },
   });
   instance?.off('legendselectchanged');
-  instance?.on(
-    'legendselectchanged',
-    (event: unknown) => {
-      const payload = event as { selected?: Record<string, boolean> };
-      Object.assign(timeshareLegendSelected, payload.selected || {});
-    },
-  );
+  instance?.on('legendselectchanged', (event: unknown) => {
+    const payload = event as { selected?: Record<string, boolean> };
+    Object.assign(timeshareLegendSelected, payload.selected || {});
+  });
+  resize();
 }
 
 watch(
   () => [props.data, props.metric, props.chartType] as const,
   () => {
-    renderChart();
+    void renderChart();
   },
   { deep: true, immediate: true },
 );
@@ -119,18 +134,26 @@ watch(
 
 <template>
   <Empty v-if="data.length === 0" class="py-24" description="暂无时段数据" />
-  <div v-else-if="chartType === 'table'" class="overflow-auto">
+  <div v-else-if="chartType === 'table'" class="timeshare-board overflow-hidden">
     <Table
       bordered
       :columns="tableColumns"
       :data-source="tableData.rows"
       :pagination="false"
-      :scroll="{ x: 'max-content', y: antTableScrollY(100) }"
+      :scroll="{ x: 'max-content', y: 'calc(100vh - 340px)' }"
       size="small"
       :row-key="(row) => String(row.hour)"
     />
   </div>
-  <div v-else class="h-[520px] w-full">
-    <EchartsUI ref="chartRef" class="h-full w-full" />
+  <div v-else class="timeshare-board w-full">
+    <EchartsUI ref="chartRef" height="100%" width="100%" />
   </div>
 </template>
+
+<style scoped>
+.timeshare-board {
+  width: 100%;
+  height: calc(100vh - 280px);
+  min-height: 420px;
+}
+</style>

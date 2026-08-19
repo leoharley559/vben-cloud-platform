@@ -11,11 +11,11 @@ import {
   Modal,
   Pagination,
   Popconfirm,
+  Radio,
   Select,
   Space,
   Switch,
   Table,
-  Tabs,
   Tag,
 } from 'ant-design-vue';
 
@@ -67,6 +67,9 @@ const tabs = [
   { key: '2', label: '提款亏损', note: '按代理类型开启提款流水规则，并设置提款流水倍数。' },
   { key: '3', label: '信用额度', note: '按代理类型设置单笔及每日代存额度，并可覆盖指定代理账号。' },
 ];
+const currentTab = computed(() =>
+  tabs.find((item) => item.key === activeTab.value),
+);
 const restrictionColumns = computed(() => [
   { key: 'seq', title: '序号', width: 70 },
   { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '代理账号' },
@@ -351,10 +354,17 @@ onMounted(loadTab);
 </script>
 
 <template>
-  <Tabs v-model:active-key="activeTab" type="line" size="small">
-    <Tabs.TabPane v-for="tab in tabs" :key="tab.key" :tab="tab.label">
+  <div>
+    <div class="mb-3">
+      <Radio.Group v-model:value="activeTab" button-style="solid">
+        <Radio.Button v-for="tab in tabs" :key="tab.key" :value="tab.key">
+          {{ tab.label }}
+        </Radio.Button>
+      </Radio.Group>
+    </div>
+
       <Card :loading="loading" size="small">
-        <p class="mb-4 text-sm text-gray-500">{{ tab.note }}</p>
+        <p class="mb-4 text-sm text-gray-500">{{ currentTab?.note }}</p>
         <template v-if="activeType !== 3">
           <Space size="large" wrap>
             <span>官方代理：<Switch :checked="Number(firstSetting(activeType).ActiveOfficial) === 1" :disabled="!canEdit" @change="(value) => updateToggle('official', Boolean(value))" /></span>
@@ -367,7 +377,7 @@ onMounted(loadTab);
           </Space>
         </template>
 
-        <Table v-else :columns="depositColumns" :data-source="settings[3]" :pagination="false" row-key="AccountType" size="small">
+        <Table v-else bordered :columns="depositColumns" :data-source="settings[3]" :pagination="false" row-key="AccountType" size="small">
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'AccountType'">{{ accountTypeMap[Number(record.AccountType)] || '-' }}</template>
             <template v-else-if="column.key === 'range'">
@@ -417,7 +427,7 @@ onMounted(loadTab);
         </div>
     </div>
   </div>
-        <Table :columns="restrictionColumns" :data-source="rows" :loading="loading" :pagination="false" :row-selection="canRemove ? { selectedRowKeys: selectedKeys, onChange: (keys: Array<number | string>) => (selectedKeys = keys) } : undefined" row-key="Id" :scroll="{ x: 1000 }" size="small">
+        <Table bordered :columns="restrictionColumns" :data-source="rows" :loading="loading" :pagination="false" :row-selection="canRemove ? { selectedRowKeys: selectedKeys, onChange: (keys: Array<number | string>) => (selectedKeys = keys) } : undefined" row-key="Id" :scroll="{ x: 1000 }" size="small">
           <template #bodyCell="{ column, record, index }">
             <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>
             <template v-else-if="column.key === 'AccountType'">{{ accountTypeMap[Number(record.AccountType)] || '-' }}</template>
@@ -429,8 +439,7 @@ onMounted(loadTab);
         </Table>
         <Pagination v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize" :page-size-options="['10', '20', '50', '100']" :total="total" class="mt-4 text-right" show-size-changer @change="loadRestrictions" @show-size-change="loadRestrictions" />
       </Card>
-    </Tabs.TabPane>
-  </Tabs>
+  </div>
 
   <Modal v-model:open="addOpen" :confirm-loading="addSubmitting" title="添加代理账号限制" @ok="submitAdd">
     <Form layout="vertical">

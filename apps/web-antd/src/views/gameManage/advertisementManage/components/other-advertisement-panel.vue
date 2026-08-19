@@ -1,5 +1,7 @@
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import {
   Button,
@@ -14,10 +16,10 @@ import {
   Select,
   Space,
   Switch,
-  Table,
   Tabs,
 } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   createAdvertisementApi,
   createAdvertisementProgrammeApi,
@@ -36,6 +38,7 @@ import {
   updateAdvertisementProgrammeApi,
   updateVenueRebateApi,
 } from '#/api/gameManage/advertisement-manage';
+import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import RichTextEditor from '#/components/global/rich-text-editor.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -171,67 +174,137 @@ function syncProgrammeConfig() {
   agentAppQrCode.value = String(current?.AgentAppQrCode || '');
 }
 
-const columns = computed(() => {
+function buildColumns(): VxeTableGridOptions<OtherRow>['columns'] {
   if (subtype.value === 7) {
     return [
-      { dataIndex: 'Type', key: 'venueType', title: '场馆类型', width: 120 },
-      { dataIndex: 'Title', key: 'Title', title: '场馆主标题' },
-      { dataIndex: 'SubTitle', key: 'SubTitle', title: '场馆副标题' },
       {
-        dataIndex: 'Description',
-        key: 'Description',
+        field: 'Type',
+        slots: { default: 'venueType' },
+        title: '场馆类型',
+        width: 120,
+      },
+      { field: 'Title', minWidth: 140, title: '场馆主标题' },
+      { field: 'SubTitle', minWidth: 140, title: '场馆副标题' },
+      {
+        field: 'Description',
+        minWidth: 180,
+        showOverflow: 'tooltip',
         title: '显示返水或介绍',
       },
-      { key: 'action', title: '操作', width: 170 },
+      {
+        field: 'action',
+        fixed: 'right',
+        slots: { default: 'action' },
+        title: '操作',
+        width: 170,
+      },
     ];
   }
-  const result: Array<Record<string, unknown>> = [
-    { key: 'index', title: '序号', width: 60 },
-    { dataIndex: 'Title', key: 'Title', title: '标题', width: 170 },
+  const result: NonNullable<VxeTableGridOptions<OtherRow>['columns']> = [
+    { type: 'seq', title: '序号', width: 60 },
+    { field: 'Title', minWidth: 170, showOverflow: 'tooltip', title: '标题' },
   ];
   if (subtype.value === 1) {
     result.push(
-      { key: 'ImageUrl', title: '背景图(APP 白天)', width: 210 },
-      { key: 'ImageNightUrl', title: '背景图(APP 夜晚)', width: 210 },
-      { key: 'CrossImageUrl', title: '背景图(PC)', width: 210 },
-      { key: 'OpenType', title: '跳转类型', width: 110 },
-      { dataIndex: 'Jump', key: 'Jump', title: '跳转参数', width: 130 },
+      {
+        field: 'ImageUrl',
+        minWidth: 210,
+        showOverflow: false,
+        slots: { default: 'imageUrl' },
+        title: '背景图(APP 白天)',
+      },
+      {
+        field: 'ImageNightUrl',
+        minWidth: 210,
+        showOverflow: false,
+        slots: { default: 'imageNightUrl' },
+        title: '背景图(APP 夜晚)',
+      },
+      {
+        field: 'CrossImageUrl',
+        minWidth: 210,
+        showOverflow: false,
+        slots: { default: 'crossImageUrl' },
+        title: '背景图(PC)',
+      },
+      {
+        field: 'OpenType',
+        slots: { default: 'openType' },
+        title: '跳转类型',
+        width: 110,
+      },
+      { field: 'Jump', minWidth: 130, showOverflow: 'tooltip', title: '跳转参数' },
     );
   } else if (subtype.value === 2) {
     if (displayMode.value === 1) {
       result.push(
-        { key: 'ImageUrl', title: '宣传图(APP)', width: 260 },
-        { key: 'CrossImageUrl', title: '宣传图(PC)', width: 260 },
+        {
+          field: 'ImageUrl',
+          minWidth: 260,
+          showOverflow: false,
+          slots: { default: 'imageUrl' },
+          title: '宣传图(APP)',
+        },
+        {
+          field: 'CrossImageUrl',
+          minWidth: 260,
+          showOverflow: false,
+          slots: { default: 'crossImageUrl' },
+          title: '宣传图(PC)',
+        },
       );
     } else {
       result.push(
-        { dataIndex: 'UrlApp', key: 'UrlApp', title: 'APP 地址', width: 260 },
-        { dataIndex: 'UrlWeb', key: 'UrlWeb', title: 'PC 地址', width: 260 },
+        { field: 'UrlApp', minWidth: 260, showOverflow: 'tooltip', title: 'APP 地址' },
+        { field: 'UrlWeb', minWidth: 260, showOverflow: 'tooltip', title: 'PC 地址' },
       );
     }
   } else {
     result.push(
-      { key: 'CrossImageUrl', title: '背景图(PC)', width: 260 },
-      { key: 'OpenType', title: '跳转类型', width: 110 },
-      { dataIndex: 'Jump', key: 'Jump', title: '跳转参数', width: 160 },
+      {
+        field: 'CrossImageUrl',
+        minWidth: 260,
+        showOverflow: false,
+        slots: { default: 'crossImageUrl' },
+        title: '背景图(PC)',
+      },
+      {
+        field: 'OpenType',
+        slots: { default: 'openType' },
+        title: '跳转类型',
+        width: 110,
+      },
+      { field: 'Jump', minWidth: 160, showOverflow: 'tooltip', title: '跳转参数' },
     );
     if ([3, 4].includes(subtype.value)) {
       result.push(
         {
-          dataIndex: 'ActivityTitle',
-          key: 'ActivityTitle',
+          field: 'ActivityTitle',
+          minWidth: 140,
+          showOverflow: 'tooltip',
           title: '活动标题',
         },
-        { dataIndex: 'Desc', key: 'Desc', title: '描述内容1' },
+        { field: 'Desc', minWidth: 140, showOverflow: 'tooltip', title: '描述内容1' },
       );
       if (subtype.value === 4) {
-        result.push({ dataIndex: 'Desc2', key: 'Desc2', title: '描述内容2' });
+        result.push({
+          field: 'Desc2',
+          minWidth: 140,
+          showOverflow: 'tooltip',
+          title: '描述内容2',
+        });
       }
     }
   }
-  result.push({ key: 'action', title: '操作', width: 220 });
+  result.push({
+    field: 'action',
+    fixed: 'right',
+    slots: { default: 'action' },
+    title: '操作',
+    width: 220,
+  });
   return result;
-});
+}
 
 function toItems(data: unknown) {
   if (data == null) return [] as OtherRow[];
@@ -308,6 +381,7 @@ async function loadRows() {
               subtype.value !== 2 ||
               Number(row.Mode || 1) === displayMode.value,
           );
+    await gridApi.reload();
   } finally {
     loading.value = false;
   }
@@ -559,6 +633,37 @@ function rowImage(
   return getServiceImageUrl(key ? String(row[key]) : '');
 }
 
+function rowIndex(row: OtherRow) {
+  return rows.value.findIndex((item) => String(item.Id) === String(row.Id));
+}
+
+const gridOptions: VxeTableGridOptions<OtherRow> = {
+  columns: buildColumns(),
+  height: 'auto',
+  pagerConfig: { enabled: false },
+  proxyConfig: {
+    autoLoad: false,
+    ajax: {
+      query: async () => ({ items: rows.value, total: rows.value.length }),
+    },
+  },
+  cellConfig: { height: subtype.value === 7 ? 40 : 90 },
+  showOverflow: false,
+};
+
+const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
+
+watch(loading, (value) => {
+  gridApi.setGridOptions({ loading: value });
+});
+
+watch([subtype, displayMode], () => {
+  gridApi.setGridOptions({
+    cellConfig: { height: subtype.value === 7 ? 40 : 90 },
+    columns: buildColumns(),
+  });
+});
+
 onMounted(loadProgrammes);
 </script>
 
@@ -613,15 +718,14 @@ onMounted(loadProgrammes);
       </div>
     </Card>
 
-    <Card class="section-card" size="small">
-      <div class="header-row">
+      <div class="header-row mb-3">
         <div>
           <Radio.Group
             v-model:value="subtype"
             :options="subtypeOptions"
             @change="changeSubtype"
           />
-          <Space v-if="[1, 2].includes(subtype)" class="scheme-config">
+          <Space v-if="[1, 2].includes(subtype)">
             <template v-if="subtype === 2">
               <span>显示模式：</span>
               <Select
@@ -652,7 +756,6 @@ onMounted(loadProgrammes);
           </Button>
         </Space>
       </div>
-    </Card>
 
     <Card
       v-if="subtype === 1 && checkPermission(11_242)"
@@ -687,52 +790,50 @@ onMounted(loadProgrammes);
       </div>
     </Card>
 
-    <Card v-if="checkPermission(11_238)" class="section-card" :bordered="false">
-      <Table
-        :columns="columns"
-        :data-source="rows"
-        :loading="loading"
-        :pagination="false"
-        :row-key="(row) => String(row.Id)"
-        :scroll="{ x: 1200 }"
-        size="small"
-      >
-        <template #bodyCell="{ column, record, index }">
-          <template v-if="column.key === 'index'">{{ index + 1 }}</template>
-          <span v-else-if="column.key === 'venueType'">
-            {{ venueName(record.Type) }}
-          </span>
+    <OpsListPanel v-if="checkPermission(11_238)">
+      <Grid>
+        <template #venueType="{ row }">
+          {{ venueName(row.Type) }}
+        </template>
+        <template #imageUrl="{ row }">
+          <Image :height="70" :src="rowImage(row, 'ImageUrl')" :width="150" />
+        </template>
+        <template #imageNightUrl="{ row }">
           <Image
-            v-else-if="
-              ['ImageUrl', 'ImageNightUrl', 'CrossImageUrl'].includes(
-                String(column.key),
-              )
-            "
-            :height="72"
-            :src="rowImage(record, column.key)"
-            :width="160"
+            :height="70"
+            :src="rowImage(row, 'ImageNightUrl')"
+            :width="150"
           />
-          <span v-else-if="column.key === 'OpenType'">
-            {{
-              openTypeOptions.find(
-                (item) => Number(item.value) === Number(record.OpenType),
-              )?.label || '无'
-            }}
-          </span>
-          <Space v-else-if="column.key === 'action'" size="small">
+        </template>
+        <template #crossImageUrl="{ row }">
+          <Image
+            :height="70"
+            :src="rowImage(row, 'CrossImageUrl')"
+            :width="150"
+          />
+        </template>
+        <template #openType="{ row }">
+          {{
+            openTypeOptions.find(
+              (item) => Number(item.value) === Number(row.OpenType),
+            )?.label || '无'
+          }}
+        </template>
+        <template #action="{ row }">
+          <Space size="small">
             <Button
               v-if="subtype !== 7 && checkPermission(11_243)"
-              :disabled="index === 0"
+              :disabled="rowIndex(row) === 0"
               size="small"
-              @click="move(index, -1)"
+              @click="move(rowIndex(row), -1)"
             >
               上移
             </Button>
             <Button
               v-if="subtype !== 7 && checkPermission(11_243)"
-              :disabled="index === rows.length - 1"
+              :disabled="rowIndex(row) === rows.length - 1"
               size="small"
-              @click="move(index, 1)"
+              @click="move(rowIndex(row), 1)"
             >
               下移
             </Button>
@@ -740,7 +841,7 @@ onMounted(loadProgrammes);
               v-if="checkPermission(11_240)"
               size="small"
               type="primary"
-              @click="openForm(record)"
+              @click="openForm(row)"
             >
               编辑
             </Button>
@@ -748,14 +849,14 @@ onMounted(loadProgrammes);
               v-if="checkPermission(11_241)"
               danger
               size="small"
-              @click="removeRow(record)"
+              @click="removeRow(row)"
             >
               删除
             </Button>
           </Space>
         </template>
-      </Table>
-    </Card>
+      </Grid>
+    </OpsListPanel>
 
     <Modal
       v-model:open="programmeVisible"
@@ -937,10 +1038,7 @@ onMounted(loadProgrammes);
   justify-content: space-between;
   gap: 16px;
 }
-
-.scheme-config {
-  margin-top: 14px;
-}
+ 
 
 .qr-grid {
   display: grid;

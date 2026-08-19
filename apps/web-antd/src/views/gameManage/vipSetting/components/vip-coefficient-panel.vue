@@ -255,28 +255,38 @@ onMounted(loadData);
       size="small"
       title="游戏流水系数"
     >
-      <div class="query-grid">
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.GameName"
-            allow-clear
-            style="width: 240px"
-            placeholder="请输入游戏名称"
-          >
-            <template #addonBefore>游戏名称</template>
-          </Input>
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <Space.Compact>
+            <span class="query-field-addon">游戏名称</span>
+            <Input
+              v-model:value="filters.GameName"
+              allow-clear
+              placeholder="请输入游戏名称"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">类别</span>
+            <Select
+              v-model:value="filters.Category"
+              :options="categoryOptions"
+              placeholder="请选择类别"
+              show-search
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">平台</span>
+            <Select
+              v-model:value="filters.Platform"
+              :options="platformOptions"
+              placeholder="请选择平台"
+              show-search
+            />
+          </Space.Compact>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button @click="resetFilters">重置</Button>
+          </div>
         </div>
-        <Select
-          v-model:value="filters.Category"
-          :options="categoryOptions"
-          show-search
-        />
-        <Select
-          v-model:value="filters.Platform"
-          :options="platformOptions"
-          show-search
-        />
-        <Button @click="resetFilters">重置</Button>
       </div>
 
       <div class="editor-layout">
@@ -369,13 +379,6 @@ onMounted(loadData);
 .section-card {
   margin-bottom: 14px;
   border-radius: 10px;
-}
-
-.query-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr)) auto;
-  gap: 12px;
-  margin-bottom: 14px;
 }
 
 .editor-layout {

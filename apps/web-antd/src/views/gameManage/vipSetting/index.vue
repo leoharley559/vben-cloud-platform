@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { Page } from '@vben/common-ui';
+
 import { Card, Empty, Tabs } from 'ant-design-vue';
 
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -52,9 +54,18 @@ const activeKey = ref(
 </script>
 
 <template>
-  <div class="vip-setting-page">
-    <Card v-if="tabs.length > 0" :bordered="false" class="tabs-card">
-      <Tabs v-model:active-key="activeKey" destroy-inactive-tab-pane type="line" size="small">
+  <Page
+    auto-content-height
+    description="游戏管理 · VIP设置"
+    title="VIP设置"
+  >
+    <Card v-if="tabs.length > 0" size="small">
+      <Tabs
+        v-model:active-key="activeKey"
+        destroy-inactive-tab-pane
+        type="line"
+        size="small"
+      >
         <Tabs.TabPane
           v-for="tab in tabs"
           :key="tab.key"
@@ -64,28 +75,8 @@ const activeKey = ref(
         </Tabs.TabPane>
       </Tabs>
     </Card>
-    <Card v-else :bordered="false">
+    <Card v-else size="small">
       <Empty description="暂无 VIP 设置页面权限" />
     </Card>
-  </div>
+  </Page>
 </template>
-
-<style scoped>
-.vip-setting-page {
-  min-height: 100%;
-  padding: 16px;
-}
-
-.tabs-card {
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
-}
-
-:deep(.ant-card-body) {
-  padding-top: 8px;
-}
-
-:deep(.ant-tabs-nav) {
-  margin-bottom: 16px;
-}
-</style>

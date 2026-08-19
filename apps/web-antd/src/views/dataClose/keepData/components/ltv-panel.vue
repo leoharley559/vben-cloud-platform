@@ -214,18 +214,19 @@ onMounted(() => {
       <KeepQueryBar ref="queryBarRef" @search="handleSearch" />
       <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
-              <Space.Compact>
+              <div class="query-filter-wide">
+          <Space.Compact>
           <span class="query-field-addon">显示更多数据</span>
           <Select
             v-model:value="moreData"
             :options="moreOptions"
             allow-clear
-            class="min-w-[220px]"
             mode="multiple"
             @change="onMoreChange"
             placeholder="请选择显示更多数据"
           />
         </Space.Compact>
+        </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button v-if="canExport" type="primary" @click="handleExport">
           导出Excel

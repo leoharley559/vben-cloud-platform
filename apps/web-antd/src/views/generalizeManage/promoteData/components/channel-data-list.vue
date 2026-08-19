@@ -255,10 +255,9 @@ onMounted(async () => {
           <Select
             v-model:value="currentRate"
             allow-clear
-            class="w-32"
             :options="rateOptions"
-            @change="currentRate = Number(currentRate || 1)"
             placeholder="请选择汇率"
+            @change="currentRate = Number(currentRate || 1)"
           />
         </Space.Compact>
       </div>

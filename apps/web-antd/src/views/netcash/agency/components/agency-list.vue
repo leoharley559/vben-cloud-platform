@@ -823,15 +823,20 @@ onMounted(() => {
       <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
         </div>
-      <Select
-        v-model:value="visibleColumns"
-        mode="multiple"
-        allow-clear
-        :max-tag-count="1"
-        :options="COLUMN_OPTIONS"
-        @change="persistColumns"
-        placeholder="请选择统计时间"
-      />
+      <div class="query-filter-wide">
+        <Space.Compact>
+          <span class="query-field-addon">显示列</span>
+          <Select
+            v-model:value="visibleColumns"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="COLUMN_OPTIONS"
+            placeholder="请选择显示列"
+            @change="persistColumns"
+          />
+        </Space.Compact>
+      </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>

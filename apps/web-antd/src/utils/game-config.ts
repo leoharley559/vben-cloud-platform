@@ -154,24 +154,56 @@ function lookupPlatformName(
   return '';
 }
 
+/** 按场馆编码/简称取 Description（dj → DB电竞）。不要用 GameId：venue-config 的 GameId 与当前平台可能不一致 */
+function lookupVenueDescriptionByCode(key: string, shortName = '') {
+  const venues = venueConfig.venues || [];
+  const upperKey = key.toUpperCase();
+  const upperShort = shortName.toUpperCase();
+  const hit = venues.find(
+    (item) =>
+      String(item.VenueName).toUpperCase() === upperKey ||
+      String(item.VenueCode).toUpperCase() === upperKey ||
+      (upperShort &&
+        (String(item.VenueName).toUpperCase() === upperShort ||
+          String(item.VenueCode).toUpperCase() === upperShort)),
+  );
+  return String(hit?.Description || '').trim();
+}
+
 /** venue-config Description：本环境中文全称（VenueName 多为 TY/PG） */
 function lookupVenueDescription(
   key: string,
   shortName = '',
   gameId = '',
 ) {
+  const byCode = lookupVenueDescriptionByCode(key, shortName);
+  if (byCode) return byCode;
   const venues = venueConfig.venues || [];
-  const upperShort = shortName.toUpperCase();
   const hit = venues.find(
-    (item) =>
-      String(item.GameId) === key ||
-      String(item.GameId) === gameId ||
-      String(item.VenueName).toUpperCase() === upperShort ||
-      String(item.VenueCode).toUpperCase() === upperShort ||
-      String(item.VenueName).toUpperCase() === key.toUpperCase() ||
-      String(item.VenueCode).toUpperCase() === key.toUpperCase(),
+    (item) => String(item.GameId) === key || String(item.GameId) === gameId,
   );
   return String(hit?.Description || '').trim();
+}
+
+/** 接口若直接返回 TY/PG 等简称，仅按当前平台字典反查 ID，不用 venue-config.GameId */
+function resolveVenueKey(key: string, cfg: ParsedGameConfig) {
+  if (
+    cfg.platformGameType?.[key] ||
+    cfg.platformGameTypeAll?.[key] ||
+    cfg.games?.[key] ||
+    cfg.platformGameList?.[key]
+  ) {
+    return key;
+  }
+  const upper = key.toUpperCase();
+  for (const map of [cfg.platformGameType, cfg.platformGameTypeAll]) {
+    for (const [id, name] of Object.entries(map || {})) {
+      if (isVenueAbbreviation(String(name)) && String(name).toUpperCase() === upper) {
+        return String(id);
+      }
+    }
+  }
+  return key;
 }
 
 /**
@@ -197,7 +229,10 @@ export function formatVenueName(
     return '线下';
   }
 
-  const key = String(gameType);
+  const originalKey = String(gameType);
+  const byCode = lookupVenueDescriptionByCode(originalKey);
+  if (byCode) return byCode;
+
   const cfg = config || {
     GameTypeLangGroup: {},
     GroupPlatformGameType: {},
@@ -207,6 +242,8 @@ export function formatVenueName(
     platformGameList: {},
     platformGameType: {},
   };
+
+  const key = resolveVenueKey(originalKey, cfg);
 
   const shortName = lookupPlatformName(cfg.platformGameType, key);
   const byApi = findGameByApiFee(key, cfg);

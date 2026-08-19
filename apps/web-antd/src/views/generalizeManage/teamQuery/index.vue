@@ -297,25 +297,31 @@ onMounted(() => {
     description="推广管理 · 分销列表"
     title="分销列表"
   >
-    <Card class="team-query-card" :bordered="false">
-      <div class="query-panel">
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterAdminUsername"
-            allow-clear
-            style="width: 260px"
-            @keydown.space.prevent
-            @press-enter="handleSearch"
-            placeholder="请输入推广账号"
-          >
-            <template #addonBefore>推广账号</template>
-          </Input>
+    <Card size="small">
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <Space.Compact>
+            <span class="query-field-addon">推广账号</span>
+            <Input
+              v-model:value="filterAdminUsername"
+              allow-clear
+              placeholder="请输入推广账号"
+              @keydown.space.prevent
+              @press-enter="handleSearch"
+            />
+          </Space.Compact>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker
+              v-model="filterDateRange"
+              label="统计时间"
+              :disabled-date="disabledDate"
+            />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </div>
         </div>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="统计时间" :disabled-date="disabledDate" />
-        </div>
-        <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
       </div>
 
       <div class="hierarchy-panel">
@@ -353,23 +359,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.team-query-card {
-  min-height: calc(100vh - 180px);
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
-}
-
-.query-panel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  padding: 14px;
-  margin-bottom: 16px;
-  background: hsl(var(--muted) / 35%);
-  border-radius: 10px;
-}
-
 .hierarchy-panel {
   padding: 12px 16px;
   margin-bottom: 16px;

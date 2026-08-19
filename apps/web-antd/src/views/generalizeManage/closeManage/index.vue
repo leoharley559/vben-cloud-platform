@@ -276,28 +276,31 @@ onMounted(async () => {
       </Card>
     </div>
 
-    <Card v-if="canViewList" class="funding-card" :bordered="false">
-      <div class="query-panel">
-        <Space.Compact>
-          <span class="query-field-addon">资金类型</span>
-          <Select
-            v-model:value="filterMoneyType"
-            allow-clear
-            class="w-48"
-            mode="multiple"
-            :options="[
-              { label: '日结账单', value: 1 },
-              { label: '提现', value: 2 },
-              { label: '提现退回', value: 3 },
-            ]"
-            placeholder="请选择资金类型"
-          />
-        </Space.Compact>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+    <Card v-if="canViewList" size="small">
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <Space.Compact>
+            <span class="query-field-addon">资金类型</span>
+            <Select
+              v-model:value="filterMoneyType"
+              allow-clear
+              mode="multiple"
+              :options="[
+                { label: '日结账单', value: 1 },
+                { label: '提现', value: 2 },
+                { label: '提现退回', value: 3 },
+              ]"
+              placeholder="请选择资金类型"
+            />
+          </Space.Compact>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="gridApi.reload()">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </div>
         </div>
-        <Button type="primary" @click="gridApi.reload()">查询</Button>
-        <Button @click="handleReset">重置</Button>
       </div>
       <Grid>
         <template #addMoney="{ row }">
@@ -339,21 +342,8 @@ onMounted(async () => {
   margin-bottom: 16px;
 }
 
-.summary-card,
-.funding-card {
+.summary-card {
   border-radius: 12px;
-  box-shadow: 0 6px 24px rgb(0 0 0 / 5%);
-}
-
-.query-panel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  padding: 14px;
-  margin-bottom: 16px;
-  background: hsl(var(--muted) / 35%);
-  border-radius: 10px;
 }
 
 @media (max-width: 1200px) {

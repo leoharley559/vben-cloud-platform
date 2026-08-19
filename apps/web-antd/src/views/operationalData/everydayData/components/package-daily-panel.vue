@@ -216,7 +216,7 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col">
-    <div class="ops-query-scope mb-1">
+    <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
           <Space.Compact>
           <Select

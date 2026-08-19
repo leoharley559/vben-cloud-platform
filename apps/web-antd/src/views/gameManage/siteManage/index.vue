@@ -46,7 +46,7 @@ watchEffect(() => {
     description="维护场馆开关、钱包状态、维护公告及场馆子游戏"
     title="场馆管理"
   >
-    <Card class="site-manage-card" :bordered="false">
+    <Card size="small">
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <VenueManagePanel
@@ -61,10 +61,3 @@ watchEffect(() => {
   </Page>
   <Result v-else status="403" sub-title="无场馆管理查看权限" title="403" />
 </template>
-
-<style scoped>
-.site-manage-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgb(15 23 42 / 6%);
-}
-</style>

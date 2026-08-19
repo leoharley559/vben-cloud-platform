@@ -412,28 +412,24 @@ void loadGames();
       type="warning"
     />
     <template v-else>
-      <div class="query-panel">
-        <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-                <div class="flex flex-col gap-1">
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <Space.Compact>
+            <span class="query-field-addon">游戏名称</span>
             <Input
               v-model:value="gameQuery.PackageName"
               allow-clear
-              class="!w-[280px]"
-              @press-enter="searchGames"
               placeholder="请输入游戏名称"
-            >
-              <template #addonBefore>游戏名称</template>
-            </Input>
+              @press-enter="searchGames"
+            />
+          </Space.Compact>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" :loading="gameLoading" @click="searchGames">
+              查询
+            </Button>
+            <Button @click="resetGames">重置</Button>
           </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" :loading="gameLoading" @click="searchGames">
-            查询
-          </Button>
-          <Button @click="resetGames">重置</Button>
         </div>
-    </div>
-  </div>
       </div>
 
       <section class="section-card">
@@ -705,14 +701,6 @@ void loadGames();
 </template>
 
 <style scoped>
-.query-panel {
-  padding: 18px;
-  margin-bottom: 18px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
 .section-card {
   padding: 18px;
   margin-top: 16px;

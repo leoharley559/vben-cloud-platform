@@ -175,7 +175,7 @@ onMounted(load);
   </div>
 
     <SummaryCards :items="summaryItems" />
-    <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1850 }" size="small">
+    <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1850 }" size="small">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>
         <template v-else-if="column.key === 'AccountType'">{{ accountTypeMap[Number(record.AccountType)] || '-' }}</template>

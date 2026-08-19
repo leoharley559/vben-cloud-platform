@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { computed, reactive, ref } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -14,10 +14,10 @@ import {
   message,
   Modal,
   Result,
-  Segmented,
   Select,
   Space,
   Tag,
+  Tabs,
 } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -81,6 +81,7 @@ const filters = reactive({
   Keyword: '',
   Type: 1,
 });
+const activeTab = ref('1');
 const operationLoading = ref(false);
 const exportLoading = ref(false);
 const editVisible = ref(false);
@@ -220,7 +221,7 @@ const gridOptions: VxeTableGridOptions<DomainRow> = {
     pageSizes: [10, 20, 50, 100],
   },
   proxyConfig: {
-    autoLoad: canList.value,
+    autoLoad: false,
     ajax: {
       query: async ({ page }) => {
         const result = await fetchDomainListApi(buildDomainListQuery(page));
@@ -246,9 +247,10 @@ async function handleTypeChange(value: number | string) {
   filters.Type = Number(value);
   filters.Keyword = '';
   filters.InUsed = '';
-  await gridApi.grid?.clearCheckboxRow?.();
   if (!canList.value) return;
-  await reloadFirstPage();
+  await nextTick();
+  await gridApi.grid?.setCurrentPage?.(1);
+  await gridApi.query();
 }
 
 function handleSearch() {
@@ -422,178 +424,175 @@ async function exportDomains() {
     exportLoading.value = false;
   }
 }
+
+onMounted(() => {
+  if (canList.value) void reloadFirstPage();
+});
 </script>
 
 <template>
   <Page
     v-if="canViewPage"
     auto-content-height
-    description="维护各业务场景使用的域名、所属产品与启停状态"
+    description="游戏管理 · 域名管理"
     title="域名管理"
   >
-    <Card class="domain-card" :bordered="false">
-      <div class="domain-type-panel">
-        <div>
-          <div class="text-base font-semibold">我的域名</div>
-          <div class="mt-1 text-xs text-gray-400">
-            按业务用途切换域名分类，分类切换后查询条件与勾选记录会自动清空
-          </div>
-        </div>
-        <Segmented
-          :value="filters.Type"
-          :options="domainTypes"
-          class="domain-segmented"
-          @change="handleTypeChange"
-        />
-      </div>
+    <Card size="small">
+      <Tabs
+        v-model:active-key="activeTab"
+        type="line"
+        size="small"
+        @change="handleTypeChange"
+      >
+        <Tabs.TabPane
+          v-for="item in domainTypes"
+          :key="String(item.value)"
+          :tab="item.label"
+        >
+          <div v-if="activeTab === String(item.value)" class="flex flex-col">
+            <div class="ops-query-scope mb-3">
+              <div class="ops-query-filters">
+                <Space.Compact>
+                  <span class="query-field-addon">域名</span>
+                  <Input
+                    v-model:value="filters.Keyword"
+                    allow-clear
+                    placeholder="请输入域名"
+                    @press-enter="handleSearch"
+                  />
+                </Space.Compact>
+                <Space.Compact>
+                  <span class="query-field-addon">使用状态</span>
+                  <Select
+                    v-model:value="filters.InUsed"
+                    :options="[
+                      { label: '全部状态', value: '' },
+                      { label: '启用', value: 1 },
+                      { label: '停用', value: 2 },
+                    ]"
+                    placeholder="请选择使用状态"
+                  />
+                </Space.Compact>
+                <div class="query-filter-actions query-filter-actions-single">
+                  <Button type="primary" @click="handleSearch">查询</Button>
+                  <Button @click="handleReset">重置</Button>
+                </div>
+              </div>
+            </div>
 
-      <div class="query-panel">
-        <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-                <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="filters.Keyword"
-              allow-clear
-              class="!w-[280px]"
-              @press-enter="handleSearch"
-              placeholder="请输入域名"
-            >
-              <template #addonBefore>域名</template>
-            </Input>
-          </div>
-          <Space.Compact>
-            <span class="query-field-addon">使用状态</span>
-            <Select
-              v-model:value="filters.InUsed"
-              class="!w-[140px]"
-              :options="[
-                { label: '全部状态', value: '' },
-                { label: '启用', value: 1 },
-                { label: '停用', value: 2 },
-              ]"
-              placeholder="请选择使用状态"
+            <Alert
+              v-if="!canList"
+              class="mb-3"
+              message="当前账号无域名列表权限"
+              show-icon
+              type="warning"
             />
-          </Space.Compact>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-        </div>
-    </div>
-  </div>
-      </div>
 
-      <Alert
-        v-if="!canList"
-        class="mb-4"
-        message="当前账号无域名列表权限"
-        show-icon
-        type="warning"
-      />
-
-      <template v-else>
-        <div class="action-bar">
-          <Space wrap>
-            <Button
-              v-if="canBatchEdit"
-              type="primary"
-              @click="openBatchEdit"
-            >
-              批量编辑
-            </Button>
-            <Button
-              v-if="canBatchEnable"
-              class="domain-enable-button"
-              @click="batchSwitch(1)"
-            >
-              批量启用
-            </Button>
-            <Button
-              v-if="canBatchDisable"
-              danger
-              @click="batchSwitch(2)"
-            >
-              批量停用
-            </Button>
-          </Space>
-          <Button
-            v-if="canExport"
-            :loading="exportLoading"
-            @click="exportDomains"
-          >
-            导出 Excel
-          </Button>
-        </div>
-
-        <div class="domain-grid">
-          <Grid>
-            <template #filingStatus="{ row }">
-              <Tag color="blue">{{ filingText(row.FilingStatus) }}</Tag>
-            </template>
-            <template #packages="{ row }">
-              {{ packageNames(row.PackageId) }}
-            </template>
-            <template #blockStatus="{ row }">
-              <template v-if="filters.Type === 1 || filters.Type === 2">
-                <Space :size="4">
-                  <Tag
-                    :color="
-                      Number(row.State) === 1 || Number(row.State) === 3
-                        ? 'green'
-                        : 'red'
-                    "
+            <template v-else>
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <Space wrap>
+                  <Button
+                    v-if="canBatchEdit"
+                    type="primary"
+                    @click="openBatchEdit"
                   >
-                    微信
-                  </Tag>
-                  <Tag
-                    :color="
-                      Number(row.State) === 2 || Number(row.State) === 3
-                        ? 'green'
-                        : 'red'
-                    "
+                    批量编辑
+                  </Button>
+                  <Button
+                    v-if="canBatchEnable"
+                    class="domain-enable-button"
+                    @click="batchSwitch(1)"
                   >
-                    QQ
-                  </Tag>
+                    批量启用
+                  </Button>
+                  <Button
+                    v-if="canBatchDisable"
+                    danger
+                    @click="batchSwitch(2)"
+                  >
+                    批量停用
+                  </Button>
                 </Space>
-              </template>
-              <span v-else class="text-gray-400">-</span>
-            </template>
-            <template #inUsed="{ row }">
-              <Tag :color="Number(row.InUsed) === 1 ? 'green' : 'red'">
-                {{ Number(row.InUsed) === 1 ? '启用' : '停用' }}
-              </Tag>
-            </template>
-            <template #actions="{ row }">
-              <Space :size="4">
                 <Button
-                  v-if="canSingleEdit"
-                  size="small"
-                  type="link"
-                  @click="openSingleEdit(row)"
+                  v-if="canExport"
+                  :loading="exportLoading"
+                  @click="exportDomains"
                 >
-                  编辑
+                  导出 Excel
                 </Button>
-                <Button
-                  v-if="Number(row.InUsed) === 2 && canSingleEnable"
-                  size="small"
-                  type="link"
-                  @click="switchOne(row, 1)"
-                >
-                  启用
-                </Button>
-                <Button
-                  v-if="Number(row.InUsed) === 1 && canSingleDisable"
-                  danger
-                  size="small"
-                  type="link"
-                  @click="switchOne(row, 2)"
-                >
-                  停用
-                </Button>
-              </Space>
+              </div>
+
+              <Grid>
+                <template #filingStatus="{ row }">
+                  <Tag color="blue">{{ filingText(row.FilingStatus) }}</Tag>
+                </template>
+                <template #packages="{ row }">
+                  {{ packageNames(row.PackageId) }}
+                </template>
+                <template #blockStatus="{ row }">
+                  <template v-if="filters.Type === 1 || filters.Type === 2">
+                    <Space :size="4">
+                      <Tag
+                        :color="
+                          Number(row.State) === 1 || Number(row.State) === 3
+                            ? 'green'
+                            : 'red'
+                        "
+                      >
+                        微信
+                      </Tag>
+                      <Tag
+                        :color="
+                          Number(row.State) === 2 || Number(row.State) === 3
+                            ? 'green'
+                            : 'red'
+                        "
+                      >
+                        QQ
+                      </Tag>
+                    </Space>
+                  </template>
+                  <span v-else class="text-gray-400">-</span>
+                </template>
+                <template #inUsed="{ row }">
+                  <Tag :color="Number(row.InUsed) === 1 ? 'green' : 'red'">
+                    {{ Number(row.InUsed) === 1 ? '启用' : '停用' }}
+                  </Tag>
+                </template>
+                <template #actions="{ row }">
+                  <Space :size="4">
+                    <Button
+                      v-if="canSingleEdit"
+                      size="small"
+                      type="link"
+                      @click="openSingleEdit(row)"
+                    >
+                      编辑
+                    </Button>
+                    <Button
+                      v-if="Number(row.InUsed) === 2 && canSingleEnable"
+                      size="small"
+                      type="link"
+                      @click="switchOne(row, 1)"
+                    >
+                      启用
+                    </Button>
+                    <Button
+                      v-if="Number(row.InUsed) === 1 && canSingleDisable"
+                      danger
+                      size="small"
+                      type="link"
+                      @click="switchOne(row, 2)"
+                    >
+                      停用
+                    </Button>
+                  </Space>
+                </template>
+              </Grid>
             </template>
-          </Grid>
-        </div>
-      </template>
+          </div>
+        </Tabs.TabPane>
+      </Tabs>
     </Card>
 
     <Modal
@@ -637,52 +636,8 @@ async function exportDomains() {
 </template>
 
 <style scoped>
-.domain-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgb(15 23 42 / 6%);
-}
-
-.domain-type-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 4px 4px 20px;
-  border-bottom: 1px solid hsl(var(--border));
-}
-
-.domain-segmented {
-  width: 100%;
-}
-
-.domain-segmented :deep(.ant-segmented-group) {
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.query-panel {
-  padding: 18px;
-  margin: 18px 0 14px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.action-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
 .domain-enable-button {
   color: #16a34a;
   border-color: #86efac;
-}
-
-.domain-grid {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
 }
 </style>

@@ -626,11 +626,12 @@ async function handleSubmit() {
           </Form.Item>
 
           <Form.Item label="商品限制可购买总数">
-            <Radio.Group
-              v-model:value="form.ProductExchangeLimitType"
-              :options="LIMIT_WINDOW_OPTIONS"
-              class="mb-1"
-            />
+            <div class="mb-1">
+              <Radio.Group
+                v-model:value="form.ProductExchangeLimitType"
+                :options="LIMIT_WINDOW_OPTIONS"
+              />
+            </div>
             <div>
               <InputNumber
                 v-model:value="form.ProductExchangeLimitCount"

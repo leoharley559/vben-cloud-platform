@@ -564,54 +564,48 @@ onBeforeUnmount(() => {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-      <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.ChannelId"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入渠道号"
-          >
-            <template #addonBefore>渠道号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.ChannelName"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入渠道名称"
-          >
-            <template #addonBefore>渠道名称</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.PromoterAdminUserName"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入推广账号"
-          >
-            <template #addonBefore>推广账号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.PromoterAdminName"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入推广名称"
-          >
-            <template #addonBefore>推广名称</template>
-          </Input>
-        </div>
-        <Select
-          v-if="canVisibilityFilter"
-          v-model:value="filters.IsHidden"
-          :options="visibilityOptions"
-        />
+    <div class="ops-query-scope mb-4">
+      <div class="ops-query-filters">
+        <Input
+          v-model:value="filters.ChannelId"
+          allow-clear
+          @press-enter="handleSearch"
+          placeholder="请输入渠道号"
+        >
+          <template #addonBefore>渠道号</template>
+        </Input>
+        <Input
+          v-model:value="filters.ChannelName"
+          allow-clear
+          @press-enter="handleSearch"
+          placeholder="请输入渠道名称"
+        >
+          <template #addonBefore>渠道名称</template>
+        </Input>
+        <Input
+          v-model:value="filters.PromoterAdminUserName"
+          allow-clear
+          @press-enter="handleSearch"
+          placeholder="请输入推广账号"
+        >
+          <template #addonBefore>推广账号</template>
+        </Input>
+        <Input
+          v-model:value="filters.PromoterAdminName"
+          allow-clear
+          @press-enter="handleSearch"
+          placeholder="请输入推广名称"
+        >
+          <template #addonBefore>推广名称</template>
+        </Input>
+        <Space.Compact v-if="canVisibilityFilter">
+          <span class="query-field-addon">渠道状态</span>
+          <Select
+            v-model:value="filters.IsHidden"
+            :options="visibilityOptions"
+            placeholder="请选择渠道状态"
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">打包状态</span>
           <Select
@@ -630,18 +624,15 @@ onBeforeUnmount(() => {
             placeholder="请选择排序"
           />
         </Space.Compact>
-        <div class="query-filter-actions query-filter-actions-single">
+        <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
+          <Button @click="handleReset">重置</Button>
+          <Button v-if="canBatch && canList" @click="openBatch">批量设置</Button>
+          <Button v-if="canCreate" type="primary" @click="openCreate()">
+            创建渠道
+          </Button>
         </div>
-    </div>
-  </div>
-      <Space wrap>
-        <Button v-if="canBatch && canList" @click="openBatch">批量设置</Button>
-        <Button v-if="canCreate" type="primary" @click="openCreate()"
-          >创建渠道</Button
-        >
-      </Space>
+      </div>
     </div>
 
     <div v-if="canHierarchy" class="mb-4 rounded border border-gray-200 p-3">

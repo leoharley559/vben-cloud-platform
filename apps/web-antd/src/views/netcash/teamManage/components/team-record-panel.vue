@@ -154,6 +154,7 @@ onMounted(() => {
     </div>
   </div>
     <Table
+      bordered
       :columns="recordColumns"
       :data-source="recordRows"
       :loading="recordLoading"

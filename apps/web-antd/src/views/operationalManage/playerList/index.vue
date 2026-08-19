@@ -1034,7 +1034,7 @@ onMounted(async () => {
           <div v-if="canFilterFirstPay" class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterFirstPayRange" label="存款时间" />
         </div>
-          <div class="flex flex-col gap-1">
+          <div class="query-filter-wide">
             <Space.Compact>
               <span class="query-field-addon">显示列</span>
               <Select
@@ -1042,8 +1042,8 @@ onMounted(async () => {
                 mode="multiple"
                 :max-tag-count="1"
                 :options="COLUMN_OPTIONS"
-                @change="persistColumns"
                 placeholder="请选择显示列"
+                @change="persistColumns"
               />
             </Space.Compact>
           </div>

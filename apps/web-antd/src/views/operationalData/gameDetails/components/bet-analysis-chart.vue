@@ -142,11 +142,27 @@ function buildOption() {
   }
 
   return {
-    legend: { data: BET_TYPES.map((item) => item.name) },
+    grid: {
+      bottom: 8,
+      containLabel: true,
+      left: 8,
+      right: lineOnly ? 12 : 8,
+      top: 36,
+    },
+    legend: {
+      data: BET_TYPES.map((item) => item.name),
+      top: 0,
+    },
     series,
     tooltip: { trigger: 'axis' },
-    xAxis: { data: categories, type: 'category' },
-    yAxis: [{ type: 'value' }, { type: 'value' }],
+    xAxis: {
+      boundaryGap: !lineOnly,
+      data: categories,
+      type: 'category',
+    },
+    yAxis: lineOnly
+      ? [{ type: 'value' }]
+      : [{ type: 'value' }, { type: 'value' }],
   };
 }
 

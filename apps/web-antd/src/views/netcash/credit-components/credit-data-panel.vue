@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { NetcashListResult } from '#/types/netcash';
 
@@ -6,7 +8,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  DatePicker,
   Input,
   InputNumber,
   Select,
@@ -16,6 +17,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -62,6 +64,9 @@ const filterValues = reactive<Record<string, unknown>>({});
 const rangeValues = reactive<Record<string, [number | undefined, number | undefined]>>(
   {},
 );
+const dateRangeValues = reactive<Record<string, [Dayjs, Dayjs] | undefined>>(
+  {},
+);
 const totalData = ref<Record<string, number>>({});
 const selectedRows = ref<Record<string, unknown>[]>([]);
 const exporting = ref(false);
@@ -73,7 +78,11 @@ function initializeFilters() {
         filter.defaultValue ?? (filter.type === 'multiSelect' ? [] : '');
     }
     if (filter.fields) {
-      rangeValues[filter.label] = [undefined, undefined];
+      if (filter.type === 'dateRange') {
+        dateRangeValues[filter.label] = undefined;
+      } else {
+        rangeValues[filter.label] = [undefined, undefined];
+      }
     }
   }
 }
@@ -110,15 +119,12 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
       query[filter.field] = value;
     }
     if (filter.fields) {
-      const range = rangeValues[filter.label];
       if (filter.type === 'dateRange') {
-        query[filter.fields[0]] = range?.[0]
-          ? dayjs(range[0]).startOf('day').unix()
-          : '';
-        query[filter.fields[1]] = range?.[1]
-          ? dayjs(range[1]).endOf('day').unix()
-          : '';
+        const range = dateRangeValues[filter.label];
+        query[filter.fields[0]] = range?.[0] ? dayjs(range[0]).unix() : '';
+        query[filter.fields[1]] = range?.[1] ? dayjs(range[1]).unix() : '';
       } else {
+        const range = rangeValues[filter.label];
         query[filter.fields[0]] =
           range?.[0] === undefined ? '' : Math.round(Number(range[0]) * 100);
         query[filter.fields[1]] =
@@ -222,7 +228,11 @@ function reset() {
         filter.defaultValue ?? (filter.type === 'multiSelect' ? [] : '');
     }
     if (filter.fields) {
-      rangeValues[filter.label] = [undefined, undefined];
+      if (filter.type === 'dateRange') {
+        dateRangeValues[filter.label] = undefined;
+      } else {
+        rangeValues[filter.label] = [undefined, undefined];
+      }
     }
   }
   gridApi.reload();
@@ -277,7 +287,6 @@ defineExpose({
             <template v-for="filter in config.filters || []" :key="filter.label">
         <div
           v-if="(!filter.type || filter.type === 'input') && filter.field"
-          class="flex flex-col gap-1"
         >
           <Input
             v-model:value="filterValues[filter.field]"
@@ -288,59 +297,53 @@ defineExpose({
             <template #addonBefore>{{ filter.label }}</template>
           </Input>
         </div>
-        <div v-else class="flex flex-col gap-1">
-          
-          <div class="query-filter-wide">
-          <Space.Compact>
-            <span class="query-field-addon">{{ filter.label }}</span>
-            <Select
-              v-if="filter.type === 'select' && filter.field"
-              v-model:value="filterValues[filter.field]"
-              allow-clear
-              :options="filter.options"
-              :placeholder="`请选择${filter.label}`"
-            />
-            <Select
-              v-else-if="filter.type === 'multiSelect' && filter.field"
-              v-model:value="filterValues[filter.field]"
-              allow-clear
-              mode="multiple"
-              :options="filter.options"
-              :placeholder="`请选择${filter.label}`"
-            />
-            <DatePicker.RangePicker
-              v-else-if="filter.type === 'dateRange' && filter.fields"
-              :value="
-                rangeValues[filter.label]?.[0]
-                  ? [
-                      dayjs(rangeValues[filter.label][0]),
-                      dayjs(rangeValues[filter.label][1]),
-                    ]
-                  : undefined
-              "
-              @change="
-                (value) =>
-                  (rangeValues[filter.label] = value
-                    ? [value[0]?.valueOf(), value[1]?.valueOf()]
-                    : [undefined, undefined])
-              "
-            />
-            <InputNumber
-              v-else-if="filter.type === 'amountRange' && filter.fields"
-              v-model:value="rangeValues[filter.label][0]"
-              :min="0"
-              placeholder="请输入起"
-            />
-            <InputNumber
-              v-if="filter.type === 'amountRange' && filter.fields"
-              v-model:value="rangeValues[filter.label][1]"
-              :min="0"
-              placeholder="请输入止"
-            />
-          </Space.Compact>
+        <Space.Compact
+          v-else-if="
+            (filter.type === 'select' || filter.type === 'multiSelect') &&
+            filter.field
+          "
+        >
+          <span class="query-field-addon">{{ filter.label }}</span>
+          <Select
+            v-if="filter.type === 'select'"
+            v-model:value="filterValues[filter.field]"
+            allow-clear
+            :options="filter.options"
+            :placeholder="`请选择${filter.label}`"
+          />
+          <Select
+            v-else
+            v-model:value="filterValues[filter.field]"
+            allow-clear
+            mode="multiple"
+            :options="filter.options"
+            :placeholder="`请选择${filter.label}`"
+          />
+        </Space.Compact>
+        <div
+          v-else-if="filter.type === 'dateRange' && filter.fields"
+          class="query-filter-wide"
+        >
+          <QueryDatetimeRangePicker
+            v-model="dateRangeValues[filter.label]"
+            :label="filter.label"
+          />
         </div>
-        
-        </div>
+        <Space.Compact
+          v-else-if="filter.type === 'amountRange' && filter.fields"
+        >
+          <span class="query-field-addon">{{ filter.label }}</span>
+          <InputNumber
+            v-model:value="rangeValues[filter.label][0]"
+            :min="0"
+            placeholder="请输入起"
+          />
+          <InputNumber
+            v-model:value="rangeValues[filter.label][1]"
+            :min="0"
+            placeholder="请输入止"
+          />
+        </Space.Compact>
       </template>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
@@ -357,7 +360,17 @@ defineExpose({
     </div>
   </div>
 
-    <SummaryCards v-if="hasSummary" :items="summaryItems" />
+    <div
+      v-if="hasSummary || $slots.summaryExtra"
+      class="mb-2 flex flex-wrap items-stretch justify-between gap-2"
+    >
+      <SummaryCards
+        v-if="hasSummary"
+        class="!mb-0 min-w-0 flex-1"
+        :items="summaryItems"
+      />
+      <slot name="summaryExtra"></slot>
+    </div>
 
     <Grid>
       <template #loginAccount="{ row }">

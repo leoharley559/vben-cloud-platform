@@ -45,9 +45,19 @@ const activeMetric = ref(props.metrics[0]?.key || '');
 
 async function render() {
   await nextTick();
+  const hasRightAxis = props.series.some((item) => (item.yAxisIndex || 0) > 0);
+  const isBar = props.series.some((item) => (item.type || 'line') === 'bar');
   renderEcharts({
+    grid: {
+      bottom: 8,
+      containLabel: true,
+      left: 8,
+      right: hasRightAxis ? 8 : 12,
+      top: 36,
+    },
     legend: {
       data: props.series.map((item) => item.name),
+      top: 0,
     },
     series: props.series.map((item) => ({
       data: item.data,
@@ -58,10 +68,13 @@ async function render() {
     })),
     tooltip: { trigger: 'axis' },
     xAxis: {
+      boundaryGap: isBar,
       data: props.categories,
       type: 'category',
     },
-    yAxis: [{ type: 'value' }, { type: 'value' }],
+    yAxis: hasRightAxis
+      ? [{ type: 'value' }, { type: 'value' }]
+      : [{ type: 'value' }],
   });
   resize();
 }

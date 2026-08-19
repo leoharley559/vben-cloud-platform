@@ -344,7 +344,7 @@ onMounted(() => {
 <template>
   <Page v-if="canViewList" auto-content-height description="系统管理 · 员工账号" title="员工账号">
     <Card>
-      <div v-if="canViewTable" class="bg-card rounded-md p-4">
+      <template v-if="canViewTable">
         <ListSearchBar
           :loading="searchLoading"
           :options="searchOptions"
@@ -395,7 +395,7 @@ onMounted(() => {
             </Dropdown>
           </template>
         </Grid>
-      </div>
+      </template>
 
       <Result
         v-else

@@ -34,6 +34,11 @@ const tokenTheme = computed(() => {
 
   return {
     algorithm,
+    components: {
+      Table: {
+        headerBorderRadius: 4,
+      },
+    },
     token: tokens,
   };
 });

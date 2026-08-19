@@ -8,8 +8,7 @@ import {
   Button,
   DatePicker,
   message,
-  RadioButton,
-  RadioGroup,
+  Radio,
   Select,
   Space,
   Table,
@@ -19,27 +18,28 @@ import dayjs from 'dayjs';
 import { fetchOperationIncomeAnalyzeApi } from '#/api/dataClose/operation-daily';
 import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
+import ReportPieChart from '#/views/dataClose/shared/report-pie-chart.vue';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
 import { arrayToCsvParam } from '#/views/dataClose/shared/report-utils';
 
-import { num, percentText, pickTwoDayItem } from '../utils';
+import { disabledBeforeToday, num, percentText, pickTwoDayItem } from '../utils';
 
 defineOptions({ name: 'IncomeAnalyzePanel' });
 
 type Row = Record<string, unknown>;
 
-const { dataSearchTypeOptions, iosAppStoreOptions, packageOptions } =
-  useReportOptions();
+const { dataSearchTypeOptions, packageOptions } = useReportOptions();
 
 const loading = ref(false);
 const reportType = ref<1 | 2>(1);
 const raw = ref<Row>({});
 const filters = reactive({
   AdminIds: [] as Array<number | string>,
-  AppUrl: [] as string[],
   ChannelIds: [] as Array<number | string>,
   DataSearchType: 0 as number,
   PackageId: '' as number | string,
@@ -51,6 +51,16 @@ const packageSelectOptions = computed(() => [
   { label: '全部产品', value: '' },
   ...packageOptions.value,
 ]);
+
+const dateRange = computed<[Dayjs, Dayjs] | undefined>({
+  get: () => [filters.beginDate, filters.endDate],
+  set: (value) => {
+    if (value?.[0] && value[1]) {
+      filters.beginDate = value[0];
+      filters.endDate = value[1];
+    }
+  },
+});
 
 /** 日报：End=当前日 Begin=对比日；月报：Begin=当前月 End=对比月 */
 const today = computed(() =>
@@ -71,6 +81,79 @@ function deltaPct(cur: unknown, prev: unknown) {
   return `${Math.abs(((a - b) / b) * 100).toFixed(0)}%`;
 }
 
+function asYuan(cents: unknown) {
+  return Number((num(cents) / 100).toFixed(0));
+}
+
+function listByKey(data: Row, key: string) {
+  const list = data[key];
+  return Array.isArray(list) ? (list as Row[]) : [];
+}
+
+function intervalTitles(data: Row) {
+  const map = (data.TitleName || {}) as Record<string, string>;
+  const entries = Object.entries(map);
+  if (entries.length > 0) {
+    return entries.map(([id, label]) => ({ id, label: String(label) }));
+  }
+  const ids = new Set<string>();
+  for (const key of [
+    'TodayPayInterval',
+    'YesterdayPayInterval',
+    'TodayWithdrawInterval',
+    'YesterdayWithdrawInterval',
+    'TodayPayIntervalForSuccessOdd',
+    'YesterdayPayIntervalForSuccessOdd',
+  ]) {
+    for (const item of listByKey(data, key)) {
+      const id = String(item.IntervalMoneyId ?? '');
+      if (id) ids.add(id);
+    }
+  }
+  return [...ids].map((id) => ({ id, label: id }));
+}
+
+function intervalCount(list: Row[], id: string, field: string) {
+  const row = list.find((item) => String(item.IntervalMoneyId) === id);
+  return num(row?.[field]);
+}
+
+function intervalRate(list: Row[], id: string) {
+  const row = list.find((item) => String(item.IntervalMoneyId) === id) || {};
+  const all = num(row.CountAllNum);
+  return all ? Number(((num(row.CountOkNum) / all) * 100).toFixed(2)) : 0;
+}
+
+const currentLabel = computed(() =>
+  reportType.value === 2
+    ? filters.beginDate.format('YYYY-MM')
+    : filters.endDate.format('YYYY-MM-DD'),
+);
+const compareLabel = computed(() =>
+  reportType.value === 2
+    ? filters.endDate.format('YYYY-MM')
+    : filters.beginDate.format('YYYY-MM-DD'),
+);
+
+function orderStats(list: Row[]) {
+  let ok = 0;
+  let all = 0;
+  for (const item of list) {
+    ok += num(item.CountOkNum);
+    all += num(item.CountAllNum);
+  }
+  return { ok, all };
+}
+
+const todayPayInterval = computed(() =>
+  listByKey(raw.value, 'TodayPayInterval'),
+);
+const yesterdayPayInterval = computed(() =>
+  listByKey(raw.value, 'YesterdayPayInterval'),
+);
+const todayOrder = computed(() => orderStats(todayPayInterval.value));
+const yesterdayOrder = computed(() => orderStats(yesterdayPayInterval.value));
+
 const summaryItems = computed(() => {
   const t = today.value;
   const y = yesterday.value;
@@ -85,11 +168,17 @@ const summaryItems = computed(() => {
     num(y.SumPayMoney) + num(y.SumAgentPayMoney) ||
     num(y.SumPayMergerMoney) ||
     num(y.rechargeMoney);
+  const orderAll = todayOrder.value.all;
+  const yOrderAll = yesterdayOrder.value.all;
 
   return [
     {
       title: `充值人数(环比${deltaPct(t.SumPayMergerNum || t.rechargeNum, y.SumPayMergerNum || y.rechargeNum)})`,
       value: num(t.SumPayMergerNum || t.rechargeNum),
+    },
+    {
+      title: `充值订单(环比${deltaPct(orderAll, yOrderAll)})`,
+      value: orderAll,
     },
     {
       title: `兑换人数(环比${deltaPct(t.SumWithdrawNum || t.withdrawNum, y.SumWithdrawNum || y.withdrawNum)})`,
@@ -124,28 +213,117 @@ const summaryItems = computed(() => {
       value: formatAmountFromCent(t.SumAgentPayMoney || t.agentPayMoney),
     },
     {
-      title: '充值成功率',
-      value: (() => {
-        const intervals = (raw.value.TodayPayInterval ||
-          raw.value.TodayPayIntervalForSuccessOdd ||
-          []) as Row[];
-        if (Array.isArray(intervals) && intervals.length > 0) {
-          let ok = 0;
-          let all = 0;
-          for (const item of intervals) {
-            ok += num(item.CountOkNum);
-            all += num(item.CountAllNum);
-          }
-          return percentText(ok, all);
-        }
-        return percentText(
-          t.CountOkOrderNum || t.rechargeOkOrderNum,
-          t.CountAllOrderNum || t.rechargeOrderNum,
-        );
-      })(),
+      title: `充值成功率(环比${deltaPct(todayOrder.value.ok / (todayOrder.value.all || 1), yesterdayOrder.value.ok / (yesterdayOrder.value.all || 1))})`,
+      value: percentText(todayOrder.value.ok, todayOrder.value.all),
     },
   ];
 });
+
+const pieNewOld = computed(() => {
+  const t = today.value;
+  const recharge =
+    num(t.SumPayMoney) + num(t.SumAgentPayMoney) || num(t.SumPayMergerMoney);
+  const newPay = num(t.SumNewPayMoney) + num(t.SumNewAgentPayMoney);
+  return [
+    { name: '老用户', value: asYuan(recharge - newPay) },
+    { name: '新用户', value: asYuan(newPay) },
+  ];
+});
+
+const pieSource = computed(() => {
+  const t = today.value;
+  return [
+    { name: '官方充值', value: asYuan(t.SumPayMoney) },
+    { name: '币商充值', value: asYuan(t.SumAgentPayMoney) },
+  ];
+});
+
+const pieDiff = computed(() => {
+  const t = today.value;
+  const recharge =
+    num(t.SumPayMoney) + num(t.SumAgentPayMoney) || num(t.SumPayMergerMoney);
+  const withdraw = num(t.SumWithdrawMoney);
+  return [
+    { name: '充值', value: asYuan(recharge) },
+    { name: '兑换', value: asYuan(withdraw) },
+    { name: '充兑差', value: asYuan(recharge - withdraw) },
+  ];
+});
+
+const rechargePeopleChart = computed(() => {
+  const titles = intervalTitles(raw.value);
+  const todayList = todayPayInterval.value;
+  const yestList = yesterdayPayInterval.value;
+  return {
+    categories: titles.map((item) => item.label),
+    series: [
+      {
+        data: titles.map((item) =>
+          intervalCount(todayList, item.id, 'CountOkPlayerNum'),
+        ),
+        name: currentLabel.value,
+        type: 'bar' as const,
+      },
+      {
+        data: titles.map((item) =>
+          intervalCount(yestList, item.id, 'CountOkPlayerNum'),
+        ),
+        name: compareLabel.value,
+        type: 'bar' as const,
+      },
+    ],
+  };
+});
+
+const withdrawPeopleChart = computed(() => {
+  const titles = intervalTitles(raw.value);
+  const todayList = listByKey(raw.value, 'TodayWithdrawInterval');
+  const yestList = listByKey(raw.value, 'YesterdayWithdrawInterval');
+  return {
+    categories: titles.map((item) => item.label),
+    series: [
+      {
+        data: titles.map((item) =>
+          intervalCount(todayList, item.id, 'CountOkPlayerNum'),
+        ),
+        name: currentLabel.value,
+        type: 'bar' as const,
+      },
+      {
+        data: titles.map((item) =>
+          intervalCount(yestList, item.id, 'CountOkPlayerNum'),
+        ),
+        name: compareLabel.value,
+        type: 'bar' as const,
+      },
+    ],
+  };
+});
+
+const rechargeRateChart = computed(() => {
+  const titles = intervalTitles(raw.value);
+  const todayList = listByKey(raw.value, 'TodayPayIntervalForSuccessOdd');
+  const yestList = listByKey(raw.value, 'YesterdayPayIntervalForSuccessOdd');
+  return {
+    categories: titles.map((item) => item.label),
+    series: [
+      {
+        data: titles.map((item) => intervalRate(todayList, item.id)),
+        name: currentLabel.value,
+        type: 'bar' as const,
+      },
+      {
+        data: titles.map((item) => intervalRate(yestList, item.id)),
+        name: compareLabel.value,
+        type: 'bar' as const,
+      },
+    ],
+  };
+});
+
+const hasIntervalCharts = computed(
+  () => intervalTitles(raw.value).length > 0,
+);
 
 const channelRows = computed(() => {
   const list = (raw.value.TodayChannelItems ||
@@ -212,7 +390,6 @@ function buildQuery() {
         : filters.endDate.format('YYYY-MM-DD'),
     ChannelIds: arrayToCsvParam(filters.ChannelIds) || '',
     AdminIds: arrayToCsvParam(filters.AdminIds) || '',
-    AppUrl: arrayToCsvParam(filters.AppUrl) || '',
     PackageId: filters.PackageId || '',
     DataSearchType: filters.DataSearchType,
     ReportType: reportType.value,
@@ -245,7 +422,6 @@ function onReportTypeChange(value: 1 | 2) {
 
 function handleReset() {
   filters.AdminIds = [];
-  filters.AppUrl = [];
   filters.ChannelIds = [];
   filters.DataSearchType = 0;
   filters.PackageId = '';
@@ -259,16 +435,17 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportQueryCard actions-single title="查询条件">
-      <RadioGroup
+    <div class="mb-3">
+      <Radio.Group
         :value="reportType"
         button-style="solid"
-        size="small"
         @update:value="onReportTypeChange"
       >
-        <RadioButton :value="1">日报</RadioButton>
-        <RadioButton :value="2">月报</RadioButton>
-      </RadioGroup>
+        <Radio.Button :value="1">日报</Radio.Button>
+        <Radio.Button :value="2">月报</Radio.Button>
+      </Radio.Group>
+    </div>
+    <ReportQueryCard actions-single title="查询条件">
       <Space.Compact>
         <span class="query-field-addon">数据类型</span>
         <Select
@@ -298,40 +475,33 @@ onMounted(() => {
           placeholder="请选择产品"
         />
       </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">上架包</span>
-        <Select
-          v-model:value="filters.AppUrl"
-          :max-tag-count="1"
-          :options="iosAppStoreOptions"
-          allow-clear
-          class="min-w-[160px]"
-          mode="multiple"
-          placeholder="请选择上架包"
+      <div v-if="reportType === 1" class="query-filter-wide">
+        <QueryDatetimeRangePicker
+          v-model="dateRange"
+          :disabled-date="disabledBeforeToday"
+          :max-range-days="1"
+          label="时间范围"
+          precision="date"
         />
-      </Space.Compact>
-      <DatePicker
-        v-if="reportType === 1"
-        v-model:value="filters.beginDate"
-        placeholder="开始日期"
-      />
-      <DatePicker
-        v-if="reportType === 1"
-        v-model:value="filters.endDate"
-        placeholder="结束日期"
-      />
-      <DatePicker
-        v-if="reportType === 2"
-        v-model:value="filters.beginDate"
-        picker="month"
-        placeholder="当前月"
-      />
-      <DatePicker
-        v-if="reportType === 2"
-        v-model:value="filters.endDate"
-        picker="month"
-        placeholder="对比月"
-      />
+      </div>
+      <template v-else>
+        <Space.Compact>
+          <span class="query-field-addon">当前月</span>
+          <DatePicker
+            v-model:value="filters.beginDate"
+            picker="month"
+            placeholder="请选择当前月"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">对比月</span>
+          <DatePicker
+            v-model:value="filters.endDate"
+            picker="month"
+            placeholder="请选择对比月"
+          />
+        </Space.Compact>
+      </template>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadData">
           查询
@@ -341,6 +511,41 @@ onMounted(() => {
     </ReportQueryCard>
 
     <ReportSummaryCards :items="summaryItems" />
+
+    <div class="mb-4 grid gap-3 md:grid-cols-3">
+      <div class="rounded border border-border p-3">
+        <ReportPieChart title="新老用户充值" :data="pieNewOld" height="220px" />
+      </div>
+      <div class="rounded border border-border p-3">
+        <ReportPieChart title="充值来源" :data="pieSource" height="220px" />
+      </div>
+      <div class="rounded border border-border p-3">
+        <ReportPieChart title="充兑差" :data="pieDiff" height="220px" />
+      </div>
+    </div>
+
+    <div v-if="hasIntervalCharts" class="mb-4 grid gap-3 md:grid-cols-2">
+      <ReportLineChart
+        title="充值人数"
+        :categories="rechargePeopleChart.categories"
+        :series="rechargePeopleChart.series"
+        height="300px"
+      />
+      <ReportLineChart
+        title="兑换人数"
+        :categories="withdrawPeopleChart.categories"
+        :series="withdrawPeopleChart.series"
+        height="300px"
+      />
+    </div>
+    <div v-if="hasIntervalCharts" class="mb-4">
+      <ReportLineChart
+        title="充值成功率"
+        :categories="rechargeRateChart.categories"
+        :series="rechargeRateChart.series"
+        height="300px"
+      />
+    </div>
 
     <div v-if="channelRows.length > 0" class="mb-2 text-base font-medium">
       渠道明细

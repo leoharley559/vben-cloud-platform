@@ -47,8 +47,13 @@ import SonDetailModal from './son-detail-modal.vue';
 defineOptions({ name: 'MonthStatementSonPanel' });
 
 const { checkPermission, projectConfig } = useCloudPermission();
-const { ensureGameConfig, iosAppStoreOptions, packageOptions, platformGameTypeMap, platformGameTypeOptions } =
-  useReportOptions();
+const {
+  ensureGameConfig,
+  gameConfig,
+  iosAppStoreOptions,
+  packageOptions,
+  platformGameTypeOptions,
+} = useReportOptions();
 
 const loading = ref(false);
 const tableData = ref<StatementRow[]>([]);
@@ -167,7 +172,7 @@ async function loadList() {
     const items = Array.isArray(result.Items) ? result.Items : [];
     let positive = 0;
     tableData.value = items
-      .filter((row) => platformGameTypeMap.value[String(row.PlatformGameType)])
+      .filter((row) => String(row.PlatformGameType ?? '') !== '')
       .map((row, index) => {
         const SumSelfBetGold = fromCent(row.SumSelfBetGold);
         const SumSelfWinGold = fromCent(row.SumSelfWinGold);
@@ -180,10 +185,7 @@ async function loadList() {
           ...row,
           MustGetTaxMoney,
           NegativeProfit,
-          PlatforName: venueName(
-            platformGameTypeMap.value,
-            row.PlatformGameType,
-          ),
+          PlatforName: venueName(gameConfig.value, row.PlatformGameType),
           PositiveProfit,
           ProfitLoss: SumSelfBetGold - SumSelfWinGold,
           SumSelfBetGold,
@@ -307,7 +309,6 @@ onMounted(() => {
       @drill="onDrill"
       @jump="onJump"
     />
-    <ReportSummaryCards :items="summaryItems" />
     <ReportQueryCard>
       <Space.Compact>
         <span class="query-field-addon">产品</span>
@@ -343,7 +344,12 @@ onMounted(() => {
           placeholder="请选择场馆"
         />
       </Space.Compact>
-      <DatePicker.RangePicker v-model:value="monthRange" picker="month" />
+      <div class="query-filter-wide">
+        <Space.Compact>
+          <span class="query-field-addon">时间范围</span>
+          <DatePicker.RangePicker v-model:value="monthRange" picker="month" />
+        </Space.Compact>
+      </div>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
         <Button :disabled="loading" @click="reset">重置</Button>
@@ -357,6 +363,8 @@ onMounted(() => {
         </div>
       </template>
     </ReportQueryCard>
+
+    <ReportSummaryCards :items="summaryItems" />
 
     <Table
       v-if="canList"

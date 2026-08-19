@@ -605,8 +605,8 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
   >
     <Card>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-                <div class="flex flex-col gap-1">
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
             <Input
               v-model:value="packageName"
               allow-clear
@@ -616,30 +616,30 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
               <template #addonBefore>产品名称</template>
             </Input>
           </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-          <span v-if="canViewList" class="text-sm text-gray-500">
-            已创建 {{ total }} 个产品
+          <div class="query-filter-actions">
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+            <span v-if="canViewList" class="text-sm text-gray-500">
+              已创建 {{ total }} 个产品
+              <template v-if="packageCapacity !== undefined">
+                / 可创建 {{ packageCapacity }} 个
+              </template>
+            </span>
+            <Space wrap>
+              <Button
+                v-if="canBuyQuota"
+                :loading="quotaLoading"
+                @click="handleBuyQuota"
+              >
+                购买产品额度
+              </Button>
+              <Button v-if="canCreate" type="primary" @click="handleCreate">
+                创建产品
+              </Button>
+            </Space>
+          </div>
         </div>
-            <template v-if="packageCapacity !== undefined">
-              / 可创建 {{ packageCapacity }} 个
-            </template>
-          </span>
-        <Space wrap>
-          <Button
-            v-if="canBuyQuota"
-            :loading="quotaLoading"
-            @click="handleBuyQuota"
-          >
-            购买产品额度
-          </Button>
-          <Button v-if="canCreate" type="primary" @click="handleCreate">
-            创建产品
-          </Button>
-        </Space>
-    </div>
-  </div>
+      </div>
 
       <Grid v-if="canViewList">
         <template #icon="{ row }">

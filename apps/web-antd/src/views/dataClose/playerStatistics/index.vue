@@ -1094,7 +1094,7 @@ onMounted(() => {
           <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filters.firstPayRange" label="首存时间" precision="date" />
         </div>
-          <div class="flex flex-col gap-1">
+          <div class="query-filter-wide">
             <Space.Compact>
               <span class="query-field-addon">显示列</span>
               <Select
@@ -1102,8 +1102,8 @@ onMounted(() => {
                 mode="multiple"
                 :max-tag-count="1"
                 :options="COLUMN_OPTIONS"
-                @change="persistVisibleColumns"
                 placeholder="请选择显示列"
+                @change="persistVisibleColumns"
               />
             </Space.Compact>
           </div>

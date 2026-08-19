@@ -6,6 +6,7 @@ import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
+import { RotateCw } from '@vben/icons';
 
 import {
   Alert,
@@ -890,10 +891,6 @@ onMounted(() => {
           >
             <template #toolbar>
               <template v-if="item.key === 'player'">
-                <Tag color="blue">
-                  代客可用额度：{{ formatAmountFromCent(creditInfo.Credit) }}
-                </Tag>
-                <Button @click="loadCreditInfo(true)">刷新额度</Button>
                 <Button
                   v-if="canApply"
                   :disabled="disableDkActions"
@@ -910,12 +907,6 @@ onMounted(() => {
                   批量充值
                 </Button>
               </template>
-              <template v-else-if="item.key === 'pending'">
-                <Tag color="blue">
-                  平台代客可用额度：{{ formatAmountFromCent(platformCredit) }}
-                </Tag>
-                <Button @click="loadPlatformCredit">刷新额度</Button>
-              </template>
               <Button
                 v-else-if="item.key === 'account' && checkPermission(11_890)"
                 type="primary"
@@ -923,6 +914,34 @@ onMounted(() => {
               >
                 新增账号
               </Button>
+            </template>
+            <template
+              v-if="item.key === 'player' || item.key === 'pending'"
+              #summaryExtra
+            >
+              <div
+                class="flex shrink-0 items-center rounded border border-blue-300 bg-blue-50 p-2 text-sm text-blue-600"
+              >
+                {{
+                  item.key === 'player' ? '代客可用额度' : '平台可用额度'
+                }}：{{
+                  formatAmountFromCent(
+                    item.key === 'player' ? creditInfo.Credit : platformCredit,
+                  )
+                }}
+                <button
+                  class="ml-1 inline-flex size-4 items-center justify-center text-blue-600 hover:text-blue-700"
+                  title="刷新额度"
+                  type="button"
+                  @click="
+                    item.key === 'player'
+                      ? loadCreditInfo(true)
+                      : loadPlatformCredit()
+                  "
+                >
+                  <RotateCw class="size-3.5" />
+                </button>
+              </div>
             </template>
             <template #agentAccount="{ row }">
               <AgencyAccountLink

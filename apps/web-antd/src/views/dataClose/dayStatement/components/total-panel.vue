@@ -42,8 +42,8 @@ defineOptions({ name: 'DayStatementTotalPanel' });
 const { checkPermission } = useCloudPermission();
 const {
   ensureGameConfig,
+  gameConfig,
   iosAppStoreOptions,
-  platformGameTypeMap,
   platformGameTypeOptions,
 } = useReportOptions();
 
@@ -103,7 +103,7 @@ async function loadList() {
     const result = await fetchDayStatementTotalListApi(buildQuery());
     const items = Array.isArray(result.Items) ? result.Items : [];
     tableData.value = items.map((row, index) => ({
-      ...mapDayMoneyRow(row, platformGameTypeMap.value, {
+      ...mapDayMoneyRow(row, gameConfig.value, {
         includePositive: true,
       }),
       _rowKey: `${row.ReportDay}-${row.PlatformGameType}-${index}`,
@@ -182,7 +182,6 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportSummaryCards :items="summaryItems" />
     <ReportQueryCard>
       <Space.Compact>
         <span class="query-field-addon">账号</span>
@@ -217,7 +216,7 @@ onMounted(() => {
         />
       </Space.Compact>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+          <QueryDatetimeRangePicker v-model="dateRange" label="时间范围" precision="date" />
         </div>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
@@ -232,6 +231,8 @@ onMounted(() => {
         </div>
       </template>
     </ReportQueryCard>
+
+    <ReportSummaryCards :items="summaryItems" />
 
     <Table
       v-if="canList"

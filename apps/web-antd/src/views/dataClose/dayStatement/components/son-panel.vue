@@ -47,8 +47,8 @@ const { checkPermission, projectConfig } = useCloudPermission();
 const {
   dataSearchTypeOptions,
   ensureGameConfig,
+  gameConfig,
   iosAppStoreOptions,
-  platformGameTypeMap,
   platformGameTypeOptions,
 } = useReportOptions();
 
@@ -170,7 +170,7 @@ async function loadList() {
     const items = Array.isArray(result.Items) ? result.Items : [];
     let positive = 0;
     tableData.value = items
-      .filter((row) => platformGameTypeMap.value[String(row.PlatformGameType)])
+      .filter((row) => String(row.PlatformGameType ?? '') !== '')
       .map((row, index) => {
         const SelfBetGold = fromCent(row.SelfBetGold);
         const SelfWinGold = fromCent(row.SelfWinGold);
@@ -181,10 +181,7 @@ async function loadList() {
         return {
           ...row,
           NegativeProfit,
-          PlatforName: venueName(
-            platformGameTypeMap.value,
-            row.PlatformGameType,
-          ),
+          PlatforName: venueName(gameConfig.value, row.PlatformGameType),
           PositiveProfit,
           ProfitLoss: Number((SelfBetGold - SelfWinGold).toFixed(2)),
           SelfBetGold,
@@ -308,7 +305,6 @@ onMounted(() => {
       @drill="onDrill"
       @jump="onJump"
     />
-    <ReportSummaryCards :items="summaryItems" />
     <ReportQueryCard>
       <Space.Compact>
         <span class="query-field-addon">数据类型</span>
@@ -344,7 +340,7 @@ onMounted(() => {
         />
       </Space.Compact>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+          <QueryDatetimeRangePicker v-model="dateRange" label="时间范围" precision="date" />
         </div>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">查询</Button>
@@ -359,6 +355,8 @@ onMounted(() => {
         </div>
       </template>
     </ReportQueryCard>
+
+    <ReportSummaryCards :items="summaryItems" />
 
     <Table
       v-if="canList"

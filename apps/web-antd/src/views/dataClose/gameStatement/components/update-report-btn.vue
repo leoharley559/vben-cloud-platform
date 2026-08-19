@@ -72,7 +72,7 @@ function handleClose() {
     <Tooltip title="重新跑日报/月报数据（修复异常日期）">
       <span class="cursor-help text-gray-400">ⓘ</span>
     </Tooltip>
-    <Button size="small" type="primary" @click="visible = true">
+    <Button type="primary" @click="visible = true">
       修复日报
     </Button>
     <Modal

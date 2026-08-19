@@ -65,14 +65,14 @@ const batchUp = ref<number>();
 const batchDown = ref<number>();
 const visibleCount = ref(200);
 const query = reactive({
-  Category: '' as number | string,
+  Category: undefined as number | string | undefined,
   GameName: '',
-  Platform: '' as number | string,
+  Platform: undefined as number | string | undefined,
 });
 const appliedQuery = reactive({
-  Category: '' as number | string,
+  Category: undefined as number | string | undefined,
   GameName: '',
-  Platform: '' as number | string,
+  Platform: undefined as number | string | undefined,
 });
 
 function normalizeClassify(value: unknown) {
@@ -117,7 +117,7 @@ function initialize() {
     ]),
   );
   const blocked = blockedGameIds();
-  const knownGames = Object.entries(gameConfig.value.games)
+  const knownGames = Object.entries(gameConfig.value.games || {})
     .filter(([id]) => {
       if (blocked.has(id)) return false;
       return !blocked.has(id.slice(0, 4));
@@ -145,16 +145,17 @@ function initialize() {
   initialized.value = true;
 }
 
-const categoryOptions = computed(() => [
-  { label: '全部类别', value: '' },
-  ...Object.entries(gameConfig.value.GameTypeLangGroup).map(([value, item]) => ({
-    label: item.Langs?.[0]?.Name || `类别 ${value}`,
-    value,
-  })),
-]);
+const categoryOptions = computed(() =>
+  Object.entries(gameConfig.value.GameTypeLangGroup || {}).map(
+    ([value, item]) => ({
+      label: item.Langs?.[0]?.Name || `类别 ${value}`,
+      value,
+    }),
+  ),
+);
 
 const platformItems = computed(() => {
-  const items = Object.entries(gameConfig.value.platformGameList).map(
+  const items = Object.entries(gameConfig.value.platformGameList || {}).map(
     ([id, item]) => ({
       id,
       name: item.gameName || id,
@@ -163,16 +164,15 @@ const platformItems = computed(() => {
   return [
     { id: 'all', name: '全部' },
     { id: 999, name: '云棋牌' },
-    ...items,
+    ...items.filter((item) => String(item.id) !== '999' && item.id !== 'all'),
   ];
 });
 
-const platformOptions = computed(() => [
-  { label: '全部平台', value: '' },
-  ...platformItems.value
+const platformOptions = computed(() =>
+  platformItems.value
     .filter((item) => item.id !== 'all')
     .map((item) => ({ label: item.name, value: item.id })),
-]);
+);
 
 function matchesPlatform(game: EditableGame, platform: number | string) {
   if (platform === '' || platform === 'all') return true;
@@ -230,8 +230,8 @@ function searchGames() {
 
 function resetFilters() {
   query.GameName = '';
-  query.Category = '';
-  query.Platform = '';
+  query.Category = undefined;
+  query.Platform = undefined;
   Object.assign(appliedQuery, query);
   activePlatform.value = 'all';
   visibleCount.value = 200;
@@ -333,9 +333,13 @@ function buildConfig(): BackWaterVipConfig {
 }
 
 onMounted(async () => {
-  await ensureGameConfig(Object.keys(gameConfig.value.games).length === 0);
-  initialize();
-  emitConfig();
+  try {
+    await ensureGameConfig(Object.keys(gameConfig.value.games || {}).length === 0);
+    initialize();
+    emitConfig();
+  } catch {
+    initialize();
+  }
 });
 
 defineExpose({ buildConfig });
@@ -343,43 +347,53 @@ defineExpose({ buildConfig });
 
 <template>
   <div>
-    <div class="query-panel">
-      <div class="query-fields">
-        <div class="flex flex-col gap-1">
+    <div class="mb-3">
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">游戏名称</span>
           <Input
             v-model:value="query.GameName"
             allow-clear
-            style="width: 240px"
-            @press-enter="searchGames"
             placeholder="请输入游戏名称"
-          >
-            <template #addonBefore>游戏名称</template>
-          </Input>
+            @press-enter="searchGames"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">游戏大类</span>
+          <Select
+            v-model:value="query.Category"
+            allow-clear
+            option-filter-prop="label"
+            :options="categoryOptions"
+            placeholder="请选择游戏大类"
+            show-search
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">游戏平台</span>
+          <Select
+            v-model:value="query.Platform"
+            allow-clear
+            option-filter-prop="label"
+            :options="platformOptions"
+            placeholder="请选择游戏平台"
+            show-search
+          />
+        </Space.Compact>
+        <div class="query-filter-actions query-filter-actions-single">
+          <Button html-type="button" type="primary" @click="searchGames">
+            查询
+          </Button>
+          <Button html-type="button" @click="resetFilters">重置</Button>
         </div>
-        <Select
-          v-model:value="query.Category"
-          :options="categoryOptions"
-          show-search
-          placeholder="请选择游戏大类"
-        />
-        <Select
-          v-model:value="query.Platform"
-          :options="platformOptions"
-          show-search
-          placeholder="请选择游戏平台"
-        />
       </div>
-      <Space>
-        <Button type="primary" @click="searchGames">查询</Button>
-        <Button @click="resetFilters">重置</Button>
-      </Space>
     </div>
 
     <div class="editor-layout">
       <Card class="platform-card" size="small">
         <button
-          v-for="item in platformItems"
-          :key="item.id"
+          v-for="(item, index) in platformItems"
+          :key="`platform-${item.id}-${index}`"
           class="platform-item"
           :class="{ active: String(activePlatform) === String(item.id) }"
           type="button"
@@ -448,8 +462,8 @@ defineExpose({ buildConfig });
 
         <div class="batch-bar">
           <Space wrap>
-            <Button type="primary" @click="selectVisible(true)">全部勾选</Button>
-            <Button @click="selectVisible(false)">全部取消</Button>
+            <Button html-type="button" type="primary" @click="selectVisible(true)">全部勾选</Button>
+            <Button html-type="button" @click="selectVisible(false)">全部取消</Button>
             <span>批量修改勾选游戏：</span>
             <InputNumber
               v-model:value="batchSet"
@@ -459,7 +473,7 @@ defineExpose({ buildConfig });
               addon-after="%"
               placeholder="请输入比例"
             />
-            <Button @click="updateBatch('set')">批量编辑</Button>
+            <Button html-type="button" @click="updateBatch('set')">批量编辑</Button>
             <InputNumber
               v-model:value="batchUp"
               :min="0"
@@ -468,7 +482,7 @@ defineExpose({ buildConfig });
               addon-after="%"
               placeholder="请输入比例"
             />
-            <Button @click="updateBatch('up')">批量上调</Button>
+            <Button html-type="button" @click="updateBatch('up')">批量上调</Button>
             <InputNumber
               v-model:value="batchDown"
               :min="0"
@@ -477,7 +491,7 @@ defineExpose({ buildConfig });
               addon-after="%"
               placeholder="请输入比例"
             />
-            <Button @click="updateBatch('down')">批量下调</Button>
+            <Button html-type="button" @click="updateBatch('down')">批量下调</Button>
           </Space>
         </div>
       </div>
@@ -486,25 +500,6 @@ defineExpose({ buildConfig });
 </template>
 
 <style scoped>
-.query-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px;
-  margin-bottom: 14px;
-  background: hsl(var(--muted) / 45%);
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-
-.query-fields {
-  display: grid;
-  flex: 1;
-  grid-template-columns: repeat(3, minmax(170px, 1fr));
-  gap: 12px;
-}
-
 .editor-layout {
   display: grid;
   grid-template-columns: 210px minmax(0, 1fr);

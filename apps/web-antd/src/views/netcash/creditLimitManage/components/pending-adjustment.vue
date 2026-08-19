@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 
+import { RotateCw } from '@vben/icons';
+
 import {
   Button,
   Form,
@@ -11,7 +13,6 @@ import {
   Select,
   Space,
   Table,
-  Tag,
 } from 'ant-design-vue';
 
 import {
@@ -195,9 +196,7 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
   <div>
     <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
-            <Tag color="blue">平台可用额度：{{ amount(platformCredit) }}</Tag>
-      <Button @click="loadPlatformCredit">刷新额度</Button>
-      <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-1">
         <Input
           v-model:value="query.AgentAccount"
           allow-clear
@@ -236,8 +235,21 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
     </div>
   </div>
 
-    <SummaryCards :items="summaryItems" />
-    <Table :columns="columns" :data-source="rows" :loading="loading" :pagination="false" :row-selection="canApprove || canReject ? rowSelection : undefined" row-key="Id" :scroll="{ x: 1350 }" size="small">
+    <div class="mb-2 flex flex-wrap items-stretch justify-between gap-2">
+      <SummaryCards class="!mb-0 min-w-0 flex-1" :items="summaryItems" />
+      <div class="flex shrink-0 items-center rounded border border-blue-300 bg-blue-50 p-2 text-sm text-blue-600">
+        平台可用额度：{{ amount(platformCredit) }}
+        <button
+          class="ml-1 inline-flex size-4 items-center justify-center text-blue-600 hover:text-blue-700"
+          title="刷新额度"
+          type="button"
+          @click="loadPlatformCredit"
+        >
+          <RotateCw class="size-3.5" />
+        </button>
+      </div>
+    </div>
+    <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="false" :row-selection="canApprove || canReject ? rowSelection : undefined" row-key="Id" :scroll="{ x: 1350 }" size="small">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>
         <template v-else-if="column.key === 'AgentAccount'">

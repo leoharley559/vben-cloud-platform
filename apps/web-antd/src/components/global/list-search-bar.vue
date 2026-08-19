@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
 
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { Button, Input, Select, Space } from 'ant-design-vue';
 
@@ -60,6 +60,15 @@ const filterKey = ref(props.options[0]?.value || 'All');
 const filterValue = ref('');
 const dateRange = ref<[Dayjs, Dayjs] | undefined>();
 
+/** 按最长选项撑开，避免「全部」选中时「账户账号」被截断 */
+const typeSelectStyle = computed(() => {
+  const longest = props.options.reduce(
+    (max, item) => Math.max(max, [...item.label].length),
+    2,
+  );
+  return { minWidth: `${longest + 3}em` };
+});
+
 watch(
   () => props.options,
   (options) => {
@@ -112,36 +121,41 @@ defineExpose({
 <template>
   <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
-          <Space.Compact>
-      <Select
-        v-model:value="filterKey"
-        :options="options"
-      />
-      <Input
-        v-model:value="filterValue"
-        allow-clear
-        :placeholder="keywordPlaceholder"
-        @press-enter="handleSearch"
-      />
-    </Space.Compact>
+      <Space.Compact>
+        <Select
+          v-model:value="filterKey"
+          :dropdown-style="{ minWidth: 'max-content' }"
+          :options="options"
+          :popup-match-select-width="false"
+          :style="typeSelectStyle"
+          class="query-auto-select"
+          popup-class-name="query-auto-select-dropdown"
+        />
+        <Input
+          v-model:value="filterValue"
+          allow-clear
+          :placeholder="keywordPlaceholder"
+          @press-enter="handleSearch"
+        />
+      </Space.Compact>
 
-    <div v-if="showDateTime" class="query-filter-wide">
-      <QueryDatetimeRangePicker
-        v-model="dateRange"
-        :label="dateLabel"
-        :precision="dateTimeType === 'datetimerange' ? 'datetime' : 'date'"
-      />
-    </div>
-        <div
-          class="query-filter-actions"
-          :class="{ 'query-filter-actions-single': !showAdd }"
-        >
-          <Button :loading="loading" type="primary" @click="handleSearch">查询</Button>
-          <Button :disabled="loading" @click="handleReset">重置</Button>
-          <Button v-if="showAdd" type="primary" @click="emit('add')">
-            {{ addText }}
-          </Button>
-        </div>
+      <div v-if="showDateTime" class="query-filter-wide">
+        <QueryDatetimeRangePicker
+          v-model="dateRange"
+          :label="dateLabel"
+          :precision="dateTimeType === 'datetimerange' ? 'datetime' : 'date'"
+        />
+      </div>
+      <div
+        class="query-filter-actions"
+        :class="{ 'query-filter-actions-single': !showAdd }"
+      >
+        <Button :loading="loading" type="primary" @click="handleSearch">查询</Button>
+        <Button :disabled="loading" @click="handleReset">重置</Button>
+        <Button v-if="showAdd" type="primary" @click="emit('add')">
+          {{ addText }}
+        </Button>
+      </div>
     </div>
   </div>
 </template>

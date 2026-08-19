@@ -8,8 +8,7 @@ import {
   Button,
   DatePicker,
   message,
-  RadioButton,
-  RadioGroup,
+  Radio,
   Select,
   Space,
   Table,
@@ -236,16 +235,17 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportQueryCard actions-single title="游戏分析">
-      <RadioGroup
+    <div class="mb-3">
+      <Radio.Group
         :value="reportType"
         button-style="solid"
-        size="small"
         @update:value="onReportTypeChange"
       >
-        <RadioButton :value="1">日报</RadioButton>
-        <RadioButton :value="2">月报</RadioButton>
-      </RadioGroup>
+        <Radio.Button :value="1">日报</Radio.Button>
+        <Radio.Button :value="2">月报</Radio.Button>
+      </Radio.Group>
+    </div>
+    <ReportQueryCard actions-single title="游戏分析">
       <Space.Compact>
         <span class="query-field-addon">账号</span>
         <AccountSelect v-model="filters.AdminIds" class="min-w-[180px]" />
@@ -276,27 +276,39 @@ onMounted(() => {
           placeholder="请选择上架包"
         />
       </Space.Compact>
-      <DatePicker
-        v-if="reportType === 1"
-        v-model:value="filters.beginDate"
-        placeholder="统计日"
-      />
-      <DatePicker
-        v-if="reportType === 1"
-        v-model:value="filters.beforeDate"
-        placeholder="对比日"
-      />
+      <template v-if="reportType === 1">
+        <Space.Compact>
+          <span class="query-field-addon">统计日</span>
+          <DatePicker
+            v-model:value="filters.beginDate"
+            placeholder="请选择统计日"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">对比日</span>
+          <DatePicker
+            v-model:value="filters.beforeDate"
+            placeholder="请选择对比日"
+          />
+        </Space.Compact>
+      </template>
       <template v-else>
-        <DatePicker
-          v-model:value="filters.beginDate"
-          picker="month"
-          placeholder="当前月"
-        />
-        <DatePicker
-          v-model:value="filters.beforeDate"
-          picker="month"
-          placeholder="对比月"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">当前月</span>
+          <DatePicker
+            v-model:value="filters.beginDate"
+            picker="month"
+            placeholder="请选择当前月"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">对比月</span>
+          <DatePicker
+            v-model:value="filters.beforeDate"
+            picker="month"
+            placeholder="请选择对比月"
+          />
+        </Space.Compact>
       </template>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadData">

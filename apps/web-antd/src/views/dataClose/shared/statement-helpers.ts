@@ -1,7 +1,10 @@
 import type { Dayjs } from 'dayjs';
+import type { ParsedGameConfig } from '#/utils/game-config';
 
 import dayjs from 'dayjs';
 import { message } from 'ant-design-vue';
+
+import { formatVenueName } from '#/utils/game-config';
 
 import { amount, calcProfit, cents } from './report-utils';
 
@@ -41,13 +44,35 @@ export function mapItemsAgents(raw: unknown): AgentNode[] {
   }));
 }
 
+export type VenueNameSource = ParsedGameConfig | Record<string, string>;
+
+function asGameConfig(source: VenueNameSource) {
+  if (
+    source &&
+    typeof source === 'object' &&
+    'goldSource' in source &&
+    'platformGameList' in source
+  ) {
+    return source as ParsedGameConfig;
+  }
+  return null;
+}
+
+/** 场馆简称/编码（dj、ty）与场馆 ID 都走 formatVenueName，对齐玩家盈亏报表 */
 export function venueName(
-  map: Record<string, string>,
+  source: VenueNameSource,
   platformGameType: unknown,
 ) {
   const key = String(platformGameType ?? '');
   if (!key) return '-';
-  return map[key] || '-';
+  const config = asGameConfig(source);
+  const name = formatVenueName(key, config);
+  if (name && name !== '-') return name;
+  if (!config) {
+    const mapped = (source as Record<string, string>)[key];
+    if (mapped) return mapped;
+  }
+  return name || '-';
 }
 
 export function parseServiceRate(rate: unknown): Array<[string, string]> {
@@ -139,7 +164,7 @@ export function monthDetailUnix(reportMonth: unknown) {
 
 export function mapDayMoneyRow(
   row: StatementRow,
-  map: Record<string, string>,
+  source: VenueNameSource,
   options?: { includePositive?: boolean },
 ) {
   const SelfBetGold = fromCent(row.SelfBetGold);
@@ -150,7 +175,7 @@ export function mapDayMoneyRow(
   );
   const next: StatementRow = {
     ...row,
-    AgentName: venueName(map, row.PlatformGameType),
+    AgentName: venueName(source, row.PlatformGameType),
     SelfBetGold,
     SelfWinGold,
     SelfOtherGold,
@@ -165,7 +190,7 @@ export function mapDayMoneyRow(
 
 export function mapMonthMoneyRow(
   row: StatementRow,
-  map: Record<string, string>,
+  source: VenueNameSource,
 ) {
   const SumSelfBetGold = fromCent(row.SumSelfBetGold);
   const SumSelfWinGold = fromCent(row.SumSelfWinGold);
@@ -175,7 +200,7 @@ export function mapMonthMoneyRow(
   );
   return {
     ...row,
-    AgentName: venueName(map, row.PlatformGameType),
+    AgentName: venueName(source, row.PlatformGameType),
     MustGetTaxMoney: fromCent(row.MustGetTaxMoney),
     ProfitLose,
     SumNegative: fromCent(row.SumNegative),

@@ -7,7 +7,6 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
-  Empty,
   message,
   Result,
   Select,
@@ -157,6 +156,48 @@ const historySummaryItems = computed(() =>
   })),
 );
 
+function createEmptyHistoryRow(reportDay: string): TeamDailyHistoryItem {
+  return {
+    ReportDay: reportDay,
+    SumNextBetGameMoney: 0,
+    SumNextGameTax: 0,
+    SumNextIncomeMoney: 0,
+    SumNextPayMergerMoney: 0,
+    SumNextProfitIncomeMoney: 0,
+    SumNextReg: 0,
+    SumNextWithdrawMoney: 0,
+    SumSelfBetGameMoney: 0,
+    SumSelfGameTax: 0,
+    SumSelfIncomeMoney: 0,
+    SumSelfPayMergerMoney: 0,
+    SumSelfProfitIncomeMoney: 0,
+    SumSelfReg: 0,
+    SumSelfWithdrawMoney: 0,
+  };
+}
+
+/** 按查询区间补齐每一天；接口无数据时仍展示默认 0 行 */
+function fillHistoryByDateRange(
+  items: TeamDailyHistoryItem[],
+  begin: dayjs.Dayjs,
+  end: dayjs.Dayjs,
+) {
+  const byDay = new Map(
+    items
+      .filter((item) => item.ReportDay)
+      .map((item) => [String(item.ReportDay).slice(0, 10), item]),
+  );
+  const filled: TeamDailyHistoryItem[] = [];
+  let cursor = end.startOf('day');
+  const start = begin.startOf('day');
+  while (cursor.isAfter(start) || cursor.isSame(start, 'day')) {
+    const key = cursor.format('YYYY-MM-DD');
+    filled.push(byDay.get(key) || createEmptyHistoryRow(key));
+    cursor = cursor.subtract(1, 'day');
+  }
+  return filled;
+}
+
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
@@ -189,12 +230,16 @@ async function loadData() {
     if (currentRequest !== requestId) return;
     todayData.value = result.TodayItems || {};
     historySummary.value = result.BannerItems || {};
-    rows.value = Array.isArray(result.HistoryItems) ? result.HistoryItems : [];
+    rows.value = fillHistoryByDateRange(
+      Array.isArray(result.HistoryItems) ? result.HistoryItems : [],
+      begin,
+      end,
+    );
   } catch {
     if (currentRequest === requestId) {
       todayData.value = {};
       historySummary.value = {};
-      rows.value = [];
+      rows.value = fillHistoryByDateRange([], begin, end);
     }
   } finally {
     if (currentRequest === requestId) loading.value = false;
@@ -312,7 +357,6 @@ onMounted(() => {
         <SummaryCards :items="historySummaryItems" />
 
         <Table
-          v-if="rows.length > 0"
           :columns="columns"
           :data-source="rows"
           :pagination="false"
@@ -336,7 +380,6 @@ onMounted(() => {
             </span>
           </template>
         </Table>
-        <Empty v-else description="暂无历史日报数据" />
       </section>
     </div>
     <Result v-else status="403" sub-title="无代理日报查看权限" title="403" />

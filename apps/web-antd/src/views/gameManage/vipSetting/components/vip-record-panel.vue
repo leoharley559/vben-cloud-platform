@@ -269,58 +269,59 @@ onMounted(() => {
 
 <template>
   <div>
-    <Card class="query-card" size="small">
-      <div class="query-grid">
-        <div class="flex flex-col gap-1">
+    <div class="ops-query-scope mb-3">
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">游戏账号</span>
           <Input
             v-model:value="filters.LoginAccount"
             allow-clear
-            style="width: 220px"
-            @press-enter="search"
             placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
+            @press-enter="search"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">包体名称</span>
           <Input
             v-model:value="filters.PackageName"
             allow-clear
-            style="width: 220px"
-            @press-enter="search"
             placeholder="请输入包体名称"
-          >
-            <template #addonBefore>包体名称</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
+            @press-enter="search"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">VIP 等级</span>
           <Input
             v-model:value="filters.VipLevel"
             allow-clear
-            style="width: 220px"
-            @press-enter="search"
             placeholder="请输入VIP 等级"
-          >
-            <template #addonBefore>VIP 等级</template>
-          </Input>
-        </div>
+            @press-enter="search"
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">状态</span>
           <Select
             v-model:value="filters.Status"
             allow-clear
-            :options="Object.entries(statusMap).map(([value, item]) => ({
-              label: item.text,
-              value: Number(value),
-            }))"
-            @clear="filters.Status = ''"
+            :options="
+              Object.entries(statusMap).map(([value, item]) => ({
+                label: item.text,
+                value: Number(value),
+              }))
+            "
             placeholder="请选择状态"
+            @clear="filters.Status = ''"
           />
         </Space.Compact>
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" />
         </div>
-        <Space>
+        <div
+          class="query-filter-actions"
+          :class="{
+            'query-filter-actions-single': !checkPermission(12_040),
+          }"
+        >
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>
           <Button
@@ -330,12 +331,12 @@ onMounted(() => {
           >
             导出 Excel
           </Button>
-        </Space>
+        </div>
       </div>
-    </Card>
-
-    <Card class="table-card" :bordered="false">
+    </div>
+ 
       <Table
+      bordered
         v-if="checkPermission(11_003)"
         :columns="columns"
         :data-source="rows"
@@ -419,23 +420,12 @@ onMounted(() => {
             </Table.Summary.Row>
           </Table.Summary>
         </template>
-      </Table>
-    </Card>
+      </Table> 
   </div>
 </template>
 
 <style scoped>
-.query-card,
-.table-card {
-  margin-bottom: 14px;
-  border-radius: 10px;
-}
-
-.query-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(190px, 1fr));
-  gap: 12px;
-}
+ 
 
 .info-dot {
   display: inline-flex;
@@ -449,11 +439,5 @@ onMounted(() => {
   cursor: help;
   background: hsl(var(--primary));
   border-radius: 50%;
-}
-
-@media (max-width: 1200px) {
-  .query-grid {
-    grid-template-columns: repeat(2, minmax(220px, 1fr));
-  }
 }
 </style>

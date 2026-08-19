@@ -9,8 +9,7 @@ import {
   DatePicker,
   message,
   Modal,
-  RadioButton,
-  RadioGroup,
+  Radio,
   Select,
   Space,
   Table,
@@ -44,14 +43,12 @@ import {
 defineOptions({ name: 'DataComparePanel' });
 
 const { checkPermission } = useCloudPermission();
-const { iosAppStoreOptions, packageOptions } = useReportOptions();
+const { packageOptions } = useReportOptions();
 
 const loading = ref(false);
 const reportType = ref<1 | 2>(1);
-const dataSearchType = ref(0);
 const filters = reactive({
   AdminIds: [] as Array<number | string>,
-  AppUrl: [] as string[],
   ChannelIds: [] as Array<number | string>,
   PackageId: '' as number | string,
   beginDate: dayjs().subtract(1, 'day') as Dayjs,
@@ -207,43 +204,9 @@ function buildQuery() {
     BeforeTime: reportType.value === 2 ? beforeStr : '',
     ChannelIds: arrayToCsvParam(filters.ChannelIds) || '',
     AdminIds: arrayToCsvParam(filters.AdminIds) || '',
-    AppUrl: arrayToCsvParam(filters.AppUrl) || '',
-    DataSearchType: dataSearchType.value,
     PackageId: filters.PackageId || '',
     ReportType: reportType.value,
   };
-}
-
-function recomputeBucket(b: CompareBucket) {
-  b.PerCapita = num(b.SumFirstPayMoney)
-    ? (num(b.SumFirstPayMoney) / num(b.SumFirstPayNum)).toFixed(2)
-    : '0.00';
-  b.PercentConversion = num(b.SumReg)
-    ? ((num(b.SumFirstPayNum) / num(b.SumReg)) * 100).toFixed(2)
-    : '0.00';
-  b.SufficientExchange = num(b.SumWithdrawMoney)
-    ? (
-        (num(b.SumWithdrawMoney) /
-          (num(b.SumPayMoney) + num(b.SumAgentPayMoney) || 1)) *
-        100
-      ).toFixed(2)
-    : '0.00';
-  const firm = -num(b.SumTransWinMoney1);
-  b.FirmBunko = firm.toFixed(2);
-  b.Surplus = num(b.SumTransBetMoney1)
-    ? ((firm / num(b.SumTransBetMoney1)) * 100).toFixed(2)
-    : '0.00';
-  b.FullBring = (num(b.SumPayMergerMoney) - num(b.SumWithdrawMoney)).toFixed(2);
-  b.Income = (
-    -num(b.SumTransWinMoney1) +
-    num(b.SumAccountChangeSumNum) -
-    num(b.SumRedSumNum) -
-    num(b.SumBetWaterMoney) -
-    num(b.SumAgentCommissionSumNum)
-  ).toFixed(2);
-  b.GrossMargin = num(b.SumTransBetMoney1)
-    ? ((num(b.Income) / num(b.SumTransBetMoney1)) * 100).toFixed(2)
-    : '0.00';
 }
 
 async function loadData() {
@@ -251,36 +214,7 @@ async function loadData() {
   try {
     const raw = await fetchDataAnalyzeApi(buildQuery());
     const money = disposeMoneyBuckets(raw as Record<string, CompareBucket>);
-    const withFormula = applyCompareFormulas(
-      structuredClone(raw) as Record<string, CompareBucket>,
-    );
-    const merged: Record<string, CompareBucket> = {};
-    for (const key of Object.keys({ ...money, ...withFormula })) {
-      if (key === 'LastMonthExist') continue;
-      merged[key] = {
-        ...money[key],
-        ...withFormula[key],
-      };
-      if (money[key]) {
-        Object.assign(merged[key]!, {
-          SumFirstPayMoney: money[key]!.SumFirstPayMoney,
-          SumTransBetMoney1: money[key]!.SumTransBetMoney1,
-          SumTransBetValidMoney1: money[key]!.SumTransBetValidMoney1,
-          SumTransWinMoney1: money[key]!.SumTransWinMoney1,
-          SumWithdrawMoney: money[key]!.SumWithdrawMoney,
-          SumPayMoney: money[key]!.SumPayMoney,
-          SumPayMergerMoney: money[key]!.SumPayMergerMoney,
-          SumAgentPayMoney: money[key]!.SumAgentPayMoney,
-          SumBetWaterMoney: money[key]!.SumBetWaterMoney,
-          SumApiFeeSumNum: money[key]!.SumApiFeeSumNum,
-          SumRedSumNum: money[key]!.SumRedSumNum,
-          SumAccountChangeSumNum: money[key]!.SumAccountChangeSumNum,
-          SumAgentCommissionSumNum: money[key]!.SumAgentCommissionSumNum,
-        });
-        recomputeBucket(merged[key]!);
-      }
-    }
-    metricMap.value = merged;
+    metricMap.value = applyCompareFormulas(money);
   } catch {
     metricMap.value = {};
     message.error('数据比较加载失败');
@@ -387,7 +321,6 @@ function onReportTypeChange(value: 1 | 2) {
 
 function handleReset() {
   filters.AdminIds = [];
-  filters.AppUrl = [];
   filters.ChannelIds = [];
   filters.PackageId = '';
   onReportTypeChange(reportType.value);
@@ -400,16 +333,17 @@ onMounted(() => {
 
 <template>
   <div>
-    <ReportQueryCard actions-single title="查询条件">
-      <RadioGroup
+    <div class="mb-3">
+      <Radio.Group
         :value="reportType"
         button-style="solid"
-        size="small"
         @update:value="onReportTypeChange"
       >
-        <RadioButton :value="1">日报</RadioButton>
-        <RadioButton :value="2">月报</RadioButton>
-      </RadioGroup>
+        <Radio.Button :value="1">日报</Radio.Button>
+        <Radio.Button :value="2">月报</Radio.Button>
+      </Radio.Group>
+    </div>
+    <ReportQueryCard actions-single title="查询条件">
       <Space.Compact>
         <span class="query-field-addon">账号</span>
         <AccountSelect v-model="filters.AdminIds" class="min-w-[180px]" />
@@ -430,47 +364,32 @@ onMounted(() => {
           placeholder="请选择产品"
         />
       </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">上架包</span>
-        <Select
-          v-model:value="filters.AppUrl"
-          :max-tag-count="1"
-          :options="iosAppStoreOptions"
-          allow-clear
-          class="min-w-[160px]"
-          mode="multiple"
-          placeholder="请选择上架包"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">数据类型</span>
-        <Select
-          v-model:value="dataSearchType"
-          :options="[
-            { label: '正式数据', value: 0 },
-            { label: '全部', value: 2 },
-          ]"
-          class="w-32"
-          placeholder="请选择数据类型"
-        />
-      </Space.Compact>
       <template v-if="reportType === 1">
-        <DatePicker
-          v-model:value="filters.beginDate"
-          placeholder="当前日期"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">当前日期</span>
+          <DatePicker
+            v-model:value="filters.beginDate"
+            placeholder="请选择当前日期"
+          />
+        </Space.Compact>
       </template>
       <template v-else>
-        <DatePicker
-          v-model:value="filters.beginDate"
-          picker="month"
-          placeholder="当前月"
-        />
-        <DatePicker
-          v-model:value="filters.beforeDate"
-          picker="month"
-          placeholder="对比月"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">当前月</span>
+          <DatePicker
+            v-model:value="filters.beginDate"
+            picker="month"
+            placeholder="请选择当前月"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">对比月</span>
+          <DatePicker
+            v-model:value="filters.beforeDate"
+            picker="month"
+            placeholder="请选择对比月"
+          />
+        </Space.Compact>
       </template>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadData">

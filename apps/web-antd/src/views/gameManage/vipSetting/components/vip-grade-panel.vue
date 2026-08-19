@@ -201,8 +201,7 @@ onMounted(loadData);
 </script>
 
 <template>
-  <Card class="toolbar-card" size="small">
-    <div class="toolbar">
+    <div class="toolbar mb-3">
       <Space v-if="checkPermission(12_145)">
         <span>升级模式：</span>
         <Select
@@ -224,9 +223,8 @@ onMounted(loadData);
         </Button>
       </Space>
     </div>
-  </Card>
-  <Card class="table-card" :bordered="false">
     <Table
+    bordered
       :columns="columns"
       :data-source="rows"
       :loading="loading"
@@ -257,8 +255,6 @@ onMounted(loadData);
         </Button>
       </template>
     </Table>
-  </Card>
-
   <Modal
     v-model:open="formVisible"
     :confirm-loading="saving"
@@ -321,11 +317,7 @@ onMounted(loadData);
 </template>
 
 <style scoped>
-.toolbar-card,
-.table-card {
-  margin-bottom: 14px;
-  border-radius: 10px;
-}
+ 
 .toolbar {
   display: flex;
   align-items: center;

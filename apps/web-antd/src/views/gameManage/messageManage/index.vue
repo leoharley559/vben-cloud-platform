@@ -47,7 +47,7 @@ watchEffect(() => {
     description="维护短信余额、统计、通道、模板、注册 OTP 与用户召回"
     title="短信管理"
   >
-    <Card class="message-manage-card" :bordered="false">
+    <Card size="small">
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <SmsOverviewPanel
@@ -83,10 +83,3 @@ watchEffect(() => {
   </Page>
   <Result v-else status="403" sub-title="无短信管理查看权限" title="403" />
 </template>
-
-<style scoped>
-.message-manage-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgb(15 23 42 / 6%);
-}
-</style>

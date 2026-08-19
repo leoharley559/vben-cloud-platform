@@ -20,8 +20,8 @@ import {
   InputNumber,
   message,
   Modal,
-  Radio,
   Result,
+  Select,
   Space,
   Tabs,
 } from 'ant-design-vue';
@@ -335,50 +335,78 @@ onMounted(() => {
             sub-title="无此模块查看权限"
             title="403"
           />
-          <div v-else-if="item.key === 'apply'" class="max-w-xl">
-            <Descriptions bordered class="mb-5" :column="2" size="small">
-              <Descriptions.Item label="代存额度">
-                {{ formatAmountFromCent(creditInfo.Credit) }}
-              </Descriptions.Item>
-              <Descriptions.Item label="代客额度">
-                {{ formatAmountFromCent(creditInfo.Dkcredit) }}
-              </Descriptions.Item>
-            </Descriptions>
-            <Form layout="vertical">
-              <Form.Item label="调整类型" required>
-                <Radio.Group v-model:value="applyForm.WalletType">
-                  <Radio :value="2">代存</Radio>
-                  <Radio :value="3">代客</Radio>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item label="调整方式" required>
-                <Radio.Group v-model:value="applyForm.AdjustType">
-                  <Radio :value="1">增加</Radio>
-                  <Radio :value="2">扣除</Radio>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item label="调整金额（元）" required>
-                <InputNumber
-                  v-model:value="applyForm.AdjustAmount"
-                  :min="0.01"
-                  :precision="2"
-                  class="w-full"
-                />
-              </Form.Item>
-              <Space>
-                <Button
-                  v-if="canApply"
-                  :loading="applySubmitting"
-                  type="primary"
-                  @click="submitApply"
-                >
-                  提交申请
-                </Button>
-                <Button @click="resetApplyForm">
-                  重置
-                </Button>
-              </Space>
-            </Form>
+          <div v-else-if="item.key === 'apply'">
+            <div class="mb-6">
+              <div class="mb-3 text-base font-medium">额度信息</div>
+              <Descriptions
+                bordered
+                class="mb-2 max-w-md player-info-desc"
+                :column="1"
+                size="small"
+                :label-style="{ width: '96px', whiteSpace: 'nowrap' }"
+                :content-style="{ width: 'auto' }"
+              >
+                <Descriptions.Item label="代存额度">
+                  {{ formatAmountFromCent(creditInfo.Credit) }}
+                </Descriptions.Item>
+                <Descriptions.Item label="代客额度">
+                  {{ formatAmountFromCent(creditInfo.Dkcredit) }}
+                </Descriptions.Item>
+              </Descriptions>
+            </div>
+
+            <div>
+              <div class="mb-3 text-base font-medium">额度申请</div>
+              <Form
+                class="max-w-xl"
+                :label-col="{ span: 5 }"
+                :wrapper-col="{ span: 16 }"
+              >
+                <Form.Item label="调整类型" required>
+                  <Select
+                    v-model:value="applyForm.WalletType"
+                    :options="[
+                      { label: '代存', value: 2 },
+                      { label: '代客', value: 3 },
+                    ]"
+                    placeholder="请选择调整类型"
+                  />
+                </Form.Item>
+                <Form.Item label="调整方式" required>
+                  <Select
+                    v-model:value="applyForm.AdjustType"
+                    :options="[
+                      { label: '增加', value: 1 },
+                      { label: '扣除', value: 2 },
+                    ]"
+                    placeholder="请选择调整方式"
+                  />
+                </Form.Item>
+                <Form.Item label="调整金额" required>
+                  <InputNumber
+                    v-model:value="applyForm.AdjustAmount"
+                    :min="0.01"
+                    :precision="2"
+                    placeholder="请输入调整金额"
+                    style="width: 100%"
+                  />
+                </Form.Item>
+                <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
+                  <Space>
+                    <Button
+                      v-if="canApply"
+                      :loading="applySubmitting"
+                      class="w-28"
+                      type="primary"
+                      @click="submitApply"
+                    >
+                      提交申请
+                    </Button>
+                    <Button class="w-28" @click="resetApplyForm">重置</Button>
+                  </Space>
+                </Form.Item>
+              </Form>
+            </div>
           </div>
           <CreditDataPanel
             v-else-if="item.config && activeTab === item.key"
