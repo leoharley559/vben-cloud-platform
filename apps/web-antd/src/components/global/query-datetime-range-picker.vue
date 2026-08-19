@@ -112,7 +112,7 @@ const allPresets = [
   {
     label: '本月',
     range: () =>
-      [dayjs().startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs],
+      [dayjs().startOf('month'), dayjs().endOf('day')] as [Dayjs, Dayjs],
   },
   {
     label: '上月',

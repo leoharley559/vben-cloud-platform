@@ -64,11 +64,11 @@ export function getLast3CalendarDaysRangeSeconds() {
   };
 }
 
-/** 玩家详情登录记录默认：当月（unix 秒） */
+/** 当月：月初 00:00:00 至今天 23:59:59（不含未来日期） */
 export function getCurrentMonthRangeSeconds() {
   return {
     BeginTime: dayjs().startOf('month').unix(),
-    EndTime: dayjs().endOf('month').unix(),
+    EndTime: dayjs().endOf('day').unix(),
   };
 }
 

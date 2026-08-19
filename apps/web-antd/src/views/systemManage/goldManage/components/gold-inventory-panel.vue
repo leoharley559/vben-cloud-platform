@@ -68,7 +68,7 @@ const bannerScoreCount = ref({
 
 const dateRange = ref<[Dayjs, Dayjs]>([
   dayjs().startOf('month'),
-  dayjs().endOf('month'),
+  dayjs().endOf('day'),
 ]);
 const totalData = ref<TotalSum>(emptyTotalSum());
 
@@ -281,7 +281,7 @@ const gridOptions: VxeTableGridOptions<InventoryRow> = {
         }
         // 对齐旧站：明细默认当月；清空日期时回退当月，避免无参窗与当月窗数据不一致
         if (!dateRange.value?.[0] || !dateRange.value?.[1]) {
-          dateRange.value = [dayjs().startOf('month'), dayjs().endOf('month')];
+          dateRange.value = [dayjs().startOf('month'), dayjs().endOf('day')];
         }
         const { BeginTime, EndTime } = toUnixRange(dateRange.value);
         try {
@@ -321,7 +321,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  dateRange.value = [dayjs().startOf('month'), dayjs().endOf('month')];
+  dateRange.value = [dayjs().startOf('month'), dayjs().endOf('day')];
   void gridApi.reload();
 }
 

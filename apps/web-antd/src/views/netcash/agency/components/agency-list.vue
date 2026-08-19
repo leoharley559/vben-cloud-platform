@@ -142,7 +142,7 @@ const filterParentAdminId = ref('');
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 const statisticsRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs().startOf('month'),
-  dayjs().endOf('month'),
+  dayjs().endOf('day'),
 ]);
 const drillPath = ref<Array<{ id: number | string; username: string }>>([]);
 const totalData = ref<Record<string, number>>({});
@@ -445,7 +445,7 @@ function resetFilters() {
   filterDateRange.value = undefined;
   statisticsRange.value = [
     dayjs().startOf('month'),
-    dayjs().endOf('month'),
+    dayjs().endOf('day'),
   ];
   drillPath.value = [];
   gridApi.reload();
