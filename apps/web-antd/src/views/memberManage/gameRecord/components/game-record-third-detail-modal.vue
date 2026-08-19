@@ -151,9 +151,6 @@ watch(open, (visible) => {
       <div class="flex flex-wrap items-center gap-2">
         <span class="font-semibold">{{ titleText }}</span>
         <Tag v-if="modeLabel" color="blue">{{ modeLabel }}</Tag>
-        <span class="text-xs text-gray-500">
-          流水号: {{ row?.TransactionId || '-' }}
-        </span>
       </div>
     </template>
 

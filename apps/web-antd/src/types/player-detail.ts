@@ -313,6 +313,7 @@ export interface PlayerGameDetailItem {
   ChannelName?: string;
   CreateTime?: number | string;
   ExInfo?: string | Record<string, unknown>;
+  GameId?: number | string;
   LogId?: string;
   LoginAccount?: string;
   NewGold?: number | string;
@@ -581,10 +582,10 @@ export const PLAYER_DETAIL_TABS: PlayerDetailTabConfig[] = [
   { key: 'venueTransfer', label: '场馆转账', permission: 12092 },
   { key: 'adjust', label: '调整记录', permission: 12097 },
   { key: 'bonus', label: '红利信息', permission: 10415 },
+  { key: 'rebate', label: '返水信息', permission: 11609 },
   { key: 'streaming', label: '流水信息', permission: 12936 },
   { key: 'points', label: '积分信息', permission: 13412 },
   { key: 'relation', label: '关联号详情', permission: 10416 },
-  { key: 'rebate', label: '返水信息', permission: 11609 },
   { key: 'problem', label: '问题纪录', permission: 11865 },
   { key: 'risk', label: '风控分析', permission: 12377 },
   { key: 'logs', label: '操作日志', permission: 13313 },

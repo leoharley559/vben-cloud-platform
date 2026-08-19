@@ -1,9 +1,12 @@
 export const VENUE_TRANSFER_STATE_MAP: Record<number, string> = {
   [-2]: '全部',
-  [-1]: '进行中',
+  [-1]: '处理中',
   0: '成功',
   1: '失败',
-  2: '异常',
+  2: '失败',
+  5: '转人工处理',
+  17: '转人工处理',
+  18: '失败',
 };
 
 export const REBATE_AWARD_STATUS_OPTIONS = [
@@ -192,7 +195,11 @@ export function formatVenueTransferState(state?: number | string) {
   if (state === undefined || state === null || state === '') {
     return '-';
   }
-  return VENUE_TRANSFER_STATE_MAP[Number(state)] || String(state);
+  const num = Number(state);
+  if (Number.isNaN(num)) {
+    return String(state);
+  }
+  return VENUE_TRANSFER_STATE_MAP[num] || '失败';
 }
 
 export function formatTransferAccount(

@@ -39,7 +39,7 @@ const defaultRange = getLast7CalendarDaysRangeSeconds();
 const totalReward = ref(0);
 
 const filterBonusTypes = ref<number[]>([]);
-const filterOrderStatus = ref(0);
+const filterOrderStatus = ref(-1);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
@@ -63,7 +63,8 @@ function getQueryParams() {
     BonusType: filterBonusTypes.value,
     DataSearchType: 2,
     EndTime: end ? end.unix() : '',
-    OrderStatus: filterOrderStatus.value,
+    OrderStatus:
+      filterOrderStatus.value === -1 ? 0 : filterOrderStatus.value,
     PlayerId: String(props.playerId),
   };
 }
@@ -241,7 +242,7 @@ function handleSearch() {
 
 function handleReset() {
   filterBonusTypes.value = [];
-  filterOrderStatus.value = 0;
+  filterOrderStatus.value = -1;
   filterDateRange.value = [
     dayjs.unix(defaultRange.BeginTime),
     dayjs.unix(defaultRange.EndTime),

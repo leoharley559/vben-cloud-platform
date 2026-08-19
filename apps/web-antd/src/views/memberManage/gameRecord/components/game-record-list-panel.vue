@@ -257,7 +257,7 @@ const betTotalText = computed(() =>
 );
 
 const winLossTotalText = computed(() =>
-  formatAmountFromCent(summary.value.SumWinGold - summary.value.SumBetGold),
+  formatAmountFromCent(summary.value.SumWinGold),
 );
 
 const summaryItems = computed(() => [

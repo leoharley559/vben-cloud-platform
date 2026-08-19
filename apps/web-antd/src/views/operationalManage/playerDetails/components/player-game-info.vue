@@ -14,7 +14,7 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 import { useGameConfig } from '#/composables/use-game-config';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGoldReason } from '#/utils/game-config';
+import { formatGoldReason, formatVenueName } from '#/utils/game-config';
 
 defineOptions({ name: 'PlayerGameInfoPanel' });
 
@@ -80,13 +80,23 @@ const gridOptions: VxeTableGridOptions<PlayerGameDetailItem> = {
     { field: 'LogId', minWidth: 180, title: '订单编号' },
     { field: 'Username', minWidth: 100, title: '推广账号' },
     { field: 'PackageName', minWidth: 110, title: '所属产品' },
-    { field: 'ChannelName', minWidth: 120, title: '渠道名称' },
+    { field: 'ChannelId', minWidth: 120, title: '渠道ID' },
     {
       field: 'Reason',
       formatter: ({ cellValue }) =>
         formatGoldReason(cellValue, gameConfig.value.goldSource),
       minWidth: 120,
       title: '账变类型',
+    },
+    {
+      field: 'GameId',
+      formatter: ({ cellValue, row }) =>
+        formatVenueName(
+          cellValue ?? parseExInfo(row.ExInfo).GameId,
+          gameConfig.value,
+        ),
+      minWidth: 140,
+      title: '场馆名称',
     },
     {
       field: 'ExInfo',

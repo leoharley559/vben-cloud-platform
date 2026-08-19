@@ -20,6 +20,7 @@ import {
   Space,
   Spin,
   Tabs,
+  Tag,
 } from 'ant-design-vue';
 
 import {
@@ -146,7 +147,6 @@ async function loadPlayerInfo(playerId?: string) {
   loading.value = true;
   try {
     playerInfo.value = await fetchPlayerBasicInfoApi(id);
-    searchPlayerId.value = String(playerInfo.value?.PlayerId || id);
     searchLoginAccount.value = String(playerInfo.value?.LoginAccount || '');
   } catch {
     playerInfo.value = null;
@@ -320,77 +320,80 @@ onMounted(async () => {
 
 <template>
   <Page auto-content-height :title="pageTitle">
-    <Card class="mb-4">
+    <Card>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="searchLoginAccount"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
+        <div class="ops-query-filters">
+          <Space.Compact>
+            <span class="query-field-addon">游戏账号</span>
+            <Input
+              v-model:value="searchLoginAccount"
+              allow-clear
+              autocomplete="off"
+              name="player-detail-login-account"
+              placeholder="请输入游戏账号"
+              @press-enter="handleSearch"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">产品</span>
+            <Select
+              v-model:value="searchPackageId"
+              :options="
+                packageOptions
+                  .filter((item) => item.PackageId !== '')
+                  .map((item) => ({
+                    label: item.PackageName,
+                    value: item.PackageId,
+                  }))
+              "
+              placeholder="请选择产品"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">玩家 ID</span>
+            <Input
+              v-model:value="searchPlayerId"
+              allow-clear
+              autocomplete="off"
+              name="player-detail-player-id"
+              placeholder="请输入玩家 ID"
+              @press-enter="handleSearch"
+            />
+          </Space.Compact>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button
+              :loading="searchLoading || loading"
+              type="primary"
+              @click="handleSearch"
+            >
+              查询
+            </Button>
+            <Button @click="handleResetSearch">重置</Button>
+          </div>
         </div>
-
-        <Space.Compact>
-          <span class="query-field-addon">产品</span>
-          <Select
-            v-model:value="searchPackageId"
-            :options="
-              packageOptions
-                .filter((item) => item.PackageId !== '')
-                .map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-            "
-            placeholder="请选择产品"
-          />
-        </Space.Compact>
-
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="searchPlayerId"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入玩家 ID"
-          >
-            <template #addonBefore>玩家 ID</template>
-          </Input>
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Space>
-          <Button
-            :loading="searchLoading || loading"
-            type="primary"
-            @click="handleSearch"
-          >
-            查询
-          </Button>
-          <Button @click="handleResetSearch">重置</Button>
-        </Space>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <Spin :spinning="loading">
-        <div class="flex flex-wrap gap-6 text-sm">
-          <div>
-            <span class="text-gray-500">游戏账号：</span>
-            <span>{{ playerInfo?.LoginAccount || '-' }}</span>
+        <div
+          class="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-md bg-gray-50 px-3 py-2 text-sm"
+        >
+          <div class="flex items-center gap-1.5">
+            <span class="text-gray-500">游戏账号</span>
+            <span class="font-medium text-blue-600">
+              {{ playerInfo?.LoginAccount || '-' }}
+            </span>
           </div>
-          <div>
-            <span class="text-gray-500">VIP：</span>
-            <span>{{ playerInfo?.VipLevel ?? '-' }}</span>
-          </div>
-          <div>
-            <span class="text-gray-500">在线状态：</span>
-            <span>{{ playerInfo?.Online ? '在线' : '离线' }}</span>
+          <Tag color="gold">
+            VIP {{ playerInfo?.VipLevel ?? '-' }}
+          </Tag>
+          <div class="flex items-center gap-1.5">
+            <span class="text-gray-500">在线状态</span>
+            <Tag :color="playerInfo?.Online ? 'success' : 'default'">
+              {{ playerInfo?.Online ? '在线' : '离线' }}
+            </Tag>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <span class="text-gray-500">状态：</span>
+            <span class="text-gray-500">状态</span>
             <template v-if="!statusEditing">
               <PlayerStatusTag :status="playerInfo?.Status" />
               <Button
@@ -424,52 +427,13 @@ onMounted(async () => {
           </div>
         </div>
       </Spin>
-    </Card>
 
-    <Modal
-      v-model:open="banRemarkOpen"
-      :confirm-loading="statusSaving"
-      destroy-on-close
-      title="封号原因"
-      @ok="submitBanRemark"
-    >
-      <Form layout="vertical" class="pt-2">
-        <Form.Item label="原因" required>
-          <Input.TextArea
-            v-model:value="banRemark"
-            :rows="3"
-            allow-clear
-            placeholder="请填写封号原因"
-          />
-        </Form.Item>
-      </Form>
-    </Modal>
-
-    <Modal
-      v-model:open="kickOpen"
-      :confirm-loading="statusSaving"
-      destroy-on-close
-      title="踢下线时长"
-      @ok="submitKick"
-    >
-      <Form layout="vertical" class="pt-2">
-        <Form.Item label="时长（分钟，0–60）" required>
-          <InputNumber
-            v-model:value="kickMinutes"
-            :max="60"
-            :min="0"
-            :precision="0"
-            class="!w-full"
-          />
-        </Form.Item>
-        <div class="text-xs text-gray-400">
-          到期后自动恢复；设为 0 表示立即踢下线且不额外锁定时长。
-        </div>
-      </Form>
-    </Modal>
-
-    <Card v-if="canViewAnyTab">
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+      <Tabs
+        v-if="canViewAnyTab"
+        v-model:active-key="activeTab"
+        type="line"
+        size="small"
+      >
         <Tabs.TabPane
           v-for="tab in visibleTabs"
           :key="tab.key"
@@ -554,13 +518,55 @@ onMounted(async () => {
           />
         </Tabs.TabPane>
       </Tabs>
+
+      <Result
+        v-else
+        status="403"
+        sub-title="当前账号没有玩家详情 Tab 权限（10407+）"
+        title="无权限"
+      />
     </Card>
 
-    <Result
-      v-else
-      status="403"
-      sub-title="当前账号没有玩家详情 Tab 权限（10407+）"
-      title="无权限"
-    />
+    <Modal
+      v-model:open="banRemarkOpen"
+      :confirm-loading="statusSaving"
+      destroy-on-close
+      title="封号原因"
+      @ok="submitBanRemark"
+    >
+      <Form layout="vertical" class="pt-2">
+        <Form.Item label="原因" required>
+          <Input.TextArea
+            v-model:value="banRemark"
+            :rows="3"
+            allow-clear
+            placeholder="请填写封号原因"
+          />
+        </Form.Item>
+      </Form>
+    </Modal>
+
+    <Modal
+      v-model:open="kickOpen"
+      :confirm-loading="statusSaving"
+      destroy-on-close
+      title="踢下线时长"
+      @ok="submitKick"
+    >
+      <Form layout="vertical" class="pt-2">
+        <Form.Item label="时长（分钟，0–60）" required>
+          <InputNumber
+            v-model:value="kickMinutes"
+            :max="60"
+            :min="0"
+            :precision="0"
+            class="!w-full"
+          />
+        </Form.Item>
+        <div class="text-xs text-gray-400">
+          到期后自动恢复；设为 0 表示立即踢下线且不额外锁定时长。
+        </div>
+      </Form>
+    </Modal>
   </Page>
 </template>

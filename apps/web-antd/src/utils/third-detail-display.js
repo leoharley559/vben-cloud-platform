@@ -6,7 +6,7 @@ const FIELD_LABELS = {
   channelId: '渠道ID',
   id: '注单ID',
   bizId: '业务ID',
-  generatedId: '生成ID',
+  generatedId: '流水号',
   gameId: '游戏ID',
   gameTypeId: '游戏类型ID',
   gameTypeName: '游戏类型',
@@ -126,16 +126,7 @@ const GAME_RECORD_STATUS_MAP = {
 const LIVE_SECTIONS = [
   {
     title: '基本信息',
-    keys: [
-      'playerId',
-      'playerName',
-      'userName',
-      'agentId',
-      'channelId',
-      'id',
-      'bizId',
-      'generatedId',
-    ],
+    keys: ['playerId', 'playerName', 'channelId', 'generatedId'],
   },
   {
     title: '场馆信息',
@@ -178,11 +169,7 @@ const SPORT_SECTIONS = [
     keys: [
       'playerId',
       'playerName',
-      'userName',
-      'agentId',
       'channelId',
-      'id',
-      'bizId',
       'generatedId',
       'orderNo',
       'serialNumber',
@@ -662,34 +649,10 @@ function getSportOrderItemTitle(item, index) {
 
 function buildSportOrderDetailItems(list) {
   return list.map((item, index) => {
-    const usedKeys = new Set();
-    const groups = SPORT_ORDER_ITEM_GROUPS.map((group) => {
-      const fields = buildSectionFields(item, group.keys);
-      fields.forEach((field) => usedKeys.add(field.key));
-      return {
-        title: group.title,
-        fields,
-      };
-    }).filter((group) => group.fields.length > 0);
-
-    const restFields = Object.keys(item)
-      .filter((key) => !usedKeys.has(key))
-      .filter((key) => {
-        const val = item[key];
-        return val !== undefined && val !== null && val !== '';
-      })
-      .map((key) => ({
-        key,
-        label: getFieldLabel(key),
-        value: formatFieldValue(key, item[key]),
-      }));
-
-    if (restFields.length) {
-      groups.push({
-        title: '其他信息',
-        fields: restFields,
-      });
-    }
+    const groups = SPORT_ORDER_ITEM_GROUPS.map((group) => ({
+      title: group.title,
+      fields: buildSectionFields(item, group.keys),
+    })).filter((group) => group.fields.length > 0);
 
     return {
       index: index + 1,
@@ -850,38 +813,13 @@ export function buildDetailSections(detail, rowData = {}) {
     return { mode, sections };
   }
 
-  const usedKeys = new Set(['orderDetailList']);
   const sections = sectionConfig
-    .map((section) => {
-      const fields = buildSectionFields(normalized, section.keys);
-      fields.forEach((item) => usedKeys.add(item.key));
-      return {
-        type: 'fields',
-        title: section.title,
-        fields,
-      };
-    })
-    .filter((section) => section.fields.length > 0);
-
-  const restFields = Object.keys(normalized)
-    .filter((key) => !usedKeys.has(key))
-    .filter((key) => {
-      const val = normalized[key];
-      return val !== undefined && val !== null && val !== '';
-    })
-    .map((key) => ({
-      key,
-      label: getFieldLabel(key),
-      value: formatFieldValue(key, normalized[key]),
-    }));
-
-  if (restFields.length) {
-    sections.push({
+    .map((section) => ({
       type: 'fields',
-      title: '其他信息',
-      fields: restFields,
-    });
-  }
+      title: section.title,
+      fields: buildSectionFields(normalized, section.keys),
+    }))
+    .filter((section) => section.fields.length > 0);
 
   return { mode, sections };
 }

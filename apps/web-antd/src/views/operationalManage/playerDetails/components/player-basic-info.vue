@@ -823,61 +823,67 @@ onMounted(() => {
 <template>
   <div v-if="info">
     <div class="mb-3 flex flex-wrap gap-2">
-      <Button v-if="canEditVip" size="small" type="primary" @click="openVip">
+      <Button v-if="canEditVip" ghost type="primary" @click="openVip">
         修改 VIP
       </Button>
-      <Button v-if="canEditLevel" size="small" @click="openLevel">
+      <Button v-if="canEditLevel" ghost type="primary" @click="openLevel">
         修改层级
       </Button>
-      <Button v-if="canEditTag" size="small" @click="openTag"> 打标 </Button>
-      <Button v-if="canEditInviter" size="small" @click="openInviter">
+      <Button v-if="canEditTag" ghost type="primary" @click="openTag">
+        打标
+      </Button>
+      <Button v-if="canEditInviter" ghost type="primary" @click="openInviter">
         绑定上级
       </Button>
-      <Button v-if="canEditPhone" size="small" @click="openPhone">
+      <Button v-if="canEditPhone" ghost type="primary" @click="openPhone">
         修改手机
       </Button>
       <Button
         v-if="canUnbindPhone && (info.BindPhone || info.PhoneNo)"
         danger
-        size="small"
+        ghost
         @click="requestUnbindPhone"
       >
         解绑手机
       </Button>
-      <Button v-if="canEditViber" size="small" @click="openSocial('viber')">
+      <Button v-if="canEditViber" ghost type="primary" @click="openSocial('viber')">
         绑定 Viber
       </Button>
       <Button
         v-if="canEditTelegram"
-        size="small"
+        ghost
+        type="primary"
         @click="openSocial('telegram')"
       >
         绑定 Telegram
       </Button>
       <Button
         v-if="canEditFacebook"
-        size="small"
+        ghost
+        type="primary"
         @click="openSocial('facebook')"
       >
         绑定 Facebook
       </Button>
       <Button
         v-if="canEditOther || canEditAddress || canEditDob"
-        size="small"
+        ghost
+        type="primary"
         @click="openOther"
       >
         修改资料
       </Button>
-      <Button v-if="canEditInviteSite" size="small" @click="openInvite">
+      <Button v-if="canEditInviteSite" ghost type="primary" @click="openInvite">
         修改邀请站点
       </Button>
-      <Button v-if="canEditCard" size="small" @click="openCard">
+      <Button v-if="canEditCard" ghost type="primary" @click="openCard">
         修改证件
       </Button>
       <Button
         v-if="canEditPassword || canViewPassword"
-        size="small"
         :disabled="!canEditPassword"
+        ghost
+        type="primary"
         @click="openPassword"
       >
         修改密码

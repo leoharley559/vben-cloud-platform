@@ -89,12 +89,15 @@ function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
     AwardStatus: filterAwardStatus.value,
-    AwardTimeBegin: begin ? begin.unix()
-      : '',
-    AwardTimeEnd: end ? end.unix() : '',
+    AwardTimeBegin: begin ? begin.startOf('day').unix() : '',
+    AwardTimeEnd: end ? end.endOf('day').unix() : '',
+    AwardType: -1,
     DataSearchType: 2,
+    LevelId: -1,
     OrderId: filterOrderId.value,
     PlayerId: String(props.playerId),
+    RebateMode: -1,
+    VipLevel: -1,
   };
 }
 
@@ -159,11 +162,16 @@ const gridOptions: VxeTableGridOptions<PlayerRebateRecordItem> = {
           Sort: sortParam,
         });
 
+        const items = result?.Items || [];
+        const rawTotal = result?.Pagination?.MaxCount ?? result?.Total;
         sumBackWater.value = Number(result?.SumBackWater || 0);
 
         return {
-          items: result?.Items || [],
-          total: result?.Pagination?.MaxCount || 0,
+          items,
+          total:
+            typeof rawTotal === 'number'
+              ? rawTotal
+              : Number(rawTotal || items.length),
         };
       },
     },

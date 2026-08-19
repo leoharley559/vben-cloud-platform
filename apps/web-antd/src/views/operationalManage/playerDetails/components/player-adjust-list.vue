@@ -29,6 +29,7 @@ import {
   formatAdjustWaterType,
   getAdjustApproveColor,
   getAdjustDoneColor,
+  getAdjustHandleTypeColor,
 } from '#/utils/account-adjust';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -112,8 +113,8 @@ const gridOptions: VxeTableGridOptions<PlayerAdjustListItem> = {
     },
     {
       field: 'Amount',
-      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
       minWidth: 110,
+      slots: { default: 'amount', footer: 'amountFooter' },
       title: '调整金额',
     },
     {
@@ -188,6 +189,12 @@ const gridOptions: VxeTableGridOptions<PlayerAdjustListItem> = {
     },
   },
   showFooter: true,
+  footerCellClassName: ({ column }: { column: { field?: string } }) => {
+    if (column.field !== 'Amount') {
+      return '';
+    }
+    return Number(totalAmount.value) > 0 ? 'text-green-600' : 'text-red-500';
+  },
   footerMethod: () => [
     [
       '合计',
@@ -210,6 +217,18 @@ const gridOptions: VxeTableGridOptions<PlayerAdjustListItem> = {
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 const loading = computed(() => gridApi.grid?.loading ?? false);
+
+function getAmountColor(row: PlayerAdjustListItem) {
+  const handleType = Number(row.HandleType);
+  if (handleType === 1 || handleType === 2) {
+    return getAdjustHandleTypeColor(handleType);
+  }
+  return Number(row.Amount) > 0 ? '#67c23a' : '#f56c6c';
+}
+
+function getTotalAmountColor() {
+  return Number(totalAmount.value) > 0 ? '#67c23a' : '#f56c6c';
+}
 
 function handleSearch() {
   gridApi.reload();
@@ -301,6 +320,16 @@ onMounted(() => {
   </div>
 
     <Grid>
+      <template #amount="{ row }">
+        <span :style="{ color: getAmountColor(row) }">
+          {{ formatAmountFromCent(row.Amount) }}
+        </span>
+      </template>
+      <template #amountFooter>
+        <span :style="{ color: getTotalAmountColor() }">
+          {{ formatAmountFromCent(totalAmount) }}
+        </span>
+      </template>
       <template #done="{ row }">
         <Tag :color="getAdjustDoneColor(row.Done)">
           {{ formatAdjustDone(row.Done) }}

@@ -13,7 +13,6 @@ import {
   Result,
   Select,
   Space,
-  Tag,
   message,
 } from 'ant-design-vue';
 
@@ -364,23 +363,23 @@ onMounted(async () => {
   </div>
 
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <Space>
-        <Tag color="blue">
+      <Space align="center">
+        <span
+          class="inline-flex h-8 items-center rounded-md border border-[#91caff] bg-[#e6f4ff] px-3 text-sm leading-8 text-[#1677ff]"
+        >
           当前流水：{{
             formatAmountFromCent(
               waterDetail.CurrentTotInCompletedDrawWater || 0,
             )
           }}
-        </Tag>
-        <Button size="small" @click="turnoverDetailOpen = true">
-          更多详情
-        </Button>
+        </span>
+        <Button @click="turnoverDetailOpen = true">更多详情</Button>
       </Space>
       <Space>
-        <Button type="primary" @click="addModalOpen = true">增加流水</Button>
         <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
           导出
         </Button>
+        <Button type="primary" @click="addModalOpen = true">增加流水</Button>
         <Button
           v-if="canResetRollover"
           :loading="resetLoading"

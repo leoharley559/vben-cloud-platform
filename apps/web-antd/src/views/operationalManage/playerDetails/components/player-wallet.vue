@@ -5,14 +5,12 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import {
   Button,
-  Card,
   Form,
   Input,
   InputNumber,
   Modal,
   Select,
   Space,
-  Statistic,
   Table,
   Tag,
   message,
@@ -27,8 +25,11 @@ import {
   walletZeroApi,
 } from '#/api/operationManage/player';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useGameConfig } from '#/composables/use-game-config';
 import { createRequestHash } from '#/utils/crypto';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { formatVenueName } from '#/utils/game-config';
+import SummaryCards from '#/components/global/summary-cards.vue';
 
 defineOptions({ name: 'PlayerWalletPanel' });
 
@@ -37,6 +38,7 @@ const props = defineProps<{
 }>();
 
 const { checkPermission } = useCloudPermission();
+const { ensureGameConfig, gameConfig } = useGameConfig();
 const canViewTable = computed(() => checkPermission(10437));
 const canEditUnlock = computed(() => checkPermission(10440));
 const canRecoverOne = computed(() => checkPermission(10439));
@@ -79,9 +81,30 @@ const subWalletTotal = computed(() =>
   walletList.value.reduce((sum, item) => sum + Number(item.Balance || 0), 0),
 );
 
+const summaryItems = computed(() => [
+  {
+    label: '中心钱包总金额',
+    value: formatAmountFromCent(walletGold.value),
+  },
+  {
+    label: '场馆钱包总金额',
+    value: formatAmountFromCent(subWalletTotal.value),
+  },
+]);
+
+function venueName(gameId?: number | string) {
+  return formatVenueName(gameId, gameConfig.value);
+}
+
 const columns = [
   { dataIndex: 'GameId', key: 'GameId', title: '游戏 ID', width: 100 },
-  { dataIndex: 'gameName', key: 'gameName', title: '场馆', width: 160 },
+  {
+    customRender: ({ record }: { record: PlayerWalletItem }) =>
+      venueName(record.GameId),
+    key: 'venueName',
+    title: '场馆名称',
+    width: 180,
+  },
   {
     dataIndex: 'Balance',
     key: 'Balance',
@@ -114,7 +137,7 @@ async function loadWallet() {
 
 function openEditUnlock(row: PlayerWalletItem) {
   editForm.GameId = row.GameId ?? '';
-  editForm.gameName = String(row.gameName || row.GameId || '');
+  editForm.gameName = venueName(row.GameId);
   editForm.UnlockWater = Number(row.UnlockWater || 0) / 100;
   editOpen.value = true;
 }
@@ -150,7 +173,7 @@ function handleRecoverOne(row: PlayerWalletItem) {
     return;
   }
   Modal.confirm({
-    content: `确认回收场馆「${row.gameName || row.GameId}」余额到主钱包？`,
+    content: `确认回收场馆「${venueName(row.GameId)}」余额到主钱包？`,
     onOk: async () => {
       await recoverPlayerWalletApi({
         GameId: row.GameId as number | string,
@@ -181,7 +204,7 @@ function handleWalletZero(row: PlayerWalletItem) {
     return;
   }
   Modal.confirm({
-    content: `确认将场馆「${row.gameName || row.GameId}」负余额清零？`,
+    content: `确认将场馆「${venueName(row.GameId)}」负余额清零？`,
     onOk: async () => {
       await walletZeroApi({
         Balance: row.Balance as number | string,
@@ -249,35 +272,22 @@ watch(
   },
 );
 
-onMounted(() => {
+onMounted(async () => {
+  await ensureGameConfig();
   loadWallet();
 });
 </script>
 
 <template>
   <div>
-    <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-      <Card size="small">
-        <Statistic
-          title="钱包余额"
-          :value="formatAmountFromCent(walletGold)"
-          :value-style="{ fontSize: '20px' }"
-        />
-      </Card>
-      <Card size="small">
-        <Statistic
-          title="子钱包合计"
-          :value="formatAmountFromCent(subWalletTotal)"
-          :value-style="{ fontSize: '20px' }"
-        />
-      </Card>
-    </div>
-
-    <div class="mb-3 flex justify-end gap-2">
-      <Button v-if="canAdjust" type="primary" @click="openAdjust">
-        账户调账
-      </Button>
-      <Button v-if="canRecoverAll" @click="handleRecoverAll">全部回收</Button>
+    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+      <SummaryCards class="!mb-0 min-w-0 flex-1" :items="summaryItems" />
+      <div class="flex shrink-0 items-center gap-2">
+        <Button v-if="canAdjust" type="primary" @click="openAdjust">
+          账户调账
+        </Button>
+        <Button v-if="canRecoverAll" @click="handleRecoverAll">全部回收</Button>
+      </div>
     </div>
 
     <Table
@@ -343,7 +353,7 @@ onMounted(() => {
       @ok="submitUnlock"
     >
       <Form layout="vertical" class="pt-2">
-        <Form.Item label="场馆">
+        <Form.Item label="场馆名称">
           <span>{{ editForm.gameName }}</span>
         </Form.Item>
         <Form.Item label="流水要求（元）" required>

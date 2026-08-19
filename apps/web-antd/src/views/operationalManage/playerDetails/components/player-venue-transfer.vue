@@ -78,10 +78,10 @@ const TYPE_OPTIONS = [
 
 const STATE_OPTIONS = [
   { label: '全部', value: -2 },
-  { label: '进行中', value: -1 },
+  { label: '处理中', value: -1 },
   { label: '成功', value: 0 },
-  { label: '失败', value: 1 },
-  { label: '异常', value: 2 },
+  { label: '转人工处理', value: 5 },
+  { label: '失败', value: 18 },
 ];
 
 const CHANGE_STATE_OPTIONS = [
@@ -129,16 +129,13 @@ function getStateColor(state?: number | string) {
   if (num === 0) {
     return 'success';
   }
-  if (num === 1 || num === 2) {
-    return 'error';
-  }
-  if (num === -1) {
+  if (num === 5 || num === 17) {
     return 'processing';
   }
-  if (num === 5 || num === 17) {
+  if (num === -1) {
     return 'warning';
   }
-  return 'default';
+  return 'error';
 }
 
 function getQueryParams() {
