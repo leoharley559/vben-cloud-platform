@@ -353,7 +353,7 @@ defineExpose({
         :loading="exporting"
         @click="exportExcel"
       >
-        导出
+        导出 Excel
       </Button>
       <slot name="toolbar" :reload="gridApi.reload"></slot>
         </div>

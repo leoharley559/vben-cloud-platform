@@ -650,7 +650,7 @@ onMounted(async () => {
             v-if="mode === 'system' && canSystemExport"
             @click="openExport"
           >
-            后台导出
+            导出 Excel
           </Button>
         </div>
       </div>

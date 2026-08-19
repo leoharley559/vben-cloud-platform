@@ -352,10 +352,9 @@ onMounted(() => {
           <Button
             v-if="canExportHistory"
             :loading="exportLoading"
-            type="primary"
             @click="exportHistory"
           >
-            导出
+            导出 Excel
           </Button>
         </div>
       </div>

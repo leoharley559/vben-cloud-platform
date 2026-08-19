@@ -403,7 +403,7 @@ onMounted(() => {
         查询
       </Button>
       <Button @click="handleReset">重置</Button>
-      <Button :loading="exportLoading" @click="handleExport"> 导出 CSV </Button>
+      <Button :loading="exportLoading" @click="handleExport">导出 Excel</Button>
       <Button
         :disabled="!canBatchAction"
         type="primary"

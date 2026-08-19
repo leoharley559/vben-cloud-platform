@@ -228,8 +228,8 @@ onMounted(() => {
         </Space.Compact>
         </div>
         <div class="query-filter-actions query-filter-actions-single">
-          <Button v-if="canExport" type="primary" @click="handleExport">
-          导出Excel
+          <Button v-if="canExport" @click="handleExport">
+          导出 Excel
         </Button>
         </div>
     </div>

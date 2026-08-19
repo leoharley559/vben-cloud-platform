@@ -168,8 +168,8 @@ defineExpose({ init });
             <RadioButton value="SumLoginNum">登录留存</RadioButton>
             <RadioButton value="SumBetNum">投注留存</RadioButton>
           </RadioGroup>
-          <Button v-if="canExport" type="primary" @click="handleExport">
-            导出Excel
+          <Button v-if="canExport" @click="handleExport">
+            导出 Excel
           </Button>
         </div>
       </div>

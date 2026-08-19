@@ -1057,7 +1057,7 @@ onMounted(async () => {
             :loading="exportLoading"
             @click="handleExportClick"
           >
-            导出 CSV
+            导出 Excel
           </Button>
           <Dropdown v-if="canBatchEdit">
             <Button>批量编辑</Button>

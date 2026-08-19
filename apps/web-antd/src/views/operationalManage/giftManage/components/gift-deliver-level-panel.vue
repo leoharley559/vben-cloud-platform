@@ -565,7 +565,7 @@ onMounted(() => {
           <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-        导出
+        导出 Excel
       </Button>
       <Button v-if="canBatchDeliver" type="primary" @click="openBatchDeliver">
         批量发货

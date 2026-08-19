@@ -420,7 +420,7 @@ async function exportDetail() {
   >
     <div class="detail-header">
       <SummaryCards :items="detailSummaryItems" />
-      <Button type="primary" @click="exportDetail">导出 CSV</Button>
+      <Button @click="exportDetail">导出 Excel</Button>
     </div>
     <Descriptions class="mb-3" size="small">
       <Descriptions.Item label="总记录数">{{ detailTotal }}</Descriptions.Item>

@@ -430,7 +430,7 @@ onMounted(() => {
             <span class="text-gray-500">ARPPU：</span>
             <span class="font-medium">{{ arppuTotal }}</span>
           </div>
-          <Button v-if="canExport" type="primary" @click="handleExport">
+          <Button v-if="canExport" @click="handleExport">
             导出 Excel
           </Button>
         </div>

@@ -150,7 +150,7 @@ onMounted(() => {
     >
       重置
     </Button>
-    <Button :loading="recordExportLoading" @click="exportRecords">导出</Button>
+    <Button :loading="recordExportLoading" @click="exportRecords">导出 Excel</Button>
         </div>
     </div>
   </div>

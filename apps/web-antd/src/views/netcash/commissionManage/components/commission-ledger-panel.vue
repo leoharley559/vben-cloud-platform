@@ -831,7 +831,7 @@ onMounted(async () => {
           >
             一键发放
           </Button>
-          <Button v-if="canExport" :loading="exporting" @click="exportExcel">导出</Button>
+          <Button v-if="canExport" :loading="exporting" @click="exportExcel">导出 Excel</Button>
         </Space>
         <span>共 {{ totalCount }} 条</span>
       </div>

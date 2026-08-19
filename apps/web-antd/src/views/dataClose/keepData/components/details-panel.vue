@@ -457,18 +457,16 @@ onMounted(() => {
       <Button
         v-if="securePageId"
         :loading="exportLoading"
-        type="primary"
         @click="handleSecureExportClick"
       >
-        后台导出
+        导出 Excel
       </Button>
       <Button
         v-else
         :loading="exportLoading"
-        type="primary"
         @click="handleExcelExport"
       >
-        导出Excel
+        导出 Excel
       </Button>
     </div>
     <Table

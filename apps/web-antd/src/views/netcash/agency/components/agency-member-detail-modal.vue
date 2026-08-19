@@ -130,7 +130,7 @@ watch(
   >
     <template #footer>
       <Button @click="emit('update:open', false)">关闭</Button>
-      <Button :loading="exporting" type="primary" @click="exportRows">导出 Excel</Button>
+      <Button :loading="exporting" @click="exportRows">导出 Excel</Button>
     </template>
     <Table
       :columns="columns"

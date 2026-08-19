@@ -470,8 +470,8 @@ onMounted(() => {
         查询
       </Button>
       <Button @click="resetFilters">重置</Button>
-      <Button :loading="exportLoading" type="primary" @click="handleExport">
-        导出
+      <Button :loading="exportLoading" @click="handleExport">
+        导出 Excel
       </Button>
         </div>
     </div>

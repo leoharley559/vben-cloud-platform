@@ -488,10 +488,9 @@ async function handleIssueExport(payload: Record<string, unknown>) {
         <Button
           v-if="canExportIssue"
           :loading="exportLoading"
-          type="primary"
           @click="handleIssueExportClick"
         >
-          导出
+          导出 Excel
         </Button>
         </div>
     </div>

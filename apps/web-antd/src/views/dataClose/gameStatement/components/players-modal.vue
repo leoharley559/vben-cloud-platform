@@ -140,7 +140,7 @@ watch(
     <div class="mb-3 flex justify-end">
       <Space>
         <Button @click="handleCopy">复制</Button>
-        <Button type="primary" @click="handleExport">导出 Excel</Button>
+        <Button @click="handleExport">导出 Excel</Button>
       </Space>
     </div>
     <Table

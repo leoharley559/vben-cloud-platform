@@ -372,9 +372,9 @@ onMounted(() => {
           :loading="exportLoading"
           @click="handleExportClick"
         >
-          导出 CSV
+          导出 Excel
         </Button>
-        <Button v-else disabled title="需要权限 13436">导出 CSV</Button>
+        <Button v-else disabled title="需要权限 13436">导出 Excel</Button>
       </Space>
         </div>
     </div>

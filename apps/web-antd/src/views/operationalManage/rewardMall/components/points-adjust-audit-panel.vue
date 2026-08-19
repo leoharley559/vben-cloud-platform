@@ -433,8 +433,8 @@ onMounted(() => {
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
       <Button @click="resetFilters">重置</Button>
-      <Button :loading="exportLoading" type="primary" @click="handleExport">
-        导出
+      <Button :loading="exportLoading" @click="handleExport">
+        导出 Excel
       </Button>
       <Button type="primary" @click="handleBatchApprove">批量通过</Button>
       <Button danger @click="openReject()">批量拒绝</Button>

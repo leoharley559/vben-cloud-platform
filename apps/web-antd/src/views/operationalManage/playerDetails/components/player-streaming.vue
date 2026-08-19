@@ -377,7 +377,7 @@ onMounted(async () => {
       </Space>
       <Space>
         <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-          导出
+          导出 Excel
         </Button>
         <Button type="primary" @click="addModalOpen = true">增加流水</Button>
         <Button

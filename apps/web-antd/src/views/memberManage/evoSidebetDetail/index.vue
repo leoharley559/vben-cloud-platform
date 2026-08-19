@@ -513,7 +513,7 @@ onMounted(async () => {
           <Button :loading="loading" type="primary" @click="handleSearch"> 查询 </Button>
           <Button @click="handleReset">重置</Button>
           <Button v-if="canExport" :loading="exportLoading" @click="handleExportClick">
-            导出 CSV
+            导出 Excel
           </Button>
         </Space>
         </div>

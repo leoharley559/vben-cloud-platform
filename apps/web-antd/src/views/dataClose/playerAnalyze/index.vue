@@ -542,8 +542,6 @@ onMounted(() => {
           <Button @click="handleReset">重置</Button>
           <Button
             v-if="canExport"
-            type="primary"
-            ghost
             :loading="exportLoading"
             @click="handleExport"
           >

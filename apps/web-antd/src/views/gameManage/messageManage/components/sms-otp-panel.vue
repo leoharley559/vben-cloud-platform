@@ -476,7 +476,7 @@ void loadReport();
       </Table>
       <div class="section-header">
         <div class="section-title">历史数据</div>
-        <Button type="primary" @click="exportReport">导出 CSV</Button>
+        <Button @click="exportReport">导出 Excel</Button>
       </div>
       <Table
         :columns="reportColumns"
@@ -602,7 +602,7 @@ void loadReport();
           <div class="query-filter-actions">
             <Button type="primary" @click="reloadDetail">查询</Button>
             <Button @click="resetDetail">重置</Button>
-            <Button @click="exportDetail">导出 CSV</Button>
+            <Button @click="exportDetail">导出 Excel</Button>
           </div>
         </div>
       </div>

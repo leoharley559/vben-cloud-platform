@@ -552,7 +552,7 @@ onMounted(() => {
         <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
-      <Button v-if="config.exportPermission" :loading="exporting" type="primary" ghost @click="exportExcel">导出 Excel</Button>
+      <Button v-if="config.exportPermission" :loading="exporting" @click="exportExcel">导出 Excel</Button>
         </div>
     </div>
   </div>

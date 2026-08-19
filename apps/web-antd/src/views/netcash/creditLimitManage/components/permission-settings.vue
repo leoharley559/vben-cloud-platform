@@ -421,7 +421,7 @@ onMounted(loadTab);
         <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>
-          <Button v-if="canExport" :loading="exporting" @click="handleExport">导出</Button>
+          <Button v-if="canExport" :loading="exporting" @click="handleExport">导出 Excel</Button>
           <Button v-if="canAdd" type="primary" @click="openAdd">添加</Button>
           <Popconfirm v-if="canRemove" title="确认批量移除选中的代理限制？" @confirm="removeRows(selectedKeys)"><Button :disabled="selectedKeys.length === 0" danger>批量移除</Button></Popconfirm>
         </div>

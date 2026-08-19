@@ -429,10 +429,9 @@ onMounted(() => {
       <Button
         v-if="canExport"
         :loading="exportLoading"
-        type="primary"
         @click="handleExportClick"
       >
-        导出
+        导出 Excel
       </Button>
         </div>
     </div>

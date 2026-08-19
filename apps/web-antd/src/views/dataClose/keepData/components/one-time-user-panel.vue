@@ -108,7 +108,7 @@ onMounted(() => {
     <div v-show="!showDetails">
       <KeepQueryBar ref="queryBarRef" @search="handleSearch" />
       <div class="mb-3 flex justify-end">
-        <Button type="primary" @click="handleExport">导出Excel</Button>
+        <Button @click="handleExport">导出 Excel</Button>
       </div>
       <Table
         :columns="columns"

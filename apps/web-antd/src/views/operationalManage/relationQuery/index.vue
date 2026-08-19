@@ -405,7 +405,7 @@ onMounted(() => {
           </Button>
           <Button @click="handleReset">重置</Button>
           <Button :loading="exportLoading" @click="handleExportClick">
-            导出 CSV
+            导出 Excel
           </Button>
         </div>
       </template>

@@ -476,7 +476,7 @@ onMounted(() => {
       </Button>
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-        导出 CSV
+        导出 Excel
       </Button>
         </div>
     </div>

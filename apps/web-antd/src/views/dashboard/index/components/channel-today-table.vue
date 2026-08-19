@@ -197,7 +197,7 @@ onMounted(() => {
     <template #title>
       <div class="flex items-center justify-between">
         <span>渠道今日数据</span>
-        <Button size="small" type="primary" @click="handleExport">
+        <Button size="small" @click="handleExport">
           导出 Excel
         </Button>
       </div>

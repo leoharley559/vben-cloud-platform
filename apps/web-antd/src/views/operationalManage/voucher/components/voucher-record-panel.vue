@@ -392,10 +392,9 @@ function statusMeta(value?: number | string) {
         </Space>
         <Button
         :loading="exportLoading"
-        type="primary"
         @click="handleExportClick"
       >
-        导出
+        导出 Excel
       </Button>
         </div>
     </div>

@@ -1113,12 +1113,10 @@ onMounted(() => {
           <Button @click="handleCopy">复制</Button>
           <Button
             v-if="canExport"
-            type="primary"
-            ghost
             :loading="exportLoading"
             @click="handleExportClick"
           >
-            导出 CSV
+            导出 Excel
           </Button>
         </div>
       </template>

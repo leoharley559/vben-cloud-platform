@@ -410,7 +410,7 @@ onMounted(async () => {
     <ReportSummaryCards :items="summaryItems">
       <template #extra>
         <UpdateReportBtn />
-        <Button type="primary" ghost @click="handleExport">导出 Excel</Button>
+        <Button @click="handleExport">导出 Excel</Button>
       </template>
     </ReportSummaryCards>
 

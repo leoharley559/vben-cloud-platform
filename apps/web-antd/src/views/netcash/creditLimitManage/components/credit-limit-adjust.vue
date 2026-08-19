@@ -324,7 +324,7 @@ onMounted(load);
         <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
       <Button @click="reset">重置</Button>
-      <Button v-if="checkPermission(11_802)" :loading="exporting" @click="handleExport">导出</Button>
+      <Button v-if="checkPermission(11_802)" :loading="exporting" @click="handleExport">导出 Excel</Button>
       <Button v-if="checkPermission(11_753)" @click="openTransferLimit">转账限额设置</Button>
       <Button v-if="checkPermission(11_754)" type="primary" @click="openAdjust()">批量调整代理</Button>
         </div>

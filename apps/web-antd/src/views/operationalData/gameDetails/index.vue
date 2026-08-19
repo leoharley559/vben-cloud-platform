@@ -361,7 +361,7 @@ onMounted(() => {
             查询
           </Button>
           <Button @click="handleReset">重置</Button>
-          <Button type="primary" ghost @click="handleExport">导出 Excel</Button>
+          <Button @click="handleExport">导出 Excel</Button>
         </template>
       </ReportQueryCard>
 

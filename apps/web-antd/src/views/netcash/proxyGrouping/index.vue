@@ -667,8 +667,6 @@ onMounted(async () => {
           <Button
             v-if="canExport"
             :loading="exporting"
-            type="primary"
-            ghost
             @click="exportExcel"
           >
             导出 Excel

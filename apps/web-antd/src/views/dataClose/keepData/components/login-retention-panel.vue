@@ -121,8 +121,8 @@ onMounted(() => {
           <RadioButton :value="1">显示人数</RadioButton>
           <RadioButton :value="2">显示百分比</RadioButton>
         </RadioGroup>
-        <Button v-if="canExport" type="primary" @click="handleExport">
-          导出Excel
+        <Button v-if="canExport" @click="handleExport">
+          导出 Excel
         </Button>
       </div>
       <Table

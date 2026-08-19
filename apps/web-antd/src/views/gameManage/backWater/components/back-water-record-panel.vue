@@ -704,7 +704,7 @@ onMounted(async () => {
         >
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>
-          <Button v-if="canExport" @click="requestExport">后台导出</Button>
+          <Button v-if="canExport" @click="requestExport">导出 Excel</Button>
         </div>
       </div>
     </div>

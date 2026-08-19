@@ -387,7 +387,7 @@ onMounted(() => {
         </Button>
         <Button @click="handleReset">重置</Button>
         <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-          导出
+          导出 Excel
         </Button>
       </Space>
         </div>

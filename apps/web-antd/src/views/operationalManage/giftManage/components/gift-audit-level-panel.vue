@@ -616,7 +616,7 @@ onMounted(() => {
       <Button @click="resetFilters">重置</Button>
       <Button v-if="canRecord" @click="openRecord">人工录单</Button>
       <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-        导出
+        导出 Excel
       </Button>
       <Space v-if="canBatchApprove || canBatchReject">
         <Button v-if="canBatchApprove" type="primary" @click="handleBatch(1)">
