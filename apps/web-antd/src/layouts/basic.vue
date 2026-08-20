@@ -8,6 +8,7 @@ import { BasicLayout, LockScreen, UserDropdown } from '@vben/layouts';
 import { preferences, usePreferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
 
+import AppVersionLabel from '#/components/app-version-label.vue';
 import { $t } from '#/locales';
 import { useAuthStore, useCloudPlatformStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
@@ -126,6 +127,7 @@ watch(
       <HeaderSoundToggle />
     </template>
     <template #extra>
+      <AppVersionLabel corner />
       <AuthenticationLoginExpiredModal
         v-model:open="accessStore.loginExpired"
         :avatar

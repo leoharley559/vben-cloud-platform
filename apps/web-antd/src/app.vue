@@ -6,6 +6,7 @@ import { preferences, usePreferences } from '@vben/preferences';
 
 import { App, ConfigProvider, theme } from 'ant-design-vue';
 
+import { useAppVersionCheck } from '#/composables/use-app-version-check';
 import { useAuthTokenPoller } from '#/composables/use-auth-token-poller';
 import { useUserInfoRefreshOnActivity } from '#/composables/use-user-info-refresh';
 import { antdLocale } from '#/locales';
@@ -16,6 +17,7 @@ defineOptions({ name: 'App' });
 /** 登录页也在 Auth 布局下，必须在这里初始化 AuthToken */
 ensureAuthToken();
 useAuthTokenPoller();
+useAppVersionCheck();
 /** 对齐旧 App.vue funMouseMove：活动后定时刷新 islogin */
 useUserInfoRefreshOnActivity();
 

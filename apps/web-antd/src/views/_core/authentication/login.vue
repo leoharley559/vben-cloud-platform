@@ -9,6 +9,7 @@ import { $t } from '@vben/locales';
 import { Input, message, Modal } from 'ant-design-vue';
 
 import { fetchLoginCaptchaApi } from '#/api';
+import AppVersionLabel from '#/components/app-version-label.vue';
 import { useAuthStore } from '#/store';
 
 defineOptions({ name: 'Login' });
@@ -177,7 +178,13 @@ onUnmounted(() => {
       :show-register="false"
       :show-third-party-login="false"
       @submit="handleSubmit"
-    />
+    >
+      <template #to-register>
+        <div class="mt-4 flex justify-center">
+          <AppVersionLabel />
+        </div>
+      </template>
+    </AuthenticationLogin>
 
     <Modal
       v-model:open="showTwoFactor"

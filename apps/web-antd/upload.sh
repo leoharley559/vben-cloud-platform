@@ -5,6 +5,7 @@
 #   ./upload.sh                  # 自动找 dist.zip 或 dist/
 #   ./upload.sh dist.zip         # 指定 zip
 #   ./upload.sh -y               # 跳过确认（CI / 非交互）
+#   ./upload.sh -y --from-dist   # 强制用当前 dist 重新打包（忽略旧 dist.zip）
 #   SSH_KEY=/path/to.pem ./upload.sh
 
 set -euo pipefail
@@ -76,6 +77,9 @@ ensure_zip_has_required_files() {
     if ! unzip -l "$zip_file" | grep -qE '(^|[[:space:]])_app\.config\.js$'; then
         log_error "压缩包缺少 _app.config.js（生产环境接口配置必须一起发布）: ${zip_file}"
     fi
+    if ! unzip -l "$zip_file" | grep -qE '(^|[[:space:]])version\.json$'; then
+        log_error "压缩包缺少 version.json（版本检测必须一起发布）: ${zip_file}"
+    fi
 }
 
 pack_dist() {
@@ -87,6 +91,9 @@ pack_dist() {
     fi
     if [ ! -f "${DIST_DIR}/_app.config.js" ]; then
         log_error "未找到 ${DIST_DIR}/_app.config.js，请确认生产构建已完成"
+    fi
+    if [ ! -f "${DIST_DIR}/version.json" ]; then
+        log_error "未找到 ${DIST_DIR}/version.json，请确认生产构建已完成"
     fi
 
     log_info "正在打包 dist 目录..."
@@ -107,6 +114,7 @@ pack_dist() {
 # ================= 脚本逻辑 =================
 
 ASSUME_YES=false
+FROM_DIST=false
 LOCAL_FILE=""
 CLEANUP_REQUIRED=false
 
@@ -115,9 +123,13 @@ for arg in "$@"; do
         -y|--yes)
             ASSUME_YES=true
             ;;
+        --from-dist)
+            FROM_DIST=true
+            ;;
         -h|--help)
-            echo "用法: $0 [-y] [zip 文件路径]"
+            echo "用法: $0 [-y] [--from-dist] [zip 文件路径]"
             echo "  不传路径时自动使用 ${DIST_ZIP} 或打包 ${DIST_DIR}"
+            echo "  --from-dist  忽略已有 dist.zip，始终从 dist 重新打包"
             echo "  发布目标: ${SITE_URL}  →  ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}"
             exit 0
             ;;
@@ -134,7 +146,14 @@ INVOKE_CWD="$(pwd)"
 cd "${SCRIPT_DIR}"
 
 if [ -z "${LOCAL_FILE}" ]; then
-    if [ -f "${DIST_ZIP}" ]; then
+    if [ "${FROM_DIST}" = true ]; then
+        if [ ! -d "${DIST_DIR}" ]; then
+            log_error "未找到 ${DIST_DIR}，请先执行: pnpm build:antd"
+        fi
+        pack_dist
+        LOCAL_FILE="${DIST_ZIP}"
+        CLEANUP_REQUIRED=true
+    elif [ -f "${DIST_ZIP}" ]; then
         log_info "未指定文件路径，发现 ${DIST_ZIP}"
         if confirm "是否上传该 dist.zip?"; then
             LOCAL_FILE="${DIST_ZIP}"
@@ -227,6 +246,10 @@ REMOTE_CMD="
     fi
     if [ ! -f _app.config.js ]; then
         echo '错误: 解压后未找到 _app.config.js'
+        exit 1
+    fi
+    if [ ! -f version.json ]; then
+        echo '错误: 解压后未找到 version.json'
         exit 1
     fi
 
