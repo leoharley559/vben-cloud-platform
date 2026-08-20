@@ -16,12 +16,11 @@ import { trimSpace } from '#/utils/string';
  * @see views/netcash/agentDomainManage/index.vue
  */
 export async function fetchAgentDomainListApi(query: AgentDomainQuery) {
-  const result = await requestClient.get<
-    NetcashListResult<AgentDomainRow> | null
-  >(
-    '/backend/agentchanneldomain/list',
-    { params: trimSpace(query) },
-  );
+  const result =
+    await requestClient.get<NetcashListResult<AgentDomainRow> | null>(
+      '/backend/agentchanneldomain/list',
+      { params: trimSpace(query) },
+    );
   return {
     ...result,
     Items: result?.Items ?? [],

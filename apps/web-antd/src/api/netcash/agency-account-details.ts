@@ -76,8 +76,7 @@ function normalizeList<T extends Row = Row>(
       result.Pagination && typeof result.Pagination === 'object'
         ? result.Pagination
         : { MaxCount: 0 },
-    Total:
-      result.Total && typeof result.Total === 'object' ? result.Total : {},
+    Total: result.Total && typeof result.Total === 'object' ? result.Total : {},
   };
 }
 
@@ -94,9 +93,12 @@ async function getList(
   url: string,
   query: NetcashListQuery | Record<string, unknown>,
 ) {
-  const result = await requestClient.get<NetcashListResult | null | Row[]>(url, {
-    params: trimSpace(query),
-  });
+  const result = await requestClient.get<NetcashListResult | null | Row[]>(
+    url,
+    {
+      params: trimSpace(query),
+    },
+  );
   return normalizeList(result);
 }
 
@@ -241,9 +243,7 @@ export function editAgentCommissionMoneyApi(data: AgentMoneyPayload) {
  * @returns 提现账户 Items 及 Pagination
  * @see views/netcash/agencyAccountDetails/components/agency-finance-panel.vue
  */
-export async function fetchAgentWithdrawAccountListApi(
-  adminId: Id,
-) {
+export async function fetchAgentWithdrawAccountListApi(adminId: Id) {
   const result = await requestClient.get<NetcashListResult | null | Row[]>(
     `/backend/netcashwithdrawaccount/${adminId}`,
   );
@@ -340,14 +340,13 @@ export function fetchAgentRemarkListApi(adminId: Id) {
  * @returns 钱包余额对象；无效响应时返回 `{}`
  * @see views/netcash/agencyAccountDetails/components/agency-wallet-panel.vue
  */
-export async function fetchAgentWalletBalanceApi(
-  adminId: Id,
-): Promise<Row> {
-  const result = await requestClient.get<
-    null | Row | { Items?: Row }
-  >('/backend/netcashaccount/accountbalance', {
-    params: { AdminId: adminId },
-  });
+export async function fetchAgentWalletBalanceApi(adminId: Id): Promise<Row> {
+  const result = await requestClient.get<null | Row | { Items?: Row }>(
+    '/backend/netcashaccount/accountbalance',
+    {
+      params: { AdminId: adminId },
+    },
+  );
   if (!result || typeof result !== 'object' || Array.isArray(result)) {
     return {};
   }

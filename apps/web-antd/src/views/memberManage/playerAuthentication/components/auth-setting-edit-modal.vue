@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { UploadChangeParam } from 'ant-design-vue';
+
 import type {
   PlayerAuthSettingConfig,
   PlayerAuthSettingItem,
@@ -7,7 +8,7 @@ import type {
 
 import { computed, ref, watch } from 'vue';
 
-import { Button, Checkbox, Form, Modal, Upload, message } from 'ant-design-vue';
+import { Button, Checkbox, Form, message, Modal, Upload } from 'ant-design-vue';
 
 import { updatePlayerAuthImageApi } from '#/api/memberManage/player-authentication';
 import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
@@ -16,7 +17,7 @@ defineOptions({ name: 'AuthSettingEditModal' });
 
 const props = defineProps<{
   open: boolean;
-  row: PlayerAuthSettingItem | null;
+  row: null | PlayerAuthSettingItem;
 }>();
 
 const emit = defineEmits<{
@@ -91,7 +92,7 @@ function closeModal() {
 
 function beforeUpload(file: File) {
   const ext = file.name.split('.').pop()?.toLowerCase();
-  if (!ext || !['jpg', 'jpeg', 'png'].includes(ext)) {
+  if (!ext || !['jpeg', 'jpg', 'png'].includes(ext)) {
     message.warning('仅支持 JPG/PNG 图片');
     return Upload.LIST_IGNORE;
   }
@@ -104,8 +105,8 @@ function beforeUpload(file: File) {
 
 function handleUploadChange(index: number, info: UploadChangeParam) {
   const response = info.file.response as
-    | { Code?: number | string; Data?: { url?: string }; Msg?: string }
-    | undefined;
+    | undefined
+    | { Code?: number | string; Data?: { url?: string }; Msg?: string };
   if (info.file.status === 'done') {
     if (String(response?.Code) === '200' && response?.Data?.url) {
       exInfo.value[index] = response.Data.url;
@@ -163,9 +164,11 @@ async function handleSubmit() {
             :show-upload-list="false"
             @change="(info) => handleUploadChange(index, info)"
           >
-            <Button size="small">{{
+            <Button size="small">
+{{
               exInfo[index] ? '重新上传' : '上传'
-            }}</Button>
+            }}
+</Button>
           </Upload>
           <Button
             v-if="exInfo[index]"

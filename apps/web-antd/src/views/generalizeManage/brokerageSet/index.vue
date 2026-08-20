@@ -43,11 +43,7 @@ const canEdit = computed(() => checkPermission(10_858));
 const canBatch = computed(() => checkPermission(10_859));
 const canReset = computed(() => checkPermission(10_860));
 const canViewPage = computed(
-  () =>
-    canViewTable.value ||
-    canEdit.value ||
-    canBatch.value ||
-    canReset.value,
+  () => canViewTable.value || canEdit.value || canBatch.value || canReset.value,
 );
 
 const editOpen = ref(false);
@@ -61,10 +57,7 @@ const editDesc = ref('');
 const batchRate = ref<number>();
 const batchGameIds = ref<Array<number | string>>([]);
 
-function buildGameTree(
-  overrides: BrokerageSetItem[] = [],
-  defaultRate = 0,
-) {
+function buildGameTree(overrides: BrokerageSetItem[] = [], defaultRate = 0) {
   const games = gameConfig.value.games || {};
   const parents: BrokerageSetItem[] = [];
   const children: BrokerageSetItem[] = [];
@@ -112,7 +105,8 @@ function buildGameTree(
 const gameTree = ref<BrokerageSetItem[]>([]);
 const gameSelectOptions = computed(() =>
   gameTree.value.map((item) => ({
-    label: item.Name || formatBrokerageGameName(item.GameId, gameConfig.value.games),
+    label:
+      item.Name || formatBrokerageGameName(item.GameId, gameConfig.value.games),
     value: item.GameId,
   })),
 );
@@ -132,8 +126,7 @@ function getQueryParams() {
 function openEdit(row: BrokerageSetItem) {
   if (!canEdit.value || Number(row.resType) === 9) return;
   editingRow.value = row;
-  editRate.value =
-    row.Rate === undefined ? undefined : Number(row.Rate) / 10;
+  editRate.value = row.Rate === undefined ? undefined : Number(row.Rate) / 10;
   editDesc.value = row.Desc || '';
   editOpen.value = true;
 }
@@ -177,14 +170,10 @@ async function handleSave() {
     };
     const isUpdate =
       editingRow.value.Type === 'update' || Boolean(editingRow.value.Id);
-    if (isUpdate) {
-      await updateBrokerageSetApi(payload);
-    } else {
-      await createBrokerageSetApi({
+    await (isUpdate ? updateBrokerageSetApi(payload) : createBrokerageSetApi({
         ...payload,
         Hash: createRequestHash(),
-      });
-    }
+      }));
     if (
       Number(editingRow.value.resType) === 8 &&
       editingRow.value.children?.length
@@ -346,11 +335,7 @@ onMounted(async () => {
       <div class="mb-3 flex items-center justify-between gap-3">
         <div class="text-base font-medium">游戏佣金设置</div>
         <Space>
-          <Button
-            v-if="canReset"
-            :loading="resetLoading"
-            @click="handleReset"
-          >
+          <Button v-if="canReset" :loading="resetLoading" @click="handleReset">
             恢复设置
           </Button>
           <Button v-if="canBatch" type="primary" @click="openBatch">
@@ -443,4 +428,3 @@ onMounted(async () => {
   </Page>
   <Result v-else status="403" sub-title="无代理设定查看权限" title="403" />
 </template>
-

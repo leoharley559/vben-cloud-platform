@@ -8,21 +8,20 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Select,
-  message,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { queryPlayerByAccountApi } from '#/api/operationManage/player';
 import {
   createRechargeBlackPlayerApi,
   fetchRechargeBlackConfigApi,
   updateRechargeBlackConfigApi,
   updateRechargeBlackPlayerApi,
 } from '#/api/operationManage/recharge-extra';
-import { queryPlayerByAccountApi } from '#/api/operationManage/player';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import {
   RECHARGE_SPECIAL_PAY_TYPE,
@@ -34,7 +33,7 @@ defineOptions({ name: 'RechargeBlackPlayerModal' });
 const props = defineProps<{
   mode: 'auto' | 'create' | 'edit';
   open: boolean;
-  row: RechargeBlackPlayerItem | null;
+  row: null | RechargeBlackPlayerItem;
 }>();
 
 const emit = defineEmits<{

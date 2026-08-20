@@ -177,8 +177,7 @@ export function sumTeamQueryStats(list: TeamQueryItem[] = []) {
     result.taxMoney +=
       Number(row.SumNextGameTax || 0) + Number(row.SumSelfGameTax || 0);
     result.incomeMoney +=
-      Number(row.SumNextIncomeMoney || 0) +
-      Number(row.SumSelfIncomeMoney || 0);
+      Number(row.SumNextIncomeMoney || 0) + Number(row.SumSelfIncomeMoney || 0);
   }
   return result;
 }

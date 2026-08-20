@@ -91,6 +91,22 @@ const commissionDisplay = computed(() => {
     : `${Number(detail.value.CommissionRate || 0) / 100}%`;
 });
 
+const SETTLEMENT_TYPE_MAP: Record<number, string> = {
+  1: '日结',
+  2: '周结',
+  3: '月结',
+};
+
+function settlementLabel(value: unknown) {
+  return SETTLEMENT_TYPE_MAP[Number(value)] || '-';
+}
+
+function registerTimeLabel(row: Record<string, unknown>) {
+  return formatNetcashDateTime(
+    String(row.RegisterCreateTime || row.CreateTime || ''),
+  );
+}
+
 const canShowMoneyEdit = computed(
   () => canEditMoney.value && Number(detail.value.Type) !== 3,
 );
@@ -336,11 +352,7 @@ onBeforeUnmount(() => {
           </Space>
         </Descriptions.Item>
         <Descriptions.Item label="注册时间">
-          {{
-            formatNetcashDateTime(
-              (detail.RegisterCreateTime || detail.CreateTime) as string,
-            )
-          }}
+          {{ registerTimeLabel(detail) }}
         </Descriptions.Item>
         <Descriptions.Item label="团队">
           {{ detail.TeamName || '-' }}
@@ -392,11 +404,7 @@ onBeforeUnmount(() => {
           }}
         </Descriptions.Item>
         <Descriptions.Item label="佣金结算周期">
-          {{
-            ({ 1: '日结', 2: '周结', 3: '月结' } as Record<number, string>)[
-              Number(detail.SettlementType)
-            ] || '-'
-          }}
+          {{ settlementLabel(detail.SettlementType) }}
         </Descriptions.Item>
       </Descriptions>
       <Space v-else>
@@ -515,9 +523,7 @@ onBeforeUnmount(() => {
               ['MoneyBefore', 'MoneyAfter'].includes(String(column.key))
             "
           >
-            {{
-              formatAmountFromCent(Number(record[String(column.key)] || 0))
-            }}
+            {{ formatAmountFromCent(Number(record[String(column.key)] || 0)) }}
           </template>
         </template>
       </Table>

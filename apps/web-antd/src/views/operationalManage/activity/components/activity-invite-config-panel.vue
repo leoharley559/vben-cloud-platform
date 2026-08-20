@@ -46,7 +46,13 @@ const columns = [
     title: '语言组',
     width: 120,
   },
-  { dataIndex: 'Title', ellipsis: true, key: 'Title', title: '标题', width: 160 },
+  {
+    dataIndex: 'Title',
+    ellipsis: true,
+    key: 'Title',
+    title: '标题',
+    width: 160,
+  },
   {
     key: 'Banner',
     title: 'Banner',
@@ -166,7 +172,9 @@ onMounted(() => {
         :columns="columns"
         :data-source="list"
         :pagination="false"
-        :row-key="(row: InviteFriendConfig) => String(row.Id ?? row.LangGroupId)"
+        :row-key="
+          (row: InviteFriendConfig) => String(row.Id ?? row.LangGroupId)
+        "
         :scroll="{ x: 1700 }"
         size="small"
       >
@@ -195,14 +203,20 @@ onMounted(() => {
             </Tag>
           </template>
           <template v-else-if="column.key === 'IsActive'">
-            <Tag :color="Number(record.IsActive) === 1 ? 'processing' : 'error'">
+            <Tag
+              :color="Number(record.IsActive) === 1 ? 'processing' : 'error'"
+            >
               {{ Number(record.IsActive) === 1 ? '启用' : '停用' }}
             </Tag>
           </template>
           <template v-else-if="column.key === 'Time'">
             <div class="text-xs leading-5">
-              <div>开始(UTC)：{{ formatOperationDateTime(record.BeginTime) }}</div>
-              <div>结束(UTC)：{{ formatOperationDateTime(record.EndTime) }}</div>
+              <div>
+                开始(UTC)：{{ formatOperationDateTime(record.BeginTime) }}
+              </div>
+              <div>
+                结束(UTC)：{{ formatOperationDateTime(record.EndTime) }}
+              </div>
             </div>
           </template>
           <template v-else-if="column.key === 'action'">

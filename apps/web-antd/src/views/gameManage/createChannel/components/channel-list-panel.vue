@@ -181,9 +181,9 @@ function promotionUrl(row: ChannelRow) {
   const [withoutHash, ...hashParts] = domain.split('#');
   const base = withoutHash || '';
   const separator = base.includes('?')
-    ? base.endsWith('?') || base.endsWith('&')
+    ? (base.endsWith('?') || base.endsWith('&')
       ? ''
-      : '&'
+      : '&')
     : '?';
   const hash = hashParts.length > 0 ? `#${hashParts.join('#')}` : '';
   return `${base}${separator}cid=${encodeURIComponent(String(row.ChannelId || ''))}${hash}`;
@@ -627,7 +627,9 @@ onBeforeUnmount(() => {
         <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
-          <Button v-if="canBatch && canList" @click="openBatch">批量设置</Button>
+          <Button v-if="canBatch && canList" @click="openBatch">
+批量设置
+</Button>
           <Button v-if="canCreate" type="primary" @click="openCreate()">
             创建渠道
           </Button>
@@ -638,9 +640,7 @@ onBeforeUnmount(() => {
     <div v-if="canHierarchy" class="mb-4 rounded border border-gray-200 p-3">
       <div class="mb-2 flex items-center justify-between">
         <span class="font-medium">渠道层级</span>
-        <span v-if="hierarchyLoading" class="text-xs text-gray-400"
-          >加载中…</span
-        >
+        <span v-if="hierarchyLoading" class="text-xs text-gray-400">加载中…</span>
       </div>
       <Breadcrumb v-if="parents.length > 0" class="mb-3">
         <BreadcrumbItem v-for="(item, index) in parents" :key="String(item.Id)">
@@ -796,9 +796,9 @@ onBeforeUnmount(() => {
       title="无列表权限"
     >
       <template #extra>
-        <Button v-if="canCreate" type="primary" @click="openCreate()"
-          >创建渠道</Button
-        >
+        <Button v-if="canCreate" type="primary" @click="openCreate()">
+创建渠道
+</Button>
       </template>
     </Result>
 
@@ -841,7 +841,7 @@ onBeforeUnmount(() => {
 
 <style>
 .vxe-body--row.channel-disabled-row > .vxe-body--column {
-  background: hsl(var(--destructive) / 14%) !important;
   color: #a8071a;
+  background: hsl(var(--destructive) / 14%) !important;
 }
 </style>

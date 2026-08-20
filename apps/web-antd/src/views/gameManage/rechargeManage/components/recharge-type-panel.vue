@@ -239,9 +239,7 @@ async function load(discover = false) {
       // 接口常缺 MaxCount，回退当前页条数（与空结果 0 区分）
       const maxCount = result.Pagination?.MaxCount;
       total.value = Number(
-        maxCount == null || maxCount === ''
-          ? items.value.length
-          : maxCount,
+        maxCount == null || maxCount === '' ? items.value.length : maxCount,
       );
     }
   } catch (error) {
@@ -604,25 +602,25 @@ onMounted(() => void load(true));
 
         <template v-else>
           <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-                  <div class="flex flex-col gap-1">
-              <Input
-                v-model:value="keyword"
-                allow-clear
-                @press-enter="query"
-                placeholder="请输入通道名称"
-              >
-                <template #addonBefore>通道名称</template>
-              </Input>
+            <div class="ops-query-filters">
+              <div class="flex flex-col gap-1">
+                <Input
+                  v-model:value="keyword"
+                  allow-clear
+                  @press-enter="query"
+                  placeholder="请输入通道名称"
+                >
+                  <template #addonBefore>通道名称</template>
+                </Input>
+              </div>
+              <div class="query-filter-actions query-filter-actions-single">
+                <Button :loading="loading" type="primary" @click="query">
+查询
+</Button>
+                <Button @click="resetFilters">重置</Button>
+              </div>
             </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button :loading="loading" type="primary" @click="query"
-              >查询</Button
-            >
-            <Button @click="resetFilters">重置</Button>
-        </div>
-    </div>
-  </div>
+          </div>
 
           <Table
             :columns="columns"
@@ -756,72 +754,85 @@ onMounted(() => void load(true));
   display: flex;
   gap: 20px;
 }
+
 .type-nav {
-  width: 220px;
   flex: 0 0 220px;
+  align-self: flex-start;
+  width: 220px;
+  overflow: hidden;
   border: 1px solid var(--ant-color-border, #e5e7eb);
   border-radius: 6px;
-  overflow: hidden;
-  align-self: flex-start;
 }
+
 .type-item {
   display: flex;
+  gap: 8px;
+  align-items: center;
   width: 100%;
   min-height: 46px;
-  align-items: center;
-  gap: 8px;
   padding: 8px 10px;
-  border: 0;
-  border-bottom: 1px solid hsl(var(--border));
-  background: transparent;
   text-align: left;
   cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid hsl(var(--border));
 }
+
 .type-item:hover,
 .type-item.active {
   background: hsl(var(--primary) / 14%);
 }
+
 .type-item:last-child {
   border-bottom: 0;
 }
+
 .status-dot {
+  flex: 0 0 10px;
   width: 10px;
   height: 10px;
-  flex: 0 0 10px;
   border-radius: 50%;
 }
+
 .status-dot.enabled {
   background: #16a34a;
 }
+
 .status-dot.disabled {
   background: #ef4444;
 }
+
 .hot {
   font-size: 14px;
 }
+
 .control-label {
   display: inline-flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   white-space: nowrap;
 }
+
 :deep(.channel-disabled > td) {
-  background: hsl(var(--destructive) / 14%) !important;
   color: hsl(var(--muted-foreground));
+  background: hsl(var(--destructive) / 14%) !important;
 }
+
 @media (max-width: 900px) {
   .manager-layout {
     flex-direction: column;
   }
+
   .type-nav {
     display: flex;
-    width: 100%;
     flex-basis: auto;
+    width: 100%;
     overflow-x: auto;
   }
+
   .type-item {
-    width: 190px;
     flex: 0 0 190px;
+    width: 190px;
     border-right: 1px solid hsl(var(--border));
     border-bottom: 0;
   }

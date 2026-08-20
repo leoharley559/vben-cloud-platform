@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { ListSearchParams } from '#/components/global/list-search-bar.vue';
 import type {
   AdminDialogMode,
   AdminFormModel,
@@ -11,8 +12,17 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
-import { Card, Dropdown, Menu, message, Modal, Result, Tag } from 'ant-design-vue';
+import {
+  Card,
+  Dropdown,
+  Menu,
+  message,
+  Modal,
+  Result,
+  Tag,
+} from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getProjectConfigApi } from '#/api';
 import {
   createAdminApi,
@@ -21,9 +31,7 @@ import {
   fetchAdminListApi,
   updateAdminApi,
 } from '#/api/systemManage/admin';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ListSearchBar from '#/components/global/list-search-bar.vue';
-import type { ListSearchParams } from '#/components/global/list-search-bar.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { ADMIN_MANAGE_SECURITY_PAGE_ID } from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -47,7 +55,9 @@ const pendingMode = ref<AdminDialogMode>('create');
 const pendingForm = ref<AdminFormModel | null>(null);
 const pendingDeleteId = ref<number>();
 
-const canViewList = computed(() => checkPermission(10_018) || checkPermission(10_019));
+const canViewList = computed(
+  () => checkPermission(10_018) || checkPermission(10_019),
+);
 const canViewTable = computed(() => checkPermission(10_018));
 const canAdd = computed(() => checkPermission(10_019));
 const canEdit = computed(() => checkPermission(10_020));
@@ -83,7 +93,9 @@ function formatRoleNames(role?: string) {
     if (!trimmed) {
       continue;
     }
-    const matched = roleOptions.value.find((item) => String(item.Id) === trimmed);
+    const matched = roleOptions.value.find(
+      (item) => String(item.Id) === trimmed,
+    );
     if (matched?.Name) {
       names.push(matched.Name);
     }
@@ -160,14 +172,20 @@ const gridOptions: VxeTableGridOptions<AdminListItem> = {
         const sortOrder = sort?.order;
         let sortParam = '';
         if (sortField && sortOrder) {
-          sortParam = sortOrder === 'asc' ? String(sortField) : `-${String(sortField)}`;
+          sortParam =
+            sortOrder === 'asc' ? String(sortField) : `-${String(sortField)}`;
         }
         listQuery.Sort = sortParam;
 
         // 对齐旧站表头 Status 列 filters → Status CSV
-        const statusFilter = (filters || []).find((item) => item.field === 'Status');
-        const statusValues = (statusFilter?.values || []) as Array<number | string>;
-        listQuery.Status = statusValues.length > 0 ? statusValues.join(',') : '';
+        const statusFilter = (filters || []).find(
+          (item) => item.field === 'Status',
+        );
+        const statusValues = (statusFilter?.values || []) as Array<
+          number | string
+        >;
+        listQuery.Status =
+          statusValues.length > 0 ? statusValues.join(',') : '';
 
         searchLoading.value = true;
         try {
@@ -272,7 +290,9 @@ async function handleSwitchStatus(row: AdminListItem, status: number) {
     onOk: async () => {
       try {
         const detail = await fetchAdminDetailApi(row.Id);
-        pendingForm.value = parseAdminDetail(detail as unknown as AdminFormModel);
+        pendingForm.value = parseAdminDetail(
+          detail as unknown as AdminFormModel,
+        );
         pendingForm.value.Status = status;
         pendingMode.value = status === 1 ? 'startUse' : 'endUse';
         requestSecureConfirm();
@@ -283,7 +303,10 @@ async function handleSwitchStatus(row: AdminListItem, status: number) {
   });
 }
 
-function handleFormSubmit(payload: { form: AdminFormModel; mode: AdminDialogMode }) {
+function handleFormSubmit(payload: {
+  form: AdminFormModel;
+  mode: AdminDialogMode;
+}) {
   pendingForm.value = payload.form;
   pendingMode.value = payload.mode;
   requestSecureConfirm();
@@ -312,9 +335,9 @@ async function submitWithValidCode(validCode?: string) {
         message.success(
           pendingMode.value === 'startUse'
             ? '启用成功'
-            : pendingMode.value === 'endUse'
+            : (pendingMode.value === 'endUse'
               ? '停用成功'
-              : '编辑成功',
+              : '编辑成功'),
         );
       }
       adminFormModalRef.value?.close();
@@ -342,7 +365,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <Page v-if="canViewList" auto-content-height description="系统管理 · 员工账号" title="员工账号">
+  <Page
+    v-if="canViewList"
+    auto-content-height
+    description="系统管理 · 员工账号"
+    title="员工账号"
+  >
     <Card>
       <template v-if="canViewTable">
         <ListSearchBar
@@ -376,7 +404,9 @@ onMounted(() => {
               <a class="text-primary">操作</a>
               <template #overlay>
                 <Menu>
-                  <Menu.Item v-if="canEdit" @click="handleEdit(row)"> 编辑 </Menu.Item>
+                  <Menu.Item v-if="canEdit" @click="handleEdit(row)">
+                    编辑
+                  </Menu.Item>
                   <Menu.Item
                     v-if="canSwitchStatus && row.Status === 1"
                     @click="handleSwitchStatus(row, 2)"
@@ -389,7 +419,9 @@ onMounted(() => {
                   >
                     启用
                   </Menu.Item>
-                  <Menu.Item v-if="canDelete" danger @click="handleDelete(row)"> 删除 </Menu.Item>
+                  <Menu.Item v-if="canDelete" danger @click="handleDelete(row)">
+                    删除
+                  </Menu.Item>
                 </Menu>
               </template>
             </Dropdown>
@@ -410,6 +442,10 @@ onMounted(() => {
   </Page>
 
   <Page v-else auto-content-height title="员工账号">
-    <Result status="403" sub-title="需要权限 10018 或 10019 才能访问此页面" title="无权限" />
+    <Result
+      status="403"
+      sub-title="需要权限 10018 或 10019 才能访问此页面"
+      title="无权限"
+    />
   </Page>
 </template>

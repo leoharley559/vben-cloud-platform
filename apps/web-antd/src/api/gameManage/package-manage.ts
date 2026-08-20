@@ -42,9 +42,7 @@ function normalizeListResult<T = Record<string, unknown>>(
  * @returns Promise，resolve 为接口返回的数据
  * @see views/gameManage/packageManage
  */
-export function fetchEnterprisePackageGamesApi(
-  query: Record<string, unknown>,
-) {
+export function fetchEnterprisePackageGamesApi(query: Record<string, unknown>) {
   return requestClient
     .get<PackageManageListResult>('/backend/package/list', {
       params: trimSpace(query),
@@ -60,9 +58,10 @@ export function fetchEnterprisePackageGamesApi(
  * @see views/gameManage/packageManage
  */
 export async function fetchEnterpriseChannelsApi(PackageId: PackageManageId) {
-  const result = await requestClient.get<
-    Array<Record<string, unknown>> | null
-  >('/backend/channel/listall', { params: { PackageId } });
+  const result = await requestClient.get<Array<Record<string, unknown>> | null>(
+    '/backend/channel/listall',
+    { params: { PackageId } },
+  );
   return Array.isArray(result) ? result : [];
 }
 
@@ -273,4 +272,3 @@ export function updateShelfAnalyticsApi(
 ) {
   return requestClient.put(`${shelfPath(platform)}/analyticinfo`, data);
 }
-

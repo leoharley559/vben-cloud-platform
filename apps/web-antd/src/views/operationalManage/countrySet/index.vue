@@ -7,13 +7,13 @@ import {
   Button,
   Card,
   Input,
+  message,
   Result,
   Select,
   Space,
   Switch,
   Table,
   Tooltip,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -34,8 +34,8 @@ interface CountryRow {
 }
 
 const { checkPermission } = useCloudPermission();
-const canViewPage = computed(() => checkPermission(10024));
-const canEdit = computed(() => checkPermission(10025));
+const canViewPage = computed(() => checkPermission(10_024));
+const canEdit = computed(() => checkPermission(10_025));
 
 const loading = ref(false);
 const saving = ref(false);
@@ -189,7 +189,7 @@ function handleSelectionChange(keys: (number | string)[]) {
 }
 
 function changeAllStatus(status: 0 | 1) {
-  if (!selectedRowKeys.value.length) {
+  if (selectedRowKeys.value.length === 0) {
     return;
   }
   const selected = new Set(selectedRowKeys.value);
@@ -205,17 +205,13 @@ function changeAllStatus(status: 0 | 1) {
 
 /** 恢复当前模式下的默认（全部关闭），需再点保存提交 */
 function handleResetDefault() {
-  if (mode.value === 1) {
-    allTableData.value = allTableData.value.map((item) => ({
+  allTableData.value = mode.value === 1 ? allTableData.value.map((item) => ({
       ...item,
       Status1: 0,
-    }));
-  } else {
-    allTableData.value = allTableData.value.map((item) => ({
+    })) : allTableData.value.map((item) => ({
       ...item,
       Status2: 0,
     }));
-  }
   message.info('已恢复当前模式默认状态，请保存并提交后生效');
 }
 
@@ -289,43 +285,43 @@ onMounted(() => {
       </div>
 
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterName"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入国家名称"
-          >
-            <template #addonBefore>国家名称</template>
-          </Input>
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterName"
+              allow-clear
+              @press-enter="handleSearch"
+              placeholder="请输入国家名称"
+            >
+              <template #addonBefore>国家名称</template>
+            </Input>
+          </div>
+          <div class="query-filter-actions">
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="resetFilters">重置</Button>
+            <div class="ml-auto flex flex-wrap gap-2">
+              <Button
+                :disabled="selectedRowKeys.length === 0"
+                type="primary"
+                ghost
+                @click="changeAllStatus(1)"
+              >
+                一键开启
+              </Button>
+              <Button
+                :disabled="selectedRowKeys.length === 0"
+                danger
+                @click="changeAllStatus(0)"
+              >
+                一键关闭
+              </Button>
+              <Button type="default" @click="handleResetDefault">
+                恢复默认配置
+              </Button>
+            </div>
+          </div>
         </div>
-        <div class="query-filter-actions">
-          <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="resetFilters">重置</Button>
-        <div class="ml-auto flex flex-wrap gap-2">
-          <Button
-            :disabled="selectedRowKeys.length === 0"
-            type="primary"
-            ghost
-            @click="changeAllStatus(1)"
-          >
-            一键开启
-          </Button>
-          <Button
-            :disabled="selectedRowKeys.length === 0"
-            danger
-            @click="changeAllStatus(0)"
-          >
-            一键关闭
-          </Button>
-          <Button type="default" @click="handleResetDefault">
-            恢复默认配置
-          </Button>
-        </div>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <Table
         :columns="columns"

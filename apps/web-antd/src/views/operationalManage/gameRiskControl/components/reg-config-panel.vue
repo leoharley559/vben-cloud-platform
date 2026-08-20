@@ -4,12 +4,12 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import {
   Button,
   InputNumber,
+  message,
   Result,
   Space,
   Spin,
   Switch,
   Tooltip,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -29,7 +29,7 @@ interface RegConfigRow {
 }
 
 const { checkPermission } = useCloudPermission();
-const canEdit = computed(() => checkPermission(12973));
+const canEdit = computed(() => checkPermission(12_973));
 
 const loading = ref(false);
 const ipSaving = ref(false);

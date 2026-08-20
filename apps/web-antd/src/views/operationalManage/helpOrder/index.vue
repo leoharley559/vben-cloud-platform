@@ -12,7 +12,7 @@ import HelpOrderPanel from './components/help-order-panel.vue';
 defineOptions({ name: 'HelpOrder' });
 
 const { checkPermission } = useCloudPermission();
-const canViewPage = computed(() => checkPermission(10234));
+const canViewPage = computed(() => checkPermission(10_234));
 </script>
 
 <template>

@@ -3,14 +3,14 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, reactive, ref } from 'vue';
 
-import { Button, Form, Input, Modal, message } from 'ant-design-vue';
+import { Button, Form, Input, message, Modal } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchChannelDetailApi,
   fetchSonPromoterChannelListApi,
   updateChannelInviteCodeApi,
 } from '#/api/gameManage';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
@@ -30,7 +30,7 @@ interface ChannelRow {
 
 const { checkPermission } = useCloudPermission();
 const canEdit = computed(
-  () => checkPermission(12302) || checkPermission(12303),
+  () => checkPermission(12_302) || checkPermission(12_303),
 );
 
 const filterUsername = ref('');
@@ -47,7 +47,12 @@ const gridOptions: VxeTableGridOptions<ChannelRow> = {
   columns: [
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
     { field: 'ChannelName', minWidth: 140, title: '渠道名称' },
-    { field: 'PromoterAdminUserName', minWidth: 120, slots: { default: 'promoterUsername' }, title: '代理账号' },
+    {
+      field: 'PromoterAdminUserName',
+      minWidth: 120,
+      slots: { default: 'promoterUsername' },
+      title: '代理账号',
+    },
     { field: 'PromoterAdminName', minWidth: 120, title: '代理名称' },
     { field: 'InvitationCode', minWidth: 120, title: '邀请码' },
     {
@@ -109,7 +114,7 @@ async function submitEdit() {
   saving.value = true;
   try {
     const payload = {
-      ...(form.detail || {}),
+      ...form.detail,
       InvitationCode: form.InvitationCode.trim(),
       PromoterAdminId:
         form.detail?.AdminId ||
@@ -134,31 +139,29 @@ function handleSearch() {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterUsername"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterUsername"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
         </div>
+      </div>
     </div>
-  </div>
     <div class="mb-3 text-xs text-gray-400">
       已支持邀请码编辑；打包/短链/登录注册配置待下一迭代。
     </div>
     <Grid>
       <template #promoterUsername="{ row }">
         <AgencyAccountLink
-          :admin-id="
-            resolveAgencyAdminId(row, 'PromoterAdminId', 'AdminId')
-          "
+          :admin-id="resolveAgencyAdminId(row, 'PromoterAdminId', 'AdminId')"
           :username="row.PromoterAdminUserName"
         />
       </template>

@@ -136,12 +136,8 @@ export function updateDomainApi(data: {
 export function fetchSiteFeeSwitchListApi(query: Record<string, unknown>) {
   return requestClient
     .get<
-      | Array<Record<string, unknown>>
-      | CloudListResult<Record<string, unknown>>
-    >(
-      '/backend/apifeeswitch/list',
-      { params: trimSpace(query) },
-    )
+      Array<Record<string, unknown>> | CloudListResult<Record<string, unknown>>
+    >('/backend/apifeeswitch/list', { params: trimSpace(query) })
     .then(toListResult);
 }
 
@@ -1218,8 +1214,7 @@ export function deleteBackWaterSchemeApi(id: number | string) {
 export function fetchWithdrawBankListApi() {
   return requestClient
     .get<
-      | Array<Record<string, unknown>>
-      | CloudListResult<Record<string, unknown>>
+      Array<Record<string, unknown>> | CloudListResult<Record<string, unknown>>
     >('/backend/bankconfig/list')
     .then(toListResult);
 }
@@ -1427,4 +1422,3 @@ export function updateRechargeCancelConfigApi(data: {
 }) {
   return requestClient.put('/backend/rechargenumberconfig/', data);
 }
-

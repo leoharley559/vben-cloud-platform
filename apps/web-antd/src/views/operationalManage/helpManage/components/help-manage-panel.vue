@@ -14,20 +14,20 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   agreeHelpRecordApi,
   closeHelpRecordApi,
   fetchHelpManageListApi,
   rejectHelpRecordApi,
 } from '#/api/operationManage/help-manage';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import {
-  HELP_RECORD_STATUS_MAP,
   formatOperationDateTime,
+  HELP_RECORD_STATUS_MAP,
 } from '#/utils/operation-status';
 
 defineOptions({ name: 'HelpManagePanel' });
@@ -44,9 +44,9 @@ interface HelpRow {
 }
 
 const { checkPermission } = useCloudPermission();
-const canAgree = computed(() => checkPermission(10231));
-const canReject = computed(() => checkPermission(10232));
-const canClose = computed(() => checkPermission(10233));
+const canAgree = computed(() => checkPermission(10_231));
+const canReject = computed(() => checkPermission(10_232));
+const canClose = computed(() => checkPermission(10_233));
 
 /**
  * 对齐旧站 listQuery / SearchTypeTwo：
@@ -274,13 +274,13 @@ function handleClose(row: HelpRow) {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="申请时间" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="申请时间" />
+      </div>
+      <div class="query-filter-actions query-filter-actions-single">
+        <Button type="primary" @click="handleSearch">查询</Button>
+        <Button @click="handleReset">重置</Button>
+      </div>
+    </template>
     <Grid>
       <template #status="{ row }">
         <Tag :color="statusColor(row)">{{ statusLabel(row) }}</Tag>

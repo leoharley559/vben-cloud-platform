@@ -16,6 +16,7 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deliverGiftApi,
   fetchGiftDeliverListApi,
@@ -24,14 +25,13 @@ import {
   remarkGiftApi,
 } from '#/api/operationManage/gift-manage';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { exportRowsToCsv } from '#/utils/export-csv';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
-import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
+import { exportRowsToCsv } from '#/utils/export-csv';
 import { GIFT_DELIVER_STATUS_MAP } from '#/utils/operation-status';
+import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
 
 import {
   formatGiftDateTime,
@@ -69,13 +69,13 @@ interface DeliverRow {
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(10188));
-const canExport = computed(() => checkPermission(10189));
-const canBatchDeliver = computed(() => checkPermission(10190));
-const canRemark = computed(() => checkPermission(10192));
-const canReceive = computed(() => checkPermission(10194));
-const canDeliver = computed(() => checkPermission(10195));
-const canRefuse = computed(() => checkPermission(10196));
+const canViewTable = computed(() => checkPermission(10_188));
+const canExport = computed(() => checkPermission(10_189));
+const canBatchDeliver = computed(() => checkPermission(10_190));
+const canRemark = computed(() => checkPermission(10_192));
+const canReceive = computed(() => checkPermission(10_194));
+const canDeliver = computed(() => checkPermission(10_195));
+const canRefuse = computed(() => checkPermission(10_196));
 
 const filterLoginAccount = ref('');
 const filterPackageName = ref('');
@@ -314,7 +314,7 @@ async function submitShip() {
 }
 
 function openBatchDeliver() {
-  if (!selectedRows.value.length) {
+  if (selectedRows.value.length === 0) {
     message.warning('请先勾选待发货记录');
     return;
   }
@@ -414,10 +414,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const rows = normalizeRows(result.Items || []);
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -471,108 +471,122 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPackageName"
-          allow-clear
-          placeholder="请输入产品名称"
-        >
-          <template #addonBefore>产品名称</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单号"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterGiftName"
-          allow-clear
-          placeholder="请输入奖品名称"
-        >
-          <template #addonBefore>奖品名称</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterVipLevel"
-        :options="VIP_LEVEL_OPTIONS"
-      />
-      <Select
-        v-model:value="filterPlayerStatus"
-        :options="playerStatusOptions"
-      />
-      <Space.Compact>
-        <span class="query-field-addon">发货状态</span>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPackageName"
+            allow-clear
+            placeholder="请输入产品名称"
+          >
+            <template #addonBefore>产品名称</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterGiftName"
+            allow-clear
+            placeholder="请输入奖品名称"
+          >
+            <template #addonBefore>奖品名称</template>
+          </Input>
+        </div>
+        <Select v-model:value="filterVipLevel" :options="VIP_LEVEL_OPTIONS" />
         <Select
-          v-model:value="filterStatus"
-          :options="statusOptions"
-          allow-clear
-          placeholder="请选择发货状态"
+          v-model:value="filterPlayerStatus"
+          :options="playerStatusOptions"
         />
-      </Space.Compact>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterApplyDateRange" label="申请时间" />
+        <Space.Compact>
+          <span class="query-field-addon">发货状态</span>
+          <Select
+            v-model:value="filterStatus"
+            :options="statusOptions"
+            allow-clear
+            placeholder="请选择发货状态"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterApplyDateRange"
+            label="申请时间"
+          />
         </div>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterApproveDateRange" label="审核时间" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterApproveDateRange"
+            label="审核时间"
+          />
         </div>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDeliverDateRange" label="发货时间" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterDeliverDateRange"
+            label="发货时间"
+          />
         </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterContact"
-          allow-clear
-          placeholder="请输入收货人"
-        >
-          <template #addonBefore>收货人</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterMobile"
-          allow-clear
-          placeholder="请输入收货电话"
-        >
-          <template #addonBefore>收货电话</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterExpressOrderId"
-          allow-clear
-          placeholder="请输入快递单号"
-        >
-          <template #addonBefore>快递单号</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterContact"
+            allow-clear
+            placeholder="请输入收货人"
+          >
+            <template #addonBefore>收货人</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterMobile"
+            allow-clear
+            placeholder="请输入收货电话"
+          >
+            <template #addonBefore>收货电话</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterExpressOrderId"
+            allow-clear
+            placeholder="请输入快递单号"
+          >
+            <template #addonBefore>快递单号</template>
+          </Input>
+        </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-        导出 Excel
-      </Button>
-      <Button v-if="canBatchDeliver" type="primary" @click="openBatchDeliver">
-        批量发货
-      </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
+          <Button
+            v-if="canBatchDeliver"
+            type="primary"
+            @click="openBatchDeliver"
+          >
+            批量发货
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

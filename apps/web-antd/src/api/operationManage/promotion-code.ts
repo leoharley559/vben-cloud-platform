@@ -1,8 +1,8 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
-import { trimSpace } from '#/utils/string';
 
+import { requestClient } from '#/api/request';
 import { PROMO_CODE_TYPE } from '#/utils/activity-manage';
+import { trimSpace } from '#/utils/string';
 
 /**
  * 分页查询优惠码领取/使用记录。

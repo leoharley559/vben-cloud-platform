@@ -23,9 +23,7 @@ export function calcChannelRow(row: ChannelRow, dim: ChannelDim): ChannelRow {
     sumReg === 0 ? 0 : (sumFirstPayNum / sumReg) * 100
   ).toFixed(2);
   next.AverageFirstPayMoney =
-    sumFirstPayNum === 0
-      ? 0
-      : Math.round(sumFirstPayMoney / sumFirstPayNum);
+    sumFirstPayNum === 0 ? 0 : Math.round(sumFirstPayMoney / sumFirstPayNum);
   next.DiffPayWithdrawMoney = sumPayMergerMoney - sumWithdrawMoney;
   next.PercentPayWithdraw = (
     sumPayMergerMoney === 0 ? 0 : (sumWithdrawMoney / sumPayMergerMoney) * 100

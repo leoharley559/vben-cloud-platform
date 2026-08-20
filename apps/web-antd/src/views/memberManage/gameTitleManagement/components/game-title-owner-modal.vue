@@ -9,13 +9,14 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Select,
   Space,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   addGameTitleOwnerApi,
   checkGameTitleOwnerApi,
@@ -25,7 +26,6 @@ import {
   multiAddGameTitleOwnerApi,
 } from '#/api/memberManage/game-title';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -49,12 +49,12 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 
-const canViewTable = computed(() => checkPermission(13143));
-const canBatchDelete = computed(() => checkPermission(13144));
-const canExport = computed(() => checkPermission(13145));
-const canBatchIssue = computed(() => checkPermission(13146));
-const canIssue = computed(() => checkPermission(13148));
-const canDelete = computed(() => checkPermission(13149));
+const canViewTable = computed(() => checkPermission(13_143));
+const canBatchDelete = computed(() => checkPermission(13_144));
+const canExport = computed(() => checkPermission(13_145));
+const canBatchIssue = computed(() => checkPermission(13_146));
+const canIssue = computed(() => checkPermission(13_148));
+const canDelete = computed(() => checkPermission(13_149));
 
 const filterAccount = ref('');
 const filterPackageId = ref<number | string>('');
@@ -244,14 +244,14 @@ function handleDelete(row: GameTitleOwnerItem) {
 
 function handleBatchDelete() {
   const rows = getSelectedRows();
-  if (!rows.length) {
+  if (rows.length === 0) {
     message.warning('请先勾选玩家');
     return;
   }
   const playerIds = rows
     .map((item) => item.PlayerId)
     .filter((id): id is number | string => id != null && id !== '');
-  if (!playerIds.length) {
+  if (playerIds.length === 0) {
     message.warning('选中记录缺少玩家 ID');
     return;
   }
@@ -271,7 +271,11 @@ function handleBatchDelete() {
 }
 
 function buildExportQuery() {
-  const { Page: _page, PageSize: _size, ...rest } = getQueryParams({
+  const {
+    Page: _page,
+    PageSize: _size,
+    ...rest
+  } = getQueryParams({
     currentPage: 1,
     pageSize: 20,
   });
@@ -326,7 +330,7 @@ async function handleBatchIssue() {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
-  if (!lines.length) {
+  if (lines.length === 0) {
     message.warning('请按「游戏账号,产品名」每行一条填写');
     return;
   }
@@ -341,7 +345,7 @@ async function handleBatchIssue() {
       };
     })
     .filter((item) => item.Account && item.PackageName);
-  if (!playerInfos.length) {
+  if (playerInfos.length === 0) {
     message.warning('格式有误，请使用「游戏账号,产品名」');
     return;
   }
@@ -354,7 +358,7 @@ async function handleBatchIssue() {
     const playerIds = (Array.isArray(checkResult) ? checkResult : [])
       .map((item) => item.PlayerId)
       .filter((id): id is number | string => id != null && id !== '');
-    if (!playerIds.length) {
+    if (playerIds.length === 0) {
       message.warning('没有可发放的有效玩家');
       return;
     }
@@ -395,57 +399,56 @@ watch(
   >
     <template v-if="canViewTable">
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterAccount"
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterAccount"
+              allow-clear
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          <Select
+            v-model:value="filterPackageId"
             allow-clear
-            placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          placeholder="请选择产品"
-        />
-        <div class="query-filter-actions">
-          <Space wrap>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button v-if="canIssue" type="primary" @click="issueOpen = true">
-            发放称号
-          </Button>
-          <Button
-            v-if="canBatchIssue"
-            @click="
-              batchIssueText = '';
-              batchIssueOpen = true;
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
             "
-          >
-            批量发放
-          </Button>
-          <Button v-if="canBatchDelete" danger @click="handleBatchDelete">
-            批量删除
-          </Button>
-          <Button
-            v-if="canExport"
-            :loading="exportLoading"
-            @click="handleExportClick"
-          >
-            导出 Excel
-          </Button>
-        </Space>
+            placeholder="请选择产品"
+          />
+          <div class="query-filter-actions">
+            <Space wrap>
+              <Button type="primary" @click="handleSearch">查询</Button>
+              <Button v-if="canIssue" type="primary" @click="issueOpen = true">
+                发放称号
+              </Button>
+              <Button
+                v-if="canBatchIssue"
+                @click="
+                  batchIssueText = '';
+                  batchIssueOpen = true;
+                "
+              >
+                批量发放
+              </Button>
+              <Button v-if="canBatchDelete" danger @click="handleBatchDelete">
+                批量删除
+              </Button>
+              <Button
+                v-if="canExport"
+                :loading="exportLoading"
+                @click="handleExportClick"
+              >
+                导出 Excel
+              </Button>
+            </Space>
+          </div>
         </div>
-    </div>
-  </div>
+      </div>
 
       <Grid>
         <template #loginAccount="{ row }">
@@ -521,9 +524,5 @@ watch(
     </Modal>
   </Modal>
 
-  <PassPopup
-    ref="passPopupRef"
-    type="csv"
-    @confirm="handleExport"
-  />
+  <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
 </template>

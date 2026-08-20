@@ -3,17 +3,11 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, ref, watch } from 'vue';
 
-import {
-  Button,
-  Input,
-  Modal,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, Input, Modal, Select, Space } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchLeaderboardRecordApi } from '#/api/operationManage/leaderboard';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 
 import {
@@ -43,7 +37,7 @@ const packageOptions = computed(() => {
         .map((item) => item.trim())
         .filter(Boolean)
     : [];
-  const source = validIds.length
+  const source = validIds.length > 0
     ? allPackages.filter((item) => validIds.includes(String(item.PackageId)))
     : allPackages;
   return source.map((item) => ({
@@ -70,7 +64,12 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     { field: 'Ranking', minWidth: 80, title: '排名' },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
-    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     {
       field: 'VipLevel',
       formatter: ({ cellValue }) =>
@@ -138,42 +137,40 @@ watch(
     width="960px"
   >
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <Space.Compact>
-        <span class="query-field-addon">产品包</span>
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
         <Select
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="packageOptions"
-          placeholder="请选择产品包"
+          v-model:value="filterVipLevel"
+          :options="[
+            { label: '全部', value: -1 },
+            ...Array.from({ length: 16 }, (_, level) => ({
+              label: `VIP${level}`,
+              value: level,
+            })),
+          ]"
         />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterVipLevel"
-       
-        :options="[
-          { label: '全部', value: -1 },
-          ...Array.from({ length: 16 }, (_, level) => ({
-            label: `VIP${level}`,
-            value: level,
-          })),
-        ]"
-      />
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
+      </div>
     </div>
-  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

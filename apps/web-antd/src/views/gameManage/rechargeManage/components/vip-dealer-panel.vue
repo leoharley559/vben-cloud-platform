@@ -760,8 +760,8 @@ onMounted(() => {
     </Alert>
 
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
           <Input
             v-model:value="query.Keyword"
             allow-clear
@@ -786,24 +786,24 @@ onMounted(() => {
         </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
-        <Button @click="resetSearch">重置</Button>
-        <Space wrap>
-        <span class="text-sm text-gray-500">客服分配：</span>
-        <Radio.Group
-          :value="orderMode"
-          :disabled="modeSaving"
-          button-style="solid"
-          size="small"
-          @change="changeOrderMode(Number($event.target.value))"
-        >
-          <Radio.Button :value="2">顺序</Radio.Button>
-          <Radio.Button :value="1">随机</Radio.Button>
-        </Radio.Group>
-        <Button type="primary" @click="openCreate">添加账号</Button>
-      </Space>
+          <Button @click="resetSearch">重置</Button>
+          <Space wrap>
+            <span class="text-sm text-gray-500">客服分配：</span>
+            <Radio.Group
+              :value="orderMode"
+              :disabled="modeSaving"
+              button-style="solid"
+              size="small"
+              @change="changeOrderMode(Number($event.target.value))"
+            >
+              <Radio.Button :value="2">顺序</Radio.Button>
+              <Radio.Button :value="1">随机</Radio.Button>
+            </Radio.Group>
+            <Button type="primary" @click="openCreate">添加账号</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Table
       :columns="columns"

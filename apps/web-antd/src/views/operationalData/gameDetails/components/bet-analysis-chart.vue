@@ -59,9 +59,7 @@ function toYuan(value: unknown) {
 function buildOption() {
   const categories = [
     ...new Set(props.rows.map((row) => String(row.ReportDay || ''))),
-  ].toSorted(
-    (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-  );
+  ].toSorted((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
   const byType = new Map<number, Map<string, BetAnalysisRow>>();
   for (const type of BET_TYPES) {
@@ -74,8 +72,7 @@ function buildOption() {
     if (bucket) bucket.set(day, row);
   }
 
-  const lineOnly =
-    props.metric === 'betNum' || props.metric === 'profitRatio';
+  const lineOnly = props.metric === 'betNum' || props.metric === 'profitRatio';
   const series: Record<string, unknown>[] = [];
 
   for (const type of BET_TYPES) {

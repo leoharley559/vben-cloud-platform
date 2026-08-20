@@ -8,23 +8,22 @@ import {
   Button,
   Form,
   Input,
-  Modal,
   message,
+  Modal,
   Result,
   Select,
   Space,
   Tag,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   editPlatformTransferStateApi,
   manualPlatformTransferApi,
 } from '#/api/operationManage/platform-transfer';
 import { fetchPlayerVenueTransferListApi } from '#/api/operationManage/player-detail-extra';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
@@ -45,10 +44,10 @@ const props = defineProps<{
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
 
-const canViewTable = computed(() => checkPermission(12092));
-const canExport = computed(() => checkPermission(12094));
-const canManual = computed(() => checkPermission(12095));
-const canChangeState = computed(() => checkPermission(12096));
+const canViewTable = computed(() => checkPermission(12_092));
+const canExport = computed(() => checkPermission(12_094));
+const canManual = computed(() => checkPermission(12_095));
+const canChangeState = computed(() => checkPermission(12_096));
 
 const defaultRange = getTodayRangeSeconds();
 const totalAmount = ref(0);
@@ -313,10 +312,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const items = result?.Items || [];
-    if (!items.length) {
+    if (items.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -383,56 +382,63 @@ onMounted(async () => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">转账类型</span>
-          <Select
-            v-model:value="filterType"
-            :options="TYPE_OPTIONS"
-            placeholder="请选择转账类型"
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">转账类型</span>
+            <Select
+              v-model:value="filterType"
+              :options="TYPE_OPTIONS"
+              placeholder="请选择转账类型"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="filterState"
+              :options="STATE_OPTIONS"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="转账时间"
           />
-        </Space.Compact>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select
-            v-model:value="filterState"
-            :options="STATE_OPTIONS"
-            placeholder="请选择状态"
-          />
-        </Space.Compact>
-      </div>
-
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="转账时间" />
         </div>
         <div class="query-filter-actions">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-          导出 Excel
-        </Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+            <Button
+              v-if="canExport"
+              :loading="exportLoading"
+              @click="handleExport"
+            >
+              导出 Excel
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #state="{ row }">

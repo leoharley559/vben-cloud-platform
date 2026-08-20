@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
 
+import type { VoucherRuleItem } from './voucher-shared';
+
 import { computed, reactive, ref, watch } from 'vue';
 
 import {
@@ -10,6 +12,7 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Select,
@@ -18,7 +21,6 @@ import {
   Switch,
   Table,
   Tabs,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -28,41 +30,17 @@ import {
   fetchVoucherListAllApi,
   updateVoucherApi,
 } from '#/api/operationManage/voucher';
-import { getServiceImageUrl } from '#/utils/media';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import { getServiceImageUrl } from '#/utils/media';
 
-import {
-  DURATION_OPTIONS,
-  REDEEM_REQUIREMENT_OPTIONS,
-  REDIRECT_TYPE,
-  REWARD_TYPE,
-  VOUCHER_TYPE,
-  VOUCHER_TYPE_OPTIONS,
-  type VoucherRuleItem,
-  assembleVoucherSubmitPayload,
-  breakupVoucherDetail,
-  createDefaultVoucherForm,
-  createEmptyDrawWaterSrctp,
-  formatCentsToYuan,
-  formatVoucherAmount,
-  getDrawWaterPath,
-  getObjectPath,
-  getRewardTiersPath,
-  resolveDefaultLangGroupId,
-  resolveLangGroupIds,
-  resolveVoucherName,
-  setObjectPath,
-  yuanToCents,
-} from './voucher-shared';
 import VoucherImageField from './voucher-image-field.vue';
+import VoucherRedirectField from './voucher-redirect-field.vue';
 import VoucherRewardTierModal from './voucher-reward-tier-modal.vue';
 import VoucherRuleModal from './voucher-rule-modal.vue';
+import { assembleVoucherSubmitPayload, breakupVoucherDetail, createDefaultVoucherForm, createEmptyDrawWaterSrctp, DURATION_OPTIONS, formatCentsToYuan, formatVoucherAmount, getDrawWaterPath, getObjectPath, getRewardTiersPath, REDEEM_REQUIREMENT_OPTIONS, REDIRECT_TYPE, resolveDefaultLangGroupId, resolveLangGroupIds, resolveVoucherName, REWARD_TYPE, setObjectPath, VOUCHER_TYPE, VOUCHER_TYPE_OPTIONS, yuanToCents } from './voucher-shared';
 import VoucherVenueField from './voucher-venue-field.vue';
-import VoucherRedirectField from './voucher-redirect-field.vue';
 
 defineOptions({ name: 'VoucherUpsertModal' });
-
-type UpsertMode = 'add' | 'clone' | 'edit';
 
 const props = defineProps<{
   mode?: UpsertMode;
@@ -71,6 +49,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{ success: [] }>();
+
+type UpsertMode = 'add' | 'clone' | 'edit';
 
 const open = defineModel<boolean>('open', { default: false });
 
@@ -242,8 +222,8 @@ function prizeImages(row: Record<string, unknown>) {
     return [lang?.[lgId]?.ProductPic].filter(Boolean) as string[];
   }
   const lang = (row.LangText as Record<string, unknown>)?.[lgId] as
-    | { PrizePopupImage?: string; PrizeWheelImage?: string }
-    | undefined;
+    | undefined
+    | { PrizePopupImage?: string; PrizeWheelImage?: string };
   return [lang?.PrizeWheelImage, lang?.PrizePopupImage].filter(
     Boolean,
   ) as string[];
@@ -327,7 +307,7 @@ function handleRewardSubmit(row: Record<string, unknown>) {
 const ruleModalOpen = ref(false);
 const ruleModalMode = ref<'add' | 'edit'>('add');
 const ruleEditIndex = ref(-1);
-const ruleEditingRow = computed<VoucherRuleItem | null>(() =>
+const ruleEditingRow = computed<null | VoucherRuleItem>(() =>
   ruleEditIndex.value >= 0
     ? ((form.ExInfo.VoucherRules[ruleEditIndex.value] as VoucherRuleItem) ??
       null)
@@ -361,7 +341,7 @@ function handleRuleSubmit(rule: VoucherRuleItem) {
 
 function ruleText(rule: VoucherRuleItem) {
   const html = String(rule.LangText?.[activeLangTab.value]?.Text || '');
-  const text = html.replace(/<[^>]+>/g, '').trim();
+  const text = html.replaceAll(/<[^>]+>/g, '').trim();
   return text || '-';
 }
 function ruleTypeLabel(type: number) {
@@ -544,7 +524,7 @@ function validateForm(): boolean {
     message.warning('请输入存款要求金额');
     return false;
   }
-  if (!rewardTiers.value.length) {
+  if (rewardTiers.value.length === 0) {
     message.warning('请至少添加一档奖励');
     return false;
   }
@@ -707,16 +687,14 @@ async function handleSubmit() {
           </Form.Item>
 
           <Form.Item label="投注要求">
-            <Checkbox v-model:checked="form.IsBetRequirement"
-              >需要投注要求</Checkbox
-            >
+            <Checkbox v-model:checked="form.IsBetRequirement">
+需要投注要求
+</Checkbox>
             <div
               v-if="form.IsBetRequirement"
               class="mt-2 flex items-center gap-2"
             >
-              <span class="text-gray-500"
-                >自票券领取后累计投注要求金额（元）</span
-              >
+              <span class="text-gray-500">自票券领取后累计投注要求金额（元）</span>
               <InputNumber
                 v-model:value="betRequirementYuan"
                 :min="0.01"
@@ -744,16 +722,14 @@ async function handleSubmit() {
           </Form.Item>
 
           <Form.Item label="存款要求">
-            <Checkbox v-model:checked="form.IsDepositRequirement"
-              >需要存款要求</Checkbox
-            >
+            <Checkbox v-model:checked="form.IsDepositRequirement">
+需要存款要求
+</Checkbox>
             <div
               v-if="form.IsDepositRequirement"
               class="mt-2 flex items-center gap-2"
             >
-              <span class="text-gray-500"
-                >自票券领取后累计存款要求金额（元）</span
-              >
+              <span class="text-gray-500">自票券领取后累计存款要求金额（元）</span>
               <InputNumber
                 v-model:value="depositRequirementYuan"
                 :min="0.01"
@@ -778,9 +754,11 @@ async function handleSubmit() {
               size="small"
             >
               <template #bodyCell="{ column, record, index }">
-                <template v-if="column.key === 'index'">{{
+                <template v-if="column.key === 'index'">
+{{
                   index + 1
-                }}</template>
+                }}
+</template>
                 <template v-else-if="column.key === 'amount'">
                   <template v-if="isRedPacket">
                     {{
@@ -811,10 +789,9 @@ async function handleSubmit() {
                       :src="getServiceImageUrl(img)"
                     />
                     <span
-                      v-if="!prizeImages(record).length"
+                      v-if="prizeImages(record).length === 0"
                       class="text-gray-400"
-                      >-</span
-                    >
+                      >-</span>
                   </div>
                 </template>
                 <template v-else-if="column.key === 'action'">
@@ -875,9 +852,11 @@ async function handleSubmit() {
               size="small"
             >
               <template #bodyCell="{ column, record, index }">
-                <template v-if="column.key === 'index'">{{
+                <template v-if="column.key === 'index'">
+{{
                   index + 1
-                }}</template>
+                }}
+</template>
                 <template v-else-if="column.key === 'text'">
                   {{ ruleText(record as VoucherRuleItem) }}
                 </template>
@@ -938,9 +917,9 @@ async function handleSubmit() {
                 </template>
               </template>
             </Table>
-            <Button class="mt-2" type="dashed" @click="openAddRule"
-              >新增规则</Button
-            >
+            <Button class="mt-2" type="dashed" @click="openAddRule">
+新增规则
+</Button>
           </Form.Item>
         </Form>
       </div>

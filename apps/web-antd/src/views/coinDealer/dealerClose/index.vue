@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -11,9 +13,7 @@ import {
   fetchCoinDealerSellListApi,
 } from '#/api/coinDealer';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import {
   coinDealerAccountColumns,
@@ -36,7 +36,7 @@ const tabs = computed(() =>
         loginField: 'Username',
       } satisfies OperationListConfig,
       key: 'sellReturn',
-      permission: 10839,
+      permission: 10_839,
       tab: '授信/还款',
       tip: '授信/还款表单、谷歌验证等待下一迭代迁移。',
     },
@@ -48,7 +48,7 @@ const tabs = computed(() =>
         loginField: 'CoinDealerName',
       } satisfies OperationListConfig,
       key: 'sellRecord',
-      permission: 10840,
+      permission: 10_840,
       tab: '授信记录',
     },
     {
@@ -59,7 +59,7 @@ const tabs = computed(() =>
         loginField: 'CoinDealerName',
       } satisfies OperationListConfig,
       key: 'returnRecord',
-      permission: 10841,
+      permission: 10_841,
       tab: '还款记录',
     },
   ].filter((item) => checkPermission(item.permission)),

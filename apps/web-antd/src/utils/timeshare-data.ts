@@ -32,7 +32,7 @@ export const TIMESHARE_METRIC_MAP: Record<
 function sortDayGroups(data: TimeshareHourItem[][]) {
   return [...data]
     .filter((group) => Array.isArray(group) && group.length > 0)
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       const aDay = a?.[0]?.ReportDay || '';
       const bDay = b?.[0]?.ReportDay || '';
       return new Date(bDay).getTime() - new Date(aDay).getTime();

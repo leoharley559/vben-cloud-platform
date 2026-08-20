@@ -1,14 +1,15 @@
-import { requestClient } from '#/api/request';
-import type { CloudListResult } from '#/types/operation-manage';
-import type { GameRecordListQuery } from '#/types/game-record';
 import type {
   EvoSideBetListItem,
   EvoSideBetListQuery,
 } from '#/types/evo-sidebet';
+import type { GameRecordListQuery } from '#/types/game-record';
+import type { CloudListResult } from '#/types/operation-manage';
 import type {
   PlayerBetRecordItem,
   PlayerBetSummary,
 } from '#/types/player-detail';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 function normalizeListResult<T>(
@@ -33,35 +34,35 @@ function normalizeGameRecordQuery(query: GameRecordListQuery) {
   const params = trimSpace({ ...query }) as Record<string, unknown>;
   const gameIds = params.GameIds;
   if (Array.isArray(gameIds)) {
-    params.GameIds = gameIds.length ? gameIds.join(',') : '';
+    params.GameIds = gameIds.length > 0 ? gameIds.join(',') : '';
   }
   const vipLevel = params.VipLevel;
   if (Array.isArray(vipLevel)) {
-    params.VipLevel = vipLevel.length ? vipLevel.join(',') : '';
+    params.VipLevel = vipLevel.length > 0 ? vipLevel.join(',') : '';
   }
   const channelIds = params.ChannelIds;
   if (Array.isArray(channelIds)) {
-    params.ChannelIds = channelIds.length ? channelIds.join(',') : '';
+    params.ChannelIds = channelIds.length > 0 ? channelIds.join(',') : '';
   }
   const inviteSite = params.InviteSite;
   if (Array.isArray(inviteSite)) {
-    params.InviteSite = inviteSite.length ? inviteSite.join(',') : '';
+    params.InviteSite = inviteSite.length > 0 ? inviteSite.join(',') : '';
   }
   const playerStatus = params.PlayerStatus;
   if (Array.isArray(playerStatus)) {
-    params.PlayerStatus = playerStatus.length ? playerStatus.join(',') : '';
+    params.PlayerStatus = playerStatus.length > 0 ? playerStatus.join(',') : '';
   }
   const venueTypes = params.VenueTypes;
   if (Array.isArray(venueTypes)) {
-    params.VenueTypes = venueTypes.length ? venueTypes.join(',') : '';
+    params.VenueTypes = venueTypes.length > 0 ? venueTypes.join(',') : '';
   }
   const appUrl = params.AppUrl;
   if (Array.isArray(appUrl)) {
-    params.AppUrl = appUrl.length ? appUrl.join(',') : '';
+    params.AppUrl = appUrl.length > 0 ? appUrl.join(',') : '';
   }
   const devicePlatform = params.DevicePlatform;
   if (Array.isArray(devicePlatform)) {
-    params.DevicePlatform = devicePlatform.length
+    params.DevicePlatform = devicePlatform.length > 0
       ? devicePlatform.join(',')
       : '';
   }
@@ -124,7 +125,7 @@ export function exportGameRecordListApi(params: Record<string, unknown>) {
 export async function fetchGameRecordSettleLogApi(params: {
   TransactionId: string;
 }) {
-  const data = await requestClient.get<Record<string, unknown>[] | null>(
+  const data = await requestClient.get<null | Record<string, unknown>[]>(
     '/backend/operation/gametransactiondetaillog',
     { params },
   );
@@ -155,7 +156,7 @@ function normalizeEvoSideBetQuery(query: EvoSideBetListQuery) {
   ) as Record<string, unknown>;
   const inviteSite = params.InviteSite;
   if (Array.isArray(inviteSite)) {
-    params.InviteSite = inviteSite.length ? inviteSite.join(',') : '';
+    params.InviteSite = inviteSite.length > 0 ? inviteSite.join(',') : '';
   }
   return params;
 }

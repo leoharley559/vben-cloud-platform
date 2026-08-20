@@ -24,7 +24,12 @@ import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
 
-import { disabledBeforeToday, num, percentText, pickTwoDayItem } from '../utils';
+import {
+  disabledBeforeToday,
+  num,
+  percentText,
+  pickTwoDayItem,
+} from '../utils';
 
 defineOptions({ name: 'PromotionAnalyzePanel' });
 
@@ -102,15 +107,15 @@ function trendRender(
   todayVal: number,
   yesterdayVal: number,
   display: string,
-  mode: 'ratio' | 'diff' = 'ratio',
+  mode: 'diff' | 'ratio' = 'ratio',
 ) {
   const up = todayVal - yesterdayVal >= 0;
   const pct =
     mode === 'diff'
       ? (todayVal - yesterdayVal).toFixed(2)
-      : yesterdayVal
+      : (yesterdayVal
         ? (((todayVal - yesterdayVal) / yesterdayVal) * 100).toFixed(2)
-        : '0.00';
+        : '0.00');
   return h('div', [
     h('div', display),
     h(
@@ -126,7 +131,9 @@ function channelPayNum(item: Row) {
 }
 
 function channelPayMoney(item: Row) {
-  return num(item.PayMoney) + num(item.AgentPayMoney) || num(item.TodayPayMoney);
+  return (
+    num(item.PayMoney) + num(item.AgentPayMoney) || num(item.TodayPayMoney)
+  );
 }
 
 const columns = computed<TableColumnType<Row>[]>(() => [
@@ -243,9 +250,7 @@ const channelRows = computed(() => {
     const YesterdayReg = num(yest.Reg || yest.SumReg || yest.YesterdayReg);
     const YesterdayPayNum = channelPayNum(yest);
     const YesterdayPayMoney = channelPayMoney(yest);
-    const YesterdayWithdraw = num(
-      yest.WithdrawMoney || yest.SumWithdrawMoney,
-    );
+    const YesterdayWithdraw = num(yest.WithdrawMoney || yest.SumWithdrawMoney);
     const YesterdayDiff = YesterdayWithdraw - YesterdayPayMoney;
     const TodayPayRateNum = Reg ? (PayNum / Reg) * 100 : 0;
     const YesterdayPayRateNum = YesterdayReg
@@ -383,9 +388,7 @@ function buildQuery() {
 async function loadData() {
   loading.value = true;
   try {
-    const data = (await fetchOperationPromotionAnalyzeApi(
-      buildQuery(),
-    )) as Row;
+    const data = (await fetchOperationPromotionAnalyzeApi(buildQuery())) as Row;
     const endKey = filters.endDate.format('YYYY-MM-DD');
     const beginKey = filters.beginDate.format('YYYY-MM-DD');
     today.value = pickTwoDayItem(data, endKey);

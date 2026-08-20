@@ -126,7 +126,7 @@ function handleTypeChange() {
 
     <template v-else-if="type === REDIRECT_TYPE.ACTIVITY">
       <Select
-        v-if="activityOptions.length"
+        v-if="activityOptions.length > 0"
         v-model:value="param"
         allow-clear
         :disabled="disabled"
@@ -155,7 +155,7 @@ function handleTypeChange() {
 
     <template v-else-if="type === REDIRECT_TYPE.NOTICE">
       <Select
-        v-if="noticeOptions.length"
+        v-if="noticeOptions.length > 0"
         v-model:value="param"
         allow-clear
         :disabled="disabled"
@@ -175,7 +175,7 @@ function handleTypeChange() {
 
     <template v-else-if="type === REDIRECT_TYPE.VENUE">
       <Select
-        v-if="venueOptions.length"
+        v-if="venueOptions.length > 0"
         v-model:value="param"
         allow-clear
         :disabled="disabled"

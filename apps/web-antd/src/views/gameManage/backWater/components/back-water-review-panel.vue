@@ -20,9 +20,6 @@ import {
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import AgencyAccountLink from '#/components/global/agency-account-link.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   exportBackWaterRecordApi,
   fetchBackWaterRecordApi,
@@ -31,10 +28,13 @@ import {
   reviewBackWaterApi,
 } from '#/api/gameManage/back-water';
 import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -192,13 +192,9 @@ function queryParams(page: { currentPage: number; pageSize: number }) {
   return {
     ...common,
     ApplyMax:
-      filters.ApplyMax === undefined
-        ? ''
-        : Math.round(filters.ApplyMax * 100),
+      filters.ApplyMax === undefined ? '' : Math.round(filters.ApplyMax * 100),
     ApplyMin:
-      filters.ApplyMin === undefined
-        ? ''
-        : Math.round(filters.ApplyMin * 100),
+      filters.ApplyMin === undefined ? '' : Math.round(filters.ApplyMin * 100),
     PackageId: filters.PackId,
   };
 }
@@ -219,11 +215,17 @@ const systemColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
     title: 'VIP 等级',
   },
   { field: 'LevelName', minWidth: 110, title: '玩家层级' },
-  { field: 'AdminName', minWidth: 110, slots: { default: 'adminName' }, title: '代理账号' },
+  {
+    field: 'AdminName',
+    minWidth: 110,
+    slots: { default: 'adminName' },
+    title: '代理账号',
+  },
   { field: 'PackageName', minWidth: 120, title: '所属产品' },
   {
     field: 'ChannelName',
-    formatter: ({ row }) => `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
+    formatter: ({ row }) =>
+      `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
     minWidth: 140,
     title: '所属渠道',
   },
@@ -269,7 +271,8 @@ const manualColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
   { field: 'PackageName', minWidth: 120, title: '所属产品' },
   {
     field: 'ChannelName',
-    formatter: ({ row }) => `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
+    formatter: ({ row }) =>
+      `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
     minWidth: 140,
     title: '所属渠道',
   },
@@ -324,9 +327,7 @@ const gridOptions: VxeTableGridOptions<ReviewRow> = {
     ajax: {
       query: async ({ page }) => {
         const allowed =
-          mode.value === 'system'
-            ? canSystemList.value
-            : canManualList.value;
+          mode.value === 'system' ? canSystemList.value : canManualList.value;
         if (!allowed) return { items: [], total: 0 };
         const result =
           mode.value === 'system'
@@ -404,10 +405,7 @@ function reset() {
     RebateMode: -1,
     VipLevel: -1,
   });
-  dateRange.value = [
-    dayjs().startOf('day'),
-    dayjs().endOf('day'),
-  ];
+  dateRange.value = [dayjs().startOf('day'), dayjs().endOf('day')];
   void search();
 }
 
@@ -496,7 +494,11 @@ async function submitExport() {
   }
   actionLoading.value = true;
   try {
-    const { Page: _page, PageSize: _size, ...query } = queryParams({
+    const {
+      Page: _page,
+      PageSize: _size,
+      ...query
+    } = queryParams({
       currentPage: 1,
       pageSize: 20,
     });
@@ -517,9 +519,8 @@ async function submitExport() {
 
 function openExport() {
   const rows =
-    (gridApi.grid?.getTableData?.()?.fullData as ReviewRow[] | undefined) ||
-    [];
-  if (rows.length < 1) {
+    (gridApi.grid?.getTableData?.()?.fullData as ReviewRow[] | undefined) || [];
+  if (rows.length === 0) {
     message.warning('暂无数据可导出');
     return;
   }
@@ -640,8 +641,9 @@ onMounted(async () => {
         <div
           class="query-filter-actions"
           :class="{
-            'query-filter-actions-single':
-              !(mode === 'system' && canSystemExport),
+            'query-filter-actions-single': !(
+              mode === 'system' && canSystemExport
+            ),
           }"
         >
           <Button type="primary" @click="search">查询</Button>
@@ -695,9 +697,7 @@ onMounted(async () => {
         <template #action="{ row }">
           <Space v-if="pending(row)" :size="0">
             <Button
-              v-if="
-                mode === 'system' ? canSystemApprove : canManualApprove
-              "
+              v-if="mode === 'system' ? canSystemApprove : canManualApprove"
               type="link"
               @click="approve([row])"
             >
@@ -712,10 +712,7 @@ onMounted(async () => {
               拒绝
             </Button>
           </Space>
-          <Tag
-            v-else
-            :color="reviewState(row) === '已通过' ? 'green' : 'red'"
-          >
+          <Tag v-else :color="reviewState(row) === '已通过' ? 'green' : 'red'">
             {{ reviewState(row) }}
           </Tag>
         </template>

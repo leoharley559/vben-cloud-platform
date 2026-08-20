@@ -17,17 +17,17 @@ import {
   fetchRecordTransactionListApi,
   fetchRecordWithdrawListApi,
 } from '#/api/netcash/record-inquire';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatVenueName } from '#/utils/game-config';
 import { formatNetcashDateTime } from '#/utils/netcash';
 import { formatPlayerStatus } from '#/utils/player-status';
 
 import RecordQueryPanel from './components/record-query-panel.vue';
-import AgencyAccountLink from '#/components/global/agency-account-link.vue';
-import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import PlayerStatusTag from '#/components/global/player-status-tag.vue';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 
 defineOptions({ name: 'RecordInquire' });
 
@@ -282,8 +282,7 @@ const tabs = computed(() =>
           { field: 'ReviewNote', title: '审核备注' },
           {
             field: 'Status',
-            formatter: (value: unknown) =>
-              bonusStatus[Number(value)] || '-',
+            formatter: (value: unknown) => bonusStatus[Number(value)] || '-',
             title: '状态',
           },
         ],
@@ -435,11 +434,7 @@ onMounted(() => {
   >
     <Card>
       <Tabs v-model:active-key="active" type="line" size="small">
-        <Tabs.TabPane
-          v-for="item in tabs"
-          :key="item.key"
-          :tab="item.tab"
-        >
+        <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <RecordQueryPanel
             v-if="active === item.key && checkPermission(item.inner)"
             :config="item.config as RecordQueryPanelConfig"
@@ -447,9 +442,7 @@ onMounted(() => {
             <template #agencyAccount="{ row }">
               <AgencyAccountLink
                 :admin-id="resolveAgencyAdminId(row)"
-                :username="
-                  row.AgentAccount ?? row.Username ?? row.AdminAccount
-                "
+                :username="row.AgentAccount ?? row.Username ?? row.AdminAccount"
               />
             </template>
             <template #loginAccount="{ row }">

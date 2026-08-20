@@ -1,6 +1,8 @@
+import type { CsvColumn } from '#/utils/export-csv';
+
 import { message } from 'ant-design-vue';
 
-import { exportRowsToCsv, type CsvColumn } from '#/utils/export-csv';
+import { exportRowsToCsv } from '#/utils/export-csv';
 import { exportRowsToXlsx } from '#/views/dataClose/shared/report-utils';
 
 export async function exportReportCsv<T extends Record<string, unknown>>(

@@ -30,10 +30,7 @@ export function fetchVipGradeListApi(query: Record<string, unknown> = {}) {
  * @see views/gameManage/vipSetting
  */
 export function createVipGradeApi(data: Record<string, unknown>) {
-  return requestClient.post(
-    '/backend/viplevelconfig/addvirtualprize',
-    data,
-  );
+  return requestClient.post('/backend/viplevelconfig/addvirtualprize', data);
 }
 
 /**
@@ -78,10 +75,9 @@ export function updateVipCoefficientApi(data: Record<string, unknown>) {
  * @see views/gameManage/vipSetting
  */
 export function fetchVipRecordListApi(query: Record<string, unknown>) {
-  return requestClient.get<VipListResult>(
-    '/backend/viplevelconfig/list',
-    { params: trimSpace(query) },
-  );
+  return requestClient.get<VipListResult>('/backend/viplevelconfig/list', {
+    params: trimSpace(query),
+  });
 }
 
 /**
@@ -138,10 +134,7 @@ export function updateVipLevelModeApi(data: { VipLevelMode: number }) {
  * @see views/gameManage/vipSetting
  */
 export function updateVipMonthRewardModeApi(data: Record<string, unknown>) {
-  return requestClient.put(
-    '/backend/viplevelconfig/setmonthrewardmode/',
-    data,
-  );
+  return requestClient.put('/backend/viplevelconfig/setmonthrewardmode/', data);
 }
 
 /**
@@ -178,10 +171,7 @@ export function fetchVipIconsApi(data: { TemplateId: number | string }) {
  * @see views/gameManage/vipSetting
  */
 export function createVipIconTemplateApi(data: { TemplateName: string }) {
-  return requestClient.put(
-    '/backend/viplevelconfig/addiconstemplate/',
-    data,
-  );
+  return requestClient.put('/backend/viplevelconfig/addiconstemplate/', data);
 }
 
 /**
@@ -195,10 +185,7 @@ export function updateVipIconTemplateApi(data: {
   TemplateId: number | string;
   TemplateName: string;
 }) {
-  return requestClient.put(
-    '/backend/viplevelconfig/iconstemplatename/',
-    data,
-  );
+  return requestClient.put('/backend/viplevelconfig/iconstemplatename/', data);
 }
 
 /**
@@ -224,9 +211,7 @@ export function deleteVipIconTemplateApi(data: {
  * @returns Promise，resolve 为更新/操作结果
  * @see views/gameManage/vipSetting
  */
-export function resetVipIconTemplateApi(data: {
-  TemplateId: number | string;
-}) {
+export function resetVipIconTemplateApi(data: { TemplateId: number | string }) {
   return requestClient.put(
     '/backend/viplevelconfig/resettodefaulttemplate/',
     data,
@@ -243,4 +228,3 @@ export function resetVipIconTemplateApi(data: {
 export function updateVipIconApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/viplevelconfig/icons/', data);
 }
-

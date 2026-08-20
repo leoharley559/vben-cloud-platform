@@ -88,7 +88,10 @@ watch(
 watch(
   () => props.metrics,
   (metrics) => {
-    if (metrics.length > 0 && !metrics.some((item) => item.key === activeMetric.value)) {
+    if (
+      metrics.length > 0 &&
+      !metrics.some((item) => item.key === activeMetric.value)
+    ) {
       activeMetric.value = metrics[0]!.key;
       emit('update:metric', activeMetric.value);
     }

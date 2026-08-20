@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
 
+import type { PhysicalVariantItem } from './reward-goods-shared';
+
 import { computed, reactive, ref, watch } from 'vue';
 
 import {
@@ -10,13 +12,13 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Select,
   Spin,
   Switch,
   Tabs,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -28,30 +30,14 @@ import {
 } from '#/api/operationManage/reward-mall';
 import { fetchVoucherListAllApi } from '#/api/operationManage/voucher';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import VoucherImageField from '#/views/operationalManage/voucher/components/voucher-image-field.vue';
-import VoucherVenueField from '#/views/operationalManage/voucher/components/voucher-venue-field.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import VoucherImageField from '#/views/operationalManage/voucher/components/voucher-image-field.vue';
+import VoucherVenueField from '#/views/operationalManage/voucher/components/voucher-venue-field.vue';
 
-import {
-  LIMIT_WINDOW,
-  LIMIT_WINDOW_OPTIONS,
-  PRODUCT_TYPE,
-  PRODUCT_TYPE_OPTIONS,
-  VIP_LEVEL_RANGE_OPTIONS,
-  type PhysicalVariantItem,
-  assembleProductSubmitPayload,
-  breakupProductDetail,
-  createDefaultProductForm,
-  createEmptyPhysicalVariant,
-  parseLangTextMap,
-  resolveDefaultLangGroupId,
-  resolveLangGroupIds,
-} from './reward-goods-shared';
+import { assembleProductSubmitPayload, breakupProductDetail, createDefaultProductForm, createEmptyPhysicalVariant, LIMIT_WINDOW, LIMIT_WINDOW_OPTIONS, parseLangTextMap, PRODUCT_TYPE, PRODUCT_TYPE_OPTIONS, resolveDefaultLangGroupId, resolveLangGroupIds, VIP_LEVEL_RANGE_OPTIONS } from './reward-goods-shared';
 
 defineOptions({ name: 'GoodsUpsertModal' });
-
-type UpsertMode = 'add' | 'clone' | 'edit';
 
 const props = defineProps<{
   mode?: UpsertMode;
@@ -59,6 +45,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{ success: [] }>();
+
+type UpsertMode = 'add' | 'clone' | 'edit';
 
 const open = defineModel<boolean>('open', { default: false });
 
@@ -96,7 +84,7 @@ const isPhysical = computed(() => form.ProductType === PRODUCT_TYPE.PHYSICAL);
 const deviceOptions = computed(() => {
   const map = cloudStore.projectConfig?.DevicePlatformAll || {};
   const entries = Object.entries(map);
-  if (!entries.length) {
+  if (entries.length === 0) {
     return [
       { label: 'PC', value: '1' },
       { label: 'H5', value: '2' },
@@ -180,7 +168,7 @@ async function loadTagOptions() {
     const items = result.Items || [];
     tagOptions.value = items.map((item) => {
       const lang = parseLangTextMap(item.LangText);
-      const first = Object.values(lang)[0] as { Name?: string } | undefined;
+      const first = Object.values(lang)[0] as undefined | { Name?: string };
       return { label: first?.Name || `页签${item.Id}`, value: Number(item.Id) };
     });
   } catch {
@@ -194,7 +182,7 @@ async function loadVoucherOptions() {
     const items = result.Items || [];
     voucherOptions.value = items.map((item) => {
       const lang = parseLangTextMap(item.LangText);
-      const first = Object.values(lang)[0] as { Name?: string } | undefined;
+      const first = Object.values(lang)[0] as undefined | { Name?: string };
       return {
         label: `${first?.Name || '-'} (${item.Id})`,
         value: Number(item.Id),
@@ -314,7 +302,7 @@ function validateForm(): boolean {
     message.warning('请选择商品有效时间');
     return false;
   }
-  if (!displayDevicesArray.value.length) {
+  if (displayDevicesArray.value.length === 0) {
     message.warning('请至少选择一个展示设备');
     return false;
   }
@@ -351,7 +339,7 @@ function validateForm(): boolean {
     message.warning('请选择票券');
     return false;
   }
-  if (isPhysical.value && !form.PhysicalProductElement.length) {
+  if (isPhysical.value && form.PhysicalProductElement.length === 0) {
     message.warning('请至少添加一个商品变种');
     return false;
   }

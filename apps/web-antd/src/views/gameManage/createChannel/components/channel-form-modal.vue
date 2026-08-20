@@ -432,9 +432,9 @@ async function initialize() {
       if (initialization !== initializationGeneration || !props.open) return;
       ownerPath.value = hierarchy.Parents?.length
         ? hierarchy.Parents
-        : hierarchy.ItemsAdmin
+        : (hierarchy.ItemsAdmin
           ? [hierarchy.ItemsAdmin]
-          : [];
+          : []);
     } else {
       ownerPath.value = [sessionOwner()].filter(
         Boolean,
@@ -490,7 +490,8 @@ function hydrateDetail(detail: ChannelDetail) {
       | ChannelId
       | undefined,
     H5Version: 2,
-    IosPackageId: (zeroAsEmpty(detail.IosPackageId) as ChannelId | undefined) || '',
+    IosPackageId:
+      (zeroAsEmpty(detail.IosPackageId) as ChannelId | undefined) || '',
     IosPkgConfigId: zeroAsEmpty(detail.IosPkgConfigId) as ChannelId | undefined,
     PackageConfigId: detail.PackageConfigId ?? base.PackageConfigId,
   });
@@ -1099,8 +1100,7 @@ function requestClose() {
             <b>所属推广：</b>{{ ownerPath.at(-1)?.Name || currentOwnerId }}
           </div>
           <div>
-            <b>包体：</b
-            >{{ packageLabel(currentPackage || { Id: initialPackageId }) }}
+            <b>包体：</b>{{ packageLabel(currentPackage || { Id: initialPackageId }) }}
           </div>
           <div><b>创建方式：</b>使用包体默认配置（IsUseDefault）</div>
         </div>
@@ -1643,9 +1643,9 @@ function requestClose() {
 
 .loading-state {
   display: flex;
-  min-height: 360px;
   align-items: center;
   justify-content: center;
+  min-height: 360px;
 }
 
 .channel-form {
@@ -1663,12 +1663,12 @@ function requestClose() {
 
 .owner-card,
 .quick-summary {
-  margin: 28px auto;
   max-width: 620px;
   padding: 28px;
+  margin: 28px auto;
+  background: hsl(var(--accent));
   border: 1px solid hsl(var(--border));
   border-radius: 10px;
-  background: hsl(var(--accent));
 }
 
 .owner-name {
@@ -1685,10 +1685,10 @@ function requestClose() {
 
 .owner-path {
   display: flex;
-  margin-top: 24px;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 8px;
+  justify-content: center;
+  margin-top: 24px;
 }
 
 .quick-summary > div + div {
@@ -1696,34 +1696,34 @@ function requestClose() {
 }
 
 .section-title {
-  margin: 8px 0 22px;
   padding: 7px 12px;
-  border-left: 3px solid hsl(var(--primary));
-  background: hsl(var(--accent));
+  margin: 8px 0 22px;
   font-weight: 600;
+  background: hsl(var(--accent));
+  border-left: 3px solid hsl(var(--primary));
 }
 
 .field-hint {
   margin-top: 6px;
-  color: hsl(var(--muted-foreground));
   font-size: 12px;
+  color: hsl(var(--muted-foreground));
 }
 
 .venue-list {
-  overflow: hidden;
   max-width: 560px;
+  overflow: hidden;
   border: 1px solid hsl(var(--border));
   border-radius: 6px;
 }
 
 .venue-row {
   display: grid;
-  min-height: 44px;
-  align-items: center;
-  padding: 6px 10px;
-  border-bottom: 1px solid hsl(var(--border));
   grid-template-columns: 92px 48px 1fr;
   gap: 12px;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .venue-row:last-child {
@@ -1739,13 +1739,13 @@ function requestClose() {
 .resource-card {
   position: relative;
   display: flex;
-  overflow: hidden;
-  min-height: 140px;
   flex-direction: column;
+  min-height: 140px;
+  overflow: hidden;
   cursor: pointer;
+  background: hsl(var(--muted));
   border: 2px solid transparent;
   border-radius: 8px;
-  background: hsl(var(--muted));
 }
 
 .resource-card.selected {
@@ -1754,9 +1754,9 @@ function requestClose() {
 
 .resource-card :deep(.ant-radio-wrapper) {
   position: absolute;
-  z-index: 2;
   top: 6px;
   left: 6px;
+  z-index: 2;
 }
 
 .resource-card :deep(.ant-image) {
@@ -1770,8 +1770,8 @@ function requestClose() {
 }
 
 .resource-card > span {
-  overflow: hidden;
   padding: 6px 8px;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1782,12 +1782,12 @@ function requestClose() {
 }
 
 .landing-preview {
-  overflow: hidden;
   width: min(360px, 100%);
   margin: 0 auto 24px;
+  overflow: hidden;
+  background: #fff;
   border: 8px solid #202124;
   border-radius: 22px;
-  background: #fff;
 }
 
 .landing-preview :deep(.ant-image),
@@ -1804,14 +1804,14 @@ function requestClose() {
 
 .wizard-actions {
   position: sticky;
-  z-index: 5;
   bottom: 0;
+  z-index: 5;
   display: flex;
-  padding: 14px 0 2px;
-  justify-content: flex-end;
   gap: 10px;
-  border-top: 1px solid hsl(var(--border));
+  justify-content: flex-end;
+  padding: 14px 0 2px;
   background: hsl(var(--card));
+  border-top: 1px solid hsl(var(--border));
 }
 
 .result-details {
@@ -1831,7 +1831,7 @@ function requestClose() {
 
 <style>
 .channel-form-modal .ant-modal-body {
-  overflow-y: auto;
   max-height: calc(100vh - 150px);
+  overflow-y: auto;
 }
 </style>

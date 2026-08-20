@@ -1,13 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue';
 
-import {
-  Button,
-  message,
-  Select,
-  Space,
-  Table,
-} from 'ant-design-vue';
+import { Button, message, Select, Space, Table } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchNoticeStatisticListApi } from '#/api/operationManage/game-notice';
@@ -215,14 +209,20 @@ onMounted(() => {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterVisitRange" label="统计时间（最多 7 天）" precision="date" :disabled-date="visitRangeLimit.disabledDate" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" :loading="loading" @click="handleSearch">
-        查询
-      </Button>
-      <Button @click="handleReset">重置</Button>
-        </div></template>
+        <QueryDatetimeRangePicker
+          v-model="filterVisitRange"
+          label="统计时间（最多 7 天）"
+          precision="date"
+          :disabled-date="visitRangeLimit.disabledDate"
+        />
+      </div>
+      <div class="query-filter-actions query-filter-actions-single">
+        <Button type="primary" :loading="loading" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
+      </div>
+</template>
 
     <div v-if="canLoad === false" class="py-10 text-center text-gray-400">
       无访问统计查询权限

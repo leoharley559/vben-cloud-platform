@@ -1,5 +1,3 @@
-import { requestClient } from '#/api/request';
-import type { CloudListResult } from '#/types/operation-manage';
 import type {
   GameTitleBatchEditPayload,
   GameTitleGroupItem,
@@ -13,6 +11,9 @@ import type {
   GameTitlePayload,
   GameTitleSwitchPayload,
 } from '#/types/game-title';
+import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -24,7 +25,7 @@ function normalizeStatusQuery(query: Record<string, unknown>) {
   const params = trimSpace({ ...query }) as Record<string, unknown>;
   const status = params.Status;
   if (Array.isArray(status)) {
-    params.Status = status.length ? status.join(',') : '';
+    params.Status = status.length > 0 ? status.join(',') : '';
   }
   return params;
 }
@@ -215,8 +216,8 @@ export function addGameTitleOwnerApi(data: GameTitleOwnerPayload) {
  */
 export function checkGameTitleOwnerApi(data: {
   BadgeId?: number | string;
-  PlayerInfos?: Array<{ Account?: string; PackageName?: string }>;
   PlayerIds?: Array<number | string> | string;
+  PlayerInfos?: Array<{ Account?: string; PackageName?: string }>;
 }) {
   return requestClient.post('/backend/playerbadge/addplayercheck', data);
 }

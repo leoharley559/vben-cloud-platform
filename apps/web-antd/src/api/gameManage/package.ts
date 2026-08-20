@@ -36,17 +36,17 @@ import {
  * @see views/gameManage/inclusionDeploy
  */
 export async function fetchPackageListApi(query: PackageListQuery) {
-  const result = await requestClient.get<PackageListResult | null>(
+  const result = await requestClient.get<null | PackageListResult>(
     '/backend/package/list',
     {
       params: trimSpace(query),
     },
   );
   return {
-    ...(result || {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
     MoreItems: {
-      ...(result?.MoreItems || {}),
+      ...result?.MoreItems,
       Resources: Array.isArray(result?.MoreItems?.Resources)
         ? result.MoreItems.Resources
         : [],
@@ -124,14 +124,14 @@ export function deletePackageApi(id: PackageId) {
  * @see views/gameManage/inclusionDeploy
  */
 export async function fetchPackageResourceListApi(query: PackageResourceQuery) {
-  const result = await requestClient.get<PackageResourceListResult | null>(
+  const result = await requestClient.get<null | PackageResourceListResult>(
     '/api/resource/list',
     {
       params: trimSpace(query),
     },
   );
   return {
-    ...(result || {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
     Pagination: result?.Pagination,
   } satisfies PackageResourceListResult;
@@ -193,12 +193,12 @@ export function updatePackageUnderageConfigApi(data: PackageUnderagePayload) {
 export async function fetchPackageColorThemeListApi(
   query: PackageColorThemeQuery,
 ) {
-  const result = await requestClient.get<PackageColorThemeListResult | null>(
+  const result = await requestClient.get<null | PackageColorThemeListResult>(
     '/api/resource/packagecolorthemelist',
     { params: trimSpace(query) },
   );
   return {
-    ...(result || {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
     Pagination: result?.Pagination,
   } satisfies PackageColorThemeListResult;
@@ -214,12 +214,12 @@ export async function fetchPackageColorThemeListApi(
 export async function fetchPackageColorThemeDetailListApi(
   query: PackageColorThemeQuery,
 ) {
-  const result = await requestClient.get<PackageColorThemeListResult | null>(
+  const result = await requestClient.get<null | PackageColorThemeListResult>(
     '/api/resource/packagecolorthemedetaillist',
     { params: trimSpace(query) },
   );
   return {
-    ...(result || {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
     Pagination: result?.Pagination,
   } satisfies PackageColorThemeListResult;
@@ -289,7 +289,7 @@ export async function fetchPackageActivityListApi(
  * @see views/gameManage/inclusionDeploy
  */
 export async function fetchPackageLogoGroupListApi() {
-  const result = await requestClient.get<PackageDependencyItem[] | null>(
+  const result = await requestClient.get<null | PackageDependencyItem[]>(
     '/backend/gameadtemplate/listlogogroup',
   );
   return Array.isArray(result) ? result : [];
@@ -307,4 +307,3 @@ export function fetchBackWaterSchemeListApi(
 ) {
   return fetchExistingBackWaterSchemeListApi(trimSpace(query));
 }
-

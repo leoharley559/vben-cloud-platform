@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
+
 import type { GameTitleBatchEditPayload } from '#/types/game-title';
 
 import { reactive, ref, watch } from 'vue';
 
-import { Form, Modal, Select, message } from 'ant-design-vue';
+import { Form, message, Modal, Select } from 'ant-design-vue';
 
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import dayjs from 'dayjs';
 
 defineOptions({ name: 'GameTitleBatchEditModal' });
 

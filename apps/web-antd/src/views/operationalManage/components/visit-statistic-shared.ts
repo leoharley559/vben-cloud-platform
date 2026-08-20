@@ -1,8 +1,8 @@
 import type { Dayjs } from 'dayjs';
 
-import dayjs from 'dayjs';
-
 import type { CloudProjectConfig } from '#/types/cloud-platform';
+
+import dayjs from 'dayjs';
 
 export interface ProjectConfigOption {
   Name: string;
@@ -22,14 +22,12 @@ export function createRangeDayLimiter(maxDays: number) {
     return current.isBefore(min, 'day') || current.isAfter(max, 'day');
   }
 
-  function onCalendarChange(
-    dates: [Dayjs, Dayjs] | [string, string] | null,
-  ) {
+  function onCalendarChange(dates: [Dayjs, Dayjs] | [string, string] | null) {
     const first = dates?.[0];
     selecting = first
-      ? dayjs.isDayjs(first)
+      ? (dayjs.isDayjs(first)
         ? first
-        : dayjs(first)
+        : dayjs(first))
       : undefined;
   }
 
@@ -42,7 +40,9 @@ export function createRangeDayLimiter(maxDays: number) {
     if (!range?.[0] || !range?.[1]) {
       return false;
     }
-    return range[1].startOf('day').diff(range[0].startOf('day'), 'day') > maxDays;
+    return (
+      range[1].startOf('day').diff(range[0].startOf('day'), 'day') > maxDays
+    );
   }
 
   return { clearSelecting, disabledDate, isRangeTooLong, onCalendarChange };
@@ -53,7 +53,7 @@ export function parseProjectConfigOptions(
   projectConfig: CloudProjectConfig | null | undefined,
   key: string,
 ): ProjectConfigOption[] {
-  const list = (projectConfig as Record<string, unknown> | null | undefined)
+  const list = (projectConfig as null | Record<string, unknown> | undefined)
     ?.ProjectConfig;
   if (!Array.isArray(list)) {
     return [];
@@ -63,7 +63,7 @@ export function parseProjectConfigOptions(
       item &&
       typeof item === 'object' &&
       (item as { Key?: string }).Key === key,
-  ) as { ValueString?: string } | undefined;
+  ) as undefined | { ValueString?: string };
   if (!hit?.ValueString) {
     return [];
   }
@@ -97,7 +97,7 @@ export function formatVisitDurationSeconds(value: unknown) {
   }
   const date = new Date(0);
   date.setSeconds(seconds);
-  return date.toISOString().substring(11, 19);
+  return date.toISOString().slice(11, 19);
 }
 
 export function keepTwoDecimal(value: number) {

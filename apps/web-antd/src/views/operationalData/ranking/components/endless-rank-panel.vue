@@ -1,10 +1,11 @@
 <script lang="ts" setup>
+import type { RankPlayerRow } from '#/utils/ranking';
+
 import { nextTick, onMounted, ref } from 'vue';
 
 import { Spin } from 'ant-design-vue';
 
 import { fetchEndlessRankListApi } from '#/api/operationalData/ranking';
-import type { RankPlayerRow } from '#/utils/ranking';
 
 import PlayerRankTable from './player-rank-table.vue';
 import RankingFilterBar from './ranking-filter-bar.vue';

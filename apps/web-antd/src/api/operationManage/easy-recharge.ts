@@ -1,10 +1,11 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   EasyRechargeListTotal,
   PlayerEasyRechargeItem,
   PlayerEasyRechargeQuery,
 } from '#/types/player-detail';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**

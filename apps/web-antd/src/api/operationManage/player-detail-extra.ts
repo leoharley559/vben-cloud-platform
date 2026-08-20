@@ -1,4 +1,3 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   PlayerAddWithdrawWaterPayload,
@@ -23,6 +22,8 @@ import type {
   PlayerVenueTransferItem,
   PlayerVenueTransferQuery,
 } from '#/types/player-detail';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -39,7 +40,7 @@ function normalizeArrayQuery(query: Record<string, unknown>, fields: string[]) {
   for (const field of fields) {
     const value = params[field];
     if (Array.isArray(value)) {
-      params[field] = value.length ? value.join(',') : '';
+      params[field] = value.length > 0 ? value.join(',') : '';
     }
   }
   return params;

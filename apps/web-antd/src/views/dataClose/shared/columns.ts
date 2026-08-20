@@ -136,9 +136,9 @@ export const virtualReportColumns: OperationListConfig['columns'] = [
     formatter: (value) =>
       Number(value) === 1
         ? '运行中'
-        : Number(value) === 2
+        : (Number(value) === 2
           ? '暂停'
-          : String(value ?? '-'),
+          : String(value ?? '-')),
     minWidth: 100,
     title: '状态',
   },

@@ -62,13 +62,9 @@ watchEffect(() => {
           <SmsTemplatePanel
             v-else-if="item.key === 'template' && activeTab === 'template'"
           />
-          <SmsOtpPanel
-            v-else-if="item.key === 'otp' && activeTab === 'otp'"
-          />
+          <SmsOtpPanel v-else-if="item.key === 'otp' && activeTab === 'otp'" />
           <SmsRecallPanel
-            v-else-if="
-              item.key === 'regRecall' && activeTab === 'regRecall'
-            "
+            v-else-if="item.key === 'regRecall' && activeTab === 'regRecall'"
             type="register"
           />
           <SmsRecallPanel

@@ -57,16 +57,9 @@ watchEffect(() => {
   >
     <Card size="small">
       <Tabs v-model:active-key="activeTab" type="line" size="small">
-        <Tabs.TabPane
-          v-for="item in tabs"
-          :key="item.key"
-          :tab="item.title"
-        >
+        <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.title">
           <EnterprisePackagePanel v-if="item.key === 'enterprise'" />
-          <ShelfPackagePanel
-            v-else-if="item.key === 'ios'"
-            platform="ios"
-          />
+          <ShelfPackagePanel v-else-if="item.key === 'ios'" platform="ios" />
           <ShelfPackagePanel v-else platform="android" />
         </Tabs.TabPane>
       </Tabs>

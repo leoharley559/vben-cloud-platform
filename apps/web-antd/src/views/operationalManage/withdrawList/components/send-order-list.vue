@@ -7,24 +7,24 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchSendOrderListApi,
   updateSendOrderListApi,
 } from '#/api/operationManage/withdraw-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -40,10 +40,10 @@ defineOptions({ name: 'SendOrderListPanel' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(10377));
-const canApprove = computed(() => checkPermission(10378));
-const canReject = computed(() => checkPermission(10379));
-const canHangup = computed(() => checkPermission(10380));
+const canViewTable = computed(() => checkPermission(10_377));
+const canApprove = computed(() => checkPermission(10_378));
+const canReject = computed(() => checkPermission(10_379));
+const canHangup = computed(() => checkPermission(10_380));
 
 const defaultRange = getYesterdayRangeSeconds();
 const filterLoginAccount = ref('');
@@ -57,7 +57,7 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 
 const actionOpen = ref(false);
 const actionMode = ref<'hangup' | 'reject'>('reject');
-const actionRow = ref<WithdrawFinanceItem | null>(null);
+const actionRow = ref<null | WithdrawFinanceItem>(null);
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -191,56 +191,56 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterRiskStatus"
-        :options="[
-          { label: '未处理', value: -1 },
-          { label: '通过', value: 1 },
-          { label: '不通过', value: 2 },
-          { label: '挂起', value: 3 },
-          { label: '全部', value: '' },
-        ]"
-      />
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterPackageId"
+          :options="
+            packageOptions
+              .filter((item) => item.PackageId !== '')
+              .map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+          "
+        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterRiskStatus"
+          :options="[
+            { label: '未处理', value: -1 },
+            { label: '通过', value: 1 },
+            { label: '不通过', value: 2 },
+            { label: '挂起', value: 3 },
+            { label: '全部', value: '' },
+          ]"
+        />
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
+            查询
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #riskStatus="{ row }">

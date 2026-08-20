@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import {
@@ -7,15 +9,14 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Select,
   Switch,
   Tabs,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
 
 import {
   createGameNoticeApi,
@@ -33,7 +34,7 @@ defineOptions({ name: 'GameNoticeFormModal' });
 
 const props = defineProps<{
   open: boolean;
-  rowId?: number | string | null;
+  rowId?: null | number | string;
 }>();
 
 const emit = defineEmits<{
@@ -102,7 +103,7 @@ const vipOptions = computed(() => {
       VIPLevelMap?: Array<{ VipLevelId: number; VipLevelName: string }>;
     }
   )?.VIPLevelMap;
-  if (Array.isArray(map) && map.length) {
+  if (Array.isArray(map) && map.length > 0) {
     return map.map((item) => ({
       label: item.VipLevelName || `VIP${item.VipLevelId}`,
       value: item.VipLevelId,
@@ -116,10 +117,10 @@ const vipOptions = computed(() => {
 
 const deviceOptions = computed(() => {
   const cfg = projectConfig.value as {
-    DevicePlatformMy?:
-      | Record<string, string>
-      | Array<{ device: string; name: string }>;
     DevicePlatformAll?: Record<string, string>;
+    DevicePlatformMy?:
+      | Array<{ device: string; name: string }>
+      | Record<string, string>;
   };
   const my = cfg?.DevicePlatformMy;
   if (Array.isArray(my)) {
@@ -188,7 +189,7 @@ const form = reactive({
 
 function buildEmptyLangText(): LangItem[] {
   const groups = langGroups.value;
-  if (!groups.length) {
+  if (groups.length === 0) {
     return [{ LangGroupId: 1, NoticeRaw: '', Title: '' }];
   }
   return groups.map((group) => ({
@@ -246,7 +247,7 @@ function parseLangText(raw: unknown): LangItem[] {
     try {
       const parsed = JSON.parse(raw) as unknown;
       if (Array.isArray(parsed)) {
-        return groups.length
+        return groups.length > 0
           ? groups.map((group, index) => {
               const hit =
                 parsed.find(
@@ -269,7 +270,7 @@ function parseLangText(raw: unknown): LangItem[] {
   } else if (typeof raw === 'object' && !Array.isArray(raw)) {
     obj = raw as Record<string, Record<string, unknown>>;
   }
-  if (!groups.length) {
+  if (groups.length === 0) {
     const first = Object.values(obj)[0];
     return [
       {
@@ -304,18 +305,18 @@ function splitCsv(value: unknown): string[] {
 
 function toNumberArray(value: unknown): number[] {
   return splitCsv(value)
-    .map((item) => Number(item))
+    .map(Number)
     .filter((item) => !Number.isNaN(item));
 }
 
 function hrefToClick(html: string) {
-  return html.replace(/href="/g, 'onclick="openURL(\'');
+  return html.replaceAll('href="', 'onclick="openURL(\'');
 }
 
 function isRichTextEmpty(html: string) {
   const text = html
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/gi, ' ')
+    .replaceAll(/<[^>]+>/g, '')
+    .replaceAll(/&nbsp;/gi, ' ')
     .trim();
   return !text;
 }
@@ -404,19 +405,19 @@ async function loadDetail(id: number | string) {
       Number.isNaN(Number(item)) ? item : Number(item),
     );
     if (form.ShowStage === 1002) {
-      form.PackageMode = packages.length ? 1 : '';
+      form.PackageMode = packages.length > 0 ? 1 : '';
       form.Packages = packages;
       form.GamePackages = [];
       const shield = splitCsv(detail.ShieldPackages).map((item) =>
         Number.isNaN(Number(item)) ? item : Number(item),
       );
-      form.ShieldPackageMode = shield.length ? 1 : '';
+      form.ShieldPackageMode = shield.length > 0 ? 1 : '';
       form.ShieldPackages = shield;
       const channels = splitCsv(detail.ChannelId);
-      form.ChannelIdMode = channels.length ? 1 : '';
+      form.ChannelIdMode = channels.length > 0 ? 1 : '';
       form.ChannelIds = channels;
       const shieldChannels = splitCsv(detail.ShieldChannelId);
-      form.ShieldChannelIdMode = shieldChannels.length ? 1 : '';
+      form.ShieldChannelIdMode = shieldChannels.length > 0 ? 1 : '';
       form.ShieldChannelIds = shieldChannels;
       form.VisibleDevice = splitCsv(detail.VisibleDevice);
     } else {
@@ -448,7 +449,7 @@ watch(
 );
 
 onMounted(() => {
-  if (!form.LangText.length) {
+  if (form.LangText.length === 0) {
     form.LangText = buildEmptyLangText();
   }
 });
@@ -461,7 +462,7 @@ function formatModeField(
   mode: number | string,
   selected: Array<number | string>,
 ) {
-  if (mode && selected.length) {
+  if (mode && selected.length > 0) {
     return selected.join(',');
   }
   return '';
@@ -545,13 +546,13 @@ function validateForm() {
     }
     if (
       form.ShowStage === 1002 &&
-      lang.NoticeRaw.replace(/<[^>]+>/g, '').length > 500
+      lang.NoticeRaw.replaceAll(/<[^>]+>/g, '').length > 500
     ) {
       message.warning('紧急公告内容不能超过 500 字');
       return false;
     }
   }
-  if (form.ShowStage !== 1002 && !form.GamePackages.length) {
+  if (form.ShowStage !== 1002 && form.GamePackages.length === 0) {
     message.warning('请选择生效游戏包');
     return false;
   }
@@ -567,7 +568,7 @@ function validateForm() {
     message.warning('结束时间不能早于开始时间');
     return false;
   }
-  if (form.ShowStage === 1002 && !form.VisibleDevice.length) {
+  if (form.ShowStage === 1002 && form.VisibleDevice.length === 0) {
     message.warning('请选择展示设备');
     return false;
   }
@@ -579,12 +580,10 @@ function validateForm() {
     message.warning('请填写展示总次数');
     return false;
   }
-  if (form.IsPush === 1 && !disablePush.value) {
-    if (!form.PushTitle.trim() || !form.PushContent.trim()) {
+  if (form.IsPush === 1 && !disablePush.value && (!form.PushTitle.trim() || !form.PushContent.trim())) {
       message.warning('开启推送时请填写推送标题和内容');
       return false;
     }
-  }
   return true;
 }
 

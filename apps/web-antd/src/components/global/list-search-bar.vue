@@ -26,14 +26,14 @@ const props = withDefaults(
   defineProps<{
     addText?: string;
     dateLabel?: string;
+    /** datetimerange | daterange，列表筛选默认仅日期 */
+    dateTimeType?: 'daterange' | 'datetimerange';
     keywordPlaceholder?: string;
     loading?: boolean;
     options?: ListSearchOption[];
     showAdd?: boolean;
     /** 对齐旧站 SearchTypeTwo show-date-time，默认 true */
     showDateTime?: boolean;
-    /** datetimerange | daterange，列表筛选默认仅日期 */
-    dateTimeType?: 'daterange' | 'datetimerange';
   }>(),
   {
     addText: '新增',
@@ -82,7 +82,9 @@ watch(
 function toUnix(value: Dayjs | undefined, edge: 'end' | 'start') {
   if (!value) return '';
   if (props.dateTimeType === 'daterange') {
-    return edge === 'start' ? value.startOf('day').unix() : value.endOf('day').unix();
+    return edge === 'start'
+      ? value.startOf('day').unix()
+      : value.endOf('day').unix();
   }
   return value.unix();
 }
@@ -150,7 +152,9 @@ defineExpose({
         class="query-filter-actions"
         :class="{ 'query-filter-actions-single': !showAdd }"
       >
-        <Button :loading="loading" type="primary" @click="handleSearch">查询</Button>
+        <Button :loading="loading" type="primary" @click="handleSearch">
+查询
+</Button>
         <Button :disabled="loading" @click="handleReset">重置</Button>
         <Button v-if="showAdd" type="primary" @click="emit('add')">
           {{ addText }}

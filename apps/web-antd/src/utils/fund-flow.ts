@@ -34,7 +34,7 @@ function parseExInfo(raw: unknown): Record<string, unknown> {
 }
 
 function applyTemplate(template: string, row: Record<string, unknown>) {
-  return template.replace(/\{(\w+)\}/g, (_, key: string) => {
+  return template.replaceAll(/\{(\w+)\}/g, (_, key: string) => {
     const value = row[key];
     return value === undefined || value === null ? '' : String(value);
   });
@@ -61,9 +61,7 @@ export function enrichFundFlowItems(
     row.WalletType = exInfo.WalletType ?? '';
     row.WithdrawWaterMultiply = exInfo.WithdrawWaterMultiply ?? '';
     row.GameType =
-      row.GameType === undefined ||
-      row.GameType === null ||
-      row.GameType === ''
+      row.GameType === undefined || row.GameType === null || row.GameType === ''
         ? ''
         : formatVenueName(row.GameType as number | string, gameConfig);
 
@@ -78,11 +76,9 @@ export function enrichFundFlowItems(
         continue;
       }
       const reasonNum = Number(row.Reason);
-      if (reasonNum === 82 || reasonNum === 109 || reasonNum === 110) {
-        if (Number(tpl.Type) !== type) {
+      if ((reasonNum === 82 || reasonNum === 109 || reasonNum === 110) && Number(tpl.Type) !== type) {
           continue;
         }
-      }
       langZh = String(tpl.LangZh || '');
       langTw = String(tpl.LangTw || '');
       langEn = String(tpl.LangEn || '');
@@ -123,9 +119,9 @@ export function formatFundFlowRemark(row: FundFlowListItem, locale = 'zh-CN') {
   const base =
     locale === 'zh-HK'
       ? row.LangTw
-      : locale === 'en-US'
+      : (locale === 'en-US'
         ? row.LangEn
-        : row.LangZh;
+        : row.LangZh);
   let remark = base ? String(base) : '';
   const reason = Number(row.Reason);
   const exInfo = (row.ExInfo || {}) as Record<string, unknown>;

@@ -42,10 +42,7 @@ export async function fetchProxyGroupListApi(
 export async function fetchProxyGroupingListApi(query: NetcashListQuery) {
   const result = await requestClient.get<
     NetcashListResult<ProxyGroupingListItem>
-  >(
-    '/backend/agentnetcashgroup/list',
-    { params: query },
-  );
+  >('/backend/agentnetcashgroup/list', { params: query });
   return normalizeList(result);
 }
 

@@ -5,12 +5,11 @@ import type { RechargeCancelStatsItem } from '#/types/operation-manage';
 import { computed, onMounted, ref } from 'vue';
 
 import { Button, Result, Space } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchRechargeCancelStatsApi } from '#/api/operationManage/recharge-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchRechargeCancelStatsApi } from '#/api/operationManage/recharge-extra';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 
@@ -18,7 +17,7 @@ defineOptions({ name: 'RechargeStatsPanel' });
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(11618));
+const canViewTable = computed(() => checkPermission(11_618));
 
 const defaultRange = getCurrentMonthRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
@@ -86,30 +85,30 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="gridApi.reload()">
-          查询
-        </Button>
-        <Button
-          @click="
-            filterDateRange = [
-              dayjs.unix(defaultRange.BeginTime),
-              dayjs.unix(defaultRange.EndTime),
-            ];
-            gridApi.reload();
-          "
-        >
-          重置
-        </Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="gridApi.reload()">
+              查询
+            </Button>
+            <Button
+              @click="
+                filterDateRange = [
+                  dayjs.unix(defaultRange.BeginTime),
+                  dayjs.unix(defaultRange.EndTime),
+                ];
+                gridApi.reload();
+              "
+            >
+              重置
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid />
   </div>

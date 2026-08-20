@@ -5,7 +5,6 @@ import { onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  Card,
   Checkbox,
   Form,
   InputNumber,
@@ -43,7 +42,12 @@ const fields: Field[] = [
   { key: 'UpgradeMoney', label: '升级存款', money: true },
   { key: 'UpgradeTurnover', label: '升级流水要求', money: true },
   { key: 'HoldLevelTurnover', label: '保级流水要求', money: true },
-  { integer: true, key: 'DayWithdrawalTimes', label: '单日提现次数', suffix: '次' },
+  {
+    integer: true,
+    key: 'DayWithdrawalTimes',
+    label: '单日提现次数',
+    suffix: '次',
+  },
   { key: 'DayWithdrawal', label: '单日提现限额', money: true },
   { key: 'UpgradeDividend', label: 'VIP 等级升级红利', money: true },
   { key: 'UpgradeDividendMultiple', label: '升级红利流水倍数', suffix: '倍' },
@@ -54,10 +58,26 @@ const fields: Field[] = [
   { key: 'MonthDividendMultiple', label: '月红包流水倍数', suffix: '倍' },
 ];
 const requirementFields = [
-  { group: '上半月红包领取设置', key: 'FirstHalfBetReq', label: '有效投注要求' },
-  { group: '上半月红包领取设置', key: 'FirstHalfPayMoneyReq', label: '存款金额要求' },
-  { group: '下半月红包领取设置', key: 'SecondHalfBetReq', label: '有效投注要求' },
-  { group: '下半月红包领取设置', key: 'SecondHalfPayMoneyReq', label: '存款金额要求' },
+  {
+    group: '上半月红包领取设置',
+    key: 'FirstHalfBetReq',
+    label: '有效投注要求',
+  },
+  {
+    group: '上半月红包领取设置',
+    key: 'FirstHalfPayMoneyReq',
+    label: '存款金额要求',
+  },
+  {
+    group: '下半月红包领取设置',
+    key: 'SecondHalfBetReq',
+    label: '有效投注要求',
+  },
+  {
+    group: '下半月红包领取设置',
+    key: 'SecondHalfPayMoneyReq',
+    label: '存款金额要求',
+  },
 ];
 const moneyKeys = new Set([
   ...fields.filter((item) => item.money).map((item) => item.key),
@@ -69,7 +89,12 @@ const columns: TableColumnsType<Row> = [
   { key: 'UpgradeMoney', title: '升级存款', width: 130 },
   { key: 'UpgradeTurnover', title: '升级流水', width: 130 },
   { key: 'HoldLevelTurnover', title: '保级流水', width: 130 },
-  { dataIndex: 'DayWithdrawalTimes', key: 'DayWithdrawalTimes', title: '每日提现次数', width: 130 },
+  {
+    dataIndex: 'DayWithdrawalTimes',
+    key: 'DayWithdrawalTimes',
+    title: '每日提现次数',
+    width: 130,
+  },
   { key: 'DayWithdrawal', title: '每日提现限额', width: 140 },
   { key: 'upgradeBonus', title: '升级红利/流水倍数', width: 180 },
   { key: 'birthdayGift', title: '生日礼金/流水倍数', width: 180 },
@@ -146,13 +171,20 @@ function toggleRequirement(key: string, checked: boolean) {
 async function saveGrade() {
   for (const field of fields) {
     const value = Number(form[field.key]);
-    if (!Number.isFinite(value) || value < 0 || (field.integer && (!Number.isInteger(value) || value < 1))) {
+    if (
+      !Number.isFinite(value) ||
+      value < 0 ||
+      (field.integer && (!Number.isInteger(value) || value < 1))
+    ) {
       message.warning(`请正确输入${field.label}`);
       return;
     }
   }
   for (const { key } of requirementFields) {
-    if (enabledRequirements[key] && (!Number.isFinite(Number(form[key])) || Number(form[key]) < 0)) {
+    if (
+      enabledRequirements[key] &&
+      (!Number.isFinite(Number(form[key])) || Number(form[key]) < 0)
+    ) {
       message.warning('请完整填写红包领取要求');
       return;
     }
@@ -201,60 +233,62 @@ onMounted(loadData);
 </script>
 
 <template>
-    <div class="toolbar mb-3">
-      <Space v-if="checkPermission(12_145)">
-        <span>升级模式：</span>
-        <Select
-          v-model:value="vipLevelMode"
-          :options="[
-            { label: '存款与有效投注升级', value: 1 },
-            { label: '有效投注升级', value: 2 },
-          ]"
-          style="width: 210px"
-        />
-        <Button type="primary" @click="saveMode">更换</Button>
-      </Space>
-      <Space>
-        <Button v-if="checkPermission(13_181)" type="primary" @click="openForm()">
-          新增 VIP 等级
-        </Button>
-        <Button v-if="checkPermission(11_704)" @click="daysVisible = true">
-          保级流水天数设置
-        </Button>
-      </Space>
-    </div>
-    <Table
+  <div class="toolbar mb-3">
+    <Space v-if="checkPermission(12_145)">
+      <span>升级模式：</span>
+      <Select
+        v-model:value="vipLevelMode"
+        :options="[
+          { label: '存款与有效投注升级', value: 1 },
+          { label: '有效投注升级', value: 2 },
+        ]"
+        style="width: 210px"
+      />
+      <Button type="primary" @click="saveMode">更换</Button>
+    </Space>
+    <Space>
+      <Button v-if="checkPermission(13_181)" type="primary" @click="openForm()">
+        新增 VIP 等级
+      </Button>
+      <Button v-if="checkPermission(11_704)" @click="daysVisible = true">
+        保级流水天数设置
+      </Button>
+    </Space>
+  </div>
+  <Table
     bordered
-      :columns="columns"
-      :data-source="rows"
-      :loading="loading"
-      :pagination="false"
-      :row-key="(row) => String(row.Id || row.VipLevel)"
-      :scroll="{ x: 1550 }"
-      size="small"
-    >
-      <template #bodyCell="{ column, record, index }">
-        <span v-if="column.key === 'index'">{{ index + 1 }}</span>
-        <span v-else-if="column.key === 'VipLevel'">VIP.{{ record.VipLevel }}</span>
-        <span v-else-if="moneyKeys.has(String(column.key))">
-          {{ fromCent(record[String(column.key)]) }}
-        </span>
-        <span v-else-if="column.key === 'upgradeBonus'">
-          {{ fromCent(record.UpgradeDividend) }} / {{ record.UpgradeDividendMultiple }}
-        </span>
-        <span v-else-if="column.key === 'birthdayGift'">
-          {{ fromCent(record.BirthdayDividend) }} / {{ record.BirthdayDividendMultiple }}
-        </span>
-        <Button
-          v-else-if="column.key === 'action' && checkPermission(11_000)"
-          size="small"
-          type="primary"
-          @click="openForm(record)"
-        >
-          编辑
-        </Button>
-      </template>
-    </Table>
+    :columns="columns"
+    :data-source="rows"
+    :loading="loading"
+    :pagination="false"
+    :row-key="(row) => String(row.Id || row.VipLevel)"
+    :scroll="{ x: 1550 }"
+    size="small"
+  >
+    <template #bodyCell="{ column, record, index }">
+      <span v-if="column.key === 'index'">{{ index + 1 }}</span>
+      <span v-else-if="column.key === 'VipLevel'">VIP.{{ record.VipLevel }}</span>
+      <span v-else-if="moneyKeys.has(String(column.key))">
+        {{ fromCent(record[String(column.key)]) }}
+      </span>
+      <span v-else-if="column.key === 'upgradeBonus'">
+        {{ fromCent(record.UpgradeDividend) }} /
+        {{ record.UpgradeDividendMultiple }}
+      </span>
+      <span v-else-if="column.key === 'birthdayGift'">
+        {{ fromCent(record.BirthdayDividend) }} /
+        {{ record.BirthdayDividendMultiple }}
+      </span>
+      <Button
+        v-else-if="column.key === 'action' && checkPermission(11_000)"
+        size="small"
+        type="primary"
+        @click="openForm(record)"
+      >
+        编辑
+      </Button>
+    </template>
+  </Table>
   <Modal
     v-model:open="formVisible"
     :confirm-loading="saving"
@@ -265,9 +299,19 @@ onMounted(loadData);
     <div class="form-scroll">
       <Form :label-col="{ span: 9 }">
         <Form.Item label="VIP 等级">
-          <InputNumber v-model:value="form.VipLevel as number" class="!w-full" disabled addon-after="级" />
+          <InputNumber
+            v-model:value="form.VipLevel as number"
+            class="!w-full"
+            disabled
+            addon-after="级"
+          />
         </Form.Item>
-        <Form.Item v-for="field in fields" :key="field.key" :label="field.label" required>
+        <Form.Item
+          v-for="field in fields"
+          :key="field.key"
+          :label="field.label"
+          required
+        >
           <InputNumber
             v-model:value="form[field.key] as number"
             class="!w-full"
@@ -279,8 +323,7 @@ onMounted(loadData);
         <template v-for="(item, index) in requirementFields" :key="item.key">
           <div
             v-if="
-              index === 0 ||
-              requirementFields[index - 1]?.group !== item.group
+              index === 0 || requirementFields[index - 1]?.group !== item.group
             "
             class="section-title"
           >
@@ -307,28 +350,40 @@ onMounted(loadData);
       </Form>
     </div>
   </Modal>
-  <Modal v-model:open="daysVisible" :confirm-loading="saving" title="保级流水天数设置" @ok="saveDays">
+  <Modal
+    v-model:open="daysVisible"
+    :confirm-loading="saving"
+    title="保级流水天数设置"
+    @ok="saveDays"
+  >
     <Form layout="vertical">
       <Form.Item label="天数" required>
-        <InputNumber v-model:value="relegationDay" class="!w-full" :min="1" :precision="0" addon-after="天" />
+        <InputNumber
+          v-model:value="relegationDay"
+          class="!w-full"
+          :min="1"
+          :precision="0"
+          addon-after="天"
+        />
       </Form.Item>
     </Form>
   </Modal>
 </template>
 
 <style scoped>
- 
 .toolbar {
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
 }
+
 .form-scroll {
   max-height: 70vh;
   padding-right: 8px;
   overflow: auto;
 }
+
 .section-title {
   padding: 8px 12px;
   margin: 12px 0;

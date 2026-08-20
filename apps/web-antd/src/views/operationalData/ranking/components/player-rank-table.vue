@@ -1,23 +1,24 @@
 <script lang="ts" setup>
+import type { RankPlayerRow } from '#/utils/ranking';
+
 import { useRouter } from 'vue-router';
 
 import { Table } from 'ant-design-vue';
 
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { buildPlayerDetailPath } from '#/utils/player-detail-route';
-import type { RankPlayerRow } from '#/utils/ranking';
 import { antTableScrollY } from '#/utils/table-height';
 
 defineOptions({ name: 'PlayerRankTable' });
 
 const props = withDefaults(
   defineProps<{
-    data: RankPlayerRow[];
     amountField?: string;
     amountTitle?: string;
     amountTone?: 'danger' | 'success';
-    loading?: boolean;
+    data: RankPlayerRow[];
     linkAccount?: boolean;
+    loading?: boolean;
   }>(),
   {
     amountField: 'SumAddGold',

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { CloseManageItem, WithdrawAccountItem } from '#/types/promotion';
 
@@ -15,9 +17,7 @@ import {
   Statistic,
   Tooltip,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -25,6 +25,7 @@ import {
   fetchWithdrawAccountListApi,
   fetchWithdrawUserInfoApi,
 } from '#/api/promotion/close-manage';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import {
@@ -236,7 +237,9 @@ onMounted(async () => {
       </Card>
       <Card class="summary-card" :bordered="false">
         <div class="mb-2 text-sm text-gray-500">提现银行卡/支付宝</div>
-        <div :class="accountList.length > 0 ? 'text-green-600' : 'text-red-500'">
+        <div
+          :class="accountList.length > 0 ? 'text-green-600' : 'text-red-500'"
+        >
           {{ accountList.length > 0 ? '已设置' : '未设置' }}
         </div>
         <Button
@@ -261,7 +264,11 @@ onMounted(async () => {
             Number(userInfo.IsSetPrivatePassword) === 1 ? '已设置' : '未设置'
           }}
         </div>
-        <Button class="mt-3" type="primary" @click="openSecurity('private-password')">
+        <Button
+          class="mt-3"
+          type="primary"
+          @click="openSecurity('private-password')"
+        >
           设置
         </Button>
       </Card>

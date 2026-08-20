@@ -15,29 +15,23 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchBonusRecordListApi } from '#/api/operationManage/bonus-audit';
-import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   ACTIVITY_TYPE_OPTIONS,
   BONUS_ORDER_STATUS_OPTIONS,
   BONUS_TYPE_OPTIONS,
-  IS_WATER_OPTIONS,
-  OPERATOR_ACCOUNT_TYPE_OPTIONS,
-  OPERATOR_REMARK_TYPE_OPTIONS,
-  PAGE_TYPE_OPTIONS,
-  SEND_TYPE_OPTIONS,
-  VIP_LEVEL_OPTIONS,
-  WATER_TYPE_FILTER_OPTIONS,
   formatActivityType,
+  formatBaseTurnover,
   formatBonusAccount,
   formatBonusAmount,
   formatBonusNote,
@@ -45,16 +39,22 @@ import {
   formatBonusStatus,
   formatBonusType,
   formatBonusWaterType,
-  formatBaseTurnover,
   formatIsWater,
   getBonusStatusColor,
+  IS_WATER_OPTIONS,
+  OPERATOR_ACCOUNT_TYPE_OPTIONS,
+  OPERATOR_REMARK_TYPE_OPTIONS,
+  PAGE_TYPE_OPTIONS,
+  SEND_TYPE_OPTIONS,
+  VIP_LEVEL_OPTIONS,
+  WATER_TYPE_FILTER_OPTIONS,
 } from '#/utils/bonus-reward';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
-  PLAYER_STATUS_OPTIONS,
   formatPlayerStatus,
+  PLAYER_STATUS_OPTIONS,
 } from '#/utils/player-status';
 
 defineOptions({ name: 'BonusRecordList' });
@@ -62,8 +62,8 @@ defineOptions({ name: 'BonusRecordList' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(10127));
-const canExport = computed(() => checkPermission(11967));
+const canViewTable = computed(() => checkPermission(10_127));
+const canExport = computed(() => checkPermission(11_967));
 
 const defaultRange = getYesterdayRangeSeconds();
 const exportLoading = ref(false);
@@ -303,7 +303,12 @@ const gridOptions: VxeTableGridOptions<BonusRecordListItem> = {
       minWidth: 170,
       title: '首存时间',
     },
-    { field: 'Username', minWidth: 120, slots: { default: 'username' }, title: '代理账号' },
+    {
+      field: 'Username',
+      minWidth: 120,
+      slots: { default: 'username' },
+      title: '代理账号',
+    },
     {
       field: 'VipLevel',
       formatter: ({ cellValue }) =>
@@ -469,10 +474,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const rows = result?.Items || [];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -496,163 +501,164 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @change="normalizeLoginAccount"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterPlayerStatus"
-        :options="playerStatusOptions"
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单号"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOperatorAccount"
-          allow-clear
-          placeholder="请输入账号"
-        >
-          <template #addonBefore>
-            <Select
-              v-model:value="filterOperatorAccountType"
-              :bordered="false"
-              :options="OPERATOR_ACCOUNT_TYPE_OPTIONS"
-            />
-          </template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOperatorRemark"
-          allow-clear
-          placeholder="请输入备注"
-        >
-          <template #addonBefore>
-            <Select
-              v-model:value="filterOperatorRemarkType"
-              :bordered="false"
-              :options="OPERATOR_REMARK_TYPE_OPTIONS"
-            />
-          </template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterBonusTitle"
-          allow-clear
-          placeholder="请输入红利标题"
-        >
-          <template #addonBefore>红利标题</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterUsername"
-          allow-clear
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterIsWater"
-        :options="IS_WATER_OPTIONS"
-      />
-      <Select
-        v-model:value="filterStatus"
-        :options="BONUS_ORDER_STATUS_OPTIONS"
-      />
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
-      </Space.Compact>
-      <Select
-        v-model:value="filterWaterType"
-        :options="WATER_TYPE_FILTER_OPTIONS"
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPageTitle"
-          allow-clear
-          placeholder="请输入活动分页"
-        >
-          <template #addonBefore>活动分页</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterActivityType"
-        :options="ACTIVITY_TYPE_OPTIONS"
-      />
-      <Select
-        v-model:value="filterPageType"
-        :options="PAGE_TYPE_OPTIONS"
-      />
-      <Select
-        v-model:value="filterSendType"
-        :options="SEND_TYPE_OPTIONS"
-      />
-      <Space.Compact>
-        <span class="query-field-addon">产品名称</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          :options="packageSelectOptions"
-          show-search
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-          placeholder="请选择产品名称"
-        />
-      </Space.Compact>
-      <Select
-        v-model:value="filterVipLevel"
-        :options="VIP_LEVEL_OPTIONS"
-      />
-      <Space.Compact>
-        <span class="query-field-addon">红利类型</span>
-        <Select
-          v-model:value="filterBonusTypes"
-          allow-clear
-          mode="multiple"
-          :max-tag-count="1"
-          :options="BONUS_TYPE_OPTIONS"
-          placeholder="请选择红利类型"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterApplyDateRange" label="申请时间" />
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="normalizeLoginAccount"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
         </div>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterFinishDateRange" label="审核时间" />
+        <Select
+          v-model:value="filterPlayerStatus"
+          :options="playerStatusOptions"
+        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOperatorAccount"
+            allow-clear
+            placeholder="请输入账号"
+          >
+            <template #addonBefore>
+              <Select
+                v-model:value="filterOperatorAccountType"
+                :bordered="false"
+                :options="OPERATOR_ACCOUNT_TYPE_OPTIONS"
+              />
+            </template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOperatorRemark"
+            allow-clear
+            placeholder="请输入备注"
+          >
+            <template #addonBefore>
+              <Select
+                v-model:value="filterOperatorRemarkType"
+                :bordered="false"
+                :options="OPERATOR_REMARK_TYPE_OPTIONS"
+              />
+            </template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterBonusTitle"
+            allow-clear
+            placeholder="请输入红利标题"
+          >
+            <template #addonBefore>红利标题</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterUsername"
+            allow-clear
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <Select v-model:value="filterIsWater" :options="IS_WATER_OPTIONS" />
+        <Select
+          v-model:value="filterStatus"
+          :options="BONUS_ORDER_STATUS_OPTIONS"
+        />
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+        <Select
+          v-model:value="filterWaterType"
+          :options="WATER_TYPE_FILTER_OPTIONS"
+        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPageTitle"
+            allow-clear
+            placeholder="请输入活动分页"
+          >
+            <template #addonBefore>活动分页</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterActivityType"
+          :options="ACTIVITY_TYPE_OPTIONS"
+        />
+        <Select v-model:value="filterPageType" :options="PAGE_TYPE_OPTIONS" />
+        <Select v-model:value="filterSendType" :options="SEND_TYPE_OPTIONS" />
+        <Space.Compact>
+          <span class="query-field-addon">产品名称</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择产品名称"
+          />
+        </Space.Compact>
+        <Select v-model:value="filterVipLevel" :options="VIP_LEVEL_OPTIONS" />
+        <Space.Compact>
+          <span class="query-field-addon">红利类型</span>
+          <Select
+            v-model:value="filterBonusTypes"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="BONUS_TYPE_OPTIONS"
+            placeholder="请选择红利类型"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterApplyDateRange"
+            label="申请时间"
+          />
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterFinishDateRange"
+            label="审核时间"
+          />
         </div>
         <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-        导出 Excel
-      </Button>
+            查询
+          </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 

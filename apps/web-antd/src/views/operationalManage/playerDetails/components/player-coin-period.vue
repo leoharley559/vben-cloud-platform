@@ -8,12 +8,11 @@ import type {
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { Button, Card, Descriptions, Space } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerGoldTotalApi } from '#/api/operationManage/player';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerGoldTotalApi } from '#/api/operationManage/player';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -190,20 +189,24 @@ onMounted(() => {
   <div>
     <Card size="small" title="周期数据">
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" precision="date" />
+        <div class="ops-query-filters">
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker
+              v-model="filterDateRange"
+              label="日期"
+              precision="date"
+            />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Space>
+              <Button :loading="loading" type="primary" @click="handleSearch">
+                查询
+              </Button>
+              <Button @click="handleReset">重置</Button>
+            </Space>
+          </div>
         </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Space>
-          <Button :loading="loading" type="primary" @click="handleSearch">
-            查询
-          </Button>
-          <Button @click="handleReset">重置</Button>
-        </Space>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <Grid>
         <template #winLoss="{ row }">

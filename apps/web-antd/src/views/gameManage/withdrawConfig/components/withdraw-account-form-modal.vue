@@ -5,9 +5,9 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Select,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -23,7 +23,7 @@ const props = defineProps<{
   accountType?: number;
   handleType?: number;
   open: boolean;
-  rowId?: number | string | null;
+  rowId?: null | number | string;
 }>();
 
 const emit = defineEmits<{

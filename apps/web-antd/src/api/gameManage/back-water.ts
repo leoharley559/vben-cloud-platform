@@ -180,11 +180,12 @@ export async function fetchBackWaterRecordDetailApi(
 export async function fetchBackWaterOrderDetailsApi(
   query: Record<string, unknown>,
 ) {
-  const result = await requestClient.get<
-    Array<Record<string, unknown>> | null
-  >('/backend/playerbackwaterrecord/detail', {
-    params: trimSpace(query),
-  });
+  const result = await requestClient.get<Array<Record<string, unknown>> | null>(
+    '/backend/playerbackwaterrecord/detail',
+    {
+      params: trimSpace(query),
+    },
+  );
   return result ?? [];
 }
 

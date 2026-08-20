@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue';
 
-import { Checkbox, Form, Input, Modal, message } from 'ant-design-vue';
+import { Checkbox, Form, Input, message, Modal } from 'ant-design-vue';
 
 import {
   createDeviceRiskApi,
@@ -51,8 +51,8 @@ const valueLabel = computed(() =>
 );
 
 function resolveOperator() {
-  const info = adminInfo.value as Record<string, unknown> | null;
-  const admin = info?.Admin as { Username?: string } | undefined;
+  const info = adminInfo.value as null | Record<string, unknown>;
+  const admin = info?.Admin as undefined | { Username?: string };
   return admin?.Username || String(info?.AdminName || info?.Account || '');
 }
 
@@ -111,7 +111,7 @@ async function handleOk() {
     message.warning(`请填写${valueLabel.value}`);
     return;
   }
-  if (!multiInfo.value.length) {
+  if (multiInfo.value.length === 0) {
     await prefetchPlayers();
   }
   saving.value = true;

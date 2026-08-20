@@ -7,10 +7,10 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { Button, Input, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerGameDetailListApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import SummaryCards from '#/components/global/summary-cards.vue';
+import { fetchPlayerGameDetailListApi } from '#/api/operationManage/player-detail-extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useGameConfig } from '#/composables/use-game-config';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -47,7 +47,7 @@ function formatDateTime(value?: number | string) {
     : String(value);
 }
 
-function parseExInfo(value?: string | Record<string, unknown>) {
+function parseExInfo(value?: Record<string, unknown> | string) {
   if (!value) return {};
   if (typeof value === 'object') return value;
   try {
@@ -175,50 +175,50 @@ onMounted(async () => {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLogId"
-          allow-clear
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">账变类型</span>
-        <Select
-          v-model:value="filterReasons"
-          allow-clear
-          mode="multiple"
-          :max-tag-count="1"
-          :options="reasonOptions"
-          placeholder="请选择账变类型"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLogId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">账变类型</span>
+          <Select
+            v-model:value="filterReasons"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="reasonOptions"
+            placeholder="请选择账变类型"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
-      <Space>
-        <Button :loading="loading" type="primary" @click="gridApi.reload()"
-          >查询</Button
-        >
-        <Button
-          @click="
-            filterLogId = '';
-            filterReasons = [];
-            filterDateRange = [
-              dayjs.unix(defaultRange.BeginTime),
-              dayjs.unix(defaultRange.EndTime),
-            ];
-            gridApi.reload();
-          "
-          >重置</Button
-        >
-      </Space>
-    
+        <Space>
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
+查询
+</Button>
+          <Button
+            @click="
+              filterLogId = '';
+              filterReasons = [];
+              filterDateRange = [
+                dayjs.unix(defaultRange.BeginTime),
+                dayjs.unix(defaultRange.EndTime),
+              ];
+              gridApi.reload();
+            "
+            >
+重置
+</Button>
+        </Space>
+      </div>
     </div>
-  </div>
     <SummaryCards :items="summaryItems" />
     <Grid>
       <template #addGold="{ row }">

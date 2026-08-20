@@ -1,7 +1,8 @@
-import type { CsvColumn } from '#/utils/export-csv';
 import type { DailyReportRow } from '#/utils/everyday-data-calc';
-import { formatAmountFromCent } from '#/utils/format-amount';
+import type { CsvColumn } from '#/utils/export-csv';
+
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import { formatAmountFromCent } from '#/utils/format-amount';
 
 export function formatDevicePlatform(value: unknown) {
   const cloudStore = useCloudPlatformStore();

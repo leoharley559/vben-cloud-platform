@@ -3,7 +3,7 @@ import type { PlayerAdjustListItem } from '#/types/player-detail';
 
 import { computed, ref, watch } from 'vue';
 
-import { Form, Input, Modal, message } from 'ant-design-vue';
+import { Form, Input, message, Modal } from 'ant-design-vue';
 
 import { disposeAccountAdjustAuditApi } from '#/api/operationManage/account-adjust';
 import PassPopup from '#/components/security/pass-popup.vue';
@@ -14,7 +14,7 @@ defineOptions({ name: 'AdjustAuditActionModal' });
 
 const props = defineProps<{
   open: boolean;
-  row: PlayerAdjustListItem | null;
+  row: null | PlayerAdjustListItem;
   selectedAccounts?: string;
   selectedIds: string;
 }>();

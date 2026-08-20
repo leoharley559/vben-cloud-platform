@@ -73,9 +73,9 @@ async function copyUrl() {
   position: relative;
   width: 340px;
   max-width: 100%;
+  aspect-ratio: 340 / 600;
   margin: 8px auto 4px;
   overflow: hidden;
-  aspect-ratio: 340 / 600;
   background: #fff;
 }
 

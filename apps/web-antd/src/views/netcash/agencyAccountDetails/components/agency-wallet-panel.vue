@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import {
@@ -12,7 +14,7 @@ import {
   Table,
   Tabs,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
 
 import {
@@ -424,18 +426,11 @@ onMounted(load);
 
 <template>
   <Tabs v-model:active-key="activeTab" type="line" size="small">
-    <Tabs.TabPane
-      v-for="item in tabs"
-      :key="item.key"
-      :tab="item.label"
-    />
+    <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.label" />
   </Tabs>
 
   <Card v-if="activeTab === 'account'" :loading="loading" size="small">
-    <Empty
-      v-if="!canActiveContent"
-      description="无账户信息查看权限"
-    />
+    <Empty v-if="!canActiveContent" description="无账户信息查看权限" />
     <Space v-else direction="vertical">
       <Statistic
         :precision="2"
@@ -452,106 +447,105 @@ onMounted(load);
       :description="`无${activeTab === 'commission' ? '佣金' : activeTab === 'bonus' ? '红利' : '帐变'}查看权限`"
     />
     <template v-else>
-    <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <DatePicker
-        v-if="activeTab === 'commission'"
-        v-model:value="month"
-        picker="month"
-        placeholder="佣金月份"
-      />
-      <template v-else-if="activeTab === 'bonus'">
-        <Select
-          v-model:value="bonusType"
-          :options="[
-            { label: '全部红利类型', value: '' },
-            { label: '代理红利', value: 1 },
-          ]"
-        />
-        <Select
-          v-model:value="approve"
-          :options="[
-            { label: '全部订单状态', value: '' },
-            { label: '待处理', value: 1 },
-            { label: '已发放', value: 2 },
-            { label: '已拒绝', value: 3 },
-          ]"
-        />
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="bonusDateRange" label="申请时间" />
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <DatePicker
+            v-if="activeTab === 'commission'"
+            v-model:value="month"
+            picker="month"
+            placeholder="佣金月份"
+          />
+          <template v-else-if="activeTab === 'bonus'">
+            <Select
+              v-model:value="bonusType"
+              :options="[
+                { label: '全部红利类型', value: '' },
+                { label: '代理红利', value: 1 },
+              ]"
+            />
+            <Select
+              v-model:value="approve"
+              :options="[
+                { label: '全部订单状态', value: '' },
+                { label: '待处理', value: 1 },
+                { label: '已发放', value: 2 },
+                { label: '已拒绝', value: 3 },
+              ]"
+            />
+            <div class="query-filter-wide">
+              <QueryDatetimeRangePicker
+                v-model="bonusDateRange"
+                label="申请时间"
+              />
+            </div>
+          </template>
+          <template v-else>
+            <Select v-model:value="transferType" :options="transferOptions" />
+            <div class="query-filter-wide">
+              <QueryDatetimeRangePicker
+                v-model="logDateRange"
+                label="账变时间"
+              />
+            </div>
+          </template>
+          <div class="query-filter-actions">
+            <Button type="primary" @click="load">查询</Button>
+            <Button @click="resetFilters">重置</Button>
+            <Button v-if="canExport()" :loading="exporting" @click="exportRows">
+              导出全部
+            </Button>
+          </div>
         </div>
-      </template>
-      <template v-else>
-        <Select
-          v-model:value="transferType"
-          :options="transferOptions"
-        />
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="logDateRange" label="账变时间" />
-        </div>
-      </template>
-        <div class="query-filter-actions">
-          <Button type="primary" @click="load">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button
-        v-if="canExport()"
-        :loading="exporting"
-        @click="exportRows"
-      >
-        导出全部
-      </Button>
-        </div>
-    </div>
-  </div>
+      </div>
 
-    <Table
-      bordered
-      :columns="columns"
-      :data-source="rows"
-      :loading="loading"
-      :pagination="{
-        current: pager.current,
-        pageSize: pager.pageSize,
-        total: pager.total,
-        showSizeChanger: true,
-      }"
-      :row-key="(row) => String(row.Id ?? row.OrderId ?? '')"
-      :scroll="{ x: activeTab === 'commission' ? 2500 : 1100 }"
-      size="small"
-      @change="
-        (page) => {
-          pager.current = page.current || 1;
-          pager.pageSize = page.pageSize || 20;
-          load();
-        }
-      "
-    >
-      <template #bodyCell="{ column, record }">
-        <span
-          :class="
-            amountFields.has(String(column.key)) &&
-            Number(record[String(column.key)]) < 0
-              ? 'text-red-500'
-              : ''
-          "
-        >
-          {{ displayValue(record, String(column.key)) }}
-        </span>
-      </template>
-      <template #summary>
-        <Table.Summary fixed>
-          <Table.Summary.Row>
-            <Table.Summary.Cell
-              v-for="(column, index) in columns"
-              :key="String(column.key)"
-              :index="index"
-            >
-              {{ summaryValue(String(column.key), index) }}
-            </Table.Summary.Cell>
-          </Table.Summary.Row>
-        </Table.Summary>
-      </template>
-    </Table>
+      <Table
+        bordered
+        :columns="columns"
+        :data-source="rows"
+        :loading="loading"
+        :pagination="{
+          current: pager.current,
+          pageSize: pager.pageSize,
+          total: pager.total,
+          showSizeChanger: true,
+        }"
+        :row-key="(row) => String(row.Id ?? row.OrderId ?? '')"
+        :scroll="{ x: activeTab === 'commission' ? 2500 : 1100 }"
+        size="small"
+        @change="
+          (page) => {
+            pager.current = page.current || 1;
+            pager.pageSize = page.pageSize || 20;
+            load();
+          }
+        "
+      >
+        <template #bodyCell="{ column, record }">
+          <span
+            :class="
+              amountFields.has(String(column.key)) &&
+              Number(record[String(column.key)]) < 0
+                ? 'text-red-500'
+                : ''
+            "
+          >
+            {{ displayValue(record, String(column.key)) }}
+          </span>
+        </template>
+        <template #summary>
+          <Table.Summary fixed>
+            <Table.Summary.Row>
+              <Table.Summary.Cell
+                v-for="(column, index) in columns"
+                :key="String(column.key)"
+                :index="index"
+              >
+                {{ summaryValue(String(column.key), index) }}
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          </Table.Summary>
+        </template>
+      </Table>
     </template>
   </div>
 </template>

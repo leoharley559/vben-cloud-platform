@@ -1,12 +1,11 @@
 import dayjs from 'dayjs';
 
-import { formatActivityType } from '#/utils/bonus-reward';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   GIFT_AUDIT_STATUS_MAP,
   GIFT_DELIVER_STATUS_MAP,
 } from '#/utils/operation-status';
-import { formatPlayerStatus } from '#/utils/player-status';
+
 
 export const GIFT_TYPE_FILTER_OPTIONS = [
   { label: '全部', value: '' },
@@ -48,20 +47,20 @@ export const LUCKY_DRAW_BONUS_CATEGORY_OPTIONS = [
   { label: '投注主题抽奖', value: 4 },
 ];
 
-export const ACTIVITY_TYPE_LUCKY_DRAW = 10008;
+export const ACTIVITY_TYPE_LUCKY_DRAW = 10_008;
 
 /** 礼品主题抽奖页活动类型（对齐旧站 useActivityConst 过滤） */
 export const GIFT_LUCKY_ACTIVITY_TYPE_OPTIONS = [
   { label: '全部', value: -1 },
-  { label: '主题抽奖', value: 10008 },
-  { label: 'N级代理', value: 10018 },
-  { label: '票券', value: 10019 },
-  { label: '积分商城', value: 10021 },
-  { label: '排行榜', value: 10027 },
+  { label: '主题抽奖', value: 10_008 },
+  { label: 'N级代理', value: 10_018 },
+  { label: '票券', value: 10_019 },
+  { label: '积分商城', value: 10_021 },
+  { label: '排行榜', value: 10_027 },
 ];
 
 export function giftListTotal(
-  pagination?: { MaxCount?: number | string | null } | null,
+  pagination?: null | { MaxCount?: null | number | string },
   itemsLength = 0,
 ) {
   const maxCount = pagination?.MaxCount;
@@ -94,7 +93,7 @@ export function parseGiftNames(value: unknown): string[] {
 
 export function giftNameText(value: unknown) {
   const names = parseGiftNames(value);
-  return names.length ? names.join(',') : '-';
+  return names.length > 0 ? names.join(',') : '-';
 }
 
 export function formatVipLevel(value?: number | string) {
@@ -166,4 +165,7 @@ export function formatPlayerMetric(row: Record<string, unknown>) {
   return `${rechargeText} / ${betText}`;
 }
 
-export { formatActivityType, formatAmountFromCent, formatPlayerStatus };
+export {  formatAmountFromCent,  };
+
+export {formatActivityType} from '#/utils/bonus-reward';
+export {formatPlayerStatus} from '#/utils/player-status';

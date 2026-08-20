@@ -6,11 +6,11 @@ import { computed, ref, watch } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Select,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -182,76 +182,75 @@ function handleTableChange(pagination: {
     width="860px"
   >
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <Input
-        v-model:value="filterAccount"
-        allow-clear
-        placeholder="请输入游戏账号"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-      <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          :field-names="{ label: 'PackageName', value: 'PackageId' }"
-          :options="[
-            { PackageId: '', PackageName: '全部' },
-            ...packageSelectOptions,
-          ]"
-          show-search
-          placeholder="请选择所属产品"
-        />
-      </Space.Compact>
-      <Input
-        v-model:value="filterChannelId"
-        allow-clear
-        placeholder="请输入渠道ID"
-      >
-        <template #addonBefore>渠道ID</template>
-      </Input>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
-        </div>
-    </div>
-  </div>
-
-    <div class="mb-4 rounded border p-3">
-      <div class="mb-2 font-medium">新增白名单</div>
-      <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <Input
-          v-model:value="addAccount"
+      <div class="ops-query-filters">
+        <Input
+          v-model:value="filterAccount"
           allow-clear
           placeholder="请输入游戏账号"
-        />
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
         <Space.Compact>
           <span class="query-field-addon">所属产品</span>
           <Select
-            v-model:value="addPackageId"
+            v-model:value="filterPackageId"
             :field-names="{ label: 'PackageName', value: 'PackageId' }"
-            :options="packageSelectOptions"
+            :options="[
+              { PackageId: '', PackageName: '全部' },
+              ...packageSelectOptions,
+            ]"
             show-search
             placeholder="请选择所属产品"
           />
         </Space.Compact>
-        <Button :loading="adding" type="primary" @click="handleAdd">
-          添加
-        </Button>
-      
+        <Input
+          v-model:value="filterChannelId"
+          allow-clear
+          placeholder="请输入渠道ID"
+        >
+          <template #addonBefore>渠道ID</template>
+        </Input>
+        <div class="query-filter-actions query-filter-actions-single">
+          <Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <div class="mb-4 rounded border p-3">
+      <div class="mb-2 font-medium">新增白名单</div>
+      <div class="ops-query-scope mb-3">
+        <div class="ops-query-filters">
+          <Input
+            v-model:value="addAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          />
+          <Space.Compact>
+            <span class="query-field-addon">所属产品</span>
+            <Select
+              v-model:value="addPackageId"
+              :field-names="{ label: 'PackageName', value: 'PackageId' }"
+              :options="packageSelectOptions"
+              show-search
+              placeholder="请选择所属产品"
+            />
+          </Space.Compact>
+          <Button :loading="adding" type="primary" @click="handleAdd">
+            添加
+          </Button>
+        </div>
+      </div>
     </div>
 
     <div class="mb-2 text-right">
       <Button
         danger
-        :disabled="!selectedRowKeys.length"
+        :disabled="selectedRowKeys.length === 0"
         @click="handleDelete()"
       >
         批量删除

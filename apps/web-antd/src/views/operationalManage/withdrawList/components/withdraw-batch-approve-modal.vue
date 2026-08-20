@@ -41,7 +41,7 @@ const accountTypes = computed(() =>
 );
 
 const isSameAccountType = computed(() => {
-  if (!accountTypes.value.length) {
+  if (accountTypes.value.length === 0) {
     return false;
   }
   const first = accountTypes.value[0];

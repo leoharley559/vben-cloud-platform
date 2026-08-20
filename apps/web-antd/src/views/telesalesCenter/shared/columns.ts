@@ -1,8 +1,8 @@
 import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
+import { TASK_STATUS_MAP } from '#/types/telesales-center';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
-import { TASK_STATUS_MAP } from '#/types/telesales-center';
 
 export const taskListColumns: OperationListConfig['columns'] = [
   { field: 'TaskName', minWidth: 140, title: '任务名称' },

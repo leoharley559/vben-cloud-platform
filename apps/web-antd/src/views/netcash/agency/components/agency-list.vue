@@ -244,7 +244,7 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
     Status: filterStatus.value || '',
     TeamName: filterTeamName.value,
     // 对齐旧站：多选 Type；空选默认传 1,2,3（普通/特殊/测试）
-    Type: filterType.value.length
+    Type: filterType.value.length > 0
       ? filterType.value.map(String).join(',')
       : '1,2,3',
     Username: filterUsername.value,
@@ -342,23 +342,36 @@ function buildColumns(): VxeTableGridOptions<AgencyListItem>['columns'] {
       title: '推广产品',
     },
     { field: 'ApiFeeTemplateName', minWidth: 130, title: '场馆费率' },
-    { field: 'Members', minWidth: 90, slots: { default: 'members' }, title: '下级会员' },
-    { field: 'SumActiveStatus', minWidth: 90, slots: { default: 'activeMembers' }, title: '活跃人数' },
+    {
+      field: 'Members',
+      minWidth: 90,
+      slots: { default: 'members' },
+      title: '下级会员',
+    },
+    {
+      field: 'SumActiveStatus',
+      minWidth: 90,
+      slots: { default: 'activeMembers' },
+      title: '活跃人数',
+    },
     {
       field: 'SumPayMoney',
-      formatter: ({ cellValue }) => formatAmountFromCent(Number(cellValue || 0)),
+      formatter: ({ cellValue }) =>
+        formatAmountFromCent(Number(cellValue || 0)),
       minWidth: 110,
       title: '存款',
     },
     {
       field: 'SumWithDrawMoney',
-      formatter: ({ cellValue }) => formatAmountFromCent(Number(cellValue || 0)),
+      formatter: ({ cellValue }) =>
+        formatAmountFromCent(Number(cellValue || 0)),
       minWidth: 110,
       title: '提款',
     },
     {
       field: 'SumBetValidMoney',
-      formatter: ({ cellValue }) => formatAmountFromCent(Number(cellValue || 0)),
+      formatter: ({ cellValue }) =>
+        formatAmountFromCent(Number(cellValue || 0)),
       minWidth: 110,
       title: '有效投注',
     },
@@ -418,7 +431,10 @@ const gridOptions: VxeTableGridOptions<AgencyListItem> = {
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 function persistColumns() {
-  localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(visibleColumns.value));
+  localStorage.setItem(
+    COLUMN_STORAGE_KEY,
+    JSON.stringify(visibleColumns.value),
+  );
   try {
     gridApi.setGridOptions?.({ columns: buildColumns() });
   } catch {
@@ -443,10 +459,7 @@ function resetFilters() {
   filterMainUsername.value = '';
   filterParentAdminId.value = '';
   filterDateRange.value = undefined;
-  statisticsRange.value = [
-    dayjs().startOf('month'),
-    dayjs().endOf('day'),
-  ];
+  statisticsRange.value = [dayjs().startOf('month'), dayjs().endOf('day')];
   drillPath.value = [];
   gridApi.reload();
 }
@@ -620,7 +633,8 @@ async function exportAgencyList() {
       发展人: row.DeveloperName,
       创建时间: formatNetcashDateTime(row.CreateTime),
       代理类型: AGENCY_TYPE_MAP[Number(row.Type)] || row.Type,
-      代理模式: AGENCY_ACCOUNT_TYPE_MAP[Number(row.AccountType)] || row.AccountType,
+      代理模式:
+        AGENCY_ACCOUNT_TYPE_MAP[Number(row.AccountType)] || row.AccountType,
       上级账号: row.MainUsername,
       代理层级: row.AccountLevel,
       团队: row.TeamName,
@@ -652,7 +666,11 @@ async function exportAgencyList() {
     }));
     if (data.length === 0) return void message.warning('暂无可导出数据');
     const book = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(data), '代理列表');
+    XLSX.utils.book_append_sheet(
+      book,
+      XLSX.utils.json_to_sheet(data),
+      '代理列表',
+    );
     XLSX.writeFile(book, `代理列表_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
   } catch {
     // 全局拦截已提示
@@ -671,184 +689,191 @@ onMounted(() => {
 <template>
   <div v-if="canViewList">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterUsername"
-          allow-clear
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterTeamName"
-          allow-clear
-          placeholder="请输入团队名称"
-        >
-          <template #addonBefore>团队名称</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterDeveloperName"
-          allow-clear
-          placeholder="请输入发展人"
-        >
-          <template #addonBefore>发展人</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterMaintainerName"
-          allow-clear
-          placeholder="请输入维护人"
-        >
-          <template #addonBefore>维护人</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-         
-          :options="[
-            { label: '启用', value: 1 },
-            { label: '停用', value: 2 },
-          ]"
-          placeholder="请选择状态"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">代理类型</span>
-        <Select
-          v-model:value="filterType"
-          allow-clear
-          mode="multiple"
-          :max-tag-count="1"
-          :options="[
-            { label: '普通代理', value: 1 },
-            { label: '特殊代理', value: 2 },
-            { label: '测试代理', value: 3 },
-          ]"
-          placeholder="请选择代理类型"
-        />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterMobile"
-          allow-clear
-          placeholder="请输入手机号"
-        >
-          <template #addonBefore>手机号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterMainUsername"
-          allow-clear
-          placeholder="请输入上级账号"
-        >
-          <template #addonBefore>上级账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterParentAdminId"
-          allow-clear
-          placeholder="请输入下级代理 ID"
-        >
-          <template #addonBefore>下级代理 ID</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterWithdrawAccName"
-          allow-clear
-          placeholder="请输入银行姓名"
-        >
-          <template #addonBefore>银行姓名</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterWithdrawAccNum"
-          allow-clear
-          placeholder="请输入银行卡号"
-        >
-          <template #addonBefore>银行卡号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterRegistIP"
-          allow-clear
-          placeholder="请输入注册 IP"
-        >
-          <template #addonBefore>注册 IP</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLastLoginIP"
-          allow-clear
-          placeholder="请输入最后登录 IP"
-        >
-          <template #addonBefore>最后登录 IP</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterRegistDevice"
-          allow-clear
-          placeholder="请输入注册设备"
-        >
-          <template #addonBefore>注册设备</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLastLoginDevice"
-          allow-clear
-          placeholder="请输入最后登录设备"
-        >
-          <template #addonBefore>最后登录设备</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterUsername"
+            allow-clear
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
         </div>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterTeamName"
+            allow-clear
+            placeholder="请输入团队名称"
+          >
+            <template #addonBefore>团队名称</template>
+          </Input>
         </div>
-      <div class="query-filter-wide">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterDeveloperName"
+            allow-clear
+            placeholder="请输入发展人"
+          >
+            <template #addonBefore>发展人</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterMaintainerName"
+            allow-clear
+            placeholder="请输入维护人"
+          >
+            <template #addonBefore>维护人</template>
+          </Input>
+        </div>
         <Space.Compact>
-          <span class="query-field-addon">显示列</span>
+          <span class="query-field-addon">状态</span>
           <Select
-            v-model:value="visibleColumns"
+            v-model:value="filterStatus"
+            allow-clear
+            :options="[
+              { label: '启用', value: 1 },
+              { label: '停用', value: 2 },
+            ]"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">代理类型</span>
+          <Select
+            v-model:value="filterType"
             allow-clear
             mode="multiple"
             :max-tag-count="1"
-            :options="COLUMN_OPTIONS"
-            placeholder="请选择显示列"
-            @change="persistColumns"
+            :options="[
+              { label: '普通代理', value: 1 },
+              { label: '特殊代理', value: 2 },
+              { label: '测试代理', value: 3 },
+            ]"
+            placeholder="请选择代理类型"
           />
         </Space.Compact>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterMobile"
+            allow-clear
+            placeholder="请输入手机号"
+          >
+            <template #addonBefore>手机号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterMainUsername"
+            allow-clear
+            placeholder="请输入上级账号"
+          >
+            <template #addonBefore>上级账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterParentAdminId"
+            allow-clear
+            placeholder="请输入下级代理 ID"
+          >
+            <template #addonBefore>下级代理 ID</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterWithdrawAccName"
+            allow-clear
+            placeholder="请输入银行姓名"
+          >
+            <template #addonBefore>银行姓名</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterWithdrawAccNum"
+            allow-clear
+            placeholder="请输入银行卡号"
+          >
+            <template #addonBefore>银行卡号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterRegistIP"
+            allow-clear
+            placeholder="请输入注册 IP"
+          >
+            <template #addonBefore>注册 IP</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLastLoginIP"
+            allow-clear
+            placeholder="请输入最后登录 IP"
+          >
+            <template #addonBefore>最后登录 IP</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterRegistDevice"
+            allow-clear
+            placeholder="请输入注册设备"
+          >
+            <template #addonBefore>注册设备</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLastLoginDevice"
+            allow-clear
+            placeholder="请输入最后登录设备"
+          >
+            <template #addonBefore>最后登录设备</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="statisticsRange"
+            label="统计时间"
+          />
+        </div>
+        <div class="query-filter-wide">
+          <Space.Compact>
+            <span class="query-field-addon">显示列</span>
+            <Select
+              v-model:value="visibleColumns"
+              allow-clear
+              mode="multiple"
+              :max-tag-count="1"
+              :options="COLUMN_OPTIONS"
+              placeholder="请选择显示列"
+              @change="persistColumns"
+            />
+          </Space.Compact>
+        </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button :loading="exportLoading" @click="exportAgencyList">导出 Excel</Button>
-      <Button v-if="canAdd" type="primary" @click="openCreateModal">
-        新增代理
-      </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button :loading="exportLoading" @click="exportAgencyList">
+导出 Excel
+</Button>
+          <Button v-if="canAdd" type="primary" @click="openCreateModal">
+            新增代理
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
-    <div v-if="drillPath.length > 0" class="mb-3 flex items-center gap-1 text-sm">
+    <div
+      v-if="drillPath.length > 0"
+      class="mb-3 flex items-center gap-1 text-sm"
+    >
       <Button size="small" type="link" @click="drillBack(0)">全部代理</Button>
       <template v-for="(item, index) in drillPath" :key="item.id">
         <span>/</span>
@@ -888,9 +913,7 @@ onMounted(() => {
       </template>
       <template #winLoss="{ row }">
         <span
-          :class="
-            winLossClass(getWinLossAmount(asAmountInput(row.SumWinGold)))
-          "
+          :class="winLossClass(getWinLossAmount(asAmountInput(row.SumWinGold)))"
         >
           {{
             formatAmountFromCent(
@@ -917,9 +940,7 @@ onMounted(() => {
       </template>
       <template #mainUsername="{ row }">
         <AgencyAccountLink
-          :admin-id="
-            resolveAgencyAdminId(row, 'MainAdminId', 'ParentAdminId')
-          "
+          :admin-id="resolveAgencyAdminId(row, 'MainAdminId', 'ParentAdminId')"
           :username="asDisplayText(row.MainUsername)"
         />
       </template>

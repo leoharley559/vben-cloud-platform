@@ -1,9 +1,10 @@
-import { requestClient } from '#/api/request';
 import type {
   CloudListResult,
   RechargeListItem,
   RechargeListQuery,
 } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -19,7 +20,7 @@ function normalizeRechargeQuery(query: RechargeListQuery) {
 
   const channelIds = params.ChannelIds;
   if (Array.isArray(channelIds)) {
-    params.ChannelIds = channelIds.length ? channelIds.join(',') : '';
+    params.ChannelIds = channelIds.length > 0 ? channelIds.join(',') : '';
   }
 
   return params;

@@ -14,7 +14,7 @@ export async function generateAccessRoutes(router: Router) {
   const userStore = useUserStore();
   const cloudStore = useCloudPlatformStore();
 
-  if (!cloudStore.navMenus.length) {
+  if (cloudStore.navMenus.length === 0) {
     throw new Error('暂没有配置节点菜单');
   }
 

@@ -1,7 +1,14 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, Input, Pagination, Result, Select, Table } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  Pagination,
+  Result,
+  Select,
+  Table,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchTeamRecordListApi } from '#/api/netcash/team-manage';
@@ -107,52 +114,55 @@ onMounted(() => {
 <template>
   <template v-if="canViewRecordList">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="recordQuery.TeamName"
-          allow-clear
-          placeholder="请输入团队名称"
-        >
-          <template #addonBefore>团队名称</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="recordQuery.Username"
-          allow-clear
-          placeholder="请输入主线账号"
-        >
-          <template #addonBefore>主线账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="recordQuery.SubName"
-          allow-clear
-          placeholder="请输入副线账号"
-        >
-          <template #addonBefore>副线账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="recordQuery.Operate"
-        :options="[
-          { label: '全部操作', value: 0 }, { label: '新增团队', value: 1 },
-          { label: '添加副线', value: 2 }, { label: '移除副线', value: 3 },
-          { label: '转移副线', value: 4 }, { label: '编辑团队', value: 5 },
-          { label: '解散团队', value: 6 },
-        ]"
-      />
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="recordQuery.TeamName"
+            allow-clear
+            placeholder="请输入团队名称"
+          >
+            <template #addonBefore>团队名称</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="recordQuery.Username"
+            allow-clear
+            placeholder="请输入主线账号"
+          >
+            <template #addonBefore>主线账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="recordQuery.SubName"
+            allow-clear
+            placeholder="请输入副线账号"
+          >
+            <template #addonBefore>副线账号</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="recordQuery.Operate"
+          :options="[
+            { label: '全部操作', value: 0 },
+            { label: '新增团队', value: 1 },
+            { label: '添加副线', value: 2 },
+            { label: '移除副线', value: 3 },
+            { label: '转移副线', value: 4 },
+            { label: '编辑团队', value: 5 },
+            { label: '解散团队', value: 6 },
+          ]"
+        />
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="recordDates" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="searchRecords">查询</Button>
-      <Button @click="resetRecords">重置</Button>
+          <Button @click="resetRecords">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
     <Table
       bordered
       :columns="recordColumns"
@@ -174,8 +184,16 @@ onMounted(() => {
           :admin-id="resolveAgencyAdminId(record, 'SubAdminId')"
           :username="record.SubUsername"
         />
-        <template v-else-if="column.key === 'Note'">{{ recordContent(record) }}</template>
-        <template v-else-if="column.key === 'CreateTime'">{{ formatNetcashDateTime(record.CreateTime) }}</template>
+        <template v-else-if="column.key === 'Note'">
+{{
+          recordContent(record)
+        }}
+</template>
+        <template v-else-if="column.key === 'CreateTime'">
+{{
+          formatNetcashDateTime(record.CreateTime)
+        }}
+</template>
       </template>
     </Table>
     <Pagination

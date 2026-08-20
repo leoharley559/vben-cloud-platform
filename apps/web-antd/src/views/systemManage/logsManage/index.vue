@@ -7,17 +7,16 @@ import { computed, onMounted, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 
 import { Button, Card, message, Result, Select, Space } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchLogListApi,
   fetchLogTypeOptionsApi,
   fetchLogUserListApi,
 } from '#/api/systemManage/logs';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatLogContent } from '#/utils/log-template';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
@@ -29,8 +28,8 @@ const MAX_RANGE_DAYS = 30;
 
 const { adminInfo, checkPermission } = useCloudPermission();
 
-const canViewList = computed(() => checkPermission(10010));
-const canExport = computed(() => checkPermission(10011));
+const canViewList = computed(() => checkPermission(10_010));
+const canExport = computed(() => checkPermission(10_011));
 
 const exporting = ref(false);
 
@@ -60,10 +59,12 @@ function formatDateTime(value?: number | string) {
   }
   const num = Number(value);
   const parsed = String(value).length > 10 ? dayjs(num) : dayjs.unix(num);
-  return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : String(value);
+  return parsed.isValid()
+    ? parsed.format('YYYY-MM-DD HH:mm:ss')
+    : String(value);
 }
 
-function toCloudSort(sort?: { field?: string; order?: string | null }) {
+function toCloudSort(sort?: { field?: string; order?: null | string }) {
   if (!sort?.field || !sort?.order) {
     return '';
   }
@@ -165,7 +166,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
 async function loadFilterOptions() {
   try {
-    const [users, types] = await Promise.all([fetchLogUserListApi(), fetchLogTypeOptionsApi()]);
+    const [users, types] = await Promise.all([
+      fetchLogUserListApi(),
+      fetchLogTypeOptionsApi(),
+    ]);
 
     userOptions.value = [
       { label: '全部账号', value: '' },
@@ -196,7 +200,10 @@ function handleReset() {
   const range = getTodayRangeSeconds();
   filterCreateAdminId.value = '';
   filterLogTypeId.value = '';
-  filterDateRange.value = [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+  filterDateRange.value = [
+    dayjs.unix(range.BeginTime),
+    dayjs.unix(range.EndTime),
+  ];
   void gridApi.reload();
 }
 
@@ -217,7 +224,7 @@ async function handleExport() {
       PageSize: 10_000,
     });
     const rows = (result?.Items || []) as Record<string, unknown>[];
-    if (rows.length < 1) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -253,46 +260,61 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Page v-if="canViewList" auto-content-height description="系统管理 · 日志管理" title="日志管理">
+  <Page
+    v-if="canViewList"
+    auto-content-height
+    description="系统管理 · 日志管理"
+    title="日志管理"
+  >
     <Card>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <Space.Compact>
-          <span class="query-field-addon">操作人员</span>
-          <Select
-            v-model:value="filterCreateAdminId"
-            :options="userOptions"
-            show-search
-            placeholder="请选择操作人员"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">日志类型</span>
-          <Select
-            v-model:value="filterLogTypeId"
-            :options="logTypeOptions"
-            show-search
-            placeholder="请选择日志类型"
-          />
-        </Space.Compact>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        <div class="ops-query-filters">
+          <Space.Compact>
+            <span class="query-field-addon">操作人员</span>
+            <Select
+              v-model:value="filterCreateAdminId"
+              :options="userOptions"
+              show-search
+              placeholder="请选择操作人员"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">日志类型</span>
+            <Select
+              v-model:value="filterLogTypeId"
+              :options="logTypeOptions"
+              show-search
+              placeholder="请选择日志类型"
+            />
+          </Space.Compact>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
+          </div>
+          <div class="query-filter-actions">
+            <Space>
+              <Button type="primary" @click="handleSearch">查询</Button>
+              <Button @click="handleReset">重置</Button>
+              <Button
+                v-if="canExport"
+                :loading="exporting"
+                @click="handleExport"
+                >
+导出 Excel
+</Button>
+            </Space>
+          </div>
         </div>
-        <div class="query-filter-actions">
-          <Space>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-          <Button v-if="canExport" :loading="exporting" @click="handleExport">导出 Excel</Button>
-        </Space>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <Grid />
     </Card>
   </Page>
 
   <Page v-else auto-content-height title="日志管理">
-    <Result status="403" sub-title="需要权限 10010 才能访问此页面" title="无权限" />
+    <Result
+      status="403"
+      sub-title="需要权限 10010 才能访问此页面"
+      title="无权限"
+    />
   </Page>
 </template>

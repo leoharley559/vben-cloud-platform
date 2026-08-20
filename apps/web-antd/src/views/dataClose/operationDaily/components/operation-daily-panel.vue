@@ -189,10 +189,7 @@ const venueColumns: TableColumnType<Row>[] = [
   {
     align: 'center',
     customRender: ({ record }) =>
-      formatVenueName(
-        record.GameType as number | string,
-        gameConfig.value,
-      ),
+      formatVenueName(record.GameType as number | string, gameConfig.value),
     key: 'GameType',
     title: '场馆',
   },
@@ -497,7 +494,11 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filters.ChannelIds" class="min-w-[180px]" placeholder="请输入渠道号" />
+        <ChannelSelect
+          v-model="filters.ChannelIds"
+          class="min-w-[180px]"
+          placeholder="请输入渠道号"
+        />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">产品</span>
@@ -588,9 +589,7 @@ onMounted(() => {
 
     <div v-if="canGame" class="mb-4">
       <div class="mb-2 text-base font-medium">游戏盈亏概况 · 场馆盈亏</div>
-      <div
-        :class="reportType === 2 ? 'grid gap-3 md:grid-cols-2' : ''"
-      >
+      <div :class="reportType === 2 ? 'grid gap-3 md:grid-cols-2' : ''">
         <div>
           <div v-if="reportType === 2" class="mb-2 font-medium">当前数据</div>
           <Table
@@ -611,7 +610,9 @@ onMounted(() => {
                 :data-source="winPlayers"
                 :pagination="false"
                 bordered
-                :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+                :row-key="
+                  (r: Row) => String(r.LoginAccount || r.Id || Math.random())
+                "
                 size="small"
               />
             </div>
@@ -622,7 +623,9 @@ onMounted(() => {
                 :data-source="losePlayers"
                 :pagination="false"
                 bordered
-                :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+                :row-key="
+                  (r: Row) => String(r.LoginAccount || r.Id || Math.random())
+                "
                 size="small"
               />
             </div>
@@ -648,7 +651,9 @@ onMounted(() => {
                 :data-source="beforeWinPlayers"
                 :pagination="false"
                 bordered
-                :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+                :row-key="
+                  (r: Row) => String(r.LoginAccount || r.Id || Math.random())
+                "
                 size="small"
               />
             </div>
@@ -659,7 +664,9 @@ onMounted(() => {
                 :data-source="beforeLosePlayers"
                 :pagination="false"
                 bordered
-                :row-key="(r: Row) => String(r.LoginAccount || r.Id || Math.random())"
+                :row-key="
+                  (r: Row) => String(r.LoginAccount || r.Id || Math.random())
+                "
                 size="small"
               />
             </div>

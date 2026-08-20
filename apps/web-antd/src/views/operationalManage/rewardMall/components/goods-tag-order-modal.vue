@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 
-import { Button, Modal, Space, Table, message } from 'ant-design-vue';
+import { Button, message, Modal, Space, Table } from 'ant-design-vue';
 
 import {
   fetchRewardProductListApi,
   switchRewardProductSortApi,
 } from '#/api/operationManage/reward-mall';
 
-import { SORT_SWITCH_TYPE, resolveProductName } from './reward-goods-shared';
+import { resolveProductName, SORT_SWITCH_TYPE } from './reward-goods-shared';
 
 defineOptions({ name: 'GoodsTagOrderModal' });
 

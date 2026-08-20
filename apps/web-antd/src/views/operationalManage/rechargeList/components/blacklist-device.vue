@@ -4,14 +4,14 @@ import type { RechargeBlackDeviceItem } from '#/types/operation-manage';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Input, Modal, Result, Space, message } from 'ant-design-vue';
+import { Button, Input, message, Modal, Result, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteRechargeBlackDeviceApi,
   fetchRechargeBlackDeviceListApi,
 } from '#/api/operationManage/recharge-extra';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useRechargePayTypeOptions } from '#/utils/recharge-pay-type';
 
@@ -22,17 +22,17 @@ defineOptions({ name: 'BlacklistDevice' });
 const { checkPermission } = useCloudPermission();
 const { formatPayTypes } = useRechargePayTypeOptions();
 
-const canViewTable = computed(() => checkPermission(10293));
-const canCreate = computed(() => checkPermission(10294));
-const canBatchDelete = computed(() => checkPermission(10295));
-const canEdit = computed(() => checkPermission(10296));
-const canDelete = computed(() => checkPermission(10297));
+const canViewTable = computed(() => checkPermission(10_293));
+const canCreate = computed(() => checkPermission(10_294));
+const canBatchDelete = computed(() => checkPermission(10_295));
+const canEdit = computed(() => checkPermission(10_296));
+const canDelete = computed(() => checkPermission(10_297));
 
 const filterDeviceId = ref('');
 const selectedRows = ref<RechargeBlackDeviceItem[]>([]);
 const formOpen = ref(false);
 const formMode = ref<'create' | 'edit'>('create');
-const editingRow = ref<RechargeBlackDeviceItem | null>(null);
+const editingRow = ref<null | RechargeBlackDeviceItem>(null);
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -175,37 +175,37 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterDeviceId"
-          allow-clear
-          @press-enter="gridApi.reload()"
-          placeholder="请输入设备号"
-        >
-          <template #addonBefore>设备号</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterDeviceId"
+            allow-clear
+            @press-enter="gridApi.reload()"
+            placeholder="请输入设备号"
+          >
+            <template #addonBefore>设备号</template>
+          </Input>
+        </div>
         <div class="query-filter-actions">
           <Space wrap>
-        <Button :loading="loading" type="primary" @click="gridApi.reload()">
-          查询
-        </Button>
-        <Button v-if="canCreate" type="primary" @click="openCreate">
-          手动添加
-        </Button>
-        <Button
-          v-if="canBatchDelete"
-          danger
-          :disabled="!hasSelection"
-          @click="handleBatchDelete"
-        >
-          批量删除
-        </Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="gridApi.reload()">
+              查询
+            </Button>
+            <Button v-if="canCreate" type="primary" @click="openCreate">
+              手动添加
+            </Button>
+            <Button
+              v-if="canBatchDelete"
+              danger
+              :disabled="!hasSelection"
+              @click="handleBatchDelete"
+            >
+              批量删除
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #actions="{ row }">

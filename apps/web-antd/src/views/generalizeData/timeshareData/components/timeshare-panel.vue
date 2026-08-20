@@ -2,6 +2,7 @@
 import type { EchartsUIType } from '@vben/plugins/echarts';
 
 import type { TimeshareHourItem } from '#/types/promotion';
+import type { TimeshareChartType, TimeshareMetricKey } from '#/utils/timeshare-data';
 
 import { computed, nextTick, ref, watch } from 'vue';
 
@@ -9,14 +10,7 @@ import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
 
 import { Empty, Table } from 'ant-design-vue';
 
-import {
-  buildTimeshareChart,
-  buildTimeshareTable,
-  TIMESHARE_METRIC_MAP,
-  timeshareLegendSelected,
-  type TimeshareChartType,
-  type TimeshareMetricKey,
-} from '#/utils/timeshare-data';
+import { buildTimeshareChart, buildTimeshareTable, TIMESHARE_METRIC_MAP, timeshareLegendSelected } from '#/utils/timeshare-data';
 
 const props = defineProps<{
   chartType: TimeshareChartType;
@@ -134,7 +128,10 @@ watch(
 
 <template>
   <Empty v-if="data.length === 0" class="py-24" description="暂无时段数据" />
-  <div v-else-if="chartType === 'table'" class="timeshare-board overflow-hidden">
+  <div
+    v-else-if="chartType === 'table'"
+    class="timeshare-board overflow-hidden"
+  >
     <Table
       bordered
       :columns="tableColumns"

@@ -1,6 +1,7 @@
+import type { InvalidUserSummary } from '#/types/generalize-data';
+
 import { requestClient } from '#/api/request';
 import { toPromotionListResult } from '#/types/generalize-data';
-import type { InvalidUserSummary } from '#/types/generalize-data';
 import { trimSpace } from '#/utils/string';
 
 /**

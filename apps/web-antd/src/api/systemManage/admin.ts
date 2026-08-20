@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { AdminListQuery, AdminListResult } from '#/types/system-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**

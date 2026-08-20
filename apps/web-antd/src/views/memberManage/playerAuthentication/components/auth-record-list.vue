@@ -16,20 +16,21 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportPlayerAuthRecordApi,
   fetchPlayerAuthRecordApi,
 } from '#/api/memberManage/player-authentication';
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
+import { getServiceImageUrl } from '#/utils/media';
 import {
   AUTH_SCENARIO_OPTIONS,
   AUTH_STATUS_OPTIONS,
@@ -37,7 +38,6 @@ import {
   formatAuthStatus,
   getAuthStatusColor,
 } from '#/utils/player-authentication';
-import { getServiceImageUrl } from '#/utils/media';
 import { AUTH_RECORD_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 defineOptions({ name: 'AuthRecordList' });
@@ -81,7 +81,7 @@ function formatDateTime(value?: number | string) {
 
 function formatCommSoftware(row: PlayerAuthRecordItem) {
   const parts = [row.CommSoftware, row.CommSoftwareAccount].filter(Boolean);
-  return parts.length ? parts.join('｜') : '-';
+  return parts.length > 0 ? parts.join('｜') : '-';
 }
 
 function getQueryParams(extra?: { Page?: number; PageSize?: number }) {
@@ -126,7 +126,12 @@ const gridOptions: VxeTableGridOptions<PlayerAuthRecordItem> = {
     { field: 'PlayerId', minWidth: 100, title: '玩家ID' },
     { field: 'PackageName', minWidth: 120, title: '产品名称' },
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
-    { field: 'Username', minWidth: 110, slots: { default: 'username' }, title: '代理账号' },
+    {
+      field: 'Username',
+      minWidth: 110,
+      slots: { default: 'username' },
+      title: '代理账号',
+    },
     {
       field: 'AuthScenario',
       formatter: ({ cellValue }) => formatAuthScenario(cellValue),
@@ -323,10 +328,7 @@ onMounted(() => {
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">代理账号</span>
-          <AccountSelect
-            v-model="filterAgentId"
-            :multiple="false"
-          />
+          <AccountSelect v-model="filterAgentId" :multiple="false" />
         </Space.Compact>
       </div>
       <div class="flex flex-col gap-1">
@@ -350,21 +352,27 @@ onMounted(() => {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterUploadDateRange" label="上传时间" />
-        </div>
+        <QueryDatetimeRangePicker
+          v-model="filterUploadDateRange"
+          label="上传时间"
+        />
+      </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterVerifyDateRange" label="审核时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Button :loading="loading" type="primary" @click="handleSearch">
-        查询
-      </Button>
-      <Button @click="handleReset">重置</Button>
-      <Button :loading="exportLoading" @click="handleExportClick">
-        导出 Excel
-      </Button>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker
+          v-model="filterVerifyDateRange"
+          label="审核时间"
+        />
+      </div>
+      <div class="query-filter-actions">
+        <Button :loading="loading" type="primary" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
+        <Button :loading="exportLoading" @click="handleExportClick">
+          导出 Excel
+        </Button>
+      </div>
+    </template>
 
     <Grid>
       <template #username="{ row }">
@@ -407,10 +415,6 @@ onMounted(() => {
         <span v-else>-</span>
       </template>
     </Grid>
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </OpsListPanel>
 </template>

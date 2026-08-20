@@ -17,8 +17,6 @@ import {
   Tabs,
   Tag,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -26,6 +24,7 @@ import {
   fetchSiteFeeSwitchListApi,
   updateSiteFeeSwitchApi,
 } from '#/api/gameManage';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { findGameIdByApiFee, formatVenueName } from '#/utils/game-config';
@@ -132,14 +131,12 @@ const currentLangGroupId = computed(() => {
   return matched?.Id ?? defaultLangGroupId.value;
 });
 const vipOptions = computed(() => {
-  const config = projectConfig.value as
-    | null
-    | {
-        VIPLevelMap?: Array<{
-          VipLevelId: number | string;
-          VipLevelName: string;
-        }>;
-      };
+  const config = projectConfig.value as null | {
+    VIPLevelMap?: Array<{
+      VipLevelId: number | string;
+      VipLevelName: string;
+    }>;
+  };
   return config?.VIPLevelMap || [];
 });
 const showTimedPicker = computed(() =>
@@ -200,9 +197,7 @@ function serializeLangMap(map: Record<string, LangEntry>) {
 }
 
 function venueName(row: VenueRow) {
-  return (
-    row.ApiFeeName || formatVenueName(row.ApiFee, gameConfig.value)
-  );
+  return row.ApiFeeName || formatVenueName(row.ApiFee, gameConfig.value);
 }
 
 /** 本环境 list 常无 LoginStatus，回退 Switch（1开/2关/3定时）。 */
@@ -229,7 +224,9 @@ function isVenueOpen(row: VenueRow) {
 
 function displayInfo(row: VenueRow) {
   if (row.Info) return row.Info;
-  return parseLangMap(row.LangText)[String(currentLangGroupId.value)]?.Info || '';
+  return (
+    parseLangMap(row.LangText)[String(currentLangGroupId.value)]?.Info || ''
+  );
 }
 
 function venueStatusText(row: VenueRow) {
@@ -366,7 +363,8 @@ function openSwitch(row: VenueRow, mode: SwitchMode) {
     mode === 'switch'
       ? switchForm.LoginEnableEndTime
       : switchForm.WalletLockEndTime;
-  switchRange.value = start && end ? [dayjs.unix(start), dayjs.unix(end)] : undefined;
+  switchRange.value =
+    start && end ? [dayjs.unix(start), dayjs.unix(end)] : undefined;
   switchVisible.value = true;
 }
 
@@ -443,10 +441,7 @@ function openMaintain(row: VenueRow) {
   });
   maintainRange.value =
     maintainForm.StartTime && maintainForm.EndTime
-      ? [
-          dayjs.unix(maintainForm.StartTime),
-          dayjs.unix(maintainForm.EndTime),
-        ]
+      ? [dayjs.unix(maintainForm.StartTime), dayjs.unix(maintainForm.EndTime)]
       : undefined;
   maintainVisible.value = true;
 }
@@ -648,7 +643,7 @@ function handleReset() {
           </Radio.Group>
         </Form.Item>
         <Form.Item v-if="showTimedPicker" label="定时关闭时间" required>
-        <QueryDatetimeRangePicker v-model="switchRange" />
+          <QueryDatetimeRangePicker v-model="switchRange" />
         </Form.Item>
       </Form>
     </Modal>
@@ -671,7 +666,7 @@ function handleReset() {
           />
         </Form.Item>
         <Form.Item label="维护显示时间">
-        <QueryDatetimeRangePicker v-model="maintainRange" />
+          <QueryDatetimeRangePicker v-model="maintainRange" />
         </Form.Item>
         <Form.Item label="维护显示内容">
           <Input.TextArea
@@ -718,7 +713,7 @@ function handleReset() {
 
 <style scoped>
 .venue-grid {
-  overflow: hidden; 
+  overflow: hidden;
   border-radius: 10px;
 }
 </style>

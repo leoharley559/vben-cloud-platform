@@ -14,8 +14,8 @@ defineOptions({ name: 'GameTitle' });
 
 const { checkPermission } = useCloudPermission();
 
-const canTitle = computed(() => checkPermission(13135));
-const canGroup = computed(() => checkPermission(13136));
+const canTitle = computed(() => checkPermission(13_135));
+const canGroup = computed(() => checkPermission(13_136));
 const canViewPage = computed(() => canTitle.value || canGroup.value);
 
 const activeTab = ref('title');

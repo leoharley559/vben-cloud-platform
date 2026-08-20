@@ -14,11 +14,11 @@ import {
   fetchGameDetailPlayersApi,
   fetchSubGamePlayersApi,
 } from '#/api/dataClose/game-statement';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import {
   copyTableText,
   exportRowsToXlsx,
 } from '#/views/dataClose/shared/report-utils';
-import PlayerAccountLink from '#/components/global/player-account-link.vue';
 
 defineOptions({ name: 'GameStatementPlayersModal' });
 
@@ -44,7 +44,11 @@ const visible = computed({
 });
 
 const columns = [
-  { title: '#', customRender: ({ index }: { index: number }) => index + 1, width: 60 },
+  {
+    title: '#',
+    customRender: ({ index }: { index: number }) => index + 1,
+    width: 60,
+  },
   { dataIndex: 'LoginAccount', key: 'LoginAccount', title: '游戏账号' },
   { dataIndex: 'PlayerId', title: '玩家ID' },
   { dataIndex: 'ChannelName', title: '渠道名称' },

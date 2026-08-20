@@ -186,33 +186,60 @@ onMounted(async () => {
       size="small"
     >
       <template #headerCell="{ column }">
-        <span v-if="column.key === 'CountBetNum'" class="inline-flex items-center gap-1">
+        <span
+          v-if="column.key === 'CountBetNum'"
+          class="inline-flex items-center gap-1"
+        >
           投注人数
           <a class="text-xs" @click="openChart('betPeople', '投注人数')">📈</a>
         </span>
-        <span v-else-if="column.key === 'CountNum'" class="inline-flex items-center gap-1">
+        <span
+          v-else-if="column.key === 'CountNum'"
+          class="inline-flex items-center gap-1"
+        >
           投注次数
-          <a class="text-xs" @click="openChart('gameDetailsBetCount', '投注次数')">📈</a>
+          <a
+            class="text-xs"
+            @click="openChart('gameDetailsBetCount', '投注次数')"
+            >📈</a>
         </span>
-        <span v-else-if="column.key === 'SumBet'" class="inline-flex items-center gap-1">
+        <span
+          v-else-if="column.key === 'SumBet'"
+          class="inline-flex items-center gap-1"
+        >
           <Tooltip title="投注金币">
             <span>投注金币</span>
           </Tooltip>
-          <a class="text-xs" @click="openChart('gameDetailsBetMoney', '投注金币')">📈</a>
+          <a
+            class="text-xs"
+            @click="openChart('gameDetailsBetMoney', '投注金币')"
+            >📈</a>
         </span>
-        <span v-else-if="column.key === 'SumWin'" class="inline-flex items-center gap-1">
+        <span
+          v-else-if="column.key === 'SumWin'"
+          class="inline-flex items-center gap-1"
+        >
           实际派送
           <a class="text-xs" @click="openChart('giftMoney', '实际派送')">📈</a>
         </span>
-        <span v-else-if="column.key === 'SumValidBet'" class="inline-flex items-center gap-1">
+        <span
+          v-else-if="column.key === 'SumValidBet'"
+          class="inline-flex items-center gap-1"
+        >
           有效投注
           <a class="text-xs" @click="openChart('validBetAmount', '有效投注')">📈</a>
         </span>
-        <span v-else-if="column.key === 'Profit'" class="inline-flex items-center gap-1">
+        <span
+          v-else-if="column.key === 'Profit'"
+          class="inline-flex items-center gap-1"
+        >
           盈利金额
           <a class="text-xs" @click="openChart('profitAmt', '盈利金额')">📈</a>
         </span>
-        <span v-else-if="column.key === 'ProfitRate'" class="inline-flex items-center gap-1">
+        <span
+          v-else-if="column.key === 'ProfitRate'"
+          class="inline-flex items-center gap-1"
+        >
           盈余比例
           <a class="text-xs" @click="openChart('profitCompare', '盈余比例')">📈</a>
         </span>

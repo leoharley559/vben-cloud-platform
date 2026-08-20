@@ -3,12 +3,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerAgentTeamApi } from '#/api/operationManage/activity';
@@ -35,7 +30,12 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
-    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PackageName', minWidth: 120, title: '产品包' },
     { field: 'MainCode', minWidth: 120, title: '代理线编号' },
     { field: 'Code', minWidth: 100, title: '代理编号' },
@@ -64,40 +64,39 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterMainCode"
-          allow-clear
-          placeholder="请输入代理线编号"
-        >
-          <template #addonBefore>代理线编号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">产品包</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="packageOptions"
-          placeholder="请选择产品包"
-        />
-      </Space.Compact>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterMainCode"
+            allow-clear
+            placeholder="请输入代理线编号"
+          >
+            <template #addonBefore>代理线编号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
+      </div>
     </div>
-  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

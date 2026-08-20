@@ -81,9 +81,9 @@ const FIELD_LABELS = {
 
 const AMOUNT_FIELDS = new Set([
   'betAmount',
-  'validBetAmount',
   'netAmount',
   'payAmount',
+  'validBetAmount',
   'winAmount',
 ]);
 
@@ -318,14 +318,14 @@ const SPORT_GAME_IDS = new Set([1024]);
 
 const SPORT_VENUE_CODES = new Set(['ty']);
 
-const LIVE_VENUE_CODES = new Set(['zr', 'evo', 'ag', 'bbin']);
+const LIVE_VENUE_CODES = new Set(['ag', 'bbin', 'evo', 'zr']);
 
 function parseDetailInput(detail) {
   if (!detail) return null;
   if (typeof detail === 'string') {
     try {
       return JSON.parse(detail);
-    } catch (e) {
+    } catch {
       return { Detail: detail };
     }
   }
@@ -355,7 +355,7 @@ export function normalizeDetail(detail) {
           }
         });
       }
-    } catch (e) {
+    } catch {
       // ignore invalid nested json
     }
   }
@@ -372,7 +372,7 @@ function parseOrderDetailList(raw) {
   if (typeof raw === 'string') {
     try {
       list = JSON.parse(raw);
-    } catch (e) {
+    } catch {
       return [];
     }
   }
@@ -386,7 +386,7 @@ function extractOrderDetailList(detail) {
   if (!root || typeof root !== 'object') return [];
 
   let list = parseOrderDetailList(root.orderDetailList);
-  if (list.length) return list;
+  if (list.length > 0) return list;
 
   if (root.orderDetail) {
     try {
@@ -395,7 +395,7 @@ function extractOrderDetailList(detail) {
           ? JSON.parse(root.orderDetail)
           : root.orderDetail;
       list = parseOrderDetailList(nested && nested.orderDetailList);
-    } catch (e) {
+    } catch {
       return [];
     }
   }
@@ -530,7 +530,7 @@ function formatVenueGameId(detail) {
     parts.push(String(detail.gameId));
   }
 
-  return parts.length ? parts.join(' / ') : null;
+  return parts.length > 0 ? parts.join(' / ') : null;
 }
 
 function buildSportPlayerSection(normalized, rowData = {}) {
@@ -603,7 +603,7 @@ function buildSportMatchFields(
 
 function buildSportDetailSections(normalized, orderDetailList, rowData = {}) {
   const sections = [buildSportPlayerSection(normalized, rowData)];
-  const list = orderDetailList.length ? orderDetailList : [{}];
+  const list = orderDetailList.length > 0 ? orderDetailList : [{}];
   const total = list.length;
 
   list.forEach((item, index) => {
@@ -615,7 +615,7 @@ function buildSportDetailSections(normalized, orderDetailList, rowData = {}) {
       rowData,
     );
 
-    if (!fields.length) {
+    if (fields.length === 0) {
       return;
     }
 
@@ -630,8 +630,7 @@ function buildSportDetailSections(normalized, orderDetailList, rowData = {}) {
 }
 
 function getSportOrderItemTitle(item, index) {
-  for (let i = 0; i < SPORT_ORDER_ITEM_TITLE_KEYS.length; i++) {
-    const key = SPORT_ORDER_ITEM_TITLE_KEYS[i];
+  for (const key of SPORT_ORDER_ITEM_TITLE_KEYS) {
     const val = item[key];
     if (val !== undefined && val !== null && val !== '') {
       return String(val);
@@ -776,7 +775,7 @@ function buildDefaultSections(detail) {
       };
     });
 
-  if (!fields.length) return [];
+  if (fields.length === 0) return [];
 
   return [
     {
@@ -803,7 +802,7 @@ export function buildDetailSections(detail, rowData = {}) {
 
   if (!sectionConfig) {
     const sections = buildDefaultSections(normalized);
-    if (orderDetailList.length) {
+    if (orderDetailList.length > 0) {
       sections.push({
         type: 'orderDetailList',
         title: '投注明细',

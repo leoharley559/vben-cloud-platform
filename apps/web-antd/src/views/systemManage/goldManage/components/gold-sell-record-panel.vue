@@ -1,15 +1,16 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { Button, Input } from 'ant-design-vue';
 
-import { fetchGoldSellRecordListApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import SummaryCards from '#/components/global/summary-cards.vue';
+import { fetchGoldSellRecordListApi } from '#/api/systemManage/extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
@@ -35,7 +36,7 @@ interface RecordRow {
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(11437));
+const canViewTable = computed(() => checkPermission(11_437));
 
 const filterUsername = ref(props.agentName || '');
 const filterOrderId = ref('');
@@ -232,8 +233,8 @@ onMounted(() => {
         </Input>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" />
-        </div>
+        <QueryDatetimeRangePicker v-model="dateRange" />
+      </div>
       <template #actions>
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>

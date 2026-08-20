@@ -1,21 +1,18 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { RecordQueryBaseQuery, RecordQueryListResult } from '#/types/netcash';
+import type {
+  RecordQueryBaseQuery,
+  RecordQueryListResult,
+} from '#/types/netcash';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  message,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, Input, message, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 
 type QueryKind = 'bonus' | 'standard' | 'transaction';
@@ -202,9 +199,7 @@ function build(
   return {
     AgentAccount: base.AgentAccount,
     BeginTime: begin?.startOf('day').unix() || '',
-    DataSearchType: props.config.showDataType
-      ? base.DataSearchType
-      : undefined,
+    DataSearchType: props.config.showDataType ? base.DataSearchType : undefined,
     EndTime: end?.endOf('day').unix() || '',
     IsExp: exp,
     LoginAccount: base.LoginAccount,
@@ -221,9 +216,9 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       field: c.field,
       formatter: c.slot
         ? undefined
-        : c.formatter
+        : (c.formatter
           ? ({ cellValue, row }: any) => c.formatter!(cellValue, row)
-          : undefined,
+          : undefined),
       minWidth: c.minWidth || 130,
       slots: c.slot ? { default: c.slot } : undefined,
       title: c.title,
@@ -379,183 +374,240 @@ onMounted(() => {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <template v-if="kind === 'standard'">
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="query.AgentAccount"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入代理账号"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="query.LoginAccount"
-            allow-clear
-            @blur="cleanLoginAccount"
-            @press-enter="search"
-            placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">所属产品</span>
-          <Select v-model:value="query.PackageId" allow-clear :options="packages" placeholder="请选择所属产品" />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">数据类型</span>
-          <Select v-if="config.showDataType" v-model:value="query.DataSearchType" :options="dataTypes" placeholder="请选择数据类型" />
-        </Space.Compact>
-      </template>
+      <div class="ops-query-filters">
+        <template v-if="kind === 'standard'">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.AgentAccount"
+              allow-clear
+              @press-enter="search"
+              placeholder="请输入代理账号"
+            >
+              <template #addonBefore>代理账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.LoginAccount"
+              allow-clear
+              @blur="cleanLoginAccount"
+              @press-enter="search"
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">所属产品</span>
+            <Select
+              v-model:value="query.PackageId"
+              allow-clear
+              :options="packages"
+              placeholder="请选择所属产品"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">数据类型</span>
+            <Select
+              v-if="config.showDataType"
+              v-model:value="query.DataSearchType"
+              :options="dataTypes"
+              placeholder="请选择数据类型"
+            />
+          </Space.Compact>
+        </template>
 
-      <template v-else-if="kind === 'bonus'">
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="query.LoginAccount"
-            allow-clear
-            @blur="cleanLoginAccount"
-            @press-enter="search"
-            placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="query.OrderId"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入订单号"
-          >
-            <template #addonBefore>订单号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="query.Username"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入代理账号"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="query.BonusTitle"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入红利标题"
-          >
-            <template #addonBefore>红利标题</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="query.OperatorAccount"
-            allow-clear
-            placeholder="请输入账号"
-          >
-            <template #addonBefore>
-              <Select
-                v-model:value="query.OperatorAccountType"
-                :bordered="false"
-                :options="[
-                  { label: '申请人', value: 1 },
-                  { label: '审核人', value: 2 },
-                ]"
-              />
-            </template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="query.OperatorRemark"
-            allow-clear
-            placeholder="请输入备注"
-          >
-            <template #addonBefore>
-              <Select
-                v-model:value="query.OperatorRemarkType"
-                :bordered="false"
-                :options="[
-                  { label: '申请备注', value: 1 },
-                  { label: '审核备注', value: 2 },
-                ]"
-              />
-            </template>
-          </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">所属产品</span>
-          <Select v-model:value="query.PackageId" allow-clear :options="packages" placeholder="请选择所属产品" />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">红利类型</span>
-          <Select v-model:value="query.BonusType" mode="multiple" :max-tag-count="1" :options="bonusTypes" placeholder="请选择红利类型" />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">会员等级</span>
-          <Select v-model:value="query.VipLevel" :options="vipLevels" placeholder="请选择会员等级" />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">数据类型</span>
-          <Select v-model:value="query.DataSearchType" :options="dataTypes.slice(0, 2)" placeholder="请选择数据类型" />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">是否需要流水</span>
-          <Select v-model:value="query.IsWater" :options="waterOptions" placeholder="请选择是否需要流水" />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select v-model:value="query.Status" :options="statusOptions" placeholder="请选择状态" />
-        </Space.Compact>
-      </template>
+        <template v-else-if="kind === 'bonus'">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.LoginAccount"
+              allow-clear
+              @blur="cleanLoginAccount"
+              @press-enter="search"
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.OrderId"
+              allow-clear
+              @press-enter="search"
+              placeholder="请输入订单号"
+            >
+              <template #addonBefore>订单号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.Username"
+              allow-clear
+              @press-enter="search"
+              placeholder="请输入代理账号"
+            >
+              <template #addonBefore>代理账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.BonusTitle"
+              allow-clear
+              @press-enter="search"
+              placeholder="请输入红利标题"
+            >
+              <template #addonBefore>红利标题</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.OperatorAccount"
+              allow-clear
+              placeholder="请输入账号"
+            >
+              <template #addonBefore>
+                <Select
+                  v-model:value="query.OperatorAccountType"
+                  :bordered="false"
+                  :options="[
+                    { label: '申请人', value: 1 },
+                    { label: '审核人', value: 2 },
+                  ]"
+                />
+              </template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.OperatorRemark"
+              allow-clear
+              placeholder="请输入备注"
+            >
+              <template #addonBefore>
+                <Select
+                  v-model:value="query.OperatorRemarkType"
+                  :bordered="false"
+                  :options="[
+                    { label: '申请备注', value: 1 },
+                    { label: '审核备注', value: 2 },
+                  ]"
+                />
+              </template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">所属产品</span>
+            <Select
+              v-model:value="query.PackageId"
+              allow-clear
+              :options="packages"
+              placeholder="请选择所属产品"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">红利类型</span>
+            <Select
+              v-model:value="query.BonusType"
+              mode="multiple"
+              :max-tag-count="1"
+              :options="bonusTypes"
+              placeholder="请选择红利类型"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">会员等级</span>
+            <Select
+              v-model:value="query.VipLevel"
+              :options="vipLevels"
+              placeholder="请选择会员等级"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">数据类型</span>
+            <Select
+              v-model:value="query.DataSearchType"
+              :options="dataTypes.slice(0, 2)"
+              placeholder="请选择数据类型"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">是否需要流水</span>
+            <Select
+              v-model:value="query.IsWater"
+              :options="waterOptions"
+              placeholder="请选择是否需要流水"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="query.Status"
+              :options="statusOptions"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
+        </template>
 
-      <template v-else>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="query.AdminAccount"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入代理账号"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">钱包类型</span>
-          <Select v-model:value="query.WalletType" :options="walletOptions" placeholder="请选择钱包类型" />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">账变类型</span>
-          <Select v-model:value="query.TransferType" :options="config.transferTypeOptions" placeholder="请选择账变类型" />
-        </Space.Compact>
-      </template>
+        <template v-else>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.AdminAccount"
+              allow-clear
+              @press-enter="search"
+              placeholder="请输入代理账号"
+            >
+              <template #addonBefore>代理账号</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">钱包类型</span>
+            <Select
+              v-model:value="query.WalletType"
+              :options="walletOptions"
+              placeholder="请选择钱包类型"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">账变类型</span>
+            <Select
+              v-model:value="query.TransferType"
+              :options="config.transferTypeOptions"
+              placeholder="请选择账变类型"
+            />
+          </Space.Compact>
+        </template>
 
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker
-        v-model="primaryRange"
-        :disabled-date="disableStandardDate"
-        :label="kind === 'bonus' ? '申请时间' : kind === 'transaction' ? '账变时间' : '日期'"
-      />
-        </div>
-      <template v-if="kind === 'bonus'">
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="finishRange" label="审核时间" />
+          <QueryDatetimeRangePicker
+            v-model="primaryRange"
+            :disabled-date="disableStandardDate"
+            :label="
+              kind === 'bonus'
+                ? '申请时间'
+                : kind === 'transaction'
+                  ? '账变时间'
+                  : '日期'
+            "
+          />
         </div>
-      </template>
+        <template v-if="kind === 'bonus'">
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="finishRange" label="审核时间" />
+          </div>
+        </template>
         <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
-      <Button @click="reset">重置</Button>
-      <Button v-if="config.exportPermission" :loading="exporting" @click="exportExcel">导出 Excel</Button>
+          <Button @click="reset">重置</Button>
+          <Button
+            v-if="config.exportPermission"
+            :loading="exporting"
+            @click="exportExcel"
+            >
+导出 Excel
+</Button>
         </div>
+      </div>
     </div>
-  </div>
     <SummaryCards :items="summaryCards" />
     <Grid>
       <template
@@ -563,7 +615,7 @@ onMounted(() => {
         :key="column.slot"
         #[column.slot!]="{ row }"
       >
-        <slot :name="column.slot" :row="row" />
+        <slot :name="column.slot" :row="row"></slot>
       </template>
     </Grid>
   </div>

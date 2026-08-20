@@ -7,34 +7,34 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   disposeBonusAuditApi,
   fetchBonusAuditListApi,
 } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import {
+  BONUS_AUDIT_REASON_OPTIONS,
   formatBonusApprove,
   formatBonusReason,
   formatBonusWaterRequirement,
   formatBonusWaterType,
   getBonusApproveColor,
-  BONUS_AUDIT_REASON_OPTIONS,
 } from '#/utils/bonus-audit';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
@@ -48,12 +48,12 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const cloudStore = useCloudPlatformStore();
 
-const canViewTable = computed(() => checkPermission(10117));
-const canApprove = computed(() => checkPermission(10119));
-const canReject = computed(() => checkPermission(10120));
-const canBatchApprove = computed(() => checkPermission(10160));
-const canBatchReject = computed(() => checkPermission(10161));
-const canExport = computed(() => checkPermission(10118));
+const canViewTable = computed(() => checkPermission(10_117));
+const canApprove = computed(() => checkPermission(10_119));
+const canReject = computed(() => checkPermission(10_120));
+const canBatchApprove = computed(() => checkPermission(10_160));
+const canBatchReject = computed(() => checkPermission(10_161));
+const canExport = computed(() => checkPermission(10_118));
 
 const defaultRange = getYesterdayRangeSeconds();
 const selectedRows = ref<BonusAuditListItem[]>([]);
@@ -324,11 +324,11 @@ function handleBatchApprove() {
 function openReject(row?: BonusAuditListItem) {
   if (row) {
     rejectRow.value = row;
-  } else if (!selectedIds.value) {
+  } else if (selectedIds.value) {
+    rejectRow.value = null;
+  } else {
     message.warning('请先选择记录');
     return;
-  } else {
-    rejectRow.value = null;
   }
   rejectOpen.value = true;
 }
@@ -354,10 +354,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const rows = result?.Items || [];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -408,79 +408,86 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @change="normalizeLoginAccount"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">产品名称</span>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="normalizeLoginAccount"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品名称</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择产品名称"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">类型</span>
+          <Select
+            v-model:value="filterReason"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="BONUS_AUDIT_REASON_OPTIONS"
+            placeholder="请选择类型"
+          />
+        </Space.Compact>
         <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          :options="packageSelectOptions"
-          show-search
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-          placeholder="请选择产品名称"
+          v-model:value="filterWaterType"
+          :options="[
+            { label: '全部', value: 0 },
+            { label: '倍数', value: 1 },
+            { label: '金额', value: 2 },
+          ]"
         />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">类型</span>
-        <Select
-          v-model:value="filterReason"
-          allow-clear
-          mode="multiple"
-          :max-tag-count="1"
-          :options="BONUS_AUDIT_REASON_OPTIONS"
-          placeholder="请选择类型"
-        />
-      </Space.Compact>
-      <Select
-        v-model:value="filterWaterType"
-        :options="[
-          { label: '全部', value: 0 },
-          { label: '倍数', value: 1 },
-          { label: '金额', value: 2 },
-        ]"
-      />
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-        导出 Excel
-      </Button>
+            查询
+          </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 

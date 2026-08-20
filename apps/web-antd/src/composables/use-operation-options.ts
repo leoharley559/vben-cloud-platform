@@ -1,8 +1,10 @@
+import type { PackageOption } from '#/types/system-manage';
+
 import { computed } from 'vue';
+
 import { storeToRefs } from 'pinia';
 
 import { useCloudPlatformStore } from '#/store/cloud-platform';
-import type { PackageOption } from '#/types/system-manage';
 
 export function useOperationOptions() {
   const cloudStore = useCloudPlatformStore();

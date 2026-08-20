@@ -15,7 +15,7 @@ export const PLAYER_STATUS_OPTIONS = Object.entries(PLAYER_STATUS_MAP).map(
   }),
 );
 
-export function formatPlayerStatus(status?: number | string | null) {
+export function formatPlayerStatus(status?: null | number | string) {
   if (status === undefined || status === null || status === '') {
     return '-';
   }
@@ -28,7 +28,7 @@ export function formatPlayerStatus(status?: number | string | null) {
  * 3、6 封号暂封 info→default / 4 禁提 warning / 8 测试 processing
  */
 export function playerStatusTagColor(
-  status?: number | string | null,
+  status?: null | number | string,
 ): string | undefined {
   switch (Number(status)) {
     case 1: {

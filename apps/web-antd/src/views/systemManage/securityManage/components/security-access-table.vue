@@ -28,7 +28,7 @@ const emit = defineEmits<{
 
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const selectedRowKeys = ref<Array<number | string>>([]);
-const currentRow = ref<SecuritySettingItem | null>(null);
+const currentRow = ref<null | SecuritySettingItem>(null);
 const isResetAction = ref(false);
 
 const activeList = computed(() =>

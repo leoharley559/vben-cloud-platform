@@ -28,8 +28,6 @@ import {
   Upload,
 } from 'ant-design-vue';
 
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-
 import { getProjectConfigApi } from '#/api/core/project';
 import {
   fetchChannelCountriesApi,
@@ -42,6 +40,7 @@ import {
   fetchShelfPackageListApi,
   updateShelfPackageApi,
 } from '#/api/gameManage/package-manage';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -70,15 +69,11 @@ interface ShelfRow {
 
 const { checkPermission } = useCloudPermission();
 const isIos = computed(() => props.platform === 'ios');
-const canView = computed(() =>
-  checkPermission(isIos.value ? 13_189 : 13_190),
-);
+const canView = computed(() => checkPermission(isIos.value ? 13_189 : 13_190));
 const canCreate = computed(() =>
   checkPermission(isIos.value ? 13_193 : 13_194),
 );
-const canEdit = computed(() =>
-  checkPermission(isIos.value ? 13_198 : 13_201),
-);
+const canEdit = computed(() => checkPermission(isIos.value ? 13_198 : 13_201));
 const canDelete = computed(() =>
   checkPermission(isIos.value ? 13_195 : 13_196),
 );
@@ -168,10 +163,7 @@ async function loadList() {
   if (!canView.value) return;
   listLoading.value = true;
   try {
-    const result = await fetchShelfPackageListApi(
-      props.platform,
-      buildQuery(),
-    );
+    const result = await fetchShelfPackageListApi(props.platform, buildQuery());
     rows.value = (result.Items || []) as ShelfRow[];
     total.value = Number(result.Pagination?.MaxCount || rows.value.length);
   } finally {
@@ -436,7 +428,10 @@ void loadList();
           }"
           row-key="AppPackageConfigId"
           :scroll="{ x: 900 }"
-          @change="(pagination) => changePage(pagination.current || 1, pagination.pageSize || 20)"
+          @change="
+            (pagination) =>
+              changePage(pagination.current || 1, pagination.pageSize || 20)
+          "
         >
           <template #bodyCell="{ column, record, index }">
             <template v-if="column.key === 'seq'">

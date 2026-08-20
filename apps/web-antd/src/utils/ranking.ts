@@ -1,4 +1,5 @@
 import type { Dayjs } from 'dayjs';
+
 import dayjs from 'dayjs';
 
 export type RankPlayerRow = Record<string, unknown> & {
@@ -69,7 +70,7 @@ export function enrichGameRankRows(
     const fanJiang = sumWin - sumProfit;
     const profitAmt = sumBet - fanJiang;
     const fanJiangRate =
-      sumBet !== 0 ? Number(((fanJiang / sumBet) * 100).toFixed(2)) : 0;
+      sumBet === 0 ? 0 : Number(((fanJiang / sumBet) * 100).toFixed(2));
     return {
       ...item,
       FanJiang: fanJiang,

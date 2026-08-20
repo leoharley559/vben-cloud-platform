@@ -1,5 +1,6 @@
-import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
+
+import dayjs from 'dayjs';
 
 /** 当月第一天 YYYY-MM-DD（对齐旧站 GLOBAL.defaultDate） */
 export function defaultReportBeginTime() {

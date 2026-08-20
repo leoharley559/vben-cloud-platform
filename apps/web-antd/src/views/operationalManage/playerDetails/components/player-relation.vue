@@ -4,11 +4,11 @@ import type { PlayerRelationItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, Radio, Select, Space, Tag, message } from 'ant-design-vue';
+import { Button, message, Radio, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerRelationListApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerRelationListApi } from '#/api/operationManage/player-detail-extra';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatLoginPlatform } from '#/utils/player-login';
@@ -22,8 +22,8 @@ const props = defineProps<{
 }>();
 
 const { checkPermission } = useCloudPermission();
-const canBlacklistDevice = computed(() => checkPermission(12107));
-const canBlacklistIp = computed(() => checkPermission(12108));
+const canBlacklistDevice = computed(() => checkPermission(12_107));
+const canBlacklistIp = computed(() => checkPermission(12_108));
 
 const relationType = ref<1 | 2>(1);
 const filterCreateTime = ref(dayjs().startOf('day').unix());
@@ -204,32 +204,32 @@ onMounted(() => {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">时间范围</span>
-          <Select
-            v-model:value="filterCreateTime"
-            :options="TIME_PRESET_OPTIONS"
-            placeholder="请选择时间范围"
-          />
-        </Space.Compact>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">时间范围</span>
+            <Select
+              v-model:value="filterCreateTime"
+              :options="TIME_PRESET_OPTIONS"
+              placeholder="请选择时间范围"
+            />
+          </Space.Compact>
+        </div>
 
-      <Radio.Group v-model:value="relationType" @change="handleTypeChange">
-        <Radio :value="1">设备统计</Radio>
-        <Radio :value="2">IP 统计</Radio>
-      </Radio.Group>
+        <Radio.Group v-model:value="relationType" @change="handleTypeChange">
+          <Radio :value="1">设备统计</Radio>
+          <Radio :value="2">IP 统计</Radio>
+        </Radio.Group>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #blacklist="{ row }">

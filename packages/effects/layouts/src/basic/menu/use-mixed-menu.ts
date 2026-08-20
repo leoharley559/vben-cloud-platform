@@ -3,7 +3,11 @@ import type { MenuRecordRaw } from '@vben/types';
 import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { preferences, updatePreferences, usePreferences } from '@vben/preferences';
+import {
+  preferences,
+  updatePreferences,
+  usePreferences,
+} from '@vben/preferences';
 import { useAccessStore } from '@vben/stores';
 import { findRootMenuByPath } from '@vben/utils';
 

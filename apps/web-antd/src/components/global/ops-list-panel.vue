@@ -9,13 +9,13 @@ defineOptions({ name: 'OpsListPanel' });
 <template>
   <div class="ops-list-panel">
     <div v-if="$slots.filters" class="ops-query-filters mb-2">
-      <slot name="filters" />
+      <slot name="filters"></slot>
     </div>
     <div v-if="$slots.summary">
-      <slot name="summary" />
+      <slot name="summary"></slot>
     </div>
     <div>
-      <slot />
+      <slot></slot>
     </div>
   </div>
 </template>

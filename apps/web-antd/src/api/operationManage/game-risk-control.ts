@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -71,7 +72,7 @@ export async function fetchAppStoreWhiteRiskListApi(
   return {
     ...result,
     WhitelistList:
-      (result?.WhitelistList as unknown[] | null | undefined) || [],
+      (result?.WhitelistList as null | undefined | unknown[]) || [],
   };
 }
 

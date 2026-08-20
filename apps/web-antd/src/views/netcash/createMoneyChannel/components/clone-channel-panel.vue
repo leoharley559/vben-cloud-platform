@@ -127,7 +127,8 @@ const gridOptions: VxeTableGridOptions<CloneChannelPlanItem> = {
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 
 function openCreate() {
-  if (rows.value.length >= 10) return void message.warning('克隆方案最多 10 个');
+  if (rows.value.length >= 10)
+    return void message.warning('克隆方案最多 10 个');
   editId.value = undefined;
   form.PlanName = '';
   form.ChannelIds = [];
@@ -160,7 +161,9 @@ async function submit() {
       PlanName: form.PlanName.trim(),
       ...(editId.value == null ? {} : { Id: editId.value }),
     };
-    await (editId.value == null ? addCloneChannelPlanApi(payload) : editCloneChannelPlanApi(payload));
+    await (editId.value == null
+      ? addCloneChannelPlanApi(payload)
+      : editCloneChannelPlanApi(payload));
     message.success(editId.value == null ? '方案已新增' : '方案已编辑');
     modalOpen.value = false;
     await gridApi.reload();
@@ -218,8 +221,8 @@ onMounted(() => void initialize());
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <Space.Compact>
+      <div class="ops-query-filters">
+        <Space.Compact>
           <span class="query-field-addon">产品名称</span>
           <Select
             v-model:value="filters.PackageId"
@@ -228,8 +231,7 @@ onMounted(() => void initialize());
             mode="multiple"
             :options="
               packages.map((item) => ({
-                label:
-                  item.PackageName || item.PackageAlias || packageId(item),
+                label: item.PackageName || item.PackageAlias || packageId(item),
                 value: packageId(item),
               }))
             "
@@ -255,20 +257,20 @@ onMounted(() => void initialize());
         </Space.Compact>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.query()">查询</Button>
-        <Button
-          @click="
-            filters.ChannelId = [];
-            filters.PackageId = packages
-              .map(packageId)
-              .filter((id) => id != null);
-            gridApi.query();
-          "
-        >
-          重置
-        </Button>
+          <Button
+            @click="
+              filters.ChannelId = [];
+              filters.PackageId = packages
+                .map(packageId)
+                .filter((id) => id != null);
+              gridApi.query();
+            "
+          >
+            重置
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
     <Grid>
       <template #actions="{ row }">
         <Space :size="2">
@@ -343,7 +345,7 @@ onMounted(() => void initialize());
 
 <style>
 .vxe-body--row.clone-channel-disabled-row > .vxe-body--column {
-  background: hsl(var(--destructive) / 14%) !important;
   color: #a8071a;
+  background: hsl(var(--destructive) / 14%) !important;
 }
 </style>

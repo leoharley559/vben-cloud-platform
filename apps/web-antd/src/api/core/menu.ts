@@ -14,7 +14,7 @@ import { convertNavToVbenRoutes } from '#/utils/menu-adapter';
 export async function getAllMenusApi() {
   const cloudStore = useCloudPlatformStore();
 
-  if (!cloudStore.navMenus.length) {
+  if (cloudStore.navMenus.length === 0) {
     throw new Error('菜单数据未加载，请先获取用户信息');
   }
 

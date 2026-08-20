@@ -1,16 +1,15 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 
-import { Input, Modal, message } from 'ant-design-vue';
+import { Input, message, Modal } from 'ant-design-vue';
 
 defineOptions({ name: 'PlayerBulkAccountModal' });
 
-const open = defineModel<boolean>('open', { default: false });
 const props = defineProps<{ initialValue?: string }>();
 const emit = defineEmits<{
   confirm: [value: string];
 }>();
-
+const open = defineModel<boolean>('open', { default: false });
 const text = ref('');
 
 watch(open, (visible) => {

@@ -3,7 +3,7 @@ import type { UploadChangeParam } from 'ant-design-vue';
 
 import { computed, ref, watch } from 'vue';
 
-import { Button, Image, Modal, Space, Upload, message } from 'ant-design-vue';
+import { Button, Image, message, Modal, Space, Upload } from 'ant-design-vue';
 
 import { updateEasyRechargeImageApi } from '#/api/operationManage/easy-recharge';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -27,8 +27,8 @@ const emit = defineEmits<{
 
 const { checkPermission } = useCloudPermission();
 
-const canPreview = computed(() => checkPermission(11731));
-const canEdit = computed(() => checkPermission(11730));
+const canPreview = computed(() => checkPermission(11_731));
+const canEdit = computed(() => checkPermission(11_730));
 
 const previewOpen = ref(false);
 const editOpen = ref(false);
@@ -62,8 +62,8 @@ function openEdit() {
 
 function handleUploadChange(info: UploadChangeParam) {
   const response = info.file.response as
-    | { Code?: number | string; Data?: { url?: string }; Msg?: string }
-    | undefined;
+    | undefined
+    | { Code?: number | string; Data?: { url?: string }; Msg?: string };
 
   if (info.file.status === 'done') {
     if (String(response?.Code) === '200' && response?.Data?.url) {
@@ -96,7 +96,7 @@ async function handleSaveImage() {
   if (!props.id || !props.gameOrderId) {
     return;
   }
-  if (!uploadedPaths.value.length) {
+  if (uploadedPaths.value.length === 0) {
     message.warning('请先上传凭证图片');
     return;
   }

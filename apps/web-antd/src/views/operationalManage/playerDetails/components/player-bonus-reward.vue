@@ -5,12 +5,11 @@ import type { PlayerBonusRewardItem } from '#/types/player-detail';
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { Button, Result, Select, Space, Tag } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerBonusRewardListApi } from '#/api/operationManage/bonus-reward';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerBonusRewardListApi } from '#/api/operationManage/bonus-reward';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   BONUS_ORDER_STATUS_OPTIONS,
@@ -33,7 +32,7 @@ const props = defineProps<{
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(10423));
+const canViewTable = computed(() => checkPermission(10_423));
 
 const defaultRange = getLast7CalendarDaysRangeSeconds();
 const totalReward = ref(0);
@@ -63,8 +62,7 @@ function getQueryParams() {
     BonusType: filterBonusTypes.value,
     DataSearchType: 2,
     EndTime: end ? end.unix() : '',
-    OrderStatus:
-      filterOrderStatus.value === -1 ? 0 : filterOrderStatus.value,
+    OrderStatus: filterOrderStatus.value === -1 ? 0 : filterOrderStatus.value,
     PlayerId: String(props.playerId),
   };
 }
@@ -197,7 +195,7 @@ const gridOptions: VxeTableGridOptions<PlayerBonusRewardItem> = {
 
         totalReward.value = Number(result?.BannerItems?.SumReward || 0);
 
-        const items = [...(result?.Items || [])].sort(
+        const items = [...(result?.Items || [])].toSorted(
           (a, b) => Number(b.ApplyTime || 0) - Number(a.ApplyTime || 0),
         );
 
@@ -269,45 +267,48 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">红利类型</span>
-          <Select
-            v-model:value="filterBonusTypes"
-            allow-clear
-            mode="multiple"
-            :max-tag-count="1"
-            :options="BONUS_TYPE_OPTIONS"
-            placeholder="请选择红利类型"
-          />
-        </Space.Compact>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">红利类型</span>
+            <Select
+              v-model:value="filterBonusTypes"
+              allow-clear
+              mode="multiple"
+              :max-tag-count="1"
+              :options="BONUS_TYPE_OPTIONS"
+              placeholder="请选择红利类型"
+            />
+          </Space.Compact>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">订单状态</span>
-          <Select
-            v-model:value="filterOrderStatus"
-            :options="BONUS_ORDER_STATUS_OPTIONS"
-            placeholder="请选择订单状态"
-          />
-        </Space.Compact>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">订单状态</span>
+            <Select
+              v-model:value="filterOrderStatus"
+              :options="BONUS_ORDER_STATUS_OPTIONS"
+              placeholder="请选择订单状态"
+            />
+          </Space.Compact>
+        </div>
 
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="申请时间" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="申请时间"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #bonus="{ row }">

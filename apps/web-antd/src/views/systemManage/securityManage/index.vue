@@ -26,10 +26,10 @@ const { checkPermission } = useCloudPermission();
 const list = ref<SecuritySettingItem[]>([]);
 const listLoading = ref(false);
 
-const canGcode = computed(() => checkPermission(12917));
-const canPrivate = computed(() => checkPermission(12918));
-const canMultiAcct = computed(() => checkPermission(12919));
-const canExportEncrypt = computed(() => checkPermission(12932));
+const canGcode = computed(() => checkPermission(12_917));
+const canPrivate = computed(() => checkPermission(12_918));
+const canMultiAcct = computed(() => checkPermission(12_919));
+const canExportEncrypt = computed(() => checkPermission(12_932));
 
 const canViewAny = computed(
   () =>

@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { PlayerBasicInfo } from '#/types/player-detail';
-import { PLAYER_DETAIL_TABS } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -13,8 +12,8 @@ import {
   Form,
   Input,
   InputNumber,
-  Modal,
   message,
+  Modal,
   Result,
   Select,
   Space,
@@ -29,8 +28,9 @@ import {
   updatePlayerExtApi,
 } from '#/api/operationManage/player';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
+import { PLAYER_DETAIL_TABS } from '#/types/player-detail';
 import {
   buildPlayerDetailPath,
   parsePlayerDetailRouteId,
@@ -64,7 +64,7 @@ const { packageOptions } = useOperationOptions();
 const loading = ref(false);
 const searchLoading = ref(false);
 const statusSaving = ref(false);
-const playerInfo = ref<PlayerBasicInfo | null>(null);
+const playerInfo = ref<null | PlayerBasicInfo>(null);
 const activeTab = ref('profile');
 const statusEditing = ref(false);
 const nextStatus = ref<number>(0);
@@ -86,7 +86,7 @@ const visibleTabs = computed(() =>
 );
 
 const canViewAnyTab = computed(() => visibleTabs.value.length > 0);
-const canEditStatus = computed(() => checkPermission(10406));
+const canEditStatus = computed(() => checkPermission(10_406));
 const currentPlayerId = computed(
   () => routePlayer.value.playerId || playerInfo.value?.PlayerId || '',
 );
@@ -161,11 +161,7 @@ async function handleSearch() {
       searchPlayerId.value.trim(),
       searchLoginAccount.value.trim(),
     );
-    if (path !== route.fullPath) {
-      await router.push(path);
-    } else {
-      await loadPlayerInfo(searchPlayerId.value.trim());
-    }
+    await (path === route.fullPath ? loadPlayerInfo(searchPlayerId.value.trim()) : router.push(path));
     return;
   }
 
@@ -177,7 +173,10 @@ async function handleSearch() {
   searchLoading.value = true;
   try {
     const result = await queryPlayerByAccountApi({
-      LoginAccount: searchLoginAccount.value.trim().toLowerCase().replaceAll(/\s/g, ''),
+      LoginAccount: searchLoginAccount.value
+        .trim()
+        .toLowerCase()
+        .replaceAll(/\s/g, ''),
       PackageId: searchPackageId.value,
     });
     const first = result?.Items?.[0];
@@ -383,9 +382,7 @@ onMounted(async () => {
               {{ playerInfo?.LoginAccount || '-' }}
             </span>
           </div>
-          <Tag color="gold">
-            VIP {{ playerInfo?.VipLevel ?? '-' }}
-          </Tag>
+          <Tag color="gold"> VIP {{ playerInfo?.VipLevel ?? '-' }} </Tag>
           <div class="flex items-center gap-1.5">
             <span class="text-gray-500">在线状态</span>
             <Tag :color="playerInfo?.Online ? 'success' : 'default'">

@@ -3,14 +3,7 @@ import type { AccountLoginInfo } from '#/api/core/account-login';
 
 import { computed, ref, watch } from 'vue';
 
-import {
-  Button,
-  Form,
-  Input,
-  message,
-  Modal,
-  Select,
-} from 'ant-design-vue';
+import { Button, Form, Input, message, Modal, Select } from 'ant-design-vue';
 import { toDataURL } from 'qrcode';
 
 import {
@@ -148,13 +141,14 @@ function closeGoogle() {
 </script>
 
 <template>
-  <Form
-    class="max-w-xl"
-    :label-col="{ span: 7 }"
-    :wrapper-col="{ span: 16 }"
-  >
+  <Form class="max-w-xl" :label-col="{ span: 7 }" :wrapper-col="{ span: 16 }">
     <Form.Item label="谷歌验证码">
-      <Button type="link" class="px-0" :loading="saving" @click="openGoogleDialog">
+      <Button
+        type="link"
+        class="px-0"
+        :loading="saving"
+        @click="openGoogleDialog"
+      >
         {{ googleBound ? '解绑' : '点击绑定' }}
       </Button>
     </Form.Item>

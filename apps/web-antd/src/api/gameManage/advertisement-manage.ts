@@ -45,9 +45,7 @@ export function fetchAdvertisementProgrammeApi(id: number | string) {
  * @returns Promise，resolve 为新建记录或操作结果
  * @see views/gameManage/advertisementManage
  */
-export function createAdvertisementProgrammeApi(
-  data: Record<string, unknown>,
-) {
+export function createAdvertisementProgrammeApi(data: Record<string, unknown>) {
   return requestClient.post('/backend/gameadtemplate/', data);
 }
 
@@ -58,9 +56,7 @@ export function createAdvertisementProgrammeApi(
  * @returns Promise，resolve 为更新/操作结果
  * @see views/gameManage/advertisementManage
  */
-export function updateAdvertisementProgrammeApi(
-  data: Record<string, unknown>,
-) {
+export function updateAdvertisementProgrammeApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/gameadtemplate/', data);
 }
 
@@ -278,4 +274,3 @@ export function recoverVenueRebateApi(query: Record<string, unknown>) {
     params: trimSpace(query),
   });
 }
-

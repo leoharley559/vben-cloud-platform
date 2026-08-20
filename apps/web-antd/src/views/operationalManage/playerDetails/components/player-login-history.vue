@@ -5,12 +5,11 @@ import type { PlayerLoginIpRecord } from '#/types/player-detail';
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { Button, Space } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerLoginIpListApi } from '#/api/operationManage/player';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerLoginIpListApi } from '#/api/operationManage/player';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatLoginChannel, formatLoginPlatform } from '#/utils/player-login';
 
@@ -174,20 +173,20 @@ onMounted(() => {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid />
   </div>

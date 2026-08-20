@@ -62,16 +62,16 @@ const searchQuery = ref<string[]>([]);
 
 const canViewPage = computed(
   () =>
-    checkPermission(12478) || checkPermission(12479) || checkPermission(12480),
+    checkPermission(12_478) || checkPermission(12_479) || checkPermission(12_480),
 );
-const canAdd = computed(() => checkPermission(12478));
-const canSave = computed(() => checkPermission(12479));
-const canDelete = computed(() => checkPermission(12480));
+const canAdd = computed(() => checkPermission(12_478));
+const canSave = computed(() => checkPermission(12_479));
+const canDelete = computed(() => checkPermission(12_480));
 
 function getAdminLanguages(): string[] {
   const admin = adminInfo.value?.Admin as
-    | { Languages?: string | string[] }
-    | undefined;
+    | undefined
+    | { Languages?: string | string[] };
   const raw = admin?.Languages;
   if (Array.isArray(raw)) {
     return raw.map(String).filter(Boolean);

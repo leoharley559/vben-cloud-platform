@@ -1,10 +1,11 @@
-import { requestClient } from '#/api/request';
-import type { CloudListResult } from '#/types/operation-manage';
 import type {
   FundFlowListItem,
   FundFlowListQuery,
   FundFlowSummary,
 } from '#/types/fund-flow';
+import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -16,7 +17,7 @@ function normalizeFundFlowQuery(query: FundFlowListQuery) {
   const params = trimSpace({ ...query }) as Record<string, unknown>;
   const reason = params.Reason;
   if (Array.isArray(reason)) {
-    params.Reason = reason.length ? reason.join(',') : '';
+    params.Reason = reason.length > 0 ? reason.join(',') : '';
   }
   return params;
 }

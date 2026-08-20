@@ -81,7 +81,10 @@ function openWithSecurity(
   visible.value = true;
 }
 
-function validate(pageId: number | string, options: Record<string, unknown> = {}) {
+function validate(
+  pageId: number | string,
+  options: Record<string, unknown> = {},
+) {
   openWithSecurity(pageId, options);
 }
 

@@ -7,26 +7,26 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 import { storeToRefs } from 'pinia';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   disposeBonusAuditApi,
   fetchBonusAuditListApi,
 } from '#/api/operationManage/bonus-audit';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import {
@@ -43,8 +43,8 @@ import {
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
-  PLAYER_STATUS_OPTIONS,
   formatPlayerStatus,
+  PLAYER_STATUS_OPTIONS,
 } from '#/utils/player-status';
 
 import BonusAuditActionModal from './bonus-audit-action-modal.vue';
@@ -55,12 +55,12 @@ const { checkPermission } = useCloudPermission();
 const cloudStore = useCloudPlatformStore();
 const { projectConfig } = storeToRefs(cloudStore);
 
-const canViewTable = computed(() => checkPermission(11969));
-const canApprove = computed(() => checkPermission(11971));
-const canReject = computed(() => checkPermission(11972));
-const canBatchApprove = computed(() => checkPermission(11973));
-const canBatchReject = computed(() => checkPermission(11976));
-const canExport = computed(() => checkPermission(11970));
+const canViewTable = computed(() => checkPermission(11_969));
+const canApprove = computed(() => checkPermission(11_971));
+const canReject = computed(() => checkPermission(11_972));
+const canBatchApprove = computed(() => checkPermission(11_973));
+const canBatchReject = computed(() => checkPermission(11_976));
+const canExport = computed(() => checkPermission(11_970));
 
 const selectedRows = ref<BonusAuditListItem[]>([]);
 const rejectOpen = ref(false);
@@ -170,7 +170,7 @@ function getQueryParams() {
   const [applyBegin, applyEnd] = filterApplyDateRange.value || [];
   const [approveBegin, approveEnd] = filterApproveDateRange.value || [];
   return {
-    ActivityType: 10009,
+    ActivityType: 10_009,
     ApplyBeginTime: applyBegin ? applyBegin.unix() : '',
     ApplyEndTime: applyEnd ? applyEnd.unix() : '',
     ApproveBeginTime: approveBegin ? approveBegin.unix() : '',
@@ -387,11 +387,11 @@ function handleBatchApprove() {
 function openReject(row?: BonusAuditListItem) {
   if (row) {
     rejectRow.value = row;
-  } else if (!selectedIds.value) {
+  } else if (selectedIds.value) {
+    rejectRow.value = null;
+  } else {
     message.warning('请先选择记录');
     return;
-  } else {
-    rejectRow.value = null;
   }
   rejectOpen.value = true;
 }
@@ -421,10 +421,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const rows = result?.Items || [];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -500,126 +500,136 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @change="normalizeLoginAccount"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPackageName"
-          allow-clear
-          placeholder="请输入产品名称"
-        >
-          <template #addonBefore>产品名称</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterTitle"
-          allow-clear
-          placeholder="请输入红利标题"
-        >
-          <template #addonBefore>红利标题</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterPageType"
-        :options="pageTypeOptions"
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPageTitle"
-          allow-clear
-          placeholder="请输入活动分页"
-        >
-          <template #addonBefore>活动分页</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单号"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">上架包</span>
-        <Select
-          v-model:value="filterAppUrl"
-          allow-clear
-          show-search
-          :options="appUrlOptions"
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-          placeholder="请选择上架包"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">玩家状态</span>
-        <Select
-          v-model:value="filterPlayerStatus"
-          :options="playerStatusOptions"
-          placeholder="请选择玩家状态"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">VIP等级</span>
-        <Select
-          v-model:value="filterVipLevel"
-          :options="VIP_LEVEL_OPTIONS"
-          placeholder="请选择VIP等级"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">审核状态</span>
-        <Select
-          v-model:value="filterApproveStatus"
-          :options="BONUS_EVENT_APPROVE_STATUS_OPTIONS"
-          placeholder="请选择审核状态"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">风控状态</span>
-        <Select
-          v-model:value="filterRiskStatus"
-          :options="BONUS_EVENT_RISK_STATUS_OPTIONS"
-          placeholder="请选择风控状态"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterApplyDateRange" label="申请时间" />
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="normalizeLoginAccount"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
         </div>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterApproveDateRange" label="审核时间" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPackageName"
+            allow-clear
+            placeholder="请输入产品名称"
+          >
+            <template #addonBefore>产品名称</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterTitle"
+            allow-clear
+            placeholder="请输入红利标题"
+          >
+            <template #addonBefore>红利标题</template>
+          </Input>
+        </div>
+        <Select v-model:value="filterPageType" :options="pageTypeOptions" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPageTitle"
+            allow-clear
+            placeholder="请输入活动分页"
+          >
+            <template #addonBefore>活动分页</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">上架包</span>
+          <Select
+            v-model:value="filterAppUrl"
+            allow-clear
+            show-search
+            :options="appUrlOptions"
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择上架包"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">玩家状态</span>
+          <Select
+            v-model:value="filterPlayerStatus"
+            :options="playerStatusOptions"
+            placeholder="请选择玩家状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            :options="VIP_LEVEL_OPTIONS"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">审核状态</span>
+          <Select
+            v-model:value="filterApproveStatus"
+            :options="BONUS_EVENT_APPROVE_STATUS_OPTIONS"
+            placeholder="请选择审核状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">风控状态</span>
+          <Select
+            v-model:value="filterRiskStatus"
+            :options="BONUS_EVENT_RISK_STATUS_OPTIONS"
+            placeholder="请选择风控状态"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterApplyDateRange"
+            label="申请时间"
+          />
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterApproveDateRange"
+            label="审核时间"
+          />
         </div>
         <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-        导出 Excel
-      </Button>
+            查询
+          </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <div
       v-if="canBatchApprove || canBatchReject"

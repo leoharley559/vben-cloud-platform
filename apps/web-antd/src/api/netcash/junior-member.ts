@@ -50,7 +50,9 @@ export async function fetchJuniorMemberListApi(query: NetcashListQuery) {
  * @returns 变更记录 Items 及 Pagination
  * @see views/netcash/juniorMember/index.vue
  */
-export async function fetchJuniorMemberChangeRecordApi(query: NetcashListQuery) {
+export async function fetchJuniorMemberChangeRecordApi(
+  query: NetcashListQuery,
+) {
   const result = await requestClient.get<NetcashListResult | null>(
     '/backend/agentnetcashplayerinfo/changerecord',
     { params: trimSpace(query) },

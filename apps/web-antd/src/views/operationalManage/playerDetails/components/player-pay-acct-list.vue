@@ -8,10 +8,10 @@ import {
   Checkbox,
   Form,
   Input,
+  message,
   Modal,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -27,22 +27,21 @@ import { useProjectConfig } from '#/composables/use-project-config';
 
 defineOptions({ name: 'PlayerPayAcctList' });
 
+const props = defineProps<{
+  playerId: number | string;
+}>();
 const PAY_ACCT_SECURITY_PAGE_ID = 9;
 const MAX_BIND = 10;
 const ACCOUNT_REGEX = /^(?=.{11,12}$)(09|639|\*)[0-9*]*$/;
 
-const props = defineProps<{
-  playerId: number | string;
-}>();
-
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
-const canSection = computed(() => checkPermission(12693));
-const canView = computed(() => checkPermission(12694));
-const canCreate = computed(() => checkPermission(12695));
-const canEdit = computed(() => checkPermission(12696));
-const canDelete = computed(() => checkPermission(12697));
+const canSection = computed(() => checkPermission(12_693));
+const canView = computed(() => checkPermission(12_694));
+const canCreate = computed(() => checkPermission(12_695));
+const canEdit = computed(() => checkPermission(12_696));
+const canDelete = computed(() => checkPermission(12_697));
 
 const platforms = [
   { id: 201, logId: 16, name: 'GCash' },
@@ -151,14 +150,14 @@ function openEdit(payType: number, row: EWalletListItem) {
   currentPayType.value = payType;
   formMode.value = 'edit';
   form.Id = row.Id ?? '';
-  form.Name = String(row.Name || '').replace(/\*/g, '');
+  form.Name = String(row.Name || '').replaceAll('*', '');
   form.Account = String(row.Account || '');
   formOpen.value = true;
 }
 
 function requestSave() {
-  const name = form.Name.trim().replace(/\*/g, '');
-  const account = form.Account.trim().replace(/[^\d]/g, '');
+  const name = form.Name.trim().replaceAll('*', '');
+  const account = form.Account.trim().replaceAll(/[^\d]/g, '');
   if (!name || !account) {
     message.warning('请填写姓名和账号');
     return;
@@ -252,7 +251,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="canSection && visiblePlatforms.length" class="mt-4 space-y-4">
+  <div v-if="canSection && visiblePlatforms.length > 0" class="mt-4 space-y-4">
     <div
       v-for="platform in visiblePlatforms"
       :key="platform.id"

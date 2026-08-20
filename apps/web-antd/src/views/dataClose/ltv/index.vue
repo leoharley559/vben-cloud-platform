@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -7,9 +9,7 @@ import { Card, Result } from 'ant-design-vue';
 
 import { fetchLtvListApi } from '#/api/dataClose/ltv';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 defineOptions({ name: 'DataCloseLtv' });
 
@@ -33,7 +33,7 @@ const listConfig = computed(
 
 const canViewPage = computed(
   () =>
-    checkPermission(10520) || checkPermission(10521) || checkPermission(10494),
+    checkPermission(10_520) || checkPermission(10_521) || checkPermission(10_494),
 );
 </script>
 

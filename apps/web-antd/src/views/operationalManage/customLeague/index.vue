@@ -17,8 +17,6 @@ import {
   Switch,
 } from 'ant-design-vue';
 
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteCustomLeagueApi,
@@ -26,6 +24,7 @@ import {
   sortCustomLeagueApi,
   switchCustomLeagueApi,
 } from '#/api/operationManage/league-activity';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { getServiceImageUrl } from '#/utils/media';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -275,51 +274,49 @@ function handlePreview(path?: string) {
   <Page auto-content-height description="运营管理 · 杯赛专题" title="杯赛专题">
     <Card>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">产品</span>
-            <Select
-              v-model:value="filterPackageId"
-              :field-names="{ label: 'PackageName', value: 'PackageId' }"
-              :options="packageOptions"
-              placeholder="请选择产品"
-            />
-          </Space.Compact>
-        
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">产品</span>
+              <Select
+                v-model:value="filterPackageId"
+                :field-names="{ label: 'PackageName', value: 'PackageId' }"
+                :options="packageOptions"
+                placeholder="请选择产品"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">开关</span>
+              <Select
+                v-model:value="filterIsActive"
+                :options="ACTIVE_OPTIONS"
+                placeholder="请选择开关"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterLeagueShortName"
+              allow-clear
+              placeholder="请输入联赛名称"
+            >
+              <template #addonBefore>联赛名称</template>
+            </Input>
+          </div>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="filterDateRange" label="时间" />
+          </div>
+          <div class="query-filter-actions">
+            <Space>
+              <Button type="primary" @click="handleSearch">查询</Button>
+              <Button @click="handleReset">重置</Button>
+              <Button type="primary" ghost @click="openAdd">新增</Button>
+            </Space>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">开关</span>
-            <Select
-              v-model:value="filterIsActive"
-              :options="ACTIVE_OPTIONS"
-              placeholder="请选择开关"
-            />
-          </Space.Compact>
-        
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterLeagueShortName"
-            allow-clear
-            placeholder="请输入联赛名称"
-          >
-            <template #addonBefore>联赛名称</template>
-          </Input>
-        </div>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Space>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-          <Button type="primary" ghost @click="openAdd">新增</Button>
-        </Space>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <Grid>
         <template #activeSwitch="{ row }">

@@ -3,7 +3,15 @@ import { computed, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
-import { Button, Card, Input, message, Result, Select, Space } from 'ant-design-vue';
+import {
+  Button,
+  Card,
+  Input,
+  message,
+  Result,
+  Select,
+  Space,
+} from 'ant-design-vue';
 
 import { fetchPlayerListApi } from '#/api/operationManage/player';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -15,7 +23,7 @@ defineOptions({ name: 'MemberStreamingInformation' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewPage = computed(() => checkPermission(12936));
+const canViewPage = computed(() => checkPermission(12_936));
 
 const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>('');
@@ -68,52 +76,65 @@ function handleReset() {
   >
     <Card>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterLoginAccount"
-            allow-clear
-           
-            @press-enter="handleSearch"
-            placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">产品</span>
-            <Select
-              v-model:value="filterPackageId"
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterLoginAccount"
               allow-clear
-             
-              :options="
-                packageOptions.map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-              "
-              placeholder="请选择产品"
-            />
-          </Space.Compact>
+              @press-enter="handleSearch"
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">产品</span>
+              <Select
+                v-model:value="filterPackageId"
+                allow-clear
+                :options="
+                  packageOptions.map((item) => ({
+                    label: item.PackageName,
+                    value: item.PackageId,
+                  }))
+                "
+                placeholder="请选择产品"
+              />
+            </Space.Compact>
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Space>
+              <Button
+                :loading="searchLoading"
+                type="primary"
+                @click="handleSearch"
+              >
+                查询
+              </Button>
+              <Button @click="handleReset">重置</Button>
+            </Space>
+          </div>
         </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Space>
-          <Button :loading="searchLoading" type="primary" @click="handleSearch"> 查询 </Button>
-          <Button @click="handleReset">重置</Button>
-        </Space>
-        </div>
-    </div>
-  </div>
+      </div>
 
-      <PlayerStreamingPanel v-if="playerId" :key="String(playerId)" :player-id="playerId" />
+      <PlayerStreamingPanel
+        v-if="playerId"
+        :key="String(playerId)"
+        :player-id="playerId"
+      />
       <Result
         v-else-if="searched"
         status="warning"
         sub-title="请检查游戏账号与产品是否正确"
         title="未找到玩家"
       />
-      <Result v-else status="info" sub-title="输入游戏账号后查询流水信息" title="请先查询玩家" />
+      <Result
+        v-else
+        status="info"
+        sub-title="输入游戏账号后查询流水信息"
+        title="请先查询玩家"
+      />
     </Card>
   </Page>
   <Result v-else status="403" sub-title="无流水信息查看权限" title="403" />

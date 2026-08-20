@@ -13,8 +13,8 @@ defineOptions({ name: 'FastRechargeTabs' });
 
 const { checkPermission } = useCloudPermission();
 
-const canBank = computed(() => checkPermission(12333));
-const canUsdt = computed(() => checkPermission(12337));
+const canBank = computed(() => checkPermission(12_333));
+const canUsdt = computed(() => checkPermission(12_337));
 
 const pageType = ref(1);
 </script>

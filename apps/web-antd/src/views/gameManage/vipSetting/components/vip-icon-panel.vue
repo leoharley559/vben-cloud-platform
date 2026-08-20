@@ -3,7 +3,18 @@ import type { TableColumnsType } from 'ant-design-vue';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { Button, Card, Form, Image, Input, message, Modal, Radio, Space, Table } from 'ant-design-vue';
+import {
+  Button,
+  Card,
+  Form,
+  Image,
+  Input,
+  message,
+  Modal,
+  Radio,
+  Space,
+  Table,
+} from 'ant-design-vue';
 
 import {
   createVipIconTemplateApi,
@@ -27,17 +38,63 @@ interface Template {
   TemplateName: string;
 }
 
-const imageColumns = ['BasicIcon', 'Badge', 'BadgeUnqualified', 'ChatroomEntryBg'];
-const bulletFields = ['BulletScreenSfxHead', 'BulletScreenSfxBody', 'BulletScreenSfxTail'];
+const imageColumns = [
+  'BasicIcon',
+  'Badge',
+  'BadgeUnqualified',
+  'ChatroomEntryBg',
+];
+const bulletFields = [
+  'BulletScreenSfxHead',
+  'BulletScreenSfxBody',
+  'BulletScreenSfxTail',
+];
 const editFields = [
-  { hint: 'PNG/JPG，500KB 内，建议 36×18', key: 'BasicIcon', label: 'VIP 图标', required: true },
-  { hint: 'PNG/JPG，500KB 内，建议 75×85', key: 'Badge', label: 'VIP 徽章（符合）', required: true },
-  { hint: 'PNG/JPG，500KB 内，建议 75×85', key: 'BadgeUnqualified', label: 'VIP 徽章（不符合）', required: true },
-  { hint: 'PNG/JPG，500KB 内，建议 210×40', key: 'ChatroomEntryBg', label: '聊天室入口背景图' },
-  { accept: '.svga,.gif', hint: 'SVGA/GIF，500KB 内，建议 160×160；SVGA 需 2.0+', image: false, key: 'ChatroomEntrySfx', label: '聊天室入口特效' },
-  { hint: 'PNG/JPG，500KB 内，建议 64×112', key: 'BulletScreenSfxHead', label: '弹幕特效（前段）' },
-  { hint: 'PNG/JPG，500KB 内，建议 416×112', key: 'BulletScreenSfxBody', label: '弹幕特效（中段）' },
-  { hint: 'PNG/JPG，500KB 内，建议 96×112', key: 'BulletScreenSfxTail', label: '弹幕特效（后段）' },
+  {
+    hint: 'PNG/JPG，500KB 内，建议 36×18',
+    key: 'BasicIcon',
+    label: 'VIP 图标',
+    required: true,
+  },
+  {
+    hint: 'PNG/JPG，500KB 内，建议 75×85',
+    key: 'Badge',
+    label: 'VIP 徽章（符合）',
+    required: true,
+  },
+  {
+    hint: 'PNG/JPG，500KB 内，建议 75×85',
+    key: 'BadgeUnqualified',
+    label: 'VIP 徽章（不符合）',
+    required: true,
+  },
+  {
+    hint: 'PNG/JPG，500KB 内，建议 210×40',
+    key: 'ChatroomEntryBg',
+    label: '聊天室入口背景图',
+  },
+  {
+    accept: '.svga,.gif',
+    hint: 'SVGA/GIF，500KB 内，建议 160×160；SVGA 需 2.0+',
+    image: false,
+    key: 'ChatroomEntrySfx',
+    label: '聊天室入口特效',
+  },
+  {
+    hint: 'PNG/JPG，500KB 内，建议 64×112',
+    key: 'BulletScreenSfxHead',
+    label: '弹幕特效（前段）',
+  },
+  {
+    hint: 'PNG/JPG，500KB 内，建议 416×112',
+    key: 'BulletScreenSfxBody',
+    label: '弹幕特效（中段）',
+  },
+  {
+    hint: 'PNG/JPG，500KB 内，建议 96×112',
+    key: 'BulletScreenSfxTail',
+    label: '弹幕特效（后段）',
+  },
 ];
 const columns: TableColumnsType<IconRow> = [
   { key: 'index', title: '序号', width: 60 },
@@ -64,7 +121,9 @@ const templateVisible = ref(false);
 const templateMode = ref<'create' | 'edit'>('create');
 const templateName = ref('');
 const currentTemplate = computed(() =>
-  templates.value.find((item) => String(item.TemplateId) === String(activeId.value)),
+  templates.value.find(
+    (item) => String(item.TemplateId) === String(activeId.value),
+  ),
 );
 const defaultTemplate = computed(() => Number(activeId.value) === 1);
 
@@ -85,7 +144,11 @@ async function loadTemplates() {
     }
   }
   templates.value = [...map.values()];
-  if (!templates.value.some((item) => String(item.TemplateId) === String(activeId.value))) {
+  if (
+    !templates.value.some(
+      (item) => String(item.TemplateId) === String(activeId.value),
+    )
+  ) {
     activeId.value = templates.value[0]?.TemplateId || 1;
   }
 }
@@ -105,7 +168,12 @@ function openEdit(row: IconRow) {
   editVisible.value = true;
 }
 async function saveIcon() {
-  if (!form.BasicIcon || !form.Badge || !form.BadgeUnqualified || !form.ColorCode) {
+  if (
+    !form.BasicIcon ||
+    !form.Badge ||
+    !form.BadgeUnqualified ||
+    !form.ColorCode
+  ) {
     message.warning('VIP 图标、符合/不符合徽章和欢迎语色码为必填项');
     return;
   }
@@ -121,7 +189,8 @@ async function saveIcon() {
 }
 function openTemplate(mode: 'create' | 'edit') {
   templateMode.value = mode;
-  templateName.value = mode === 'edit' ? currentTemplate.value?.TemplateName || '' : '';
+  templateName.value =
+    mode === 'edit' ? currentTemplate.value?.TemplateName || '' : '';
   templateVisible.value = true;
 }
 async function saveTemplate() {
@@ -132,7 +201,12 @@ async function saveTemplate() {
   }
   saving.value = true;
   try {
-    await (templateMode.value === 'create' ? createVipIconTemplateApi({ TemplateName: name }) : updateVipIconTemplateApi({ TemplateId: activeId.value, TemplateName: name }));
+    await (templateMode.value === 'create'
+      ? createVipIconTemplateApi({ TemplateName: name })
+      : updateVipIconTemplateApi({
+          TemplateId: activeId.value,
+          TemplateName: name,
+        }));
     templateVisible.value = false;
     message.success('保存成功');
     await loadTemplates();
@@ -175,12 +249,24 @@ onMounted(async () => {
 <template>
   <Card class="scheme-card" size="small">
     <div class="toolbar">
-      <Radio.Group v-model:value="activeId" button-style="solid" @change="loadRows">
-        <Radio.Button v-for="item in templates" :key="item.TemplateId" :value="item.TemplateId">
+      <Radio.Group
+        v-model:value="activeId"
+        button-style="solid"
+        @change="loadRows"
+      >
+        <Radio.Button
+          v-for="item in templates"
+          :key="item.TemplateId"
+          :value="item.TemplateId"
+        >
           {{ item.TemplateName }}
         </Radio.Button>
       </Radio.Group>
-      <Button v-if="checkPermission(13_158)" type="primary" @click="openTemplate('create')">
+      <Button
+        v-if="checkPermission(13_158)"
+        type="primary"
+        @click="openTemplate('create')"
+      >
         新增自定义方案
       </Button>
     </div>
@@ -188,74 +274,96 @@ onMounted(async () => {
       <Space>
         <span class="scheme-label">方案名称</span>
         <strong>{{ currentTemplate.TemplateName }}</strong>
-        <Button v-if="!defaultTemplate && checkPermission(13_159)" size="small" @click="openTemplate('edit')">
+        <Button
+          v-if="!defaultTemplate && checkPermission(13_159)"
+          size="small"
+          @click="openTemplate('edit')"
+        >
           修改名称
         </Button>
-        <Button v-if="!defaultTemplate && checkPermission(13_160)" danger size="small" @click="removeTemplate">
+        <Button
+          v-if="!defaultTemplate && checkPermission(13_160)"
+          danger
+          size="small"
+          @click="removeTemplate"
+        >
           删除方案
         </Button>
       </Space>
-      <Button v-if="checkPermission(13_162)" @click="resetTemplate">恢复默认值</Button>
+      <Button v-if="checkPermission(13_162)" @click="resetTemplate">
+恢复默认值
+</Button>
     </div>
   </Card>
-    <Table
+  <Table
     bordered
-      :columns="columns"
-      :data-source="rows"
-      :loading="loading"
-      :pagination="false"
-      :row-key="(row) => `${row.TemplateId}-${row.VipLevel ?? ''}`"
-      :scroll="{ x: 1400 }"
-      size="small"
-    >
-      <template #bodyCell="{ column, record, index }">
-        <span v-if="column.key === 'index'">{{ index + 1 }}</span>
-        <span v-else-if="column.key === 'VipLevel'">VIP{{ record.VipLevel ?? index }}</span>
-        <template v-else-if="imageColumns.includes(String(column.key))">
-          <Image
-            v-if="record[String(column.key)]"
-            :height="72"
-            :src="getServiceImageUrl(record[String(column.key)])"
-            :width="100"
-            style="object-fit: contain"
-          />
-          <span v-else>-</span>
-        </template>
-        <a
-          v-else-if="column.key === 'ChatroomEntrySfx' && record.ChatroomEntrySfx"
-          :href="getServiceImageUrl(record.ChatroomEntrySfx)"
-          target="_blank"
-        >
-          查看 SVGA/GIF
-        </a>
-        <Space v-else-if="column.key === 'bullet'" size="small">
-          <Image
-            v-for="key in bulletFields"
-            :key="key"
-            :height="64"
-            :src="getServiceImageUrl(record[key])"
-            :width="48"
-            style="object-fit: contain"
-          />
-        </Space>
-        <div v-else-if="column.key === 'ColorCode'" class="color-cell">
-          <i :style="{ background: record.ColorCode }"></i>{{ record.ColorCode || '-' }}
-        </div>
-        <Button
-          v-else-if="column.key === 'action' && checkPermission(13_161)"
-          size="small"
-          type="primary"
-          @click="openEdit(record)"
-        >
-          编辑
-        </Button>
+    :columns="columns"
+    :data-source="rows"
+    :loading="loading"
+    :pagination="false"
+    :row-key="(row) => `${row.TemplateId}-${row.VipLevel ?? ''}`"
+    :scroll="{ x: 1400 }"
+    size="small"
+  >
+    <template #bodyCell="{ column, record, index }">
+      <span v-if="column.key === 'index'">{{ index + 1 }}</span>
+      <span v-else-if="column.key === 'VipLevel'">VIP{{ record.VipLevel ?? index }}</span>
+      <template v-else-if="imageColumns.includes(String(column.key))">
+        <Image
+          v-if="record[String(column.key)]"
+          :height="72"
+          :src="getServiceImageUrl(record[String(column.key)])"
+          :width="100"
+          style="object-fit: contain"
+        />
+        <span v-else>-</span>
       </template>
-    </Table> 
+      <a
+        v-else-if="column.key === 'ChatroomEntrySfx' && record.ChatroomEntrySfx"
+        :href="getServiceImageUrl(record.ChatroomEntrySfx)"
+        target="_blank"
+      >
+        查看 SVGA/GIF
+      </a>
+      <Space v-else-if="column.key === 'bullet'" size="small">
+        <Image
+          v-for="key in bulletFields"
+          :key="key"
+          :height="64"
+          :src="getServiceImageUrl(record[key])"
+          :width="48"
+          style="object-fit: contain"
+        />
+      </Space>
+      <div v-else-if="column.key === 'ColorCode'" class="color-cell">
+        <i :style="{ background: record.ColorCode }"></i>{{ record.ColorCode || '-' }}
+      </div>
+      <Button
+        v-else-if="column.key === 'action' && checkPermission(13_161)"
+        size="small"
+        type="primary"
+        @click="openEdit(record)"
+      >
+        编辑
+      </Button>
+    </template>
+  </Table>
 
-  <Modal v-model:open="editVisible" :confirm-loading="saving" title="编辑 VIP 图标" width="920px" @ok="saveIcon">
+  <Modal
+    v-model:open="editVisible"
+    :confirm-loading="saving"
+    title="编辑 VIP 图标"
+    width="920px"
+    @ok="saveIcon"
+  >
     <div class="form-scroll">
       <Form :label-col="{ span: 5 }">
-        <Form.Item v-for="item in editFields" :key="item.key" :label="item.label" :required="item.required">
+        <Form.Item
+          v-for="item in editFields"
+          :key="item.key"
+          :label="item.label"
+          :required="item.required"
+        >
           <VipAssetField
             v-model="form[item.key] as string"
             :accept="item.accept"
@@ -266,7 +374,10 @@ onMounted(async () => {
         <Form.Item label="欢迎语色码" required>
           <div class="color-row">
             <input v-model="form.ColorCode" class="native-color" type="color" />
-            <Input v-model:value="form.ColorCode as string" style="width: 140px" />
+            <Input
+              v-model:value="form.ColorCode as string"
+              style="width: 140px"
+            />
           </div>
         </Form.Item>
       </Form>
@@ -280,49 +391,61 @@ onMounted(async () => {
   >
     <Form layout="vertical">
       <Form.Item label="方案名称" required>
-        <Input v-model:value="templateName" :maxlength="50" placeholder="请输入方案名称" @press-enter="saveTemplate" />
+        <Input
+          v-model:value="templateName"
+          :maxlength="50"
+          placeholder="请输入方案名称"
+          @press-enter="saveTemplate"
+        />
       </Form.Item>
     </Form>
   </Modal>
 </template>
 
 <style scoped>
-.scheme-card{
+.scheme-card {
   margin-bottom: 14px;
   border-radius: 10px;
 }
+
 .toolbar,
 .scheme-info {
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
 }
+
 .toolbar {
   align-items: flex-start;
 }
+
 .scheme-info {
   padding-top: 14px;
   margin-top: 14px;
   border-top: 1px solid hsl(var(--border));
 }
+
 .scheme-label {
   padding: 7px 12px;
   color: white;
   background: hsl(var(--primary));
   border-radius: 6px 0 0 6px;
 }
+
 .color-cell,
 .color-row {
   display: flex;
-  align-items: center;
   gap: 9px;
+  align-items: center;
 }
+
 .color-cell i {
   width: 20px;
   height: 20px;
   border: 1px solid hsl(var(--border));
 }
+
 .native-color {
   width: 42px;
   height: 34px;
@@ -330,6 +453,7 @@ onMounted(async () => {
   border: 1px solid hsl(var(--border));
   border-radius: 6px;
 }
+
 .form-scroll {
   max-height: 72vh;
   padding-right: 10px;

@@ -1,8 +1,9 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operational-data';
 import type { GameWinRankResult } from '#/types/operational-data';
-import { enrichGameRankRows, mergeRankUsers } from '#/utils/ranking';
 import type { RankGameRow, RankPlayerRow } from '#/utils/ranking';
+
+import { requestClient } from '#/api/request';
+import { enrichGameRankRows, mergeRankUsers } from '#/utils/ranking';
 import { trimSpace } from '#/utils/string';
 
 export type { RankGameRow, RankPlayerRow };

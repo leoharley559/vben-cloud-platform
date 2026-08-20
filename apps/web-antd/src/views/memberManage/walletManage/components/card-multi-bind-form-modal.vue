@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue';
 
-import { Form, Input, Modal, Select, message } from 'ant-design-vue';
+import { Form, Input, message, Modal, Select } from 'ant-design-vue';
 
 import { createCardMultiBindApi } from '#/api/memberManage/card-multi-bind';
 import { useOperationOptions } from '#/composables/use-operation-options';

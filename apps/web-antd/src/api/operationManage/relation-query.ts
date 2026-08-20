@@ -1,10 +1,11 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   RelationQueryItem,
   RelationQueryListQuery,
   RelationQueryTotal,
 } from '#/types/relation-query';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -19,11 +20,11 @@ function normalizeRelationQuery(query: RelationQueryListQuery) {
   const params = trimSpace({ ...query }) as Record<string, unknown>;
   const channelIds = params.ChannelIds;
   if (Array.isArray(channelIds)) {
-    params.ChannelIds = channelIds.length ? channelIds.join(',') : '';
+    params.ChannelIds = channelIds.length > 0 ? channelIds.join(',') : '';
   }
   const channelSearch = params.ChannelSearch;
   if (Array.isArray(channelSearch)) {
-    params.ChannelSearch = channelSearch.length ? channelSearch.join(',') : '';
+    params.ChannelSearch = channelSearch.length > 0 ? channelSearch.join(',') : '';
   }
   return params;
 }

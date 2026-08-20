@@ -52,7 +52,9 @@ const { checkPermission } = useCloudPermission();
 const canApply = computed(() => checkPermission(11_793));
 const canApprove = computed(() => checkPermission(11_796));
 const canReject = computed(() => checkPermission(11_797));
-const panelRefs = reactive<Record<string, InstanceType<typeof CreditDataPanel>>>({});
+const panelRefs = reactive<
+  Record<string, InstanceType<typeof CreditDataPanel>>
+>({});
 const amount = (value: unknown) => formatAmountFromCent(Number(value || 0));
 const date = (value: unknown) => formatNetcashDateTime(value as string);
 const walletMap: Record<number, string> = { 2: '代存', 3: '代客' };
@@ -111,7 +113,9 @@ const pendingConfig: CreditPanelConfig = {
     ),
   filters: commonFilters,
   showActions: true,
-  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '申请金额合计' }],
+  summaries: [
+    { amount: true, field: 'TotalAdjustAmount', label: '申请金额合计' },
+  ],
 };
 const recordConfig: CreditPanelConfig = {
   // Status 空串=全部（含待审）；旧站把 全部 映射成 -1，后端 -1 实测恒空
@@ -146,7 +150,9 @@ const recordConfig: CreditPanelConfig = {
       type: 'select',
     },
   ],
-  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '调整金额合计' }],
+  summaries: [
+    { amount: true, field: 'TotalAdjustAmount', label: '调整金额合计' },
+  ],
 };
 const logConfig: CreditPanelConfig = {
   baseQuery: { AgentType: 1, TransferType: 3, WalletType: 0 },
@@ -206,9 +212,27 @@ const logConfig: CreditPanelConfig = {
 const tabs = computed(() =>
   [
     { inner: 11_792, key: 'apply', outer: 11_792, tab: '平台额度申请' },
-    { config: pendingConfig, inner: 11_795, key: 'pending', outer: 11_794, tab: '平台额度审核' },
-    { config: recordConfig, inner: 11_799, key: 'record', outer: 11_798, tab: '平台额度调整记录' },
-    { config: logConfig, inner: 11_799, key: 'log', outer: 11_800, tab: '平台额度帐变记录' },
+    {
+      config: pendingConfig,
+      inner: 11_795,
+      key: 'pending',
+      outer: 11_794,
+      tab: '平台额度审核',
+    },
+    {
+      config: recordConfig,
+      inner: 11_799,
+      key: 'record',
+      outer: 11_798,
+      tab: '平台额度调整记录',
+    },
+    {
+      config: logConfig,
+      inner: 11_799,
+      key: 'log',
+      outer: 11_800,
+      tab: '平台额度帐变记录',
+    },
   ].filter((tab) => checkPermission(tab.outer)),
 );
 const activeTab = ref('apply');
@@ -290,9 +314,11 @@ async function submitReview() {
   if (!reviewRow.value) return;
   reviewSubmitting.value = true;
   try {
-    await (reviewApprove.value
-      ? approvePlatformCreditAdjustmentApi
-      : rejectPlatformCreditAdjustmentApi)({
+    await (
+      reviewApprove.value
+        ? approvePlatformCreditAdjustmentApi
+        : rejectPlatformCreditAdjustmentApi
+    )({
       FinishNote: finishNote.value,
       Hash: createRequestHash(),
       Ids: String(reviewRow.value.Id),
@@ -450,16 +476,18 @@ onMounted(() => {
       <Form layout="vertical">
         <Form.Item label="调整内容">
           <Input
-            :value="
-              `${walletMap[Number(reviewRow?.WalletType)] || '未知'} / ${
-                Number(reviewRow?.AdjustAmount) >= 0 ? '增加' : '扣除'
-              } / ${formatAmountFromCent(Number(reviewRow?.AdjustAmount))} 元`
-            "
+            :value="`${walletMap[Number(reviewRow?.WalletType)] || '未知'} / ${
+              Number(reviewRow?.AdjustAmount) >= 0 ? '增加' : '扣除'
+            } / ${formatAmountFromCent(Number(reviewRow?.AdjustAmount))} 元`"
             disabled
           />
         </Form.Item>
         <Form.Item label="审核备注">
-          <Input.TextArea v-model:value="finishNote" :maxlength="100" :rows="4" />
+          <Input.TextArea
+            v-model:value="finishNote"
+            :maxlength="100"
+            :rows="4"
+          />
         </Form.Item>
       </Form>
     </Modal>

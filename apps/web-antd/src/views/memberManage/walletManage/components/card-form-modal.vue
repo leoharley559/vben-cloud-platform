@@ -3,7 +3,7 @@ import type { BankCardListItem } from '#/types/bank-card';
 
 import { computed, ref, watch } from 'vue';
 
-import { Form, Input, Modal, Select, message } from 'ant-design-vue';
+import { Form, Input, message, Modal, Select } from 'ant-design-vue';
 
 import {
   createBankCardApi,
@@ -20,9 +20,6 @@ import { createRequestHash } from '#/utils/crypto';
 
 defineOptions({ name: 'CardFormModal' });
 
-/** 与旧站 GoogleCode page-id=8 一致 */
-const BANK_CARD_SECURITY_PAGE_ID = 8;
-
 const props = defineProps<{
   mode: 'create' | 'edit';
   open: boolean;
@@ -33,6 +30,9 @@ const emit = defineEmits<{
   success: [];
   'update:open': [value: boolean];
 }>();
+
+/** 与旧站 GoogleCode page-id=8 一致 */
+const BANK_CARD_SECURITY_PAGE_ID = 8;
 
 const { packageOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
@@ -49,7 +49,7 @@ const cardId = ref<number | string>('');
 
 const bankOptions = computed(() => {
   const list = projectConfig.value?.BankList as
-    | Array<{ BankCode?: string; BankName?: string; IsOpen?: number | boolean }>
+    | Array<{ BankCode?: string; BankName?: string; IsOpen?: boolean | number }>
     | undefined;
   return (list || [])
     .filter((item) => item.BankCode && Number(item.IsOpen) === 1)

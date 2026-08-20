@@ -9,20 +9,20 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchThirdWithdrawListApi,
   shelfThirdWithdrawApi,
   updateThirdWithdrawApi,
   updateThirdWithdrawSecretApi,
 } from '#/api/gameManage';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -63,9 +63,9 @@ interface ThirdWithdrawRow {
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
-const canShelf = computed(() => checkPermission(11023));
-const canSecret = computed(() => checkPermission(10990));
-const canEdit = computed(() => checkPermission(10988));
+const canShelf = computed(() => checkPermission(11_023));
+const canSecret = computed(() => checkPermission(10_990));
+const canEdit = computed(() => checkPermission(10_988));
 
 const bankOptions = computed(() => {
   const list = (projectConfig.value?.BankList || []) as Array<{
@@ -205,7 +205,7 @@ function formatRate(row: ThirdWithdrawRow) {
   const type = Number(row.RateType);
   const percent =
     row.Rate === undefined || row.Rate === '' ? '-' : `${row.Rate}%`;
-  const fixed = Number(row.CustomRate || 0) / 10000;
+  const fixed = Number(row.CustomRate || 0) / 10_000;
   if (type === 1) {
     return String(fixed);
   }
@@ -282,7 +282,7 @@ function openEdit(row: ThirdWithdrawRow) {
   editForm.RateType = Number(row.RateType || 0);
   editForm.Rate =
     row.Rate === undefined || row.Rate === '' ? undefined : Number(row.Rate);
-  editForm.CustomRate = Number(row.CustomRate || 0) / 10000;
+  editForm.CustomRate = Number(row.CustomRate || 0) / 10_000;
   editForm.MinDayMoney = row.MinDayMoney
     ? Number(row.MinDayMoney) / 100
     : undefined;
@@ -377,7 +377,7 @@ async function submitEdit() {
   saving.value = true;
   try {
     await updateThirdWithdrawApi({
-      CustomRate: Number(editForm.CustomRate || 0) * 10000,
+      CustomRate: Number(editForm.CustomRate || 0) * 10_000,
       Description: editForm.Description,
       Id: editForm.Id,
       MaxDayMoney: Number(editForm.MaxDayMoney || 0) * 100,

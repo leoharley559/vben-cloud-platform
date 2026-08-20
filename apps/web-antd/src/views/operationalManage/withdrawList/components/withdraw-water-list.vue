@@ -12,6 +12,7 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Popover,
   Result,
@@ -19,10 +20,10 @@ import {
   Space,
   Table,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchWithdrawWaterListApi,
   fetchWithdrawWaterStatusLogApi,
@@ -30,9 +31,8 @@ import {
 } from '#/api/operationManage/withdraw-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { buildPlayerDetailPath } from '#/utils/player-detail-route';
@@ -46,11 +46,11 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
 const canViewTable = computed(
-  () => checkPermission(13230) || checkPermission(13232),
+  () => checkPermission(13_230) || checkPermission(13_232),
 );
-const canEditStatus = computed(() => checkPermission(13232));
-const canSettings = computed(() => checkPermission(13233));
-const canGotoProcess = computed(() => checkPermission(13234));
+const canEditStatus = computed(() => checkPermission(13_232));
+const canSettings = computed(() => checkPermission(13_233));
+const canGotoProcess = computed(() => checkPermission(13_234));
 
 const defaultRange = getYesterdayRangeSeconds();
 const filterLoginAccount = ref('');
@@ -306,60 +306,57 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterChannelId"
-          allow-clear
-          placeholder="请输入渠道号"
-        >
-          <template #addonBefore>渠道号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterStatus"
-        :options="statusOptions"
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterHandlerName"
-          allow-clear
-          placeholder="请输入操作人"
-        >
-          <template #addonBefore>操作人</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterPackageId"
+          :options="
+            packageOptions
+              .filter((item) => item.PackageId !== '')
+              .map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+          "
+        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterChannelId"
+            allow-clear
+            placeholder="请输入渠道号"
+          >
+            <template #addonBefore>渠道号</template>
+          </Input>
+        </div>
+        <Select v-model:value="filterStatus" :options="statusOptions" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterHandlerName"
+            allow-clear
+            placeholder="请输入操作人"
+          >
+            <template #addonBefore>操作人</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
-      <Button @click="handleReset">重置</Button>
+            查询
+          </Button>
+          <Button @click="handleReset">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <div class="mb-3 flex flex-wrap gap-2">
       <Button

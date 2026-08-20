@@ -6,11 +6,11 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Select,
   Spin,
   Switch,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -31,14 +31,14 @@ import {
 
 defineOptions({ name: 'LeaderboardUpsertModal' });
 
-type UpsertMode = 'add' | 'clone' | 'edit';
-
 const props = defineProps<{
   leaderboardId?: number | string;
   mode?: UpsertMode;
 }>();
 
 const emit = defineEmits<{ success: [] }>();
+
+type UpsertMode = 'add' | 'clone' | 'edit';
 
 const open = defineModel<boolean>('open', { default: false });
 
@@ -83,7 +83,7 @@ const modalTitle = computed(() => {
 
 function defaultLangTextArray(title = '') {
   const groups = cloudStore.projectConfig?.LangGroup || [];
-  if (!groups.length) {
+  if (groups.length === 0) {
     return [{ Icon: '', IsActive: true, LangGroupId: 1, Title: title }];
   }
   return groups.map((group) => ({
@@ -205,7 +205,7 @@ async function loadDetail() {
 function buildSubmitPayload() {
   const participants = Number(form.NumParticipants) || 50;
   const langTextMap = parseLangTextMap(rawDetail.value.LangText);
-  const langTextArray = Object.keys(langTextMap).length
+  const langTextArray = Object.keys(langTextMap).length > 0
     ? Object.entries(langTextMap).map(([langGroupId, item]) => ({
         ...item,
         LangGroupId: Number(langGroupId),
@@ -227,7 +227,7 @@ function buildSubmitPayload() {
       },
     ],
   );
-  if (rewards.length) {
+  if (rewards.length > 0) {
     rewards[rewards.length - 1] = {
       ...rewards[rewards.length - 1],
       RankingEnd: participants,
@@ -293,11 +293,7 @@ async function handleSubmit() {
       props.mode === 'add' && !props.leaderboardId
         ? buildDefaultPayload()
         : buildSubmitPayload();
-    if (props.mode === 'edit') {
-      await updateLeaderboardApi(payload);
-    } else {
-      await createLeaderboardApi(payload);
-    }
+    await (props.mode === 'edit' ? updateLeaderboardApi(payload) : createLeaderboardApi(payload));
     message.success('保存成功');
     open.value = false;
     emit('success');

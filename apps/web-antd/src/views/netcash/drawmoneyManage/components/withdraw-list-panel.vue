@@ -1,7 +1,16 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
-import { computed, onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue';
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+} from 'vue';
 import { useRouter } from 'vue-router';
 
 import {
@@ -19,7 +28,7 @@ import {
   Space,
   Switch,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -281,12 +290,16 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
         if (!assertWithdrawDateSpan()) return { items: [], total: 0 };
         try {
           const result = await fetchDrawmoneyListApi(withdrawalParams(page));
-          Object.keys(withdrawTotal).forEach((key) => delete withdrawTotal[key]);
+          Object.keys(withdrawTotal).forEach(
+            (key) => delete withdrawTotal[key],
+          );
           Object.assign(withdrawTotal, result.Total || {});
           withdrawCount.value = Number(result.Pagination?.MaxCount || 0);
           return { items: result.Items || [], total: withdrawCount.value };
         } catch {
-          Object.keys(withdrawTotal).forEach((key) => delete withdrawTotal[key]);
+          Object.keys(withdrawTotal).forEach(
+            (key) => delete withdrawTotal[key],
+          );
           withdrawCount.value = 0;
           return { items: [], total: 0 };
         }
@@ -335,9 +348,8 @@ function openAction(kind: ActionKind, row: Record<string, unknown>) {
 async function submitAction() {
   try {
     let data: Record<string, unknown> = { Id: actionRow.value.Id };
-    if (actionKind.value === 'manual') {
-      await drawmoneyRequest.manualConfirm({ ...data, Handle: 3 });
-    } else if (actionKind.value === 'agree') {
+    switch (actionKind.value) {
+    case 'agree': {
       if (!actionForm.WithdrawAccountId) {
         message.warning('请选择出款通道');
         return;
@@ -346,7 +358,15 @@ async function submitAction() {
         ...data,
         WithdrawAccountId: actionForm.WithdrawAccountId,
       });
-    } else if (actionKind.value === 'refuse') {
+    
+    break;
+    }
+    case 'manual': {
+      await drawmoneyRequest.manualConfirm({ ...data, Handle: 3 });
+    
+    break;
+    }
+    case 'refuse': {
       if (!actionForm.RefuseTitle) {
         message.warning('请选择或输入拒绝原因');
         return;
@@ -360,11 +380,15 @@ async function submitAction() {
         Remark: actionForm.Remark,
       };
       await drawmoneyRequest.manualRefuse(data);
-    } else {
+    
+    break;
+    }
+    default: {
       await drawmoneyRequest.addRemark({
         Id: actionRow.value.Id,
         Remark: actionForm.Remark,
       });
+    }
     }
     actionOpen.value = false;
     message.success('操作成功');
@@ -448,7 +472,7 @@ function checkWithdraw(row: Record<string, unknown>) {
 }
 
 function batchManual() {
-  if (!selected.value.length) return;
+  if (selected.value.length === 0) return;
   Modal.confirm({
     content: '确认将所选订单批量转为人工出款？',
     onOk: async () => {
@@ -467,7 +491,7 @@ function batchManual() {
 }
 
 function batchRefuse() {
-  if (!selected.value.length) return;
+  if (selected.value.length === 0) return;
   Modal.confirm({
     content: '确认拒绝所选订单并退币？',
     onOk: async () => {
@@ -546,7 +570,12 @@ function filterPending() {
 }
 
 function buildWithdrawExportQuery() {
-  const { Page: _p, PageSize: _s, IsExp: _e, ...rest } = withdrawalParams({
+  const {
+    Page: _p,
+    PageSize: _s,
+    IsExp: _e,
+    ...rest
+  } = withdrawalParams({
     currentPage: 1,
     pageSize: 20,
   });
@@ -709,83 +738,104 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Result v-if="!canView" status="403" sub-title="无提款列表查看权限" title="403" />
+  <Result
+    v-if="!canView"
+    status="403"
+    sub-title="无提款列表查看权限"
+    title="403"
+  />
   <div v-else>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="withdrawQuery.Applicant"
-          allow-clear
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="withdrawQuery.OrderId"
-          allow-clear
-          placeholder="请输入订单号"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="withdrawQuery.HandlerName"
-          allow-clear
-          placeholder="请输入操作人员"
-        >
-          <template #addonBefore>操作人员</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="withdrawQuery.ShowName"
-          allow-clear
-          placeholder="请输入出款通道"
-        >
-          <template #addonBefore>出款通道</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="withdrawQuery.WithdrawAccount"
-          allow-clear
-          placeholder="请输入出款账号"
-        >
-          <template #addonBefore>出款账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="withdrawQuery.PayName"
-          allow-clear
-          placeholder="请输入持卡人"
-        >
-          <template #addonBefore>持卡人</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="withdrawQuery.Applicant"
+            allow-clear
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="withdrawQuery.OrderId"
+            allow-clear
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="withdrawQuery.HandlerName"
+            allow-clear
+            placeholder="请输入操作人员"
+          >
+            <template #addonBefore>操作人员</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="withdrawQuery.ShowName"
+            allow-clear
+            placeholder="请输入出款通道"
+          >
+            <template #addonBefore>出款通道</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="withdrawQuery.WithdrawAccount"
+            allow-clear
+            placeholder="请输入出款账号"
+          >
+            <template #addonBefore>出款账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="withdrawQuery.PayName"
+            allow-clear
+            placeholder="请输入持卡人"
+          >
+            <template #addonBefore>持卡人</template>
+          </Input>
+        </div>
         <Space.Compact>
           <span class="query-field-addon">提款方式</span>
-          <Select v-model:value="withdrawQuery.AccountType" mode="multiple" :options="PAY_TYPE_OPTIONS"
-            placeholder="请选择提款方式" />
+          <Select
+            v-model:value="withdrawQuery.AccountType"
+            mode="multiple"
+            :options="PAY_TYPE_OPTIONS"
+            placeholder="请选择提款方式"
+          />
         </Space.Compact>
-        <Select v-model:value="withdrawQuery.AmountType" :options="[
-          { label: '申请金额', value: 1 },
-          { label: '实际出款', value: 2 },
-        ]" />
-        <Select v-model:value="withdrawQuery.SelectTimeType" :options="[
-          { label: '申请时间', value: 1 },
-          { label: '结束时间', value: 2 },
-          { label: '财务响应时间', value: 3 },
-        ]" />
+        <Select
+          v-model:value="withdrawQuery.AmountType"
+          :options="[
+            { label: '申请金额', value: 1 },
+            { label: '实际出款', value: 2 },
+          ]"
+        />
+        <Select
+          v-model:value="withdrawQuery.SelectTimeType"
+          :options="[
+            { label: '申请时间', value: 1 },
+            { label: '结束时间', value: 2 },
+            { label: '财务响应时间', value: 3 },
+          ]"
+        />
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="withdrawRange" />
         </div>
-        <InputNumber v-model:value="withdrawQuery.AmountMin" placeholder="请输入最小金额" />
-        <InputNumber v-model:value="withdrawQuery.AmountMax" placeholder="请输入最大金额" />
+        <InputNumber
+          v-model:value="withdrawQuery.AmountMin"
+          placeholder="请输入最小金额"
+        />
+        <InputNumber
+          v-model:value="withdrawQuery.AmountMax"
+          placeholder="请输入最大金额"
+        />
         <Space.Compact>
           <span class="query-field-addon">状态</span>
           <Select
@@ -806,24 +856,36 @@ onUnmounted(() => {
         </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="withdrawGridApi.reload()">查询</Button>
-        <Button @click="resetWithdraw">重置</Button>
-        <Button @click="exportWithdraw">导出 Excel</Button>
-        <Button v-if="checkPermission(12032)" type="primary" ghost @click="openAuto">
-          自动出款设置
-        </Button>
-        <span v-if="checkPermission(12749)">
-          自动刷新
-          <Switch :checked="autoRefreshStatus === 1" @change="(v) => toggleAutoRefresh(!!v)" />
-        </span>
-        <Button type="primary" :disabled="selected.length === 0" @click="batchManual">
-          批量人工出款
-        </Button>
-        <Button danger :disabled="selected.length === 0" @click="batchRefuse">
-          批量拒绝出款
-        </Button>
+          <Button @click="resetWithdraw">重置</Button>
+          <Button @click="exportWithdraw">导出 Excel</Button>
+          <Button
+            v-if="checkPermission(12032)"
+            type="primary"
+            ghost
+            @click="openAuto"
+          >
+            自动出款设置
+          </Button>
+          <span v-if="checkPermission(12749)">
+            自动刷新
+            <Switch
+              :checked="autoRefreshStatus === 1"
+              @change="(v) => toggleAutoRefresh(!!v)"
+            />
+          </span>
+          <Button
+            type="primary"
+            :disabled="selected.length === 0"
+            @click="batchManual"
+          >
+            批量人工出款
+          </Button>
+          <Button danger :disabled="selected.length === 0" @click="batchRefuse">
+            批量拒绝出款
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="withdrawSummaryItems" />
     <Space v-if="Number(withdrawTotal.PendingCountNum) > 0" class="mb-3">
@@ -832,48 +894,92 @@ onUnmounted(() => {
 
     <WithdrawGrid>
       <template #applyAccount="{ row }">
-        <AgencyAccountLink :admin-id="resolveAgencyAdminId(row)" :username="row.ApplyAccount" />
+        <AgencyAccountLink
+          :admin-id="resolveAgencyAdminId(row)"
+          :username="row.ApplyAccount"
+        />
       </template>
       <template #actions="{ row }">
         <Space :size="0" wrap>
-          <Button v-if="canStart(row)" type="link" size="small" @click="start(row)">
+          <Button
+            v-if="canStart(row)"
+            type="link"
+            size="small"
+            @click="start(row)"
+          >
             开始处理
           </Button>
-          <Button v-if="canManual(row)" type="link" size="small" @click="openAction('manual', row)">
+          <Button
+            v-if="canManual(row)"
+            type="link"
+            size="small"
+            @click="openAction('manual', row)"
+          >
             人工出款
           </Button>
-          <Button v-if="checkPermission(12743) && canAgreeOrRefuse(row)" type="link" size="small"
-            @click="prepareAgree(row)">
+          <Button
+            v-if="checkPermission(12743) && canAgreeOrRefuse(row)"
+            type="link"
+            size="small"
+            @click="prepareAgree(row)"
+          >
             同意出款
           </Button>
-          <Button v-if="checkPermission(12745) && canAgreeOrRefuse(row)" danger type="link" size="small"
-            @click="openAction('refuse', row)">
+          <Button
+            v-if="checkPermission(12745) && canAgreeOrRefuse(row)"
+            danger
+            type="link"
+            size="small"
+            @click="openAction('refuse', row)"
+          >
             拒绝出款
           </Button>
-          <Button v-if="checkPermission(12747) && canCheckOrTransition(row)" type="link" size="small"
-            @click="checkWithdraw(row)">
+          <Button
+            v-if="checkPermission(12747) && canCheckOrTransition(row)"
+            type="link"
+            size="small"
+            @click="checkWithdraw(row)"
+          >
             提现查询
           </Button>
-          <Button v-if="checkPermission(12748) && canCheckOrTransition(row)" type="link" size="small"
-            @click="transition(row)">
+          <Button
+            v-if="checkPermission(12748) && canCheckOrTransition(row)"
+            type="link"
+            size="small"
+            @click="transition(row)"
+          >
             转待处理
           </Button>
           <Button type="link" size="small" @click="viewLogs(row)">
             出款记录
           </Button>
-          <Button v-if="checkPermission(12751)" type="link" size="small" @click="openAction('remark', row)">
+          <Button
+            v-if="checkPermission(12751)"
+            type="link"
+            size="small"
+            @click="openAction('remark', row)"
+          >
             备注
           </Button>
-          <Button v-if="checkPermission(12750) && row.CreateAdminId" type="link" size="small" @click="
-            router.push(`/netcash/agencyAccountDetails/${row.CreateAdminId}`)
-            ">
+          <Button
+            v-if="checkPermission(12750) && row.CreateAdminId"
+            type="link"
+            size="small"
+            @click="
+              router.push(`/netcash/agencyAccountDetails/${row.CreateAdminId}`)
+            "
+          >
             代理详情
           </Button>
         </Space>
       </template>
     </WithdrawGrid>
 
-    <Modal v-model:open="actionOpen" :title="actionTitleMap[actionKind]" @ok="submitAction">
+    <Modal
+      v-model:open="actionOpen"
+      :title="actionTitleMap[actionKind]"
+      @ok="submitAction"
+    >
       <Form layout="vertical">
         <template v-if="actionKind === 'refuse'">
           <Form.Item label="是否退币">
@@ -882,20 +988,31 @@ onUnmounted(() => {
             </Radio.Group>
           </Form.Item>
           <Form.Item label="拒绝原因">
-            <Select v-model:value="actionForm.RefuseTitle" :options="[
-              { label: '提款账号与姓名不符', value: '提款账号与姓名不符' },
-              { label: '其他', value: '其他' },
-            ]" />
+            <Select
+              v-model:value="actionForm.RefuseTitle"
+              :options="[
+                { label: '提款账号与姓名不符', value: '提款账号与姓名不符' },
+                { label: '其他', value: '其他' },
+              ]"
+            />
           </Form.Item>
           <Form.Item v-if="actionForm.RefuseTitle === '其他'" label="操作说明">
             <Input.TextArea v-model:value="actionForm.HandlerInf" />
           </Form.Item>
         </template>
         <Form.Item v-if="actionKind === 'agree'" label="出款通道" required>
-          <Select v-model:value="actionForm.WithdrawAccountId" :options="agreeChannels.map((x) => ({ label: x.ShowName, value: x.Id }))
-            " />
+          <Select
+            v-model:value="actionForm.WithdrawAccountId"
+            :options="
+              agreeChannels.map((x) => ({ label: x.ShowName, value: x.Id }))
+            "
+          />
         </Form.Item>
-        <Descriptions v-if="actionKind === 'manual' || actionKind === 'agree'" bordered size="small">
+        <Descriptions
+          v-if="actionKind === 'manual' || actionKind === 'agree'"
+          bordered
+          size="small"
+        >
           <Descriptions.Item label="真实姓名">
             {{ actionRow.PayRealName }}
           </Descriptions.Item>
@@ -906,26 +1023,57 @@ onUnmounted(() => {
             {{ money(actionRow.RealAmount) }}
           </Descriptions.Item>
         </Descriptions>
-        <Form.Item v-if="actionKind === 'refuse' || actionKind === 'remark'" label="备注">
+        <Form.Item
+          v-if="actionKind === 'refuse' || actionKind === 'remark'"
+          label="备注"
+        >
           <Input.TextArea v-model:value="actionForm.Remark" :maxlength="400" />
         </Form.Item>
       </Form>
     </Modal>
 
-    <Modal v-model:open="detailOpen" :footer="null" :title="detailTitle" width="800px">
-      <Descriptions v-for="(row, i) in detailRows" :key="i" bordered class="mb-2" size="small">
-        <Descriptions.Item v-for="(value, key) in row" :key="key" :label="String(key)">
+    <Modal
+      v-model:open="detailOpen"
+      :footer="null"
+      :title="detailTitle"
+      width="800px"
+    >
+      <Descriptions
+        v-for="(row, i) in detailRows"
+        :key="i"
+        bordered
+        class="mb-2"
+        size="small"
+      >
+        <Descriptions.Item
+          v-for="(value, key) in row"
+          :key="key"
+          :label="String(key)"
+        >
           {{ value }}
         </Descriptions.Item>
       </Descriptions>
     </Modal>
 
-    <Modal v-model:open="autoOpen" title="自动出款设置" width="900px" @ok="saveAuto">
+    <Modal
+      v-model:open="autoOpen"
+      title="自动出款设置"
+      width="900px"
+      @ok="saveAuto"
+    >
       <Space class="mb-3">
         <span>功能开关</span>
-        <Switch v-model:checked="autoSetting.Status" :checked-value="1" :un-checked-value="0" />
-        <Checkbox v-model:checked="autoSetting.RealNameBlockStatus" :disabled="autoSetting.Status === 1"
-          :false-value="0" :true-value="1">
+        <Switch
+          v-model:checked="autoSetting.Status"
+          :checked-value="1"
+          :un-checked-value="0"
+        />
+        <Checkbox
+          v-model:checked="autoSetting.RealNameBlockStatus"
+          :disabled="autoSetting.Status === 1"
+          :false-value="0"
+          :true-value="1"
+        >
           真实姓名超过 5 个字不可自动出款
         </Checkbox>
         <Button :disabled="autoSetting.Status === 1" @click="addAutoRule">
@@ -933,35 +1081,73 @@ onUnmounted(() => {
         </Button>
         <span>今日已自动出款总额：{{ money(autoTotal) }}</span>
       </Space>
-      <div v-for="(rule, index) in autoRules" :key="rule.Id || index" class="mb-2 flex items-center gap-2">
-        <Select v-model:value="rule.PayType" :disabled="autoSetting.Status === 1 || !!rule.Id"
-          :options="PAY_TYPE_OPTIONS" style="width: 130px" />
-        <InputNumber v-model:value="rule.AutoWithdrawAmountMin" :disabled="autoSetting.Status === 1" :min="1" placeholder="请输入最小金额" />
+      <div
+        v-for="(rule, index) in autoRules"
+        :key="rule.Id || index"
+        class="mb-2 flex items-center gap-2"
+      >
+        <Select
+          v-model:value="rule.PayType"
+          :disabled="autoSetting.Status === 1 || !!rule.Id"
+          :options="PAY_TYPE_OPTIONS"
+          style="width: 130px"
+        />
+        <InputNumber
+          v-model:value="rule.AutoWithdrawAmountMin"
+          :disabled="autoSetting.Status === 1"
+          :min="1"
+          placeholder="请输入最小金额"
+        />
         <span>—</span>
-        <InputNumber v-model:value="rule.AutoWithdrawAmountMax" :disabled="autoSetting.Status === 1" :min="1" placeholder="请输入最大金额" />
+        <InputNumber
+          v-model:value="rule.AutoWithdrawAmountMax"
+          :disabled="autoSetting.Status === 1"
+          :min="1"
+          placeholder="请输入最大金额"
+        />
         <Space.Compact>
           <span class="query-field-addon">出款通道</span>
-          <Select v-model:value="rule.AgentWithdrawAccount" allow-clear :disabled="autoSetting.Status === 1" :options="autoChannels
-              .filter(
-                (x) =>
-                  !rule.PayType ||
-                  Number(x.AccountType) === Number(rule.PayType),
-              )
-              .map((x) => ({
-                label: `${x.ShowName || x.AccountNum}（${Number(x.ScriptMode) === 1 ? '自动' : '手动'}）`,
-                value: String(x.Id),
-              }))
-            " style="width: 210px"
-              placeholder="请选择出款通道" />
+          <Select
+            v-model:value="rule.AgentWithdrawAccount"
+            allow-clear
+            :disabled="autoSetting.Status === 1"
+            :options="
+              autoChannels
+                .filter(
+                  (x) =>
+                    !rule.PayType ||
+                    Number(x.AccountType) === Number(rule.PayType),
+                )
+                .map((x) => ({
+                  label: `${x.ShowName || x.AccountNum}（${Number(x.ScriptMode) === 1 ? '自动' : '手动'}）`,
+                  value: String(x.Id),
+                }))
+            "
+            style="width: 210px"
+            placeholder="请选择出款通道"
+          />
         </Space.Compact>
         <span>今日已出 {{ rule.AutoWithdrawalAmount || 0 }}</span>
-        <Button danger :disabled="autoSetting.Status === 1" @click="removeAutoRule(rule)">
+        <Button
+          danger
+          :disabled="autoSetting.Status === 1"
+          @click="removeAutoRule(rule)"
+        >
           删除
         </Button>
       </div>
-      <Input.Password v-model:value="autoSetting.ValidCode" class="mt-3" placeholder="谷歌验证码（保存必填）" />
+      <Input.Password
+        v-model:value="autoSetting.ValidCode"
+        class="mt-3"
+        placeholder="谷歌验证码（保存必填）"
+      />
     </Modal>
 
-    <PassPopup ref="exportPass" title="文件密码" type="csv" @confirm="submitExport" />
+    <PassPopup
+      ref="exportPass"
+      title="文件密码"
+      type="csv"
+      @confirm="submitExport"
+    />
   </div>
 </template>

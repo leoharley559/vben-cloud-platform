@@ -61,9 +61,7 @@ export const INVITE_RISK_REASON_MAP: Record<string, string> = {
   same_phone: '同一手机号',
 };
 
-export const INVITE_RISK_ACTION_OPTIONS = [
-  { label: '拒绝发奖', value: 1 },
-];
+export const INVITE_RISK_ACTION_OPTIONS = [{ label: '拒绝发奖', value: 1 }];
 
 /** 对接文档 IncludeDepositTypes 当前仅约定 success */
 export const INVITE_DEPOSIT_TYPE_OPTIONS = [
@@ -107,7 +105,7 @@ export function formatInviteSource(value?: string) {
 }
 
 /** 风控原因：支持单值、逗号分隔或多个命中原因 */
-export function formatInviteRiskReason(value?: string | string[] | null) {
+export function formatInviteRiskReason(value?: null | string | string[]) {
   if (value === undefined || value === null || value === '') return '-';
   const list = Array.isArray(value)
     ? value
@@ -115,16 +113,14 @@ export function formatInviteRiskReason(value?: string | string[] | null) {
         .split(/[,，;；|]/)
         .map((item) => item.trim())
         .filter(Boolean);
-  if (!list.length) return '-';
-  return list
-    .map((code) => INVITE_RISK_REASON_MAP[code] || code)
-    .join('、');
+  if (list.length === 0) return '-';
+  return list.map((code) => INVITE_RISK_REASON_MAP[code] || code).join('、');
 }
 
-export function formatRiskDimensions(values?: string[] | string) {
+export function formatRiskDimensions(values?: string | string[]) {
   const list = Array.isArray(values)
     ? values
-    : typeof values === 'string' && values.trim()
+    : (typeof values === 'string' && values.trim()
       ? (() => {
           try {
             const parsed = JSON.parse(values) as unknown;
@@ -133,8 +129,8 @@ export function formatRiskDimensions(values?: string[] | string) {
             return [];
           }
         })()
-      : [];
-  if (!list.length) return '-';
+      : []);
+  if (list.length === 0) return '-';
   return list
     .map(
       (value) =>
@@ -144,12 +140,10 @@ export function formatRiskDimensions(values?: string[] | string) {
     .join('、');
 }
 
-export function formatInviterTiers(
-  tiers?: InviteFriendTier[] | string,
-) {
+export function formatInviterTiers(tiers?: InviteFriendTier[] | string) {
   const list = Array.isArray(tiers)
     ? tiers
-    : typeof tiers === 'string' && tiers.trim()
+    : (typeof tiers === 'string' && tiers.trim()
       ? (() => {
           try {
             const parsed = JSON.parse(tiers) as unknown;
@@ -158,8 +152,8 @@ export function formatInviterTiers(
             return [];
           }
         })()
-      : [];
-  if (!list.length) return '-';
+      : []);
+  if (list.length === 0) return '-';
   return list
     .map((tier) => {
       const max =
@@ -212,13 +206,13 @@ export function createDefaultInviteConfigForm(langGroupId = 0) {
 }
 
 /** 元 → 分 */
-export function yuanToCent(value?: number | string | null) {
+export function yuanToCent(value?: null | number | string) {
   if (value === undefined || value === null || value === '') return 0;
   return Math.round(Number(value) * 100);
 }
 
 /** 分 → 元（表单展示） */
-export function centToYuan(value?: number | string | null) {
+export function centToYuan(value?: null | number | string) {
   if (value === undefined || value === null || value === '') return 0;
   return Number((Number(value) / 100).toFixed(2));
 }

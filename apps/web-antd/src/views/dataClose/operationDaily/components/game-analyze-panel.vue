@@ -63,7 +63,10 @@ const summaryItems = computed(() => {
   const win = -num(t.SumTransWinMoney1);
   return [
     { title: '投注金额', value: formatAmountFromCent(t.SumTransBetMoney1) },
-    { title: '有效投注', value: formatAmountFromCent(t.SumTransBetValidMoney1) },
+    {
+      title: '有效投注',
+      value: formatAmountFromCent(t.SumTransBetValidMoney1),
+    },
     { title: '派送金额', value: formatAmountFromCent(t.SumTransWinMoney1) },
     { title: '公司输赢', value: formatAmountFromCent(win) },
     {
@@ -252,7 +255,11 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filters.ChannelIds" class="min-w-[180px]" placeholder="请输入渠道号" />
+        <ChannelSelect
+          v-model="filters.ChannelIds"
+          class="min-w-[180px]"
+          placeholder="请输入渠道号"
+        />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">产品</span>

@@ -17,12 +17,12 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchHelpOrderListApi,
   helpLinkLoginApi,
   helpOrderActionApi,
 } from '#/api/operationManage/help-order';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -30,8 +30,8 @@ import { useAuthStore } from '#/store';
 import { removeHelpLink, setHelpLink } from '#/utils/auth-token';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import {
-  HELP_RECORD_STATUS_MAP,
   formatOperationDateTime,
+  HELP_RECORD_STATUS_MAP,
 } from '#/utils/operation-status';
 
 defineOptions({ name: 'HelpOrderPanel' });
@@ -52,7 +52,7 @@ interface HelpOrderRow {
 type KeywordType = 'All' | 'Creator';
 
 const { checkPermission } = useCloudPermission();
-const canHelp = computed(() => checkPermission(10235));
+const canHelp = computed(() => checkPermission(10_235));
 const authStore = useAuthStore();
 const router = useRouter();
 
@@ -338,12 +338,13 @@ function handleHelp(row: HelpOrderRow) {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="创建日期" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
-        </div></template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建日期" />
+      </div>
+      <div class="query-filter-actions query-filter-actions-single">
+        <Button type="primary" @click="handleSearch">查询</Button>
+        <Button @click="handleReset">重置</Button>
+      </div>
+</template>
     <Grid>
       <template #status="{ row }">
         <Tag :color="statusColor(row)">{{ statusLabel(row) }}</Tag>

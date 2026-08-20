@@ -504,10 +504,10 @@ defineExpose({ buildPatch, hydrate });
 
 .game-link {
   padding: 0;
-  border: 0;
   color: hsl(var(--primary));
-  background: transparent;
   cursor: pointer;
+  background: transparent;
+  border: 0;
 }
 
 .venue-grid {

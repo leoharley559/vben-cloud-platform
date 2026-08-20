@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { UploadProps } from 'ant-design-vue';
 
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import {
   Button,
@@ -92,7 +92,9 @@ function normalizeChecked(items: Row[]) {
   }));
   selectedKeys.value = rows.value.filter(isValid).map((item) => item._key);
 }
-async function precheck(players: Array<{ PackageName: string; PlayerAccount: string }>) {
+async function precheck(
+  players: Array<{ PackageName: string; PlayerAccount: string }>,
+) {
   if (!props.adminId) return;
   checking.value = true;
   try {
@@ -101,7 +103,7 @@ async function precheck(players: Array<{ PackageName: string; PlayerAccount: str
       Players: JSON.stringify(players),
     });
     normalizeChecked(result);
-    if (!result.length) message.warning('未匹配到游戏账号');
+    if (result.length === 0) message.warning('未匹配到游戏账号');
   } finally {
     checking.value = false;
   }
@@ -130,8 +132,8 @@ const beforeUpload: UploadProps['beforeUpload'] = async (file) => {
   const raw = sheet
     ? (XLSX.utils.sheet_to_json(sheet, { defval: '' }) as Row[])
     : [];
-  if (!raw.length || raw.length > 1000) {
-    message.warning(raw.length ? '单次最多导入 1000 条' : '上传文件为空');
+  if (raw.length === 0 || raw.length > 1000) {
+    message.warning(raw.length > 0 ? '单次最多导入 1000 条' : '上传文件为空');
     return Upload.LIST_IGNORE;
   }
   const players = raw.map((item) => ({
@@ -164,7 +166,7 @@ async function submit() {
   const players = rows.value
     .filter((item) => keys.has(String(item._key)) && isValid(item))
     .map(({ _key, ...item }) => item);
-  if (!players.length) {
+  if (players.length === 0) {
     message.warning('请选择至少一条有效记录');
     return;
   }
@@ -210,7 +212,11 @@ watch(
   >
     <Form layout="inline" class="mb-4">
       <Form.Item label="游戏账号">
-        <Input v-model:value="account" placeholder="请输入游戏账号" @press-enter="checkSingle" />
+        <Input
+          v-model:value="account"
+          placeholder="请输入游戏账号"
+          @press-enter="checkSingle"
+        />
       </Form.Item>
       <Form.Item label="所属产品">
         <Select
@@ -222,7 +228,9 @@ watch(
         />
       </Form.Item>
       <Form.Item>
-        <Button :loading="checking" type="primary" @click="checkSingle">预校验</Button>
+        <Button :loading="checking" type="primary" @click="checkSingle">
+预校验
+</Button>
       </Form.Item>
     </Form>
     <Space class="mb-4" wrap>
@@ -238,7 +246,12 @@ watch(
     </Space>
     <SummaryCards :items="summaryItems" />
     <Space class="mb-3">
-      <Input v-model:value="bulkNote" :maxlength="400" style="width: 320px" placeholder="请输入批量备注" />
+      <Input
+        v-model:value="bulkNote"
+        :maxlength="400"
+        style="width: 320px"
+        placeholder="请输入批量备注"
+      />
       <Button @click="applyBulkNote">应用到已选有效记录</Button>
     </Space>
     <Table
@@ -267,7 +280,11 @@ watch(
           </Tag>
         </template>
         <template v-else-if="column.key === 'Note'">
-          <Input v-model:value="record.Note" :disabled="!isValid(record)" :maxlength="400" />
+          <Input
+            v-model:value="record.Note"
+            :disabled="!isValid(record)"
+            :maxlength="400"
+          />
         </template>
       </template>
     </Table>

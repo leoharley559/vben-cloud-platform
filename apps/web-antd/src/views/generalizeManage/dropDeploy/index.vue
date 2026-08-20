@@ -11,19 +11,19 @@ import {
   Card,
   Image,
   Input,
+  message,
   Modal,
   Popconfirm,
   Result,
   Space,
-  message,
 } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteLandingDeployApi,
   fetchLandingDeployListApi,
   fetchLandingResourceListApi,
 } from '#/api/promotion/landing-deploy';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatDateTime, formatLandingDownloadMode } from '#/utils/promotion';
 
@@ -150,24 +150,24 @@ onMounted(async () => {
   >
     <Card>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterName"
-            allow-clear
-            placeholder="请输入模板名称"
-          >
-            <template #addonBefore>模板名称</template>
-          </Input>
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterName"
+              allow-clear
+              placeholder="请输入模板名称"
+            >
+              <template #addonBefore>模板名称</template>
+            </Input>
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="gridApi.reload()">查询</Button>
+            <Button v-if="canCreate" type="primary" @click="handleCreate">
+              新增落地
+            </Button>
+          </div>
         </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="gridApi.reload()">查询</Button>
-        <Button v-if="canCreate" type="primary" @click="handleCreate">
-          新增落地
-        </Button>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <Grid v-if="canViewList">
         <template #preview="{ row }">

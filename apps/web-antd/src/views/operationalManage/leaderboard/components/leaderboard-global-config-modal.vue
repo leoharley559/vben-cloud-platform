@@ -5,10 +5,10 @@ import {
   Checkbox,
   Form,
   Input,
+  message,
   Modal,
   Radio,
   Spin,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -38,7 +38,7 @@ const form = reactive({
 const deviceOptions = computed(() => {
   const map = cloudStore.projectConfig?.DevicePlatformAll || {};
   const entries = Object.entries(map);
-  if (!entries.length) {
+  if (entries.length === 0) {
     return [
       { label: 'PC', value: '1' },
       { label: 'H5', value: '2' },
@@ -69,7 +69,7 @@ async function loadConfig() {
       .split(',')
       .map((item) => item.trim())
       .filter(Boolean);
-    form.DisplayDevices = devices.length
+    form.DisplayDevices = devices.length > 0
       ? devices
       : deviceOptions.value.map((item) => item.value);
   } finally {
@@ -79,7 +79,7 @@ async function loadConfig() {
 
 function buildLangTextPayload() {
   const groups = cloudStore.projectConfig?.LangGroup || [];
-  if (!groups.length) {
+  if (groups.length === 0) {
     return JSON.stringify([{ IsActive: true, LangGroupId: 1 }]);
   }
   return JSON.stringify(
@@ -91,7 +91,7 @@ function buildLangTextPayload() {
 }
 
 async function handleSubmit() {
-  if (!form.DisplayDevices.length) {
+  if (form.DisplayDevices.length === 0) {
     message.warning('请至少选择一个展示设备');
     return;
   }

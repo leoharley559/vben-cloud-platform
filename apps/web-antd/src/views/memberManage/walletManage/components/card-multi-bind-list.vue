@@ -4,20 +4,14 @@ import type { CardMultiBindListItem } from '#/types/card-multi-bind';
 
 import { computed, onMounted, ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  Modal,
-  Space,
-  message,
-} from 'ant-design-vue';
+import { Button, Input, message, Modal, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteCardMultiBindApi,
   fetchCardMultiBindListApi,
 } from '#/api/memberManage/card-multi-bind';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -28,7 +22,7 @@ import CardMultiBindFormModal from './card-multi-bind-form-modal.vue';
 defineOptions({ name: 'CardMultiBindList' });
 
 const { checkPermission } = useCloudPermission();
-const canView = computed(() => checkPermission(12702));
+const canView = computed(() => checkPermission(12_702));
 
 const defaultBegin = dayjs().subtract(1, 'month').startOf('day');
 const defaultEnd = dayjs().endOf('day');
@@ -162,18 +156,18 @@ onMounted(() => {
         </Input>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button type="primary" @click="openCreate">新增</Button>
-      </Space>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+      </div>
+      <div class="query-filter-actions">
+        <Space>
+          <Button :loading="loading" type="primary" @click="handleSearch">
+            查询
+          </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button type="primary" @click="openCreate">新增</Button>
+        </Space>
+      </div>
+    </template>
 
     <Grid>
       <template #actions="{ row }">

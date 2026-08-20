@@ -54,16 +54,21 @@ export function formatBonusApprove(approve?: number | string) {
 
 export function getBonusApproveColor(approve?: number | string) {
   switch (Number(approve)) {
-    case 1:
+    case 1: {
       return 'warning';
-    case 2:
+    }
+    case 2: {
       return 'success';
-    case 3:
+    }
+    case 3: {
       return 'error';
-    case 4:
+    }
+    case 4: {
       return 'processing';
-    default:
+    }
+    default: {
       return 'default';
+    }
   }
 }
 

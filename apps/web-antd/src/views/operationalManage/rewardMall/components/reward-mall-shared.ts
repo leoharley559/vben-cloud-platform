@@ -1,10 +1,7 @@
-import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
-import {
-  formatPercentFromStorage,
-  formatPercentToStorage,
-} from '#/utils/game-config';
 
-export { formatPercentFromStorage, formatPercentToStorage };
+
+
+
 
 /* ==================== 商品类型（1实体 2彩金 3票券） ==================== */
 
@@ -28,7 +25,7 @@ export const REWARD_PRODUCT_TYPE_FILTER_OPTIONS = [
 /* ==================== VIP 等级 ==================== */
 
 /** 供筛选使用（含“全部”） */
-export const REWARD_VIP_FILTER_OPTIONS = VIP_LEVEL_OPTIONS;
+
 
 /** 积分配置表格固定行：VIP0~VIP15 */
 export const REWARD_VIP_LEVELS = Array.from(
@@ -341,14 +338,14 @@ export function formatRewardPoint(value?: number | string) {
   return String(value);
 }
 
-export function centsToYuan(value?: number | string | null) {
+export function centsToYuan(value?: null | number | string) {
   if (value === undefined || value === null || value === '') {
     return 0;
   }
   return Math.round(Number(value)) / 100;
 }
 
-export function yuanToCents(value?: number | string | null) {
+export function yuanToCents(value?: null | number | string) {
   if (value === undefined || value === null || value === '') {
     return 0;
   }
@@ -389,3 +386,6 @@ export function ensureVipRows<T extends { Vip: number }>(
   const map = new Map(rows.map((row) => [Number(row.Vip), row]));
   return REWARD_VIP_LEVELS.map((vip) => map.get(vip) || createDefault(vip));
 }
+
+export {VIP_LEVEL_OPTIONS as REWARD_VIP_FILTER_OPTIONS} from '#/utils/bonus-reward';
+export {formatPercentFromStorage, formatPercentToStorage} from '#/utils/game-config';

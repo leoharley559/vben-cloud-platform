@@ -88,10 +88,7 @@ function parseObject(value: unknown) {
       | Record<string, LangAppearance>;
     if (Array.isArray(parsed)) {
       return Object.fromEntries(
-        parsed.map((item, index) => [
-          String(item.LangGroupId ?? index),
-          item,
-        ]),
+        parsed.map((item, index) => [String(item.LangGroupId ?? index), item]),
       );
     }
     return parsed || {};
@@ -344,21 +341,21 @@ async function submit() {
 .picture-card {
   display: flex;
   flex-direction: column;
+  gap: 10px;
   padding: 14px;
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
-  gap: 10px;
 }
 
 .picture-preview {
   display: flex;
-  height: 160px;
   align-items: center;
   justify-content: center;
+  height: 160px;
   overflow: hidden;
-  border-radius: 6px;
-  background: hsl(var(--muted));
   color: hsl(var(--muted-foreground));
+  background: hsl(var(--muted));
+  border-radius: 6px;
 }
 
 .picture-preview :deep(img) {

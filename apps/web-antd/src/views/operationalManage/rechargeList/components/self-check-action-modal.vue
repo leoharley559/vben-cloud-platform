@@ -17,7 +17,7 @@ const props = defineProps<{
   actionType: 1 | 2 | 4;
   open: boolean;
   operatorName: string;
-  row: SelfCheckListItem | null;
+  row: null | SelfCheckListItem;
 }>();
 
 const emit = defineEmits<{

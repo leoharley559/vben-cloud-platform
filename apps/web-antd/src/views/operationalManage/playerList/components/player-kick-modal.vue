@@ -1,19 +1,18 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 
-import { Form, InputNumber, Modal, message } from 'ant-design-vue';
+import { Form, InputNumber, message, Modal } from 'ant-design-vue';
 
 import { updatePlayerExtApi } from '#/api/operationManage/player';
 
 defineOptions({ name: 'PlayerKickModal' });
 
-const open = defineModel<boolean>('open', { default: false });
 const props = defineProps<{
   lastBlockTime?: number;
-  playerId?: number | string | null;
+  playerId?: null | number | string;
 }>();
 const emit = defineEmits<{ success: [] }>();
-
+const open = defineModel<boolean>('open', { default: false });
 const minutes = ref(0);
 const submitting = ref(false);
 

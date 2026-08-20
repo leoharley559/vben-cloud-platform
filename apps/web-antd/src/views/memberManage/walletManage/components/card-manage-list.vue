@@ -8,23 +8,23 @@ import {
   Button,
   Checkbox,
   Input,
+  message,
   Space,
   Tooltip,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteBankCardApi,
   fetchBankCardListApi,
 } from '#/api/memberManage/bank-card';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
-import { useProjectConfig } from '#/composables/use-project-config';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useProjectConfig } from '#/composables/use-project-config';
 import { formatBankCode } from '#/utils/bank-card';
 
 import CardFormModal from './card-form-modal.vue';
@@ -37,10 +37,10 @@ const BANK_CARD_SECURITY_PAGE_ID = 8;
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
-const canView = computed(() => checkPermission(11469));
-const canAdd = computed(() => checkPermission(11470));
-const canDelete = computed(() => checkPermission(11471));
-const canEdit = computed(() => checkPermission(11472));
+const canView = computed(() => checkPermission(11_469));
+const canAdd = computed(() => checkPermission(11_470));
+const canDelete = computed(() => checkPermission(11_471));
+const canEdit = computed(() => checkPermission(11_472));
 
 const defaultBegin = dayjs().subtract(1, 'month').startOf('day');
 const defaultEnd = dayjs().endOf('day');
@@ -232,20 +232,20 @@ onMounted(() => {
         </Input>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button v-if="canAdd" type="primary" @click="openCreate">
-          新增银行卡
-        </Button>
-      </Space>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+      </div>
+      <div class="query-filter-actions">
+        <Space>
+          <Button :loading="loading" type="primary" @click="handleSearch">
+            查询
+          </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button v-if="canAdd" type="primary" @click="openCreate">
+            新增银行卡
+          </Button>
+        </Space>
+      </div>
+    </template>
 
     <Grid>
       <template #loginAccount="{ row }">

@@ -89,7 +89,7 @@ export async function fetchDropChangeListApi(query: DropChangeListQuery) {
  * @see views/generalizeManage/promoteData/components/invalid-user-panel.vue
  */
 export async function fetchInvalidUserApi(query: PromoteDataBaseQuery) {
-  const data = await requestClient.get<{ Items?: InvalidUserData } | null>(
+  const data = await requestClient.get<null | { Items?: InvalidUserData }>(
     '/backend/promotedata/invaliduser',
     {
       params: normalizeArrayQuery(query as unknown as Record<string, unknown>, [
@@ -171,9 +171,7 @@ export function deleteHandRecordApi(id: number | string) {
 export async function fetchLandingPageListApi() {
   const data = await requestClient.get<
     CloudListResult<LandingPageItem> | LandingPageItem[] | null
-  >(
-    '/backend/landingpage/listall',
-  );
+  >('/backend/landingpage/listall');
   if (!data) return [];
   return Array.isArray(data) ? data : data.Items || [];
 }
@@ -185,10 +183,11 @@ export async function fetchLandingPageListApi() {
  * @see views/generalizeManage/promoteData/components/channel-recoup-list.vue
  */
 export async function fetchChannelRecoupListApi(query: ChannelRecoupListQuery) {
-  const data = await requestClient.get<CloudListResult<ChannelRecoupItem> | null>(
-    '/backend/operation/channelbreakevenreport',
-    { params: trimSpace(query) },
-  );
+  const data =
+    await requestClient.get<CloudListResult<ChannelRecoupItem> | null>(
+      '/backend/operation/channelbreakevenreport',
+      { params: trimSpace(query) },
+    );
   return {
     Items: Array.isArray(data?.Items) ? data.Items : [],
     Pagination: data?.Pagination,

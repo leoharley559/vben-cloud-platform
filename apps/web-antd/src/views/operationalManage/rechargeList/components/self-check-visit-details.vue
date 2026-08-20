@@ -7,10 +7,10 @@ import { computed, onMounted, ref } from 'vue';
 import { Button, Input, Result } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchSelfReviewVisitListApi } from '#/api/operationManage/recharge-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 
@@ -62,7 +62,12 @@ const gridOptions: VxeTableGridOptions<SelfReviewVisitItem> = {
       minWidth: 170,
       title: '访问时间',
     },
-    { field: 'LoginAccount', minWidth: 130, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 130,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PlayerId', minWidth: 120, title: '玩家ID' },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'VipLevel', minWidth: 90, title: 'VIP等级' },
@@ -110,37 +115,37 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @press-enter="gridApi.reload()"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPlayerId"
-          allow-clear
-          @press-enter="gridApi.reload()"
-          placeholder="请输入玩家ID"
-        >
-          <template #addonBefore>玩家ID</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @press-enter="gridApi.reload()"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPlayerId"
+            allow-clear
+            @press-enter="gridApi.reload()"
+            placeholder="请输入玩家ID"
+          >
+            <template #addonBefore>玩家ID</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
+            查询
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <div v-if="loadError" class="mb-4 text-sm text-red-500">
       {{ loadError }}

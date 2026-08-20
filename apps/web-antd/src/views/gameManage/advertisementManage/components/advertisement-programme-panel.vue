@@ -231,9 +231,7 @@ const defaultLanguageId = computed(
     languageGroups.value[0]?.Id ??
     0,
 );
-const currentLanguage = computed(
-  () => languageContent[activeLanguage.value],
-);
+const currentLanguage = computed(() => languageContent[activeLanguage.value]);
 const currentProgramme = computed(() =>
   programmes.value.find(
     (item) => String(item.Id) === String(activeProgrammeId.value),
@@ -421,7 +419,9 @@ async function updateSportsDisplayMode() {
 
 function openProgramme(edit = false) {
   programmeEditing.value = edit;
-  programmeName.value = edit ? String(currentProgramme.value?.TemplateName || '') : '';
+  programmeName.value = edit
+    ? String(currentProgramme.value?.TemplateName || '')
+    : '';
   programmeVisible.value = true;
 }
 
@@ -438,10 +438,14 @@ async function saveProgramme() {
       TemplateName: programmeName.value.trim(),
       Type: props.adType,
     };
-    await (programmeEditing.value ? updateAdvertisementProgrammeApi(data) : createAdvertisementProgrammeApi(data));
+    await (programmeEditing.value
+      ? updateAdvertisementProgrammeApi(data)
+      : createAdvertisementProgrammeApi(data));
     programmeVisible.value = false;
     message.success(programmeEditing.value ? '编辑成功' : '新增成功');
-    await loadProgrammes(programmeEditing.value ? activeProgrammeId.value : undefined);
+    await loadProgrammes(
+      programmeEditing.value ? activeProgrammeId.value : undefined,
+    );
   } finally {
     saving.value = false;
   }
@@ -621,8 +625,8 @@ function serializeSelection(values: unknown, key: string, nameKey: string) {
         key === 'ChannelId'
           ? channelNameMap.value.get(String(value)) || String(value)
           : packageOptions.value.find(
-                (item) => String(item.value) === String(value),
-              )?.label || String(value),
+              (item) => String(item.value) === String(value),
+            )?.label || String(value),
     })),
   );
 }
@@ -683,8 +687,10 @@ async function saveAdvertisement() {
     const time = form.Time as Dayjs[];
     const showTime = form.ShowTime as Dayjs[];
     // 轮播：RegStartEndDate=2 不限；弹窗：0=关闭。关闭时清空天数（对齐旧站）
-    let regStartDate: number | string = (form.RegStartDate as number | string) || '';
-    let regEndDate: number | string = (form.RegEndDate as number | string) || '';
+    let regStartDate: number | string =
+      (form.RegStartDate as number | string) || '';
+    let regEndDate: number | string =
+      (form.RegEndDate as number | string) || '';
     let regStartEndDate = Number(form.RegStartEndDate);
     if (isCarousel.value) {
       if (regStartEndDate !== 1) {
@@ -692,13 +698,11 @@ async function saveAdvertisement() {
         regStartDate = '';
         regEndDate = '';
       }
-    } else if (isHomeDialog.value) {
-      if (regStartEndDate !== 1) {
+    } else if (isHomeDialog.value && regStartEndDate !== 1) {
         regStartEndDate = 0;
         regStartDate = '';
         regEndDate = '';
       }
-    }
     const payload: Record<string, unknown> = {
       ...form,
       BeginTime: time?.[0]?.unix() || '',
@@ -718,13 +722,9 @@ async function saveAdvertisement() {
         'ChannelName',
       ),
       ShowEndTime:
-        form.IsShowTime && showTime?.[1]
-          ? showTime[1].format('HH:mm:ss')
-          : '',
+        form.IsShowTime && showTime?.[1] ? showTime[1].format('HH:mm:ss') : '',
       ShowStartTime:
-        form.IsShowTime && showTime?.[0]
-          ? showTime[0].format('HH:mm:ss')
-          : '',
+        form.IsShowTime && showTime?.[0] ? showTime[0].format('HH:mm:ss') : '',
       TemplateId: activeProgrammeId.value,
       TotalCount: form.IsTotalCount ? form.TotalCount : '',
       DailyCountValue:
@@ -740,7 +740,9 @@ async function saveAdvertisement() {
     };
     delete payload.Time;
     delete payload.ShowTime;
-    await (editing.value ? updateAdvertisementApi(payload) : createAdvertisementApi(payload));
+    await (editing.value
+      ? updateAdvertisementApi(payload)
+      : createAdvertisementApi(payload));
     formVisible.value = false;
     message.success(editing.value ? '编辑成功' : '新增成功');
     await loadRows();
@@ -749,7 +751,9 @@ async function saveAdvertisement() {
   }
 }
 
-async function changeStatus(source: AdvertisementRow | Record<string, unknown>) {
+async function changeStatus(
+  source: AdvertisementRow | Record<string, unknown>,
+) {
   const row = source as AdvertisementRow;
   await switchAdvertisementApi({
     Id: row.Id,
@@ -940,16 +944,17 @@ watch(loading, (value) => {
   gridApi.setGridOptions({ loading: value });
 });
 
-const previewImages = computed(() =>
-  rows.value
-    .map((row) =>
-      previewMode.value === 1
-        ? row.CrossImageUrl
-        : (previewMode.value === 2
-          ? row.ImageUrl
-          : row.NarrowImageUrl),
-    )
-    .filter(Boolean) as string[],
+const previewImages = computed(
+  () =>
+    rows.value
+      .map((row) =>
+        previewMode.value === 1
+          ? row.CrossImageUrl
+          : (previewMode.value === 2
+            ? row.ImageUrl
+            : row.NarrowImageUrl),
+      )
+      .filter(Boolean) as string[],
 );
 
 onMounted(async () => {
@@ -971,9 +976,7 @@ onMounted(async () => {
                 : item.LangText;
             const map = (parsed || {}) as Record<string, { Title?: string }>;
             title = String(
-              map[langId]?.Title ||
-                Object.values(map)[0]?.Title ||
-                '',
+              map[langId]?.Title || Object.values(map)[0]?.Title || '',
             );
           } catch {
             title = '';
@@ -999,7 +1002,9 @@ onMounted(async () => {
           v-show="checkPermission(permission.programmeList)"
           :key="item.Id"
           :type="
-            String(activeProgrammeId) === String(item.Id) ? 'primary' : 'default'
+            String(activeProgrammeId) === String(item.Id)
+              ? 'primary'
+              : 'default'
           "
           @click="selectProgramme(item.Id)"
         >
@@ -1014,69 +1019,67 @@ onMounted(async () => {
         </Button>
       </Space>
     </div>
- 
-      <div class="scheme-header mb-3">
-        <Descriptions bordered size="small">
-          <Descriptions.Item label="方案名称">
-            {{ currentProgramme?.TemplateName || '-' }}
-          </Descriptions.Item>
-        </Descriptions>
-        <Space>
-          <Button
-            v-if="checkPermission(permission.editProgramme)"
-            :disabled="!activeProgrammeId"
-            @click="openProgramme(true)"
-          >
-            改名
-          </Button>
-          <Button
-            v-if="checkPermission(permission.deleteProgramme)"
-            danger
-            :disabled="
-              !activeProgrammeId ||
-              String(activeProgrammeId) === String(programmes[0]?.Id)
-            "
-            @click="removeProgramme"
-          >
-            删除
-          </Button>
-          <Button
-            v-if="checkPermission(permission.preview)"
-            @click="previewVisible = true"
-          >
-            预览
-          </Button>
-          <Select
-            v-if="isCarousel"
-            v-model:value="sportsDisplayMode"
-            :options="[
-              { label: '体育页竖版模式', value: 0 },
-              { label: '体育页窄版模式', value: 1 },
-              { label: '体育页不显示', value: 2 },
-            ]"
-            style="width: 170px"
-          />
-          <Button v-if="isCarousel" @click="updateSportsDisplayMode">
-            更换体育页模式
-          </Button>
-          <Button
-            v-if="checkPermission(permission.addAd)"
-            type="primary"
-            @click="openForm()"
-          >
-            {{ isHomeDialog ? '新增首页弹窗' : '新增广告图' }}
-          </Button>
-          <Button
-            v-if="checkPermission(permission.recover)"
-            :disabled="
-              String(activeProgrammeId) !== String(programmes[0]?.Id)
-            "
-            @click="recoverDefault"
-          >
-            恢复系统预设
-          </Button>
-        </Space>
-      </div> 
+
+    <div class="scheme-header mb-3">
+      <Descriptions bordered size="small">
+        <Descriptions.Item label="方案名称">
+          {{ currentProgramme?.TemplateName || '-' }}
+        </Descriptions.Item>
+      </Descriptions>
+      <Space>
+        <Button
+          v-if="checkPermission(permission.editProgramme)"
+          :disabled="!activeProgrammeId"
+          @click="openProgramme(true)"
+        >
+          改名
+        </Button>
+        <Button
+          v-if="checkPermission(permission.deleteProgramme)"
+          danger
+          :disabled="
+            !activeProgrammeId ||
+            String(activeProgrammeId) === String(programmes[0]?.Id)
+          "
+          @click="removeProgramme"
+        >
+          删除
+        </Button>
+        <Button
+          v-if="checkPermission(permission.preview)"
+          @click="previewVisible = true"
+        >
+          预览
+        </Button>
+        <Select
+          v-if="isCarousel"
+          v-model:value="sportsDisplayMode"
+          :options="[
+            { label: '体育页竖版模式', value: 0 },
+            { label: '体育页窄版模式', value: 1 },
+            { label: '体育页不显示', value: 2 },
+          ]"
+          style="width: 170px"
+        />
+        <Button v-if="isCarousel" @click="updateSportsDisplayMode">
+          更换体育页模式
+        </Button>
+        <Button
+          v-if="checkPermission(permission.addAd)"
+          type="primary"
+          @click="openForm()"
+        >
+          {{ isHomeDialog ? '新增首页弹窗' : '新增广告图' }}
+        </Button>
+        <Button
+          v-if="checkPermission(permission.recover)"
+          :disabled="String(activeProgrammeId) !== String(programmes[0]?.Id)"
+          @click="recoverDefault"
+        >
+          恢复系统预设
+        </Button>
+      </Space>
+    </div>
 
     <OpsListPanel>
       <template v-if="!isHomeDialog" #filters>
@@ -1213,7 +1216,7 @@ onMounted(async () => {
           </Space>
         </template>
       </Grid>
-    </OpsListPanel> 
+    </OpsListPanel>
 
     <Modal
       v-model:open="programmeVisible"
@@ -1284,7 +1287,10 @@ onMounted(async () => {
               </Button>
             </Space>
           </Form.Item>
-          <Form.Item v-if="!isPayment" :label="isHomeDialog ? '首页弹窗横版' : 'Web 横版'">
+          <Form.Item
+            v-if="!isPayment"
+            :label="isHomeDialog ? '首页弹窗横版' : 'Web 横版'"
+          >
             <Space align="start">
               <VoucherImageField
                 v-model="currentLanguage.CrossImageUrl"
@@ -1366,7 +1372,9 @@ onMounted(async () => {
           </template>
 
           <Form.Item v-if="isCarousel" label="选择日期">
-            <DatePicker.RangePicker v-model:value="form.Time as [Dayjs, Dayjs]" />
+            <DatePicker.RangePicker
+              v-model:value="form.Time as [Dayjs, Dayjs]"
+            />
           </Form.Item>
           <Form.Item v-if="isCarousel" label="展示设备">
             <Checkbox.Group
@@ -1581,9 +1589,9 @@ onMounted(async () => {
 
 .scheme-header {
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
 }
 
 .scheme-header :deep(.ant-descriptions) {
@@ -1627,8 +1635,8 @@ onMounted(async () => {
 
 @media (max-width: 900px) {
   .scheme-header {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

@@ -2,6 +2,8 @@
 import type { TableColumnType } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
 
+import type { CompareBucket } from '../utils';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -29,16 +31,7 @@ import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
 import { arrayToCsvParam } from '#/views/dataClose/shared/report-utils';
 
-import {
-  applyCompareFormulas,
-  buildMetricRow,
-  COMPARE_METRICS,
-  type CompareBucket,
-  deltaColor,
-  disposeMoneyBuckets,
-  num,
-  resolveChartFieldValue,
-} from '../utils';
+import { applyCompareFormulas, buildMetricRow, COMPARE_METRICS, deltaColor, disposeMoneyBuckets, num, resolveChartFieldValue } from '../utils';
 
 defineOptions({ name: 'DataComparePanel' });
 
@@ -71,7 +64,12 @@ const packageSelectOptions = computed(() => [
 
 const dayColumns: TableColumnType[] = [
   { align: 'center', dataIndex: 'label', key: 'label', title: '数据名称' },
-  { align: 'center', dataIndex: 'TodayItems', key: 'TodayItems', title: '数据' },
+  {
+    align: 'center',
+    dataIndex: 'TodayItems',
+    key: 'TodayItems',
+    title: '数据',
+  },
   {
     align: 'center',
     dataIndex: 'YestDayItems',
@@ -135,7 +133,12 @@ const sections = computed(() => {
   for (const metric of COMPARE_METRICS) {
     if (metric.permission && !checkPermission(metric.permission)) continue;
     const row = {
-      ...buildMetricRow(metricMap.value as any, metric.field, beginTs, beforeTs),
+      ...buildMetricRow(
+        metricMap.value as any,
+        metric.field,
+        beginTs,
+        beforeTs,
+      ),
       field: metric.field,
       label: metric.label,
       isRate: metric.isRate,
@@ -237,11 +240,12 @@ async function openChart(row: Record<string, unknown>) {
         BeforeTime: filters.beforeDate.format('YYYY-MM'),
         Field: field,
       });
-      const current = [...((data?.Items || []) as Array<Record<string, unknown>>)]
-        .reverse();
+      const current = [
+        ...((data?.Items || []) as Array<Record<string, unknown>>),
+      ].toReversed();
       const prev = [
         ...((data?.BeforeDayItems || []) as Array<Record<string, unknown>>),
-      ].reverse();
+      ].toReversed();
       const xSource = prev.length > current.length ? prev : current;
       chartCategories.value = xSource.map((item) => {
         const day = String(item.ReportDay || '');
@@ -281,11 +285,13 @@ async function openChart(row: Record<string, unknown>) {
         Field: field,
       });
       const items = [
-        ...((data?.Items || data?.List || []) as Array<Record<string, unknown>>),
-      ].reverse();
+        ...((data?.Items || data?.List || []) as Array<
+          Record<string, unknown>
+        >),
+      ].toReversed();
       const extras = [
         ...((data?.DayReportExtra || []) as Array<Record<string, unknown>>),
-      ].reverse();
+      ].toReversed();
       chartCategories.value = items.map((item) =>
         String(item.ReportDay || item.Date || item.Day || ''),
       );
@@ -350,7 +356,11 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filters.ChannelIds" class="min-w-[180px]" placeholder="请输入渠道号" />
+        <ChannelSelect
+          v-model="filters.ChannelIds"
+          class="min-w-[180px]"
+          placeholder="请输入渠道号"
+        />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">产品</span>
@@ -428,9 +438,7 @@ onMounted(() => {
             <span :style="{ color: deltaColor(text) }">
               {{ text }}
               <template v-if="Number(String(text).replace('%', '')) > 0">↑</template>
-              <template
-                v-else-if="Number(String(text).replace('%', '')) < 0"
-              >↓</template>
+              <template v-else-if="Number(String(text).replace('%', '')) < 0">↓</template>
             </span>
           </template>
           <template v-else-if="column.key === 'graph'">

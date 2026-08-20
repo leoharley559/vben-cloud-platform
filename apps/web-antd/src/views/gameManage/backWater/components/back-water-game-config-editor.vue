@@ -85,9 +85,9 @@ function normalizeClassify(value: unknown) {
 }
 
 function blockedGameIds() {
-  const config = cloudStore.projectConfig as
-    | null
-    | { BanGameAgentIds?: Record<string, Array<number | string>> };
+  const config = cloudStore.projectConfig as null | {
+    BanGameAgentIds?: Record<string, Array<number | string>>;
+  };
   const adminInfo = cloudStore.adminInfo;
   const account =
     adminInfo && typeof adminInfo.Account === 'object'
@@ -211,9 +211,10 @@ const stats = computed(() => {
     .map((item) => item.Percent)
     .filter((value): value is number => value !== undefined);
   return {
-    average: setValues.length > 0
-      ? setValues.reduce((sum, value) => sum + value, 0) / setValues.length
-      : 0,
+    average:
+      setValues.length > 0
+        ? setValues.reduce((sum, value) => sum + value, 0) / setValues.length
+        : 0,
     maximum: setValues.length > 0 ? Math.max(...setValues) : 0,
     minimum: setValues.length > 0 ? Math.min(...setValues) : 0,
     notSet: games.value.length - setValues.length,
@@ -264,7 +265,9 @@ async function reloadGames() {
 }
 
 function selectVisible(checked: boolean) {
-  const visible = new Set(filteredGames.value.map((item) => String(item.GameId)));
+  const visible = new Set(
+    filteredGames.value.map((item) => String(item.GameId)),
+  );
   games.value.forEach((game) => {
     if (visible.has(String(game.GameId))) game.Checked = checked;
   });
@@ -299,9 +302,7 @@ function updateBatch(type: 'down' | 'set' | 'up') {
   selected.forEach((game) => {
     const current = Number(game.Percent || 0);
     const value =
-      type === 'set'
-        ? amount
-        : current + (type === 'up' ? amount : -amount);
+      type === 'set' ? amount : current + (type === 'up' ? amount : -amount);
     game.Percent = Math.max(0, Math.min(100, Number(value.toFixed(2))));
   });
   emitConfig();
@@ -334,7 +335,9 @@ function buildConfig(): BackWaterVipConfig {
 
 onMounted(async () => {
   try {
-    await ensureGameConfig(Object.keys(gameConfig.value.games || {}).length === 0);
+    await ensureGameConfig(
+      Object.keys(gameConfig.value.games || {}).length === 0,
+    );
     initialize();
     emitConfig();
   } catch {
@@ -462,8 +465,16 @@ defineExpose({ buildConfig });
 
         <div class="batch-bar">
           <Space wrap>
-            <Button html-type="button" type="primary" @click="selectVisible(true)">全部勾选</Button>
-            <Button html-type="button" @click="selectVisible(false)">全部取消</Button>
+            <Button
+              html-type="button"
+              type="primary"
+              @click="selectVisible(true)"
+              >
+全部勾选
+</Button>
+            <Button html-type="button" @click="selectVisible(false)">
+全部取消
+</Button>
             <span>批量修改勾选游戏：</span>
             <InputNumber
               v-model:value="batchSet"
@@ -473,7 +484,9 @@ defineExpose({ buildConfig });
               addon-after="%"
               placeholder="请输入比例"
             />
-            <Button html-type="button" @click="updateBatch('set')">批量编辑</Button>
+            <Button html-type="button" @click="updateBatch('set')">
+批量编辑
+</Button>
             <InputNumber
               v-model:value="batchUp"
               :min="0"
@@ -482,7 +495,9 @@ defineExpose({ buildConfig });
               addon-after="%"
               placeholder="请输入比例"
             />
-            <Button html-type="button" @click="updateBatch('up')">批量上调</Button>
+            <Button html-type="button" @click="updateBatch('up')">
+批量上调
+</Button>
             <InputNumber
               v-model:value="batchDown"
               :min="0"
@@ -491,7 +506,9 @@ defineExpose({ buildConfig });
               addon-after="%"
               placeholder="请输入比例"
             />
-            <Button html-type="button" @click="updateBatch('down')">批量下调</Button>
+            <Button html-type="button" @click="updateBatch('down')">
+批量下调
+</Button>
           </Space>
         </div>
       </div>
@@ -548,8 +565,8 @@ defineExpose({ buildConfig });
 .virtual-list {
   display: grid;
   grid-template-columns: repeat(4, minmax(210px, 1fr));
-  align-content: start;
   gap: 0 16px;
+  align-content: start;
   height: 520px;
   padding: 0 16px;
   overflow: auto;
@@ -557,10 +574,10 @@ defineExpose({ buildConfig });
 
 .game-item {
   display: flex;
+  gap: 8px;
   align-items: center;
   justify-content: space-between;
   min-width: 0;
-  gap: 8px;
   height: 64px;
   border-bottom: 1px solid hsl(var(--border));
 }
@@ -584,13 +601,13 @@ defineExpose({ buildConfig });
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .ratio-input {
-  width: 120px;
   flex: none;
+  width: 120px;
 }
 
 .zero-stat {

@@ -1,21 +1,20 @@
 <script lang="ts" setup>
 import type { ColumnsType } from 'ant-design-vue/es/table';
 
+import type { DailyReportRow } from '#/utils/everyday-data-calc';
+
 import { computed, h } from 'vue';
 
 import { Table, Tooltip } from 'ant-design-vue';
 
-import { formatAmountFromCent } from '#/utils/format-amount';
-import type { DailyReportRow } from '#/utils/everyday-data-calc';
 import {
   formatDevicePlatform,
   formatVipLevel,
 } from '#/utils/everyday-report-format';
+import { formatAmountFromCent } from '#/utils/format-amount';
 import { antTableScrollY } from '#/utils/table-height';
 
 defineOptions({ name: 'DailyReportTable' });
-
-export type DailyReportTableVariant = 'device' | 'package' | 'standard' | 'vip';
 
 const props = withDefaults(
   defineProps<{
@@ -31,6 +30,8 @@ const props = withDefaults(
   },
 );
 
+export type DailyReportTableVariant = 'device' | 'package' | 'standard' | 'vip';
+
 function money(value: unknown) {
   return formatAmountFromCent(Number(value || 0) * props.exchangeRate);
 }
@@ -42,7 +43,7 @@ function percent(value: unknown) {
 
 function coloredMoney(value: unknown) {
   const num = Number(value || 0);
-  const color = num > 0 ? '#059669' : num < 0 ? '#ef4444' : undefined;
+  const color = num > 0 ? '#059669' : (num < 0 ? '#ef4444' : undefined);
   return h('span', { style: color ? { color } : undefined }, money(value));
 }
 

@@ -7,20 +7,20 @@ import { useRouter } from 'vue-router';
 import {
   Button,
   Input,
+  message,
   Modal,
   Space,
   Table,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteGameEmailApi,
   fetchGameEmailListApi,
   fetchGameEmailReadStatusApi,
 } from '#/api/operationManage/game-notice';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import AccountSelect from '#/components/global/account-select.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -45,7 +45,7 @@ interface EmailRow {
   PushContent?: string;
   PushTitle?: string;
   Sender?: string;
-  SendStatus?: number | boolean;
+  SendStatus?: boolean | number;
   SendTime?: number | string;
   Type?: number;
   Username?: string;
@@ -68,10 +68,10 @@ const { packageOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 const router = useRouter();
 
-const canViewTable = computed(() => checkPermission(10077));
-const canCreate = computed(() => checkPermission(10078));
-const canEditOrView = computed(() => checkPermission(10077));
-const canDelete = computed(() => checkPermission(13368));
+const canViewTable = computed(() => checkPermission(10_077));
+const canCreate = computed(() => checkPermission(10_078));
+const canEditOrView = computed(() => checkPermission(10_077));
+const canDelete = computed(() => checkPermission(13_368));
 
 /** 对齐旧站 currentLangGroupId */
 const currentLangGroupId = computed(() => {
@@ -84,12 +84,12 @@ const currentLangGroupId = computed(() => {
 
 const actionId = ref<number | string>();
 const formOpen = ref(false);
-const editId = ref<number | string | null>(null);
+const editId = ref<null | number | string>(null);
 const formReadonly = ref(false);
 
 /** 与旧站 listQuery 对齐：Sender / Username / 日期 */
 const filterSender = ref('');
-const filterUsername = ref<string | number | undefined>(undefined);
+const filterUsername = ref<number | string | undefined>(undefined);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
 
 const readModalOpen = ref(false);
@@ -121,7 +121,7 @@ function parseLangText(raw: EmailRow['LangText']) {
   return raw;
 }
 
-function resolveLangField(row: EmailRow, field: 'Title' | 'Content') {
+function resolveLangField(row: EmailRow, field: 'Content' | 'Title') {
   const lang = parseLangText(row.LangText);
   const preferred = currentLangGroupId.value
     ? lang[currentLangGroupId.value]
@@ -136,8 +136,8 @@ function resolveLangField(row: EmailRow, field: 'Title' | 'Content') {
 function stripHtml(html: string) {
   return (
     html
-      .replace(/<[^>]+>/g, '')
-      .replace(/&nbsp;/g, ' ')
+      .replaceAll(/<[^>]+>/g, '')
+      .replaceAll('&nbsp;', ' ')
       .trim() || '-'
   );
 }
@@ -151,7 +151,7 @@ function resolvePackageNames(row: EmailRow) {
       .map((id) => id.trim())
       .filter(Boolean);
   }
-  if (!ids.length) {
+  if (ids.length === 0) {
     return '-';
   }
   return ids.map((id) => packageNameMap.value.get(id) || id).join(',') || '-';
@@ -305,8 +305,7 @@ const gridOptions: VxeTableGridOptions<EmailRow> = {
         const sortOrder = sort?.order;
         let sortParam = '';
         if (sortField && sortOrder) {
-          sortParam =
-            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
+          sortParam = sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
         const query: Record<string, unknown> = {
           Page: page.currentPage,
@@ -410,7 +409,7 @@ async function openReadPlayers(row: EmailRow) {
         [];
       readPlayers.value = Array.isArray(items) ? items : [];
     }
-    if (!readPlayers.value.length) {
+    if (readPlayers.value.length === 0) {
       message.info('暂无阅读状态数据');
     }
   } catch {
@@ -425,39 +424,45 @@ async function openReadPlayers(row: EmailRow) {
   <div v-if="canViewTable || canCreate">
     <!-- 查询区与旧站 email.vue 对齐：发送人 / 代理推广账号 / 日期 / 查询重置 / 新增 -->
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterSender"
-          allow-clear
-          placeholder="请输入发送人"
-        >
-          <template #addonBefore>发送人</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterSender"
+            allow-clear
+            placeholder="请输入发送人"
+          >
+            <template #addonBefore>发送人</template>
+          </Input>
+        </div>
 
-      <div class="flex items-center gap-0">
-        <span
-          class="inline-flex h-8 items-center whitespace-nowrap rounded-l border border-r-0 border-gray-300 bg-gray-50 px-2 text-sm text-gray-600"
-        >
-          代理/推广账号
-        </span>
-        <Space.Compact>
-          <span class="query-field-addon">账号</span>
-          <AccountSelect v-model="filterUsername" class="w-[250px]" return-name />
-        </Space.Compact>
-      </div>
+        <div class="flex items-center gap-0">
+          <span
+            class="inline-flex h-8 items-center whitespace-nowrap rounded-l border border-r-0 border-gray-300 bg-gray-50 px-2 text-sm text-gray-600"
+          >
+            代理/推广账号
+          </span>
+          <Space.Compact>
+            <span class="query-field-addon">账号</span>
+            <AccountSelect
+              v-model="filterUsername"
+              class="w-[250px]"
+              return-name
+            />
+          </Space.Compact>
+        </div>
 
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button v-if="canCreate" type="primary" @click="openCreate">新增</Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button v-if="canCreate" type="primary" @click="openCreate">
+新增
+</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid v-if="canViewTable">
       <template #title="{ row }">

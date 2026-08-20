@@ -5,16 +5,16 @@ import { registerPermissionKeys } from '#/utils/permission';
 import { trimSpace } from '#/utils/string';
 
 registerPermissionKeys({
-  chatroomBlockRecords: [11663, 11664],
-  chatroomChatRecord: [11836],
-  chatroomConfigShow: [11612, 11616],
-  chatroomGiftConfig: [12454],
-  chatroomInterceptRecord: [11687, 11688],
-  chatroomMgrShow: [11693],
-  chatroomPhraseSetting: [11631],
-  chatroomSensitivePhrase: [11620, 11621],
-  chatroomStickerSetting: [13018],
-  chatroomWelcomeSetting: [13019],
+  chatroomBlockRecords: [11_663, 11_664],
+  chatroomChatRecord: [11_836],
+  chatroomConfigShow: [11_612, 11_616],
+  chatroomGiftConfig: [12_454],
+  chatroomInterceptRecord: [11_687, 11_688],
+  chatroomMgrShow: [11_693],
+  chatroomPhraseSetting: [11_631],
+  chatroomSensitivePhrase: [11_620, 11_621],
+  chatroomStickerSetting: [13_018],
+  chatroomWelcomeSetting: [13_019],
 });
 
 /**

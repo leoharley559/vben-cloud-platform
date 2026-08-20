@@ -45,7 +45,7 @@ const thirdModalsRef = ref<InstanceType<typeof ThirdChannelModals>>();
 
 async function loadTypes() {
   try {
-    types.value = (await fetchDrawingsChannelSettingListApi()).sort(
+    types.value = (await fetchDrawingsChannelSettingListApi()).toSorted(
       (a, b) => Number(a.Sort || 0) - Number(b.Sort || 0),
     );
     if (!channelType.value) {
@@ -74,17 +74,16 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       field: 'ScriptStatus',
       formatter: ({ row }) =>
         Number(row.HandleType) === 2
-          ? row.ScriptStatus
+          ? (row.ScriptStatus
             ? '在线'
-            : '离线'
+            : '离线')
           : '--',
       minWidth: 100,
       title: '脚本状态',
     },
     {
       field: 'ScriptMode',
-      formatter: ({ cellValue }) =>
-        Number(cellValue) === 1 ? '自动' : '手动',
+      formatter: ({ cellValue }) => (Number(cellValue) === 1 ? '自动' : '手动'),
       minWidth: 100,
       title: '脚本模式',
     },
@@ -92,14 +91,14 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       field: 'Switch',
       formatter: ({ row }) =>
         Number(row.HandleType) === 1
-          ? Number(row.Switch) === 1
+          ? (Number(row.Switch) === 1
             ? '生效'
-            : '未生效'
-          : Number(row.Switch) === 1 &&
+            : '未生效')
+          : (Number(row.Switch) === 1 &&
               Number(row.Money) !== 0 &&
               row.ScriptStatus
             ? '生效'
-            : '未生效',
+            : '未生效'),
       minWidth: 100,
       title: '通道状态',
     },
@@ -112,11 +111,11 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     {
       field: 'HandleType',
       formatter: ({ row }) =>
-        Number(row.ThirdWithdrawId) !== 0
-          ? '第三方账户'
-          : Number(row.HandleType) === 1
+        Number(row.ThirdWithdrawId) === 0
+          ? (Number(row.HandleType) === 1
             ? '签约账户'
-            : '普通用户',
+            : '普通用户')
+          : '第三方账户',
       minWidth: 100,
       title: '账号类型',
     },
@@ -184,7 +183,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
             PageSize: page.pageSize,
           });
           const items = result.Items || [];
-          const statuses = items.length
+          const statuses = items.length > 0
             ? await drawmoneyRequest.channelStatus(
                 items.map((x) => x.Id).join(','),
               )
@@ -377,52 +376,52 @@ onMounted(() => {
           }"
           @click="selectType(item)"
         >
-        <Space direction="vertical">
-          <Space>
-            <b>
-              {{
-                PAY_TYPE_MAP[Number(item.WithdrawType)] ||
-                item.I18nKey ||
-                item.WithdrawType
-              }}
-            </b>
-            <Switch
-              :checked="Number(item.IsOpen) === 1"
-              :disabled="!checkPermission(11698)"
-              @click.stop
-              @change="(v) => toggleType(item, !!v)"
-            />
-            <Button
-              v-if="checkPermission(12105)"
-              type="link"
-              size="small"
-              @click.stop="editType(item)"
-            >
-              编辑
-            </Button>
+          <Space direction="vertical">
+            <Space>
+              <b>
+                {{
+                  PAY_TYPE_MAP[Number(item.WithdrawType)] ||
+                  item.I18nKey ||
+                  item.WithdrawType
+                }}
+              </b>
+              <Switch
+                :checked="Number(item.IsOpen) === 1"
+                :disabled="!checkPermission(11698)"
+                @click.stop
+                @change="(v) => toggleType(item, !!v)"
+              />
+              <Button
+                v-if="checkPermission(12105)"
+                type="link"
+                size="small"
+                @click.stop="editType(item)"
+              >
+                编辑
+              </Button>
+            </Space>
+            <span>手续费率 {{ item.ServiceRate || 0 }}%</span>
+            <span>
+              提款范围 {{ item.WithdrawMin || 0 }} - {{ item.WithdrawMax || 0 }}
+            </span>
+            <Space>
+              <Button
+                size="small"
+                :disabled="index === 0"
+                @click.stop="moveType(index, -1)"
+              >
+                上移
+              </Button>
+              <Button
+                size="small"
+                :disabled="index === types.length - 1"
+                @click.stop="moveType(index, 1)"
+              >
+                下移
+              </Button>
+            </Space>
           </Space>
-          <span>手续费率 {{ item.ServiceRate || 0 }}%</span>
-          <span>
-            提款范围 {{ item.WithdrawMin || 0 }} - {{ item.WithdrawMax || 0 }}
-          </span>
-          <Space>
-            <Button
-              size="small"
-              :disabled="index === 0"
-              @click.stop="moveType(index, -1)"
-            >
-              上移
-            </Button>
-            <Button
-              size="small"
-              :disabled="index === types.length - 1"
-              @click.stop="moveType(index, 1)"
-            >
-              下移
-            </Button>
-          </Space>
-        </Space>
-      </Card>
+        </Card>
       </div>
     </div>
 
@@ -505,10 +504,7 @@ onMounted(() => {
             />
           </Form.Item>
           <Form.Item label="单次提款倍数">
-            <Select
-              v-model:value="form.PerMulti"
-              :options="MULTIPLY_OPTIONS"
-            />
+            <Select v-model:value="form.PerMulti" :options="MULTIPLY_OPTIONS" />
           </Form.Item>
         </template>
         <template v-else>

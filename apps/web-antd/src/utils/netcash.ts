@@ -168,7 +168,12 @@ export function formatAgentFanDianGradeTitle(gradeKey: string) {
 
 export function formatAgentFanDianRebate(rebate?: number | string) {
   const value = Number(rebate);
-  if (rebate === '' || rebate === undefined || rebate === null || Number.isNaN(value)) {
+  if (
+    rebate === '' ||
+    rebate === undefined ||
+    rebate === null ||
+    Number.isNaN(value)
+  ) {
     return '-';
   }
   return `${(value * 100).toFixed(2)}%`;

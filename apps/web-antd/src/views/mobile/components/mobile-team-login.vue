@@ -57,7 +57,12 @@ function renderCaptchaAddon() {
     {
       class:
         'keep-light-bg flex h-full cursor-pointer items-center justify-center bg-white',
-      style: { minWidth: '96px', height: '38px', borderRadius: '4px', padding: '0 4px' },
+      style: {
+        minWidth: '96px',
+        height: '38px',
+        borderRadius: '4px',
+        padding: '0 4px',
+      },
       title: '点击刷新验证码',
       onClick: () => refreshCaptcha(),
     },
@@ -149,7 +154,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-screen max-w-md items-center bg-background p-6">
+  <div
+    class="mx-auto flex min-h-screen max-w-md items-center bg-background p-6"
+  >
     <div class="w-full">
       <h1 class="mb-6 text-center text-xl font-semibold">{{ title }}</h1>
       <AuthenticationLogin

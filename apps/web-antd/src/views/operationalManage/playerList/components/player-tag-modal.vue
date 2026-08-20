@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 
-import { Checkbox, Modal, message } from 'ant-design-vue';
+import { Checkbox, message, Modal } from 'ant-design-vue';
 
 import {
   fetchPlayerTagListApi,
@@ -10,13 +10,12 @@ import {
 
 defineOptions({ name: 'PlayerTagModal' });
 
-const open = defineModel<boolean>('open', { default: false });
 const props = defineProps<{
-  playerId?: number | string | null;
+  playerId?: null | number | string;
   tagId?: string;
 }>();
 const emit = defineEmits<{ success: [] }>();
-
+const open = defineModel<boolean>('open', { default: false });
 const submitting = ref(false);
 const checked = ref<Array<number | string>>([]);
 const tags = ref<Array<{ Id: number | string; TagName: string }>>([]);
@@ -81,7 +80,7 @@ async function handleOk() {
         </Checkbox>
       </div>
     </Checkbox.Group>
-    <div v-if="!tags.length" class="py-6 text-center text-gray-400">
+    <div v-if="tags.length === 0" class="py-6 text-center text-gray-400">
       暂无标签配置
     </div>
   </Modal>

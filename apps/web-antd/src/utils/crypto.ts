@@ -8,7 +8,7 @@ export const isDevMode = import.meta.env.DEV;
 
 export function decrypt(text: string) {
   try {
-    const cipher = text.replace(/\s/g, '');
+    const cipher = text.replaceAll(/\s/g, '');
     const decrypted = CryptoJS.AES.decrypt(cipher, key, {
       iv,
       mode: CryptoJS.mode.CBC,

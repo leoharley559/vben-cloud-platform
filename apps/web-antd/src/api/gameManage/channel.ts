@@ -43,7 +43,7 @@ export const CHANNEL_UPLOAD_URL = '/api/uploadfile';
 export const CHANNEL_UPLOAD_ACCEPT = 'image/*';
 
 function withItems<T extends { Items?: null | unknown[] }>(result: null | T) {
-  return { ...(result ?? {}), Items: result?.Items ?? [] };
+  return { ...result, Items: result?.Items ?? [] };
 }
 
 /** Primary list; keeps Pagination and both MoreItems collections intact. */
@@ -60,10 +60,10 @@ export async function fetchChannelListApi(query: ChannelListQuery) {
     { params: trimSpace(query) },
   );
   return {
-    ...(result ?? {}),
+    ...result,
     Items: result?.Items ?? [],
     MoreItems: {
-      ...(result?.MoreItems ?? {}),
+      ...result?.MoreItems,
       Parents: result?.MoreItems?.Parents ?? [],
       Resources: result?.MoreItems?.Resources ?? [],
     },
@@ -84,7 +84,7 @@ export async function fetchChannelHierarchyApi(query: ChannelHierarchyQuery) {
     { params: query },
   );
   return {
-    ...(result ?? {}),
+    ...result,
     ItemsSon: result?.ItemsSon ?? [],
     Parents: result?.Parents ?? [],
   };
@@ -394,7 +394,7 @@ export async function fetchAvailableChannelsApi(query: AvailableChannelQuery) {
     { params: query },
   );
   return {
-    ...(result ?? {}),
+    ...result,
     Item: result?.Item ?? result?.Items ?? [],
     ...(result?.Items === null ? { Items: [] } : {}),
   };
@@ -488,4 +488,3 @@ export function fetchChannelAnalyticsConfigApi(ChannelId: ChannelId) {
 export function updateChannelAnalyticsConfigApi(data: ChannelAnalyticsConfig) {
   return requestClient.put('/backend/channel/analyticinfo', trimSpace(data));
 }
-

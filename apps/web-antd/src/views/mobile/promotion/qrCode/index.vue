@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { Card, Empty } from 'ant-design-vue';
 
+defineOptions({ name: 'MobilePromotionQrCode' });
+
 defineProps<{
   channel: Record<string, unknown>;
 }>();
 
-defineOptions({ name: 'MobilePromotionQrCode' });
 </script>
 
 <template>

@@ -1,18 +1,18 @@
 <script lang="ts" setup>
 import { computed, reactive, ref } from 'vue';
 
-import { storeToRefs } from 'pinia';
 import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Pagination,
   Space,
   Table,
   Tabs,
-  message,
 } from 'ant-design-vue';
+import { storeToRefs } from 'pinia';
 
 import {
   createWithdrawCustomTipApi,
@@ -32,7 +32,7 @@ const cloudStore = useCloudPlatformStore();
 const { projectConfig } = storeToRefs(cloudStore);
 const langGroups = computed(() => {
   const groups = projectConfig.value?.LangGroup || [];
-  return groups.length
+  return groups.length > 0
     ? groups
     : [{ Default: true, Id: 1, Languages: ['默认语言'] }];
 });
@@ -166,11 +166,7 @@ async function submit() {
   };
   submitting.value = true;
   try {
-    if (form.Id === undefined) {
-      await createWithdrawCustomTipApi(payload);
-    } else {
-      await updateWithdrawCustomTipApi(payload);
-    }
+    await (form.Id === undefined ? createWithdrawCustomTipApi(payload) : updateWithdrawCustomTipApi(payload));
     message.success(form.Id === undefined ? '添加成功' : '编辑成功');
     editorOpen.value = false;
     await load();

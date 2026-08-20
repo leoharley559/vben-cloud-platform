@@ -14,8 +14,8 @@ defineOptions({ name: 'GiftManage' });
 
 const { checkPermission } = useCloudPermission();
 
-const canAudit = computed(() => checkPermission(10170));
-const canDelivery = computed(() => checkPermission(10171));
+const canAudit = computed(() => checkPermission(10_170));
+const canDelivery = computed(() => checkPermission(10_171));
 const canViewPage = computed(() => canAudit.value || canDelivery.value);
 const activeTab = ref('audit');
 

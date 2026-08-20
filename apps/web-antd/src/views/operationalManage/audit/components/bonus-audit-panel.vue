@@ -12,8 +12,8 @@ defineOptions({ name: 'BonusAuditPanel' });
 
 const { checkPermission } = useCloudPermission();
 
-const canBonusRelease = computed(() => checkPermission(10112));
-const canEventBonus = computed(() => checkPermission(11968));
+const canBonusRelease = computed(() => checkPermission(10_112));
+const canEventBonus = computed(() => checkPermission(11_968));
 
 const canViewAny = computed(() => canBonusRelease.value || canEventBonus.value);
 

@@ -29,8 +29,6 @@ import {
   Upload,
 } from 'ant-design-vue';
 
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-
 import {
   createPromotionMaterialApi,
   deletePromotionMaterialApi,
@@ -38,6 +36,7 @@ import {
   fetchPromotionConfAllApi,
   updatePromotionMaterialApi,
 } from '#/api/netcash/extension-material';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
@@ -167,7 +166,9 @@ async function loadList() {
   try {
     const result = await fetchExtensionMaterialListApi({ ...query });
     rows.value = Array.isArray(result?.Items) ? result.Items : [];
-    total.value = Number(result?.Pagination?.MaxCount ?? rows.value.length ?? 0);
+    total.value = Number(
+      result?.Pagination?.MaxCount ?? rows.value.length ?? 0,
+    );
   } catch {
     rows.value = [];
     total.value = 0;
@@ -403,8 +404,7 @@ async function save() {
   }
   saving.value = true;
   try {
-    if (editing.value) {
-      await updatePromotionMaterialApi({
+    await (editing.value ? updatePromotionMaterialApi({
         Id: form.Id,
         Image: uploads.value[0] || form.Image || '',
         LangGroupId: form.LangGroupId,
@@ -412,10 +412,7 @@ async function save() {
         SizeId: form.SizeId,
         Status: form.Status,
         ThemeId: form.ThemeId,
-      });
-    } else {
-      await createPromotionMaterialApi(buildCreatePayload());
-    }
+      }) : createPromotionMaterialApi(buildCreatePayload()));
     message.success(editing.value ? '编辑成功' : '新增成功');
     modalOpen.value = false;
     await Promise.all([loadOptions(), loadList()]);
@@ -558,7 +555,9 @@ onMounted(async () => {
           />
         </Space.Compact>
         <div class="query-filter-actions">
-          <Button type="primary" :loading="loading" @click="search">查询</Button>
+          <Button type="primary" :loading="loading" @click="search">
+查询
+</Button>
           <Button @click="resetQuery">重置</Button>
           <Button
             v-if="checkPermission(10_574)"
@@ -591,9 +590,13 @@ onMounted(async () => {
             class="material-image"
           />
           <div class="material-info">
-            <strong>{{ item.PackageName || `产品 ${item.PackageId ?? '-'}` }}</strong>
+            <strong>{{
+              item.PackageName || `产品 ${item.PackageId ?? '-'}`
+            }}</strong>
             <span>{{ item.ThemeName || '-' }} · {{ item.SizeName || '-' }}</span>
-            <span>{{ item.LanguageName || `语言组 ${item.LangGroupId ?? '-'}` }}</span>
+            <span>{{
+              item.LanguageName || `语言组 ${item.LangGroupId ?? '-'}`
+            }}</span>
             <Tag
               v-if="item.Status !== undefined && item.Status !== null"
               :color="Number(item.Status) === 1 ? 'success' : 'default'"
@@ -762,7 +765,8 @@ onMounted(async () => {
               </Upload>
             </div>
             <div class="language-tip">
-              JPG/PNG，小于 2MB，尺寸必须严格等于 {{ selectedSizeText || '所选尺寸' }}
+              JPG/PNG，小于 2MB，尺寸必须严格等于
+              {{ selectedSizeText || '所选尺寸' }}
             </div>
           </Form.Item>
         </Form>
@@ -773,15 +777,70 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.material-page { display: flex; flex-direction: column; gap: 14px; }
-.language-tip { margin-top: 6px; font-size: 12px; color: hsl(var(--muted-foreground)); }
-.material-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
-.material-card { min-width: 0; border-radius: 10px; }
-.material-image { object-fit: contain; background: hsl(var(--muted) / 25%); }
-.material-info { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin: 10px 0; font-size: 13px; }
-.pagination { display: flex; justify-content: flex-end; }
-.choice-control { width: 100%; margin-top: 10px; }
-.modal-scroll { max-height: 70vh; padding-right: 8px; overflow: auto; }
-.upload-grid { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.upload-item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.material-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.language-tip {
+  margin-top: 6px;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+
+.material-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.material-card {
+  min-width: 0;
+  border-radius: 10px;
+}
+
+.material-image {
+  object-fit: contain;
+  background: hsl(var(--muted) / 25%);
+}
+
+.material-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+  margin: 10px 0;
+  font-size: 13px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.choice-control {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.modal-scroll {
+  max-height: 70vh;
+  padding-right: 8px;
+  overflow: auto;
+}
+
+.upload-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.upload-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+}
 </style>

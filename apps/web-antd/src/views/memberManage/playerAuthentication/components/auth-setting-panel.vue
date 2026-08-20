@@ -9,11 +9,11 @@ import { onMounted, ref } from 'vue';
 import {
   Button,
   InputNumber,
+  message,
   Modal,
   Space,
   Switch,
   Table,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -21,12 +21,12 @@ import {
   fetchPlayerAuthSettingApi,
   updatePlayerAuthSwitchApi,
 } from '#/api/memberManage/player-authentication';
-import { formatAuthSettingSubType } from '#/utils/player-authentication';
 import { getServiceImageUrl } from '#/utils/media';
+import { formatAuthSettingSubType } from '#/utils/player-authentication';
 
-import AuthSettingEditModal from './auth-setting-edit-modal.vue';
-import AuthResultEmailPanel from './auth-result-email-panel.vue';
 import AuthInfoSwitchPanel from './auth-info-switch-panel.vue';
+import AuthResultEmailPanel from './auth-result-email-panel.vue';
+import AuthSettingEditModal from './auth-setting-edit-modal.vue';
 
 defineOptions({ name: 'AuthSettingPanel' });
 
@@ -36,7 +36,7 @@ const enableMobileOtp = ref(false);
 const enableSameIdSetting = ref(false);
 const unverifiedGracePeriod = ref(7);
 const editOpen = ref(false);
-const editRow = ref<PlayerAuthSettingItem | null>(null);
+const editRow = ref<null | PlayerAuthSettingItem>(null);
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -70,9 +70,9 @@ function parseSettingItems(items: PlayerAuthSettingItem[]) {
     const exInfo =
       typeof exInfoRaw === 'string'
         ? exInfoRaw.split(',')
-        : Array.isArray(exInfoRaw)
+        : (Array.isArray(exInfoRaw)
           ? exInfoRaw
-          : ['', '', '', ''];
+          : ['', '', '', '']);
     return {
       ...item,
       Config: {
@@ -241,7 +241,8 @@ onMounted(() => {
     </Table>
 
     <div class="mt-2 text-sm text-red-500">
-      # 充值时，提现时，活动里任何一个状态开启时，也会开启游戏里「用户名编辑」需完成身份验证
+      #
+      充值时，提现时，活动里任何一个状态开启时，也会开启游戏里「用户名编辑」需完成身份验证
     </div>
 
     <div class="mt-6 space-y-4">

@@ -1,4 +1,9 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
+import type { DailyReportRow } from '#/utils/everyday-data-calc';
+import type { CsvColumn } from '#/utils/export-csv';
+
 import { computed, onMounted, ref, watch } from 'vue';
 
 import {
@@ -10,22 +15,18 @@ import {
   Space,
   Spin,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
-import AccountSelect from '#/components/global/account-select.vue';
-import ChannelSelect from '#/components/global/channel-select.vue';
 import {
   fetchDailyReportApi,
   fetchDailyReportStatisticsApi,
 } from '#/api/operationalData/everyday-data';
+import AccountSelect from '#/components/global/account-select.vue';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
-import {
-  calcDailyReportRow,
-  calcDailyReportRows,
-  type DailyReportRow,
-} from '#/utils/everyday-data-calc';
+import { calcDailyReportRow, calcDailyReportRows } from '#/utils/everyday-data-calc';
 import {
   defaultDailyReportRange,
   defaultMonthlyReportRange,
@@ -33,7 +34,7 @@ import {
   formatWeekReportDay,
   toDateStrings,
 } from '#/utils/everyday-data-date';
-import { exportRowsToCsv, type CsvColumn } from '#/utils/export-csv';
+import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 import DailyReportLineChart from './daily-report-line-chart.vue';
@@ -47,8 +48,8 @@ const cloudStore = useCloudPlatformStore();
 
 const adminType = computed(() => {
   const parentInfo = cloudStore.projectConfig?.ParentInfo as
-    | { AdminType?: number }
-    | undefined;
+    | undefined
+    | { AdminType?: number };
   return Number(parentInfo?.AdminType ?? 1);
 });
 
@@ -171,7 +172,7 @@ async function loadHistory() {
       (data.Items || []).map((row) => formatHistoryRow(row)),
     );
     historyData.value = items;
-    chartList.value = [...items].sort((a, b) =>
+    chartList.value = [...items].toSorted((a, b) =>
       String(a.ReportDay || '').localeCompare(String(b.ReportDay || '')),
     );
     await loadStatistics();
@@ -181,14 +182,14 @@ async function loadHistory() {
 }
 
 async function loadStatistics() {
-  if (!historyData.value.length) {
+  if (historyData.value.length === 0) {
     arppuTotal.value = '0';
     return;
   }
   try {
     const stats = await fetchDailyReportStatisticsApi(buildQuery('old'));
     const totalRow = calcDailyReportRow({
-      ...(stats.BannerItems || {}),
+      ...stats.BannerItems,
       ReportDay: '总计',
     }) as DailyReportRow;
     arppuTotal.value = String(totalRow.Arppu || '0');
@@ -317,8 +318,8 @@ onMounted(() => {
 <template>
   <div class="flex flex-col">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-          <Space.Compact>
+      <div class="ops-query-filters">
+        <Space.Compact>
           <Select
             class="query-auto-select"
             :popup-match-select-width="false"
@@ -328,10 +329,7 @@ onMounted(() => {
               { label: '账号精准', value: 1 },
             ]"
           />
-          <AccountSelect
-            v-if="adminSearchType === 0"
-            v-model="adminSearch"
-          />
+          <AccountSelect v-if="adminSearchType === 0" v-model="adminSearch" />
           <Input
             v-else
             v-model:value="adminSearch as string"
@@ -364,18 +362,18 @@ onMounted(() => {
         </Space.Compact>
 
         <Space.Compact>
-            <span class="query-field-addon">产品</span>
-            <Select
-              v-model:value="packageId"
-              :options="
-                packageOptions.map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-              "
-              placeholder="请选择产品"
-            />
-          </Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="packageId"
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
 
         <Space.Compact>
           <span class="query-field-addon">报表类型</span>
@@ -400,13 +398,13 @@ onMounted(() => {
             />
           </Space.Compact>
         </div>
-        
+
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
+          <Button @click="handleReset">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
     <Card v-if="canChart" size="small" title="趋势图">
       <Spin :spinning="historyLoading">
         <DailyReportLineChart
@@ -430,9 +428,7 @@ onMounted(() => {
             <span class="text-gray-500">ARPPU：</span>
             <span class="font-medium">{{ arppuTotal }}</span>
           </div>
-          <Button v-if="canExport" @click="handleExport">
-            导出 Excel
-          </Button>
+          <Button v-if="canExport" @click="handleExport"> 导出 Excel </Button>
         </div>
         <DailyReportTable :list="historyData" />
       </Spin>

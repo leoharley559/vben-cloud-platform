@@ -18,6 +18,7 @@ import {
   Table,
 } from 'ant-design-vue';
 
+import { getProjectConfigApi } from '#/api/core/project';
 import {
   createGameHelpContentApi,
   createGameHelpTabApi,
@@ -30,7 +31,6 @@ import {
   updateGameHelpContentApi,
   updateGameHelpTabApi,
 } from '#/api/gameManage/system-setting';
-import { getProjectConfigApi } from '#/api/core/project';
 import RichTextEditor from '#/components/global/rich-text-editor.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
@@ -128,7 +128,9 @@ function parseLangText(value: unknown) {
   if (!value || value === 'null') return [] as LangContent[];
   try {
     const parsed = typeof value === 'string' ? JSON.parse(value) : value;
-    return (Array.isArray(parsed) ? parsed : Object.values(parsed || {})) as LangContent[];
+    return (
+      Array.isArray(parsed) ? parsed : Object.values(parsed || {})
+    ) as LangContent[];
   } catch {
     return [];
   }
@@ -164,7 +166,9 @@ const displayContents = computed(() => {
     if (!item.ThirdName) {
       standalone.push({
         ...item,
-        Content: String(item.Content || '').split(/\n|\\n/).filter(Boolean),
+        Content: String(item.Content || '')
+          .split(/\n|\\n/)
+          .filter(Boolean),
       });
       continue;
     }
@@ -179,7 +183,9 @@ const displayContents = computed(() => {
     }
     groups.get(name)!.children!.push({
       ...item,
-      Content: String(item.Content || '').split(/\n|\\n/).filter(Boolean),
+      Content: String(item.Content || '')
+        .split(/\n|\\n/)
+        .filter(Boolean),
       SecIcon: item.ThirdIcon,
       SecName: item.ThirdName,
       parentIcon: item.SecIcon,
@@ -224,13 +230,19 @@ function openTab(row?: HelpTab) {
 }
 
 async function saveTab() {
-  if (!String(tabForm.Name || '').trim() || !tabForm.Icon || !String(tabForm.Desc || '').trim()) {
+  if (
+    !String(tabForm.Name || '').trim() ||
+    !tabForm.Icon ||
+    !String(tabForm.Desc || '').trim()
+  ) {
     message.warning('请完整填写页签名称、图标和页签介绍');
     return;
   }
   saving.value = true;
   try {
-    await (tabEditing.value ? updateGameHelpTabApi({ ...tabForm }) : createGameHelpTabApi({ ...tabForm }));
+    await (tabEditing.value
+      ? updateGameHelpTabApi({ ...tabForm })
+      : createGameHelpTabApi({ ...tabForm }));
     tabVisible.value = false;
     message.success('保存成功');
     await loadData();
@@ -279,9 +291,7 @@ function openContent(row?: HelpContent) {
 }
 
 function selectSecondary(value: unknown) {
-  const matched = secondaryOptions.value.find(
-    (item) => item.value === value,
-  );
+  const matched = secondaryOptions.value.find((item) => item.value === value);
   contentForm.SecIcon = matched?.icon || '';
   contentForm.UseThird = true;
 }
@@ -297,8 +307,11 @@ function mergeCurrentLangText() {
   const index = items.findIndex(
     (item) => Number(item.LangGroupId) === currentLangGroupId.value,
   );
-  if (index === -1) {items.push(current);}
-  else {items[index] = current;}
+  if (index === -1) {
+    items.push(current);
+  } else {
+    items[index] = current;
+  }
   return JSON.stringify(items);
 }
 
@@ -311,8 +324,7 @@ async function saveContent() {
     !content ||
     !contentForm.SecIcon ||
     (useThird &&
-      (!String(contentForm.ThirdName || '').trim() ||
-        !contentForm.ThirdIcon))
+      (!String(contentForm.ThirdName || '').trim() || !contentForm.ThirdIcon))
   ) {
     message.warning('请完整填写页签名称、图片和说明');
     return;
@@ -358,7 +370,11 @@ function confirmDeleteTab() {
 
 function confirmDeleteContent(row: HelpContent) {
   // 分组父行 Id 为合成值，禁止误删
-  if (row.Id === undefined || row.children?.length || String(row.Id).includes('-group')) {
+  if (
+    row.Id === undefined ||
+    row.children?.length ||
+    String(row.Id).includes('-group')
+  ) {
     return;
   }
   const id = row.Id;
@@ -419,10 +435,7 @@ function openLanguage(row: HelpContent) {
 async function saveLanguages() {
   if (
     langForms.value.some(
-      (item) =>
-        !item.SecName.trim() ||
-        !item.SecIcon ||
-        !item.Content.trim(),
+      (item) => !item.SecName.trim() || !item.SecIcon || !item.Content.trim(),
     )
   ) {
     message.warning('请完整填写每个语言组的页签名称、图片和说明');
@@ -451,10 +464,16 @@ onMounted(() => {
   <div v-if="checkPermission(11_004)" class="help-layout">
     <Card class="side-card" size="small">
       <div class="side-actions">
-        <Button v-if="checkPermission(11_005)" type="primary" @click="openTab()">
+        <Button
+          v-if="checkPermission(11_005)"
+          type="primary"
+          @click="openTab()"
+        >
           添加页签
         </Button>
-        <Button v-if="checkPermission(11_011)" @click="recover">恢复默认配置</Button>
+        <Button v-if="checkPermission(11_011)" @click="recover">
+恢复默认配置
+</Button>
       </div>
       <div class="tab-list">
         <button
@@ -465,7 +484,12 @@ onMounted(() => {
           type="button"
           @click="selectTab(index)"
         >
-          <Image v-if="item.Icon" :preview="false" :src="getServiceImageUrl(item.Icon)" :width="28" />
+          <Image
+            v-if="item.Icon"
+            :preview="false"
+            :src="getServiceImageUrl(item.Icon)"
+            :width="28"
+          />
           <span>{{ item.Name }}</span>
           <Button
             v-if="checkPermission(11_009)"
@@ -616,7 +640,9 @@ onMounted(() => {
         <Form :label-col="{ span: 6 }">
           <Form.Item label="二级页签内容" required>
             <Radio.Group v-model:value="contentForm.SecMode as number">
-              <Radio :value="1" :disabled="secondaryOptions.length === 0">原有页签</Radio>
+              <Radio :value="1" :disabled="secondaryOptions.length === 0">
+原有页签
+</Radio>
               <Radio :value="2">新页签</Radio>
             </Radio.Group>
           </Form.Item>
@@ -642,7 +668,9 @@ onMounted(() => {
           <Form.Item label="启用三级页签">
             <Radio.Group v-model:value="contentForm.UseThird as boolean">
               <Radio :value="true">启用</Radio>
-              <Radio :value="false" :disabled="contentForm.SecMode === 1">不启用</Radio>
+              <Radio :value="false" :disabled="contentForm.SecMode === 1">
+不启用
+</Radio>
             </Radio.Group>
           </Form.Item>
           <Form.Item v-if="contentForm.UseThird" label="三级页签名称" required>
@@ -755,9 +783,9 @@ onMounted(() => {
 
 .content-header {
   display: flex;
+  gap: 16px;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
   padding-bottom: 14px;
   margin-bottom: 14px;
   border-bottom: 1px solid hsl(var(--border));

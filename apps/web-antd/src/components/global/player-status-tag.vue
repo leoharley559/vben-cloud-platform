@@ -14,7 +14,7 @@ const props = withDefaults(
   defineProps<{
     /** 状态为「正常」(0) 时是否不渲染（用于账号旁角标） */
     hideNormal?: boolean;
-    status?: number | string | null;
+    status?: null | number | string;
   }>(),
   {
     hideNormal: false,
@@ -31,7 +31,7 @@ const isNormal = computed(() => Number(props.status) === 0);
   <template v-if="status === undefined || status === null || status === ''">
     <span>-</span>
   </template>
-  <template v-else-if="hideNormal && isNormal" />
+  <template v-else-if="hideNormal && isNormal"></template>
   <span v-else-if="isNormal || !color">{{ text }}</span>
   <Tag v-else :color="color">{{ text }}</Tag>
 </template>

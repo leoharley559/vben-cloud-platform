@@ -1,8 +1,9 @@
 import type { Dayjs } from 'dayjs';
+
 import type { ParsedGameConfig } from '#/utils/game-config';
 
-import dayjs from 'dayjs';
 import { message } from 'ant-design-vue';
+import dayjs from 'dayjs';
 
 import { formatVenueName } from '#/utils/game-config';
 
@@ -38,10 +39,12 @@ export function resolveTotalSum(moreItems: unknown): StatementRow {
 
 export function mapItemsAgents(raw: unknown): AgentNode[] {
   if (!raw || typeof raw !== 'object') return [];
-  return Object.entries(raw as Record<string, string>).map(([Id, Username]) => ({
-    Id,
-    Username: Username || String(Id),
-  }));
+  return Object.entries(raw as Record<string, string>).map(
+    ([Id, Username]) => ({
+      Id,
+      Username: Username || String(Id),
+    }),
+  );
 }
 
 export type VenueNameSource = ParsedGameConfig | Record<string, string>;
@@ -59,10 +62,7 @@ function asGameConfig(source: VenueNameSource) {
 }
 
 /** 场馆简称/编码（dj、ty）与场馆 ID 都走 formatVenueName，对齐玩家盈亏报表 */
-export function venueName(
-  source: VenueNameSource,
-  platformGameType: unknown,
-) {
+export function venueName(source: VenueNameSource, platformGameType: unknown) {
   const key = String(platformGameType ?? '');
   if (!key) return '-';
   const config = asGameConfig(source);
@@ -188,10 +188,7 @@ export function mapDayMoneyRow(
   return next;
 }
 
-export function mapMonthMoneyRow(
-  row: StatementRow,
-  source: VenueNameSource,
-) {
+export function mapMonthMoneyRow(row: StatementRow, source: VenueNameSource) {
   const SumSelfBetGold = fromCent(row.SumSelfBetGold);
   const SumSelfWinGold = fromCent(row.SumSelfWinGold);
   const SumSelfOtherGold = fromCent(row.SumSelfOtherGold);

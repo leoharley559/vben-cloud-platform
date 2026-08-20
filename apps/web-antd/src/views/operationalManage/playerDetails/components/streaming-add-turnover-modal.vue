@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue';
 
-import { Form, Input, Modal, Select, message } from 'ant-design-vue';
+import { Form, Input, message, Modal, Select } from 'ant-design-vue';
 
 import { updatePlayerWithdrawWaterApi } from '#/api/operationManage/player-detail-extra';
 import { useGameConfig } from '#/composables/use-game-config';

@@ -7,15 +7,16 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   editPlatformTransferStateApi,
   fetchPlatformTransferListApi,
@@ -23,7 +24,6 @@ import {
 } from '#/api/operationManage/platform-transfer';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
@@ -40,10 +40,10 @@ defineOptions({ name: 'PlatformTransferList' });
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
 
-const canViewTable = computed(() => checkPermission(10131));
-const canExport = computed(() => checkPermission(10133));
-const canManual = computed(() => checkPermission(10137));
-const canChangeState = computed(() => checkPermission(10138));
+const canViewTable = computed(() => checkPermission(10_131));
+const canExport = computed(() => checkPermission(10_133));
+const canManual = computed(() => checkPermission(10_137));
+const canChangeState = computed(() => checkPermission(10_138));
 
 const defaultRange = getYesterdayRangeSeconds();
 const exportLoading = ref(false);
@@ -268,10 +268,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const rows = result?.Items || [];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -328,94 +328,94 @@ onMounted(async () => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @change="normalizeLoginAccount"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入流水号"
-        >
-          <template #addonBefore>流水号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterType"
-        :options="[
-          { label: '全部', value: '' },
-          { label: '转入', value: 1 },
-          { label: '转出', value: 2 },
-        ]"
-      />
-      <Space.Compact>
-        <span class="query-field-addon">转出账户</span>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="normalizeLoginAccount"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入流水号"
+          >
+            <template #addonBefore>流水号</template>
+          </Input>
+        </div>
         <Select
-          v-model:value="filterOutGameId"
-          allow-clear
-          show-search
-          :options="gameOptions"
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-          placeholder="请选择转出账户"
+          v-model:value="filterType"
+          :options="[
+            { label: '全部', value: '' },
+            { label: '转入', value: 1 },
+            { label: '转出', value: 2 },
+          ]"
         />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">转入账户</span>
+        <Space.Compact>
+          <span class="query-field-addon">转出账户</span>
+          <Select
+            v-model:value="filterOutGameId"
+            allow-clear
+            show-search
+            :options="gameOptions"
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择转出账户"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">转入账户</span>
+          <Select
+            v-model:value="filterInGameId"
+            allow-clear
+            show-search
+            :options="gameOptions"
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择转入账户"
+          />
+        </Space.Compact>
         <Select
-          v-model:value="filterInGameId"
-          allow-clear
-          show-search
-          :options="gameOptions"
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-          placeholder="请选择转入账户"
+          v-model:value="filterState"
+          :options="[
+            { label: '全部', value: -2 },
+            { label: '处理中', value: -1 },
+            { label: '成功', value: 0 },
+            { label: '转人工处理', value: 5 },
+            { label: '失败', value: 18 },
+          ]"
         />
-      </Space.Compact>
-      <Select
-        v-model:value="filterState"
-        :options="[
-          { label: '全部', value: -2 },
-          { label: '处理中', value: -1 },
-          { label: '成功', value: 0 },
-          { label: '转人工处理', value: 5 },
-          { label: '失败', value: 18 },
-        ]"
-      />
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button
-        v-if="canExport"
-        :loading="exportLoading"
-        @click="handleExport"
-      >
-        导出 Excel
-      </Button>
+            查询
+          </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

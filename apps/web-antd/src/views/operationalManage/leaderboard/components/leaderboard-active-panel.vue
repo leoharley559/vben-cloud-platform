@@ -6,35 +6,34 @@ import { computed, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Select,
   Space,
   Switch,
   Tag,
-  message,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchLeaderboardListApi,
   fetchLeaderboardMainConfigApi,
   offshelfLeaderboardApi,
   switchLeaderboardMainConfigApi,
 } from '#/api/operationManage/leaderboard';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import LeaderboardGlobalConfigModal from './leaderboard-global-config-modal.vue';
 import LeaderboardRankingsModal from './leaderboard-rankings-modal.vue';
-import LeaderboardUpsertModal from './leaderboard-upsert-modal.vue';
 import {
-  LEADERBOARD_TYPE_OPTIONS,
   formatLeaderboardInactiveMode,
   formatLeaderboardType,
+  LEADERBOARD_TYPE_OPTIONS,
   resolveLeaderboardTitle,
 } from './leaderboard-shared';
+import LeaderboardUpsertModal from './leaderboard-upsert-modal.vue';
 
 defineOptions({ name: 'LeaderboardActivePanel' });
 
@@ -63,9 +62,9 @@ interface LeaderboardRow {
 
 const { checkPermission } = useCloudPermission();
 
-const canConfig = computed(() => checkPermission(13437) && !props.isHistory);
-const canCreate = computed(() => checkPermission(13435) && !props.isHistory);
-const canOffshelf = computed(() => checkPermission(13438) && !props.isHistory);
+const canConfig = computed(() => checkPermission(13_437) && !props.isHistory);
+const canCreate = computed(() => checkPermission(13_435) && !props.isHistory);
+const canOffshelf = computed(() => checkPermission(13_438) && !props.isHistory);
 
 const globalActive = ref(false);
 const globalLoading = ref(false);
@@ -238,7 +237,7 @@ function handleCheckRecord(row: LeaderboardRow) {
   emit('checkRecord', row.Id);
 }
 
-async function handleToggleGlobal(checked: boolean | string | number) {
+async function handleToggleGlobal(checked: boolean | number | string) {
   Modal.confirm({
     content: '确认切换排行榜全局开关？',
     onOk: async () => {
@@ -249,13 +248,13 @@ async function handleToggleGlobal(checked: boolean | string | number) {
         message.success('切换成功');
         await loadGlobalConfig();
       } catch {
-        globalActive.value = !Boolean(checked);
+        globalActive.value = !checked;
       } finally {
         globalLoading.value = false;
       }
     },
     onCancel: () => {
-      globalActive.value = !Boolean(checked);
+      globalActive.value = !checked;
     },
     title: '活动开关',
   });
@@ -309,8 +308,8 @@ function statusLabel(status?: number) {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterId"
             allow-clear
@@ -324,7 +323,6 @@ function statusLabel(status?: number) {
           <Select
             v-model:value="filterActivityType"
             allow-clear
-           
             :options="typeFilterOptions"
             placeholder="请选择活动类型"
           />
@@ -334,26 +332,31 @@ function statusLabel(status?: number) {
         </div>
         <div class="query-filter-actions">
           <Space>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-        </Space>
-        <Space v-if="!isHistory">
-        <span v-if="canConfig" class="inline-flex items-center gap-2 text-sm">
-          活动开关
-          <Switch
-            :checked="globalActive"
-            :loading="globalLoading"
-            @change="handleToggleGlobal"
-          />
-        </span>
-        <Button v-if="canConfig" @click="configOpen = true">全局设置</Button>
-        <Button v-if="canCreate" type="primary" @click="openAdd">
-          新增活动
-        </Button>
-      </Space>
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
+          <Space v-if="!isHistory">
+            <span
+              v-if="canConfig"
+              class="inline-flex items-center gap-2 text-sm"
+            >
+              活动开关
+              <Switch
+                :checked="globalActive"
+                :loading="globalLoading"
+                @change="handleToggleGlobal"
+              />
+            </span>
+            <Button v-if="canConfig" @click="configOpen = true">
+全局设置
+</Button>
+            <Button v-if="canCreate" type="primary" @click="openAdd">
+              新增活动
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #activityId="{ row }">

@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { TableColumnType } from 'ant-design-vue';
 
+import type { KeepDetailsParam, KeepRow } from '../utils';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -16,13 +18,7 @@ import { fetchKeepDataSectionRetentionListApi } from '#/api/dataClose/keep-data'
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { exportRowsToXlsx } from '#/views/dataClose/shared/report-utils';
 
-import {
-  type KeepDetailsParam,
-  type KeepRow,
-  num,
-  ratioText,
-  SECTION_DAY_COLUMNS,
-} from '../utils';
+import { num, ratioText, SECTION_DAY_COLUMNS } from '../utils';
 import DetailsPanel from './details-panel.vue';
 import KeepQueryBar from './keep-query-bar.vue';
 
@@ -129,9 +125,7 @@ onMounted(() => {
           <RadioButton :value="1">显示人数</RadioButton>
           <RadioButton :value="2">显示百分比</RadioButton>
         </RadioGroup>
-        <Button v-if="canExport" @click="handleExport">
-          导出 Excel
-        </Button>
+        <Button v-if="canExport" @click="handleExport"> 导出 Excel </Button>
       </div>
       <Table
         :columns="columns"
@@ -145,10 +139,7 @@ onMounted(() => {
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'CountLogin1'">
-            <a
-              v-if="num(record.CountLogin1) > 0"
-              @click="openDetails('new')"
-            >
+            <a v-if="num(record.CountLogin1) > 0" @click="openDetails('new')">
               {{ record.CountLogin1 }}
             </a>
             <span v-else>{{ record.CountLogin1 }}</span>

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '../../operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -9,7 +11,6 @@ import { fetchBossEmployeeStatsApi } from '#/api/operationalData/boss-report';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import OperationListPanel from '../../operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '../../operationalManage/components/operation-list-panel.vue';
 import { bossEmployeeColumns } from '../shared/columns';
 
 defineOptions({ name: 'BossReport' });
@@ -32,7 +33,7 @@ const tabs = computed(() => [
   },
 ]);
 
-const canViewPage = computed(() => checkPermission(10715));
+const canViewPage = computed(() => checkPermission(10_715));
 const activeTab = ref('employee');
 
 onMounted(() => {

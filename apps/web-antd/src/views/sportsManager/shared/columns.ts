@@ -1,7 +1,7 @@
 import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
-import { formatOperationDateTime } from '#/utils/operation-status';
 import { formatSportsSource } from '#/types/sports-manager';
+import { formatOperationDateTime } from '#/utils/operation-status';
 
 export const matchManagerColumns: OperationListConfig['columns'] = [
   {

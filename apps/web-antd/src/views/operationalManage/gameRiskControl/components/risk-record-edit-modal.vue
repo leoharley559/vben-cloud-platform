@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { reactive, ref, watch } from 'vue';
 
-import { Form, Input, Modal, message } from 'ant-design-vue';
+import { Form, Input, message, Modal } from 'ant-design-vue';
 
 import {
   updateDeviceRiskApi,
@@ -53,11 +53,7 @@ async function handleOk() {
   saving.value = true;
   try {
     const payload = { Desc: form.Desc.trim(), Id: form.Id };
-    if (props.kind === 'ip') {
-      await updateIpRiskApi(payload);
-    } else {
-      await updateDeviceRiskApi(payload);
-    }
+    await (props.kind === 'ip' ? updateIpRiskApi(payload) : updateDeviceRiskApi(payload));
     message.success('已更新');
     close();
     emit('success');

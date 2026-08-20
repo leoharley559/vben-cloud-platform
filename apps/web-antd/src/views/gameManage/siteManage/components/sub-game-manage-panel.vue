@@ -87,10 +87,7 @@ const tagOptions = [
   { label: '特色', value: 3 },
   { label: '大奖', value: 4 },
 ];
-const searchTagOptions = [
-  { label: '全部标签', value: 0 },
-  ...tagOptions,
-];
+const searchTagOptions = [{ label: '全部标签', value: 0 }, ...tagOptions];
 const openOptions = [
   { label: '开启', value: 1 },
   { label: '关闭', value: 0 },
@@ -524,7 +521,7 @@ function handleReset() {
 
 <style scoped>
 .game-grid {
-  overflow: hidden; 
+  overflow: hidden;
   border-radius: 10px;
 }
 

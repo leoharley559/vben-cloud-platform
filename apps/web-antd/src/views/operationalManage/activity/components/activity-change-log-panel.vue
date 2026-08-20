@@ -3,18 +3,12 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  Select,
-  Space,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchActivityChangeLogListApi } from '#/api/operationManage/activity';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -27,7 +21,7 @@ import {
 defineOptions({ name: 'ActivityChangeLogPanel' });
 
 const { checkPermission } = useCloudPermission();
-const canView = computed(() => checkPermission(12102));
+const canView = computed(() => checkPermission(12_102));
 
 const filterId = ref('');
 const filterName = ref('');
@@ -110,43 +104,42 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
     </div>
     <template v-else>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterId"
-            allow-clear
-            placeholder="请输入活动ID"
-          >
-            <template #addonBefore>活动ID</template>
-          </Input>
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterId"
+              allow-clear
+              placeholder="请输入活动ID"
+            >
+              <template #addonBefore>活动ID</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterName"
+              allow-clear
+              placeholder="请输入活动名称"
+            >
+              <template #addonBefore>活动名称</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">活动类型</span>
+            <Select
+              v-model:value="filterType"
+              allow-clear
+              :options="typeOptions"
+              placeholder="请选择活动类型"
+            />
+          </Space.Compact>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="updateTimeRange" />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="gridApi.reload()">查询</Button>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterName"
-            allow-clear
-            placeholder="请输入活动名称"
-          >
-            <template #addonBefore>活动名称</template>
-          </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">活动类型</span>
-          <Select
-            v-model:value="filterType"
-            allow-clear
-           
-            :options="typeOptions"
-            placeholder="请选择活动类型"
-          />
-        </Space.Compact>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="updateTimeRange" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="gridApi.reload()">查询</Button>
-        </div>
-    </div>
-  </div>
+      </div>
       <Grid>
         <template #action>
           <Button disabled size="small" type="link">详情</Button>

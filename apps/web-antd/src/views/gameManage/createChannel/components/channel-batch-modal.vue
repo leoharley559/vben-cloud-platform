@@ -897,8 +897,8 @@ function requestClose() {
 <style scoped>
 .batch-modal-body {
   max-height: min(70vh, 720px);
-  overflow-y: auto;
   padding-right: 4px;
+  overflow-y: auto;
 }
 
 .form-grid {
@@ -939,8 +939,8 @@ function requestClose() {
 
 .resource-card span {
   overflow: hidden;
-  font-size: 12px;
   text-overflow: ellipsis;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -961,9 +961,9 @@ function requestClose() {
 .failure-row {
   display: flex;
   flex: 1;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
 }
 
 @media (max-width: 640px) {
@@ -972,8 +972,8 @@ function requestClose() {
   }
 
   .failure-row {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

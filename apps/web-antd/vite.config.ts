@@ -1,10 +1,12 @@
+import type { Plugin } from 'vite';
+
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from '@vben/vite-config';
 
-import { loadEnv, type Plugin } from 'vite';
+import { loadEnv } from 'vite';
 
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const appVersionFile = path.resolve(appRoot, 'src/app-version.json');
@@ -32,8 +34,7 @@ function emitAppVersionPlugin(): Plugin {
 
 export default defineConfig(async (config) => {
   const env = loadEnv(config.mode, process.cwd(), '');
-  const proxyTarget =
-    env.VITE_API_PROXY_TARGET || 'http://localhost:5320/api';
+  const proxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:5320/api';
 
   return {
     application: {},

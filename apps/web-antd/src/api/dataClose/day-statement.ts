@@ -1,5 +1,7 @@
+import type { ReportListResult } from '#/api/dataClose/shared';
+
+import { toListResult } from '#/api/dataClose/shared';
 import { requestClient } from '#/api/request';
-import { toListResult, type ReportListResult } from '#/api/dataClose/shared';
 import { trimSpace } from '#/utils/string';
 
 /**

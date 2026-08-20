@@ -4,20 +4,12 @@ import type { PlayerRebateRecordItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import {
-  Button,
-  Input,
-  Result,
-  Select,
-  Space,
-  Tag,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { Button, Input, Result, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerRebateListApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerRebateListApi } from '#/api/operationManage/player-detail-extra';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -35,7 +27,7 @@ const props = defineProps<{
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(11610));
+const canViewTable = computed(() => checkPermission(11_610));
 
 const defaultRange = getTodayRangeSeconds();
 const sumBackWater = ref(0);
@@ -219,42 +211,45 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">返水状态</span>
-          <Select
-            v-model:value="filterAwardStatus"
-            :options="REBATE_AWARD_STATUS_OPTIONS"
-            placeholder="请选择返水状态"
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">返水状态</span>
+            <Select
+              v-model:value="filterAwardStatus"
+              :options="REBATE_AWARD_STATUS_OPTIONS"
+              placeholder="请选择返水状态"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="发放时间"
           />
-        </Space.Compact>
-      </div>
-
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="发放时间" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #awardStatus="{ row }">

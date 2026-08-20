@@ -7,12 +7,12 @@ import { computed, onMounted, ref } from 'vue';
 import { Button, Input, Result, Select, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchWithdrawRevertedListApi } from '#/api/operationManage/withdraw-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -21,7 +21,7 @@ defineOptions({ name: 'WithdrawThirdPartyRecord' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(13165));
+const canViewTable = computed(() => checkPermission(13_165));
 
 const defaultRange = getYesterdayRangeSeconds();
 const filterLoginAccount = ref('');
@@ -124,46 +124,46 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterPackageId"
+          :options="
+            packageOptions
+              .filter((item) => item.PackageId !== '')
+              .map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+          "
+        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
+            查询
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

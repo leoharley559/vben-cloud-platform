@@ -8,6 +8,7 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Pagination,
   Radio,
@@ -15,7 +16,6 @@ import {
   Space,
   Switch,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -275,7 +275,7 @@ function onBatchFileChange(event: Event) {
     return;
   }
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.addEventListener('load', () => {
     const text = String(reader.result || '').replace(/^\uFEFF/, '');
     const lines = text
       .split(/\r?\n/)
@@ -288,7 +288,7 @@ function onBatchFileChange(event: Event) {
     batchRows.value = [];
     batchSelectedIds.value = [];
     message.success(`已读取 ${body.length} 行，请检查匹配结果`);
-  };
+  });
   reader.readAsText(file);
   input.value = '';
 }
@@ -309,7 +309,7 @@ function parseBatchText() {
     accounts.push(account.toLowerCase().replaceAll(/\s/g, ''));
     packages.push(packageName);
   }
-  if (!accounts.length) {
+  if (accounts.length === 0) {
     message.warning('请粘贴数据或导入 CSV 文件');
     return null;
   }
@@ -333,7 +333,7 @@ async function checkBatch() {
     batchSelectedIds.value = batchRows.value
       .filter((row) => row.PlayerId && Number(row.PlayerId) !== 0)
       .map((row) => row.PlayerId as number | string);
-    if (!batchRows.value.length) {
+    if (batchRows.value.length === 0) {
       message.warning('未匹配到可确认的数据');
     }
   } finally {
@@ -342,7 +342,7 @@ async function checkBatch() {
 }
 
 async function submitBatch() {
-  if (!batchSelectedIds.value.length) {
+  if (batchSelectedIds.value.length === 0) {
     message.warning('请选择至少一名有效玩家');
     return;
   }
@@ -412,9 +412,9 @@ async function loadQuota() {
 
 function levelNames(value: unknown) {
   if (!value || String(value) === '0') return '默认';
-  const ids = String(value).split(',');
+  const ids = new Set(String(value).split(','));
   return levels.value
-    .filter((item) => ids.includes(String(item.Id)))
+    .filter((item) => ids.has(String(item.Id)))
     .map((item) => String(item.LevelName || item.Name || item.Id))
     .join('、');
 }
@@ -583,41 +583,41 @@ onMounted(loadMain);
     width="950px"
   >
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="whitelistQuery.Account"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="whitelistQuery.ChannelId"
-          allow-clear
-          placeholder="请输入渠道号"
-        >
-          <template #addonBefore>渠道号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">产品</span>
-        <Select
-          v-model:value="whitelistQuery.PackageId"
-          :options="productOptions"
-          allow-clear
-          placeholder="请选择产品"
-        />
-      </Space.Compact>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="whitelistQuery.Account"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="whitelistQuery.ChannelId"
+            allow-clear
+            placeholder="请输入渠道号"
+          >
+            <template #addonBefore>渠道号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="whitelistQuery.PackageId"
+            :options="productOptions"
+            allow-clear
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="loadWhitelist">查询</Button>
-      <Button type="primary" @click="openWhitelistAdd">新增白名单</Button>
-      <Button @click="openBatch">Excel/批量导入</Button>
+          <Button type="primary" @click="openWhitelistAdd">新增白名单</Button>
+          <Button @click="openBatch">Excel/批量导入</Button>
         </div>
+      </div>
     </div>
-  </div>
     <Table
       :columns="whitelistColumns"
       :data-source="whitelistRows"
@@ -634,9 +634,9 @@ onMounted(loadMain);
           />
         </template>
         <template v-else-if="column.key === 'actions'">
-          <Button danger type="link" @click="removeWhitelist(record)"
-            >删除</Button
-          >
+          <Button danger type="link" @click="removeWhitelist(record)">
+删除
+</Button>
         </template>
         <template v-else>{{ text }}</template>
       </template>
@@ -702,7 +702,7 @@ onMounted(loadMain);
       placeholder="示例：&#10;player01,产品A&#10;player02,产品B"
     />
     <Table
-      v-if="batchRows.length"
+      v-if="batchRows.length > 0"
       class="mt-3"
       :columns="batchColumns"
       :data-source="batchRows"
@@ -723,7 +723,7 @@ onMounted(loadMain);
         <template v-else>{{ text }}</template>
       </template>
     </Table>
-    <div v-if="batchRows.length" class="mt-2 text-sm text-gray-500">
+    <div v-if="batchRows.length > 0" class="mt-2 text-sm text-gray-500">
       已匹配 {{ batchRows.length }} 条，已选择
       {{ batchSelectedIds.length }} 条； 玩家 ID 为 0 的记录不可提交。
     </div>

@@ -1,5 +1,7 @@
 import type { Recordable, UserInfo } from '@vben/types';
 
+import type { AuthApi } from '#/api';
+
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -10,7 +12,6 @@ import { resetAllStores, useAccessStore, useUserStore } from '@vben/stores';
 import { notification } from 'ant-design-vue';
 import { defineStore } from 'pinia';
 
-import type { AuthApi } from '#/api';
 import {
   getAccessCodesApi,
   getProjectConfigApi,
@@ -150,9 +151,9 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function authLoginBy2FA(
     params: {
+      UseNewPermission?: boolean;
       Username: string;
       ValidCode: string;
-      UseNewPermission?: boolean;
     },
     onSuccess?: () => Promise<void> | void,
   ) {

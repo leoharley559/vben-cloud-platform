@@ -2,27 +2,20 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { onMounted, ref, watch } from 'vue';
-
-import {
-  Button,
-  Input,
-  Modal,
-  Select,
-  Space,
-  message,
-} from 'ant-design-vue';
-import dayjs from 'dayjs';
 import { useRouter } from 'vue-router';
 
+import { Button, Input, message, Modal, Select, Space } from 'ant-design-vue';
+import dayjs from 'dayjs';
+
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportLeaderboardRecordApi,
   fetchLeaderboardRecordApi,
 } from '#/api/operationManage/leaderboard';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
-import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
@@ -30,12 +23,12 @@ import { VOUCHER_TYPE_MAP } from '#/utils/operation-status';
 import { LEADERBOARD_RECORD_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import {
-  LEADERBOARD_TYPE_OPTIONS,
   formatLeaderboardAmount,
   formatLeaderboardClaimStatus,
   formatLeaderboardDateTime,
   formatLeaderboardScore,
   formatLeaderboardType,
+  LEADERBOARD_TYPE_OPTIONS,
   resolveLeaderboardTitle,
   resolveVoucherName,
 } from './leaderboard-shared';
@@ -51,7 +44,7 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 
-const canExport = checkPermission(13436);
+const canExport = checkPermission(13_436);
 const exportLoading = ref(false);
 const totalCount = ref(0);
 
@@ -96,7 +89,11 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildExportQuery() {
-  const { Page: _page, PageSize: _size, ...rest } = buildQuery({
+  const {
+    Page: _page,
+    PageSize: _size,
+    ...rest
+  } = buildQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -121,7 +118,12 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
-    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     {
       field: 'VipLevel',
       formatter: ({ cellValue }) =>
@@ -297,88 +299,87 @@ onMounted(() => {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <Space.Compact>
-        <span class="query-field-addon">产品包</span>
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :field-names="{ label: 'PackageName', value: 'PackageId' }"
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterActivityId"
+            allow-clear
+            placeholder="请输入活动ID"
+          >
+            <template #addonBefore>活动ID</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="
+              filterLoginAccount = String(filterLoginAccount || '')
+                .trim()
+                .toLowerCase()
+            "
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
         <Select
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :field-names="{ label: 'PackageName', value: 'PackageId' }"
-          :options="packageOptions"
-          placeholder="请选择产品包"
+          v-model:value="filterStatus"
+          :options="[
+            { label: '全部', value: -1 },
+            { label: '未领取', value: 0 },
+            { label: '已领取', value: 1 },
+          ]"
         />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterActivityId"
-          allow-clear
-          placeholder="请输入活动ID"
-        >
-          <template #addonBefore>活动ID</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @change="
-            filterLoginAccount = String(filterLoginAccount || '')
-              .trim()
-              .toLowerCase()
-          "
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterStatus"
-       
-        :options="[
-          { label: '全部', value: -1 },
-          { label: '未领取', value: 0 },
-          { label: '已领取', value: 1 },
-        ]"
-      />
-      <Space.Compact>
-        <span class="query-field-addon">活动类型</span>
-        <Select
-          v-model:value="filterActivityType"
-          allow-clear
-         
-          :options="typeFilterOptions"
-          placeholder="请选择活动类型"
-        />
-      </Space.Compact>
-      <Select
-        v-model:value="filterVipLevel"
-       
-        :options="VIP_LEVEL_OPTIONS"
-      />
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" />
+        <Space.Compact>
+          <span class="query-field-addon">活动类型</span>
+          <Select
+            v-model:value="filterActivityType"
+            allow-clear
+            :options="typeFilterOptions"
+            placeholder="请选择活动类型"
+          />
+        </Space.Compact>
+        <Select v-model:value="filterVipLevel" :options="VIP_LEVEL_OPTIONS" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            precision="date"
+          />
         </div>
         <div class="query-filter-actions">
           <Space>
-        <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
-        <Button
-          v-if="canExport"
-          :loading="exportLoading"
-          @click="handleExportClick"
-        >
-          导出 Excel
-        </Button>
-        <Button v-else disabled title="需要权限 13436">导出 Excel</Button>
-      </Space>
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+            <Button
+              v-if="canExport"
+              :loading="exportLoading"
+              @click="handleExportClick"
+            >
+              导出 Excel
+            </Button>
+            <Button v-else disabled title="需要权限 13436">导出 Excel</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink
@@ -387,10 +388,6 @@ onMounted(() => {
         />
       </template>
     </Grid>
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </div>
 </template>

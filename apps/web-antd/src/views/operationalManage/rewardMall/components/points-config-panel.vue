@@ -11,13 +11,13 @@ import {
   Button,
   Form,
   InputNumber,
+  message,
   Modal,
   Radio,
   Result,
   Switch,
   Table,
   Tooltip,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -30,8 +30,8 @@ import {
 } from '#/api/operationManage/reward-mall';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
-import { REDIRECT_TYPE } from '#/views/operationalManage/voucher/components/voucher-shared';
 import VoucherRedirectField from '#/views/operationalManage/voucher/components/voucher-redirect-field.vue';
+import { REDIRECT_TYPE } from '#/views/operationalManage/voucher/components/voucher-shared';
 
 import {
   centsToYuan,
@@ -45,7 +45,7 @@ import {
 defineOptions({ name: 'PointsConfigPanel' });
 
 const { checkPermission } = useCloudPermission();
-const canView = computed(() => checkPermission(13332));
+const canView = computed(() => checkPermission(13_332));
 
 const { ensureGameConfig, gameConfig } = useGameConfig();
 
@@ -131,7 +131,7 @@ async function onDepositSwitchChange(checked: boolean | number | string) {
 
 const depositRowSelection = computed(() => ({
   onChange: (keys: (number | string)[]) => {
-    selectedDepositVips.value = keys.map((key) => Number(key));
+    selectedDepositVips.value = keys.map(Number);
   },
   selectedRowKeys: selectedDepositVips.value,
 }));
@@ -141,7 +141,7 @@ const depositEditVips = ref<number[]>([]);
 const depositEditForm = reactive({ DailyMaxPoint: 0, DailyMinPayment: 0 });
 
 function openDepositBatchEdit() {
-  if (!selectedDepositVips.value.length) {
+  if (selectedDepositVips.value.length === 0) {
     message.warning('请先选择要批量编辑的 VIP 等级');
     return;
   }
@@ -262,7 +262,7 @@ async function onBetSwitchChange(checked: boolean | number | string) {
 
 const betRowSelection = computed(() => ({
   onChange: (keys: (number | string)[]) => {
-    selectedBetVips.value = keys.map((key) => Number(key));
+    selectedBetVips.value = keys.map(Number);
   },
   selectedRowKeys: selectedBetVips.value,
 }));
@@ -283,7 +283,7 @@ const gamesList = computed(() =>
 );
 
 function openBetBatchEdit() {
-  if (!selectedBetVips.value.length) {
+  if (selectedBetVips.value.length === 0) {
     message.warning('请先选择要批量编辑的 VIP 等级');
     return;
   }
@@ -458,7 +458,7 @@ onMounted(() => {
       <div class="mb-2 flex justify-end">
         <Button
           type="primary"
-          :disabled="!selectedDepositVips.length"
+          :disabled="selectedDepositVips.length === 0"
           @click="openDepositBatchEdit"
         >
           批量编辑
@@ -516,7 +516,7 @@ onMounted(() => {
       <div class="mb-2 flex justify-end">
         <Button
           type="primary"
-          :disabled="!selectedBetVips.length"
+          :disabled="selectedBetVips.length === 0"
           @click="openBetBatchEdit"
         >
           批量编辑
@@ -640,7 +640,7 @@ onMounted(() => {
             <template #addonAfter>%</template>
           </InputNumber>
         </div>
-        <div v-if="!gamesList.length" class="py-4 text-center text-gray-400">
+        <div v-if="gamesList.length === 0" class="py-4 text-center text-gray-400">
           暂无游戏配置数据
         </div>
       </div>

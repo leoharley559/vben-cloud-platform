@@ -84,7 +84,7 @@ onMounted(() => {
               item.key === 'pointsAdjust' && activeTab === 'pointsAdjust'
             "
           >
-            <div v-if="pointsAdjustSubTabs.length" class="mb-3">
+            <div v-if="pointsAdjustSubTabs.length > 0" class="mb-3">
               <Radio.Group
                 v-model:value="activePointsSubTab"
                 button-style="solid"
@@ -110,7 +110,7 @@ onMounted(() => {
             />
 
             <div
-              v-if="!pointsAdjustSubTabs.length"
+              v-if="pointsAdjustSubTabs.length === 0"
               class="rounded border border-dashed p-4 text-sm text-gray-500"
             >
               暂无积分调整子页权限

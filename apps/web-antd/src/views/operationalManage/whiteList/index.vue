@@ -46,7 +46,9 @@ const canUserStats = computed(() => checkPermission(10_215));
 
 const summaryItems = computed(() => [
   ...(canIpStats.value ? [{ label: 'IP总计', value: stats.value.IpList }] : []),
-  ...(canUserStats.value ? [{ label: '使用者', value: stats.value.UserList }] : []),
+  ...(canUserStats.value
+    ? [{ label: '使用者', value: stats.value.UserList }]
+    : []),
 ]);
 
 async function loadStats() {

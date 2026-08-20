@@ -4,18 +4,12 @@ import type { CloudListResult } from '#/types/operation-manage';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import {
-  Button,
-  DatePicker,
-  Input,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, DatePicker, Input, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -36,8 +30,8 @@ export interface OperationListSummaryItem {
 
 export type OperationDatePreset =
   | 'dayBeforeYesterday'
-  | 'last31ToYesterday'
   | 'last7Days'
+  | 'last31ToYesterday'
   | 'today'
   | 'yesterday';
 
@@ -73,18 +67,18 @@ function resolveDefaultRange(
   const today = dayjs().startOf('day');
   const yesterday = today.subtract(1, 'day');
   switch (preset) {
-    case 'today': {
-      return [today, today.endOf('day')];
-    }
-    case 'yesterday': {
-      return [yesterday, yesterday.endOf('day')];
-    }
     case 'dayBeforeYesterday': {
       const day = today.subtract(2, 'day');
       return [day, day.endOf('day')];
     }
     case 'last31ToYesterday': {
       return [yesterday.subtract(30, 'day'), yesterday.endOf('day')];
+    }
+    case 'today': {
+      return [today, today.endOf('day')];
+    }
+    case 'yesterday': {
+      return [yesterday, yesterday.endOf('day')];
     }
     default: {
       return [today.subtract(6, 'day'), today.endOf('day')];
@@ -139,7 +133,7 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const query: Record<string, unknown> = {
     Page: page.currentPage,
     PageSize: page.pageSize,
-    ...(props.config.extraQuery || {}),
+    ...props.config.extraQuery,
   };
   if (enabledFilters.value.has('login')) {
     query[props.config.loginField || 'LoginAccount'] = filterLoginAccount.value;
@@ -203,9 +197,9 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     field: column.field,
     formatter: column.slot
       ? undefined
-      : column.formatter
+      : (column.formatter
         ? ({ cellValue, row }) => column.formatter!(cellValue, row)
-        : undefined,
+        : undefined),
     minWidth: column.minWidth || 120,
     slots: column.slot ? { default: column.slot } : undefined,
     title: column.title,
@@ -257,63 +251,63 @@ defineExpose({ reload: () => gridApi.reload() });
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div v-if="enabledFilters.has('login')" class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div v-if="enabledFilters.has('username')" class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterUsername"
-          allow-clear
-          placeholder="请输入账号"
-        >
-          <template #addonBefore>账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">产品包</span>
-        <Select
-          v-if="enabledFilters.has('package')"
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="packageOptions"
-          placeholder="请选择产品包"
+      <div class="ops-query-filters">
+        <div v-if="enabledFilters.has('login')" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div v-if="enabledFilters.has('username')" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterUsername"
+            allow-clear
+            placeholder="请输入账号"
+          >
+            <template #addonBefore>账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-if="enabledFilters.has('package')"
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-if="enabledFilters.has('status') && config.statusOptions?.length"
+            v-model:value="filterStatus"
+            allow-clear
+            :options="config.statusOptions"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <DatePicker
+          v-if="enabledFilters.has('date') && isSingleDate"
+          v-model:value="filterSingleDate"
         />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">状态</span>
-        <Select
-          v-if="enabledFilters.has('status') && config.statusOptions?.length"
-          v-model:value="filterStatus"
-          allow-clear
-         
-          :options="config.statusOptions"
-          placeholder="请选择状态"
-        />
-      </Space.Compact>
-      <DatePicker
-        v-if="enabledFilters.has('date') && isSingleDate"
-        v-model:value="filterSingleDate"
-      />
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker
-        v-if="enabledFilters.has('date') && !isSingleDate"
-        v-model="filterDateRange"
-        :precision="config.dateValueFormat === 'dateString' ? 'date' : 'datetime'"
-      />
+            v-if="enabledFilters.has('date') && !isSingleDate"
+            v-model="filterDateRange"
+            :precision="
+              config.dateValueFormat === 'dateString' ? 'date' : 'datetime'
+            "
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryCards" />
 
@@ -323,7 +317,7 @@ defineExpose({ reload: () => gridApi.reload() });
         :key="column.slot"
         #[column.slot!]="{ row }"
       >
-        <slot :name="column.slot" :row="row" />
+        <slot :name="column.slot" :row="row"></slot>
       </template>
     </Grid>
   </div>

@@ -9,8 +9,8 @@ import { Card, Result, Tabs } from 'ant-design-vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import AisleRecharge from './components/aisle-recharge.vue';
-import CreditRecordList from './components/credit-record-list.vue';
 import CpReissueList from './components/cp-reissue-list.vue';
+import CreditRecordList from './components/credit-record-list.vue';
 import ErrorRecordList from './components/error-record-list.vue';
 import FastRechargeTabs from './components/fast-recharge.vue';
 import RechargeBlacklistTabs from './components/recharge-blacklist-tabs.vue';
@@ -23,15 +23,15 @@ defineOptions({ name: 'OperationalRechargeList' });
 const { checkPermission } = useCloudPermission();
 const route = useRoute();
 
-const canAisleRecharge = computed(() => checkPermission(10261));
-const canFastRecharge = computed(() => checkPermission(10262));
-const canBlackList = computed(() => checkPermission(10263));
-const canRateLimit = computed(() => checkPermission(10264));
-const canStats = computed(() => checkPermission(11617));
-const canCreditRecord = computed(() => checkPermission(11828));
-const canSelfCheck = computed(() => checkPermission(12173));
-const canErrorRecord = computed(() => checkPermission(12641));
-const canCpReissue = computed(() => checkPermission(13305));
+const canAisleRecharge = computed(() => checkPermission(10_261));
+const canFastRecharge = computed(() => checkPermission(10_262));
+const canBlackList = computed(() => checkPermission(10_263));
+const canRateLimit = computed(() => checkPermission(10_264));
+const canStats = computed(() => checkPermission(11_617));
+const canCreditRecord = computed(() => checkPermission(11_828));
+const canSelfCheck = computed(() => checkPermission(12_173));
+const canErrorRecord = computed(() => checkPermission(12_641));
+const canCpReissue = computed(() => checkPermission(13_305));
 
 const canViewAny = computed(
   () =>

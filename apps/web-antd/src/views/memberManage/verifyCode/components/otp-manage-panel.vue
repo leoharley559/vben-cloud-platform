@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Form, Input, Result, message } from 'ant-design-vue';
+import { Button, Form, Input, message, Result } from 'ant-design-vue';
 
 import {
   fetchOtpConfigApi,
@@ -13,7 +13,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 defineOptions({ name: 'OtpManagePanel' });
 
 const { checkPermission } = useCloudPermission();
-const canView = computed(() => checkPermission(13204));
+const canView = computed(() => checkPermission(13_204));
 
 const loading = ref(false);
 const saving = ref(false);

@@ -100,11 +100,7 @@ onUnmounted(clearTimer);
 </script>
 
 <template>
-  <Form
-    class="max-w-xl"
-    :label-col="{ span: 5 }"
-    :wrapper-col="{ span: 16 }"
-  >
+  <Form class="max-w-xl" :label-col="{ span: 5 }" :wrapper-col="{ span: 16 }">
     <Form.Item v-if="!info.Phone" :wrapper-col="{ offset: 5, span: 16 }">
       <div class="text-amber-600">请先绑定手机号后再设置私人密码</div>
     </Form.Item>

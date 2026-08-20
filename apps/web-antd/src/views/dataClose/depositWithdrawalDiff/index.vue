@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -6,9 +8,7 @@ import { Page } from '@vben/common-ui';
 import { Card } from 'ant-design-vue';
 
 import { fetchDepositWithdrawalDiffListApi } from '#/api/dataClose/finance-report';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import { depositWithdrawalColumns } from '../shared/columns';
 

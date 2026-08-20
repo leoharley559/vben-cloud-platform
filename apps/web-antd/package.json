@@ -18,8 +18,10 @@
   "scripts": {
     "build": "pnpm vite build --mode production",
     "build:analyze": "pnpm vite build --mode analyze",
+    "build:test": "pnpm vite build --mode test",
     "deploy": "bash ./upload.sh",
-    "release": "bash ./release.sh",
+    "release": "bash ./release.sh prod",
+    "release:test": "bash ./release.sh test",
     "dev": "pnpm vite --mode development",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit --skipLibCheck"
@@ -44,23 +46,23 @@
     "@vben/utils": "workspace:*",
     "@vueuse/core": "catalog:",
     "ant-design-vue": "catalog:",
-    "bignumber.js": "^9.3.1",
-    "crypto-js": "^4.2.0",
+    "bignumber.js": "catalog:",
+    "crypto-js": "catalog:",
     "dayjs": "catalog:",
     "echarts": "catalog:",
-    "js-cookie": "^3.0.5",
+    "js-cookie": "catalog:",
     "pinia": "catalog:",
     "qrcode": "catalog:",
     "qs": "catalog:",
     "vue": "catalog:",
     "vue-router": "catalog:",
-    "xlsx": "^0.18.5"
+    "xlsx": "catalog:"
   },
   "devDependencies": {
-    "@types/crypto-js": "^4.2.2",
-    "@types/js-cookie": "^3.0.6",
+    "@types/crypto-js": "catalog:",
+    "@types/js-cookie": "catalog:",
     "@types/qrcode": "catalog:",
-    "@types/qs": "^6.9.18",
+    "@types/qs": "catalog:",
     "axios": "catalog:"
   }
 }

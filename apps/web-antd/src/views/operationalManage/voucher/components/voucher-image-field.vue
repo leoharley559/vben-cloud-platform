@@ -4,7 +4,8 @@ import type { UploadChangeParam } from 'ant-design-vue';
 import { computed } from 'vue';
 
 import { useAccessStore } from '@vben/stores';
-import { Button, Upload, message } from 'ant-design-vue';
+
+import { Button, message, Upload } from 'ant-design-vue';
 
 import { getAuthToken, getCloudToken } from '#/utils/auth-token';
 import { ensureAuthToken } from '#/utils/ensure-auth-token';
@@ -58,15 +59,15 @@ function beforeUpload(file: File) {
 
 function resolveUploadUrl(response: unknown): string {
   const data = response as
+    | undefined
     | {
         Code?: number | string;
         Data?: string | { url?: string };
-        Msg?: string;
         message?: string;
+        Msg?: string;
         respond?: string | { url?: string };
         status?: number | string;
-      }
-    | undefined;
+      };
   const ok = String(data?.Code ?? data?.status ?? '') === '200';
   if (!ok) {
     return '';
@@ -92,15 +93,15 @@ function handleChange(info: UploadChangeParam) {
   }
   if (info.file.status === 'done') {
     const response = info.file.response as
-      | { Msg?: string; message?: string }
-      | undefined;
+      | undefined
+      | { message?: string; Msg?: string; };
     const url = resolveUploadUrl(info.file.response);
     if (url) {
       modelValue.value = url;
       return;
     }
     const status = String(
-      (info.file.response as { status?: number } | undefined)?.status ?? '',
+      (info.file.response as undefined | { status?: number })?.status ?? '',
     );
     const errMsg =
       response?.Msg ||
@@ -160,9 +161,7 @@ function handleRemove() {
       <div v-if="dimensionHint" class="text-xs text-gray-400">
         {{ dimensionHint }}
       </div>
-      <div v-else class="text-xs text-gray-400">
-        不超过 {{ maxSizeKb }}K
-      </div>
+      <div v-else class="text-xs text-gray-400">不超过 {{ maxSizeKb }}K</div>
     </div>
   </div>
 </template>

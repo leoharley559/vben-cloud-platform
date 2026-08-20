@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -15,9 +17,7 @@ import {
   fetchPkStatisticsListApi,
 } from '#/api/dataClose/live-statement';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import { liveStatementColumns } from '../shared/columns';
 
@@ -35,7 +35,7 @@ const tabs = computed(() =>
         filters: listFilters,
       } satisfies OperationListConfig,
       key: 'data',
-      permission: 11840,
+      permission: 11_840,
       tab: '直播数据统计',
     },
     {
@@ -45,7 +45,7 @@ const tabs = computed(() =>
         filters: listFilters,
       } satisfies OperationListConfig,
       key: 'room',
-      permission: 11841,
+      permission: 11_841,
       tab: '直播间统计',
     },
     {
@@ -58,7 +58,7 @@ const tabs = computed(() =>
         filters: listFilters,
       } satisfies OperationListConfig,
       key: 'announcer',
-      permission: 12452,
+      permission: 12_452,
       tab: '主播礼物统计',
     },
     {
@@ -71,7 +71,7 @@ const tabs = computed(() =>
         filters: listFilters,
       } satisfies OperationListConfig,
       key: 'gift',
-      permission: 12453,
+      permission: 12_453,
       tab: '礼物报表',
     },
     {
@@ -84,7 +84,7 @@ const tabs = computed(() =>
         filters: listFilters,
       } satisfies OperationListConfig,
       key: 'guessing',
-      permission: 13126,
+      permission: 13_126,
       tab: '竞猜列表',
     },
     {
@@ -97,7 +97,7 @@ const tabs = computed(() =>
         filters: listFilters,
       } satisfies OperationListConfig,
       key: 'liveGame',
-      permission: 13129,
+      permission: 13_129,
       tab: '直播游戏报表',
     },
     {
@@ -110,7 +110,7 @@ const tabs = computed(() =>
         filters: listFilters,
       } satisfies OperationListConfig,
       key: 'pk',
-      permission: 13132,
+      permission: 13_132,
       tab: 'PK统计',
     },
   ].filter((item) => checkPermission(item.permission)),

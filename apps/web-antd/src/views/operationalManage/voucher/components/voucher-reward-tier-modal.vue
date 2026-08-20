@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { ProbabilityPrizeItem } from './voucher-shared';
+
 import { computed, reactive, ref, watch } from 'vue';
 
 import {
@@ -9,30 +11,21 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Select,
   Tabs,
-  message,
 } from 'ant-design-vue';
 
-import {
-  type ProbabilityPrizeItem,
-  REWARD_TYPE,
-  VOUCHER_TYPE,
-  createEmptyPhysicalVariant,
-  createEmptyProbabilityPrize,
-  formatCentsToYuan,
-  getRewardTypeOptions,
-  yuanToCents,
-} from './voucher-shared';
 import VoucherImageField from './voucher-image-field.vue';
+import { createEmptyPhysicalVariant, createEmptyProbabilityPrize, formatCentsToYuan, getRewardTypeOptions, REWARD_TYPE, VOUCHER_TYPE, yuanToCents } from './voucher-shared';
 
 defineOptions({ name: 'VoucherRewardTierModal' });
 
 const props = defineProps<{
   langGroupIds: number[];
   mode: 'add' | 'edit';
-  row?: Record<string, unknown> | null;
+  row?: null | Record<string, unknown>;
   voucherType: number;
 }>();
 
@@ -182,7 +175,7 @@ function hasLangValue(
   return Boolean(String(langMap?.[lgId]?.[key] ?? '').trim());
 }
 
-function validateAndBuild(): Record<string, unknown> | null {
+function validateAndBuild(): null | Record<string, unknown> {
   if (isRedPacket.value) {
     if (
       !(simpleDraft.minimumGoldYuan > 0) ||
@@ -235,16 +228,8 @@ function validateAndBuild(): Record<string, unknown> | null {
   delete (result as Record<string, unknown>).goldYuan;
   result.Gold = yuanToCents(prizeDraft.goldYuan);
 
-  if (prizeDraft.PriceType === REWARD_TYPE.GENERAL) {
-    if (!(result.Gold > 0) && !(Number(prizeDraft.Points) > 0)) {
-      message.warning('请至少设置一种奖励(彩金或积分)');
-      return null;
-    }
-    if (result.Gold > 0 && !(Number(prizeDraft.DrawWater) > 0)) {
-      message.warning('请输入彩金流水倍数');
-      return null;
-    }
-  } else if (prizeDraft.PriceType === REWARD_TYPE.CASH) {
+  switch (prizeDraft.PriceType) {
+  case REWARD_TYPE.CASH: {
     if (!(result.Gold > 0) || !(Number(prizeDraft.DrawWater) > 0)) {
       message.warning('请输入彩金奖励金额与流水倍数');
       return null;
@@ -260,19 +245,22 @@ function validateAndBuild(): Record<string, unknown> | null {
       message.warning('请上传奖品转盘图片与弹窗图片');
       return null;
     }
-  } else if (prizeDraft.PriceType === REWARD_TYPE.POINT) {
-    if (!(Number(prizeDraft.Points) > 0)) {
-      message.warning('请输入积分奖励');
+  
+  break;
+  }
+  case REWARD_TYPE.GENERAL: {
+    if (!(result.Gold > 0) && !(Number(prizeDraft.Points) > 0)) {
+      message.warning('请至少设置一种奖励(彩金或积分)');
       return null;
     }
-    if (
-      !hasLangValue(prizeDraft.LangText, lgId, 'PrizeWheelImage') ||
-      !hasLangValue(prizeDraft.LangText, lgId, 'PrizePopupImage')
-    ) {
-      message.warning('请上传奖品转盘图片与弹窗图片');
+    if (result.Gold > 0 && !(Number(prizeDraft.DrawWater) > 0)) {
+      message.warning('请输入彩金流水倍数');
       return null;
     }
-  } else if (prizeDraft.PriceType === REWARD_TYPE.PHYSICAL) {
+  
+  break;
+  }
+  case REWARD_TYPE.PHYSICAL: {
     if (
       !hasLangValue(prizeDraft.PhysicalProduct.LangText, lgId, 'ProductName') ||
       !hasLangValue(prizeDraft.PhysicalProduct.LangText, lgId, 'ProductPic')
@@ -280,7 +268,7 @@ function validateAndBuild(): Record<string, unknown> | null {
       message.warning('请填写实物奖品名称与图片');
       return null;
     }
-    if (!prizeDraft.PhysicalProduct.ProductTagDetail.length) {
+    if (prizeDraft.PhysicalProduct.ProductTagDetail.length === 0) {
       message.warning('请添加至少一张申请图片');
       return null;
     }
@@ -293,7 +281,25 @@ function validateAndBuild(): Record<string, unknown> | null {
         return null;
       }
     }
-  } else if (prizeDraft.PriceType === REWARD_TYPE.VIRTUAL) {
+  
+  break;
+  }
+  case REWARD_TYPE.POINT: {
+    if (!(Number(prizeDraft.Points) > 0)) {
+      message.warning('请输入积分奖励');
+      return null;
+    }
+    if (
+      !hasLangValue(prizeDraft.LangText, lgId, 'PrizeWheelImage') ||
+      !hasLangValue(prizeDraft.LangText, lgId, 'PrizePopupImage')
+    ) {
+      message.warning('请上传奖品转盘图片与弹窗图片');
+      return null;
+    }
+  
+  break;
+  }
+  case REWARD_TYPE.VIRTUAL: {
     if (
       !hasLangValue(prizeDraft.VirtualProduct.LangText, lgId, 'ProductName') ||
       !hasLangValue(prizeDraft.VirtualProduct.LangText, lgId, 'ProductPic')
@@ -301,6 +307,10 @@ function validateAndBuild(): Record<string, unknown> | null {
       message.warning('请填写虚拟奖品名称与图片');
       return null;
     }
+  
+  break;
+  }
+  // No default
   }
 
   return result;
@@ -405,9 +415,9 @@ function handleOk() {
         <template v-if="prizeDraft.PriceType === REWARD_TYPE.GENERAL">
           <Form.Item>
             <template #label>
-              <Checkbox v-model:checked="hasGoldReward"
-                >彩金奖励（元）</Checkbox
-              >
+              <Checkbox v-model:checked="hasGoldReward">
+彩金奖励（元）
+</Checkbox>
             </template>
             <InputNumber
               v-model:value="prizeDraft.goldYuan"
@@ -562,10 +572,10 @@ function handleOk() {
                     "
                     size="small"
                     style="
-                      width: 220px;
                       display: flex;
                       align-items: center;
                       justify-content: center;
+                      width: 220px;
                     "
                   >
                     <Empty :image="false" description=" ">

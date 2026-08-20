@@ -308,9 +308,7 @@ onMounted(() => {
   <div>
     <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
       <Space>
-        <span>
-          允许报表数量: {{ limitCounter }} / {{ maxLimit }}
-        </span>
+        <span> 允许报表数量: {{ limitCounter }} / {{ maxLimit }} </span>
         <Button v-if="canBuy" type="primary" @click="handleBuy">
           购买额度
         </Button>
@@ -353,17 +351,12 @@ onMounted(() => {
         </template>
         <template v-else-if="column.key === 'Telegram'">
           <div>{{ record.TelegramChannelName || record.TelegramChannel }}</div>
-          <a
-            v-if="canRefreshToken"
-            @click="handleRefreshToken(record)"
-          >
+          <a v-if="canRefreshToken" @click="handleRefreshToken(record)">
             {{ botStatusMap[Number(record.BotStatus)] || 'Token' }}
           </a>
         </template>
         <template v-else-if="column.key === 'WhatsApp'">
-          <a v-if="canViewWhatsApp" @click="openWhatsApp(record)">
-            绑定状态
-          </a>
+          <a v-if="canViewWhatsApp" @click="openWhatsApp(record)"> 绑定状态 </a>
         </template>
         <template v-else-if="column.key === 'actions'">
           <Space>
@@ -374,7 +367,11 @@ onMounted(() => {
             >
               重发
             </a>
-            <a v-if="canDelete" class="text-red-500" @click="handleDelete(record)">
+            <a
+              v-if="canDelete"
+              class="text-red-500"
+              @click="handleDelete(record)"
+            >
               删除
             </a>
           </Space>

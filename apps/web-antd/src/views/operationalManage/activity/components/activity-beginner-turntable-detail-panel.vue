@@ -3,11 +3,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import {
-  Button,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -36,8 +32,8 @@ const statusOptions = [
 
 const activityTypeOptions = [
   { label: '全部', value: 0 },
-  { label: '注册转盘', value: 10022 },
-  { label: '首存转盘', value: 10016 },
+  { label: '注册转盘', value: 10_022 },
+  { label: '首存转盘', value: 10_016 },
 ];
 
 function buildQuery(page: { currentPage: number; pageSize: number }) {
@@ -63,7 +59,12 @@ const prizeStatusMap: Record<number, string> = {
 
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
-    { field: 'Account', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'Account',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'BindPhone', minWidth: 120, title: '手机号' },
     {
       field: 'RegistTime',
@@ -128,36 +129,34 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <Space.Compact>
-        <span class="query-field-addon">奖品状态</span>
-        <Select
-          v-model:value="filterStatus"
-         
-          :options="statusOptions"
-          placeholder="请选择奖品状态"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">转盘类型</span>
-        <Select
-          v-model:value="filterActivityType"
-         
-          :options="activityTypeOptions"
-          placeholder="请选择转盘类型"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">奖品状态</span>
+          <Select
+            v-model:value="filterStatus"
+            :options="statusOptions"
+            placeholder="请选择奖品状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">转盘类型</span>
+          <Select
+            v-model:value="filterActivityType"
+            :options="activityTypeOptions"
+            placeholder="请选择转盘类型"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="drawTimeRange" />
         </div>
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="applyTimeRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
+      </div>
     </div>
-  </div>
     <Grid>
       <template #loginAccount="{ row }">
         <PlayerAccountLink

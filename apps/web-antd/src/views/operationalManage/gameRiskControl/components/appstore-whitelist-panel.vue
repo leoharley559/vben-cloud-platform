@@ -5,12 +5,12 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -44,9 +44,9 @@ const APP_STORE_KEY_OPTIONS = [
 ];
 
 const { checkPermission } = useCloudPermission();
-const canView = computed(() => checkPermission(11343));
-const canCreate = computed(() => checkPermission(11344));
-const canDelete = computed(() => checkPermission(11345));
+const canView = computed(() => checkPermission(11_343));
+const canCreate = computed(() => checkPermission(11_344));
+const canDelete = computed(() => checkPermission(11_345));
 
 const loading = ref(false);
 const saving = ref(false);
@@ -143,24 +143,21 @@ onMounted(() => {
 <template>
   <div v-if="canView">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <Select
-        v-model:value="filterKey"
-        :options="APP_STORE_KEY_OPTIONS"
-      />
+      <div class="ops-query-filters">
+        <Select v-model:value="filterKey" :options="APP_STORE_KEY_OPTIONS" />
         <div class="query-filter-actions">
           <Space>
-        <Button :loading="loading" type="primary" @click="loadList">
-          查询
-        </Button>
-        <Button @click="resetFilters">重置</Button>
-        <Button v-if="canCreate" type="primary" @click="openCreate">
-          新增
-        </Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="loadList">
+              查询
+            </Button>
+            <Button @click="resetFilters">重置</Button>
+            <Button v-if="canCreate" type="primary" @click="openCreate">
+              新增
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Table
       bordered

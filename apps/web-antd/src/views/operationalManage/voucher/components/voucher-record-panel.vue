@@ -2,40 +2,40 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import {
   Button,
   Input,
+  message,
   Modal,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
-import { useRouter } from 'vue-router';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportVoucherDetailRecordApi,
   fetchVoucherDetailRecordApi,
   fetchVoucherListAllApi,
 } from '#/api/operationManage/voucher';
-import PassPopup from '#/components/security/pass-popup.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import PassPopup from '#/components/security/pass-popup.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { ACTIVITY_TYPE_OPTIONS, VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { VOUCHER_DETAIL_RECORD_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import {
-  VOUCHER_STATUS_FILTER_OPTIONS,
-  VOUCHER_STATUS_OPTIONS,
   deriveActivityName,
   formatVoucherAmount,
   formatVoucherDateTime,
   formatVoucherType,
   resolveVoucherName,
+  VOUCHER_STATUS_FILTER_OPTIONS,
+  VOUCHER_STATUS_OPTIONS,
 } from './voucher-shared';
 
 defineOptions({ name: 'VoucherRecordPanel' });
@@ -125,7 +125,11 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildExportQuery() {
-  const { Page: _page, PageSize: _size, ...rest } = buildQuery({
+  const {
+    Page: _page,
+    PageSize: _size,
+    ...rest
+  } = buildQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -135,7 +139,12 @@ function buildExportQuery() {
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
     { type: 'seq', minWidth: 60, title: '序号' },
-    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '玩家账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '玩家账号',
+    },
     {
       field: 'VipLevel',
       formatter: ({ cellValue }) =>
@@ -320,8 +329,8 @@ function statusMeta(value?: number | string) {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
@@ -335,7 +344,6 @@ function statusMeta(value?: number | string) {
           <Select
             v-model:value="filterVipLevel"
             allow-clear
-           
             :options="vipOptions"
             placeholder="请选择VIP等级"
           />
@@ -345,23 +353,27 @@ function statusMeta(value?: number | string) {
           <Select
             v-model:value="filterPackageId"
             allow-clear
-           
             :options="packageFilterOptions"
             placeholder="请选择所属产品"
           />
         </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterRegDateRange" label="注册时间" />
+          <QueryDatetimeRangePicker
+            v-model="filterRegDateRange"
+            label="注册时间"
+          />
         </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterReceiveDateRange" label="领取时间" />
+          <QueryDatetimeRangePicker
+            v-model="filterReceiveDateRange"
+            label="领取时间"
+          />
         </div>
         <Space.Compact>
           <span class="query-field-addon">活动类型</span>
           <Select
             v-model:value="filterActivityType"
             allow-clear
-           
             :options="activityTypeOptions"
             placeholder="请选择活动类型"
           />
@@ -380,25 +392,21 @@ function statusMeta(value?: number | string) {
           <Select
             v-model:value="filterStatus"
             allow-clear
-           
             :options="VOUCHER_STATUS_FILTER_OPTIONS"
             placeholder="请选择票券状态"
           />
         </Space.Compact>
         <div class="query-filter-actions">
           <Space>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-        </Space>
-        <Button
-        :loading="exportLoading"
-        @click="handleExportClick"
-      >
-        导出 Excel
-      </Button>
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
+          <Button :loading="exportLoading" @click="handleExportClick">
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">
@@ -414,10 +422,6 @@ function statusMeta(value?: number | string) {
       </template>
     </Grid>
 
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </div>
 </template>

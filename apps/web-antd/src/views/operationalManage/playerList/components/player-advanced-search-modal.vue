@@ -8,6 +8,10 @@ import { useProjectConfig } from '#/composables/use-project-config';
 
 defineOptions({ name: 'PlayerAdvancedSearchModal' });
 
+const emit = defineEmits<{
+  apply: [filters: AdvancedFilterRow[]];
+}>();
+
 export interface AdvancedFilterRow {
   Connector: string;
   DateTime?: number | string;
@@ -18,10 +22,6 @@ export interface AdvancedFilterRow {
 }
 
 const open = defineModel<boolean>('open', { default: false });
-const emit = defineEmits<{
-  apply: [filters: AdvancedFilterRow[]];
-}>();
-
 const { projectConfig } = useProjectConfig();
 
 const TYPE_OPTIONS = [
@@ -68,7 +68,7 @@ const deviceOptions = reactive<Array<{ label: string; value: string }>>([]);
 watch(
   () => projectConfig.value?.DevicePlatformAll,
   (map) => {
-    deviceOptions.splice(0, deviceOptions.length);
+    deviceOptions.splice(0);
     if (map && typeof map === 'object') {
       for (const [value, label] of Object.entries(map)) {
         deviceOptions.push({ label: String(label), value: String(value) });
@@ -79,7 +79,7 @@ watch(
 );
 
 watch(open, (visible) => {
-  if (visible && !filters.value.length) {
+  if (visible && filters.value.length === 0) {
     filters.value = [emptyRow(true)];
   }
 });

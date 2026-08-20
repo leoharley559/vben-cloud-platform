@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 function normalizeCloudList<T>(data: unknown): CloudListResult<T> {
@@ -29,7 +30,7 @@ function normalizeCloudList<T>(data: unknown): CloudListResult<T> {
 
 function normalizeCloudObject<T extends Record<string, unknown>>(
   data: unknown,
-): T | null {
+): null | T {
   if (!data || typeof data !== 'object') {
     return null;
   }

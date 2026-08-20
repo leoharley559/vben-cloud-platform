@@ -3,7 +3,7 @@ import type { BonusAuditListItem } from '#/types/bonus-audit';
 
 import { ref, watch } from 'vue';
 
-import { Form, Input, Modal, message } from 'ant-design-vue';
+import { Form, Input, message, Modal } from 'ant-design-vue';
 
 import { disposeBonusAuditApi } from '#/api/operationManage/bonus-audit';
 

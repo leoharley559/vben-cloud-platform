@@ -1,16 +1,15 @@
 <script lang="ts" setup>
+import type { GoodsGuideItem } from './reward-goods-shared';
+
 import { reactive, ref, watch } from 'vue';
 
-import { Form, Modal, Tabs, message } from 'ant-design-vue';
+import { Form, message, Modal, Tabs } from 'ant-design-vue';
 
 import RichTextEditor from '#/components/global/rich-text-editor.vue';
 import VoucherImageField from '#/views/operationalManage/voucher/components/voucher-image-field.vue';
 import VoucherRedirectField from '#/views/operationalManage/voucher/components/voucher-redirect-field.vue';
 
-import {
-  type GoodsGuideItem,
-  createEmptyGoodsGuide,
-} from './reward-goods-shared';
+import { createEmptyGoodsGuide } from './reward-goods-shared';
 
 defineOptions({ name: 'GoodsRuleModal' });
 

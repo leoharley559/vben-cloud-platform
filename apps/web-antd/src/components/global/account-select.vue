@@ -3,8 +3,8 @@ import type { AdminAccountOption } from '#/types/config';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Select } from 'ant-design-vue';
 import { useDebounceFn } from '@vueuse/core';
+import { Select } from 'ant-design-vue';
 
 import { fetchChildAdminInfoApi } from '#/api/config/index';
 
@@ -74,11 +74,11 @@ async function fetchAccountList(params: Record<string, unknown> = {}) {
 function mergeSelectedOptions() {
   const selectedValues = Array.isArray(modelValue.value)
     ? modelValue.value
-    : modelValue.value === undefined || modelValue.value === ''
+    : (modelValue.value === undefined || modelValue.value === ''
       ? []
-      : [modelValue.value];
+      : [modelValue.value]);
 
-  if (!selectedValues.length) {
+  if (selectedValues.length === 0) {
     return;
   }
 
@@ -115,9 +115,9 @@ function handleChange(value: unknown) {
   modelValue.value = normalized;
   const selectedValues = Array.isArray(normalized)
     ? normalized
-    : normalized === undefined || normalized === ''
+    : (normalized === undefined || normalized === ''
       ? []
-      : [normalized];
+      : [normalized]);
   const key = props.returnName ? 'Username' : 'Id';
   const selectedObjects = selectedValues
     .map((selected) =>
@@ -128,10 +128,10 @@ function handleChange(value: unknown) {
 }
 
 function handleDropdownVisibleChange(open: boolean) {
-  if (!open) {
-    fetchAccountList();
-  } else {
+  if (open) {
     mergeSelectedOptions();
+  } else {
+    fetchAccountList();
   }
 }
 

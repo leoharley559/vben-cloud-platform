@@ -43,12 +43,7 @@ const tabs = computed(() =>
 const canViewPage = computed(() => tabs.value.length > 0);
 
 watch(
-  [
-    () => route.query.id,
-    () => route.query.tab,
-    () => route.query.type,
-    tabs,
-  ],
+  [() => route.query.id, () => route.query.tab, () => route.query.type, tabs],
   () => {
     const requested = route.query.id
       ? 'record'

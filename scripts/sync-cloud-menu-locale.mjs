@@ -8,10 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
-const sourcePath = path.resolve(
-  rootDir,
-  '../cloudPlatform/src/lang/zh-CN.js',
-);
+const sourcePath = path.resolve(rootDir, '../cloudPlatform/src/lang/zh-CN.js');
 const targetPath = path.resolve(
   rootDir,
   'apps/web-antd/src/locales/cloud-platform/zh-CN-menu.json',
@@ -20,7 +17,7 @@ const targetPath = path.resolve(
 function loadZhCN() {
   let code = fs.readFileSync(sourcePath, 'utf8');
   code = code.replace(/^export default\s*/, 'module.exports=');
-  return Function(`${code}\n;return module.exports;`)();
+  return new Function(`${code}\n;return module.exports;`)();
 }
 
 function main() {
@@ -32,7 +29,7 @@ function main() {
       /^[a-z][\w]*$/i.test(key) &&
       typeof value === 'string' &&
       value &&
-      /[\u4e00-\u9fff]/.test(value)
+      /[\u4E00-\u9FFF]/.test(value)
     ) {
       menu[key] = value;
     }

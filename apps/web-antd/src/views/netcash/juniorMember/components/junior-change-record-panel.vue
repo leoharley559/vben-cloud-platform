@@ -5,18 +5,10 @@ import type { Column, Option } from '../shared';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  message,
-  Select,
-  Space,
-  Table,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { Button, Input, message, Select, Space, Table } from 'ant-design-vue';
 
 import { fetchJuniorMemberChangeRecordApi } from '#/api/netcash/junior-member';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatNetcashDateTime } from '#/utils/netcash';
 
@@ -85,7 +77,11 @@ async function exportRecords() {
   recordExportLoading.value = true;
   try {
     const result = await fetchJuniorMemberChangeRecordApi(
-      recordQuery({ IsExp: true, Page: 1, PageSize: Math.max(recordTotal.value + 1, 1) }),
+      recordQuery({
+        IsExp: true,
+        Page: 1,
+        PageSize: Math.max(recordTotal.value + 1, 1),
+      }),
     );
     if (!result.Items?.length) {
       message.info('暂无可导出数据');
@@ -117,41 +113,55 @@ onMounted(() => {
 <template>
   <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
-          <div class="flex flex-col gap-1">
-      <Input
-        v-model:value="recordFilters.LoginAccount"
-        allow-clear
-        @press-enter="loadRecords"
-        placeholder="请输入游戏账号"
-      >
-        <template #addonBefore>游戏账号</template>
-      </Input>
-    </div>
-    <Space.Compact>
-      <span class="query-field-addon">产品包</span>
-      <Select
-        v-model:value="recordFilters.PackageId"
-        allow-clear
-        :options="packageOptions"
-        placeholder="请选择产品包"
-      />
-    </Space.Compact>
-    <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="recordFilters.Time" />
-        </div>
-        <div class="query-filter-actions">
-          <Button type="primary" @click="recordPage = 1; loadRecords()">查询</Button>
-    <Button
-      @click="
-        Object.assign(recordFilters, { LoginAccount: '', PackageId: undefined, Time: undefined });
-        recordPage = 1;
-        loadRecords();
-      "
-    >
-      重置
-    </Button>
-    <Button :loading="recordExportLoading" @click="exportRecords">导出 Excel</Button>
-        </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="recordFilters.LoginAccount"
+          allow-clear
+          @press-enter="loadRecords"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <Space.Compact>
+        <span class="query-field-addon">产品包</span>
+        <Select
+          v-model:value="recordFilters.PackageId"
+          allow-clear
+          :options="packageOptions"
+          placeholder="请选择产品包"
+        />
+      </Space.Compact>
+      <div class="query-filter-wide">
+        <QueryDatetimeRangePicker v-model="recordFilters.Time" />
+      </div>
+      <div class="query-filter-actions">
+        <Button
+          type="primary"
+          @click="
+            recordPage = 1;
+            loadRecords();
+          "
+          >
+查询
+</Button>
+        <Button
+          @click="
+            Object.assign(recordFilters, {
+              LoginAccount: '',
+              PackageId: undefined,
+              Time: undefined,
+            });
+            recordPage = 1;
+            loadRecords();
+          "
+        >
+          重置
+        </Button>
+        <Button :loading="recordExportLoading" @click="exportRecords">
+导出 Excel
+</Button>
+      </div>
     </div>
   </div>
   <Table
@@ -168,11 +178,13 @@ onMounted(() => {
     :scroll="{ x: 1300 }"
     size="small"
     bordered
-    @change="(pagination) => {
-      recordPage = pagination.current || 1;
-      recordPageSize = pagination.pageSize || 20;
-      loadRecords();
-    }"
+    @change="
+      (pagination) => {
+        recordPage = pagination.current || 1;
+        recordPageSize = pagination.pageSize || 20;
+        loadRecords();
+      }
+    "
   >
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'CreateTime'">

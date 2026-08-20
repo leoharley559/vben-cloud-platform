@@ -8,16 +8,15 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
-  message,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   batchDeleteBankCardBlackApi,
   createBankCardBlackApi,
@@ -26,7 +25,7 @@ import {
   removeBankCardBlackApi,
   updateBankCardBlackApi,
 } from '#/api/operationManage/game-risk-control';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatBankCode } from '#/utils/bank-card';
@@ -40,9 +39,9 @@ const { checkPermission, adminInfo } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
 const canView = computed(
-  () => checkPermission(10047) || checkPermission(10031),
+  () => checkPermission(10_047) || checkPermission(10_031),
 );
-const canWrite = computed(() => checkPermission(10048));
+const canWrite = computed(() => checkPermission(10_048));
 
 const filterLoginAccount = ref('');
 const filterKeyword = ref('');
@@ -105,8 +104,8 @@ const bankListForFormat = computed(
 );
 
 function resolveOperator() {
-  const info = adminInfo.value as Record<string, unknown> | null;
-  const admin = info?.Admin as { Username?: string } | undefined;
+  const info = adminInfo.value as null | Record<string, unknown>;
+  const admin = info?.Admin as undefined | { Username?: string };
   return admin?.Username || String(info?.AdminName || info?.Account || '');
 }
 
@@ -133,7 +132,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       field: 'DeletedTime',
       formatter: ({ cellValue, row }) =>
         formatOperationDateTime(
-          (cellValue || row.CreateTime) as string | number | undefined,
+          (cellValue || row.CreateTime) as number | string | undefined,
         ),
       minWidth: 170,
       title: '创建时间',
@@ -239,7 +238,7 @@ async function submitCreate() {
     message.warning('请填写卡号与银行');
     return;
   }
-  if (!multiInfo.value.length) {
+  if (multiInfo.value.length === 0) {
     await prefetchCard();
   }
   saving.value = true;
@@ -308,7 +307,7 @@ function handleBatchDelete() {
   const ids = records
     .map((item) => item.Id as number | string)
     .filter((id) => id !== undefined && id !== null && id !== '');
-  if (!ids.length) {
+  if (ids.length === 0) {
     message.warning('请先勾选记录');
     return;
   }
@@ -333,49 +332,51 @@ onMounted(() => {
 <template>
   <div v-if="canView">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterKeyword"
-          allow-clear
-          placeholder="请输入卡号关键字"
-        >
-          <template #addonBefore>卡号关键字</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">来源</span>
-        <Select
-          v-model:value="filterSourceType"
-          :options="sourceTypeOptions"
-          placeholder="请选择来源"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterKeyword"
+            allow-clear
+            placeholder="请输入卡号关键字"
+          >
+            <template #addonBefore>卡号关键字</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">来源</span>
+          <Select
+            v-model:value="filterSourceType"
+            :options="sourceTypeOptions"
+            placeholder="请选择来源"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Space>
-        <Button type="primary" @click="gridApi.reload()">查询</Button>
-        <Button @click="resetFilters">重置</Button>
-        <Button v-if="canWrite" type="primary" @click="openCreate">新增</Button>
-        <Button v-if="canWrite" @click="importOpen = true">批量导入</Button>
-        <Button v-if="canWrite" danger @click="handleBatchDelete">
-          批量删除
-        </Button>
-      </Space>
+            <Button type="primary" @click="gridApi.reload()">查询</Button>
+            <Button @click="resetFilters">重置</Button>
+            <Button v-if="canWrite" type="primary" @click="openCreate">
+新增
+</Button>
+            <Button v-if="canWrite" @click="importOpen = true">批量导入</Button>
+            <Button v-if="canWrite" danger @click="handleBatchDelete">
+              批量删除
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #actions="{ row }">

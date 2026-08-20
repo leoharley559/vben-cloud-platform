@@ -7,23 +7,23 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteRechargeBlackPlayerApi,
   fetchRechargeBlackPlayerListApi,
 } from '#/api/operationManage/recharge-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { useRechargePayTypeOptions } from '#/utils/recharge-pay-type';
 
 import RechargeBlackPlayerModal from './recharge-black-player-modal.vue';
@@ -34,12 +34,12 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const { formatPayTypes } = useRechargePayTypeOptions();
 
-const canViewTable = computed(() => checkPermission(10285));
-const canCreate = computed(() => checkPermission(10288));
-const canAutoConfig = computed(() => checkPermission(10289));
-const canBatchDelete = computed(() => checkPermission(10290));
-const canEdit = computed(() => checkPermission(10291));
-const canDelete = computed(() => checkPermission(10292));
+const canViewTable = computed(() => checkPermission(10_285));
+const canCreate = computed(() => checkPermission(10_288));
+const canAutoConfig = computed(() => checkPermission(10_289));
+const canBatchDelete = computed(() => checkPermission(10_290));
+const canEdit = computed(() => checkPermission(10_291));
+const canDelete = computed(() => checkPermission(10_292));
 
 const selectedIds = ref<string[]>([]);
 
@@ -51,7 +51,7 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
 
 const formOpen = ref(false);
 const formMode = ref<'auto' | 'create' | 'edit'>('create');
-const editingRow = ref<RechargeBlackPlayerItem | null>(null);
+const editingRow = ref<null | RechargeBlackPlayerItem>(null);
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -109,7 +109,12 @@ const gridOptions: VxeTableGridOptions<RechargeBlackPlayerItem> = {
       minWidth: 170,
       title: '禁止日期',
     },
-    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     {
       field: 'PayType',
@@ -194,7 +199,7 @@ function handleDelete(id?: number | string) {
 }
 
 function handleBatchDelete() {
-  if (!selectedIds.value.length) {
+  if (selectedIds.value.length === 0) {
     message.warning('请先选择记录');
     return;
   }
@@ -231,68 +236,68 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @press-enter="gridApi.reload()"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          :options="[
-            { label: '全部产品', value: '' },
-            ...packageOptions
-              .filter((item) => item.PackageId !== '')
-              .map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              })),
-          ]"
-          allow-clear
-          placeholder="请选择产品"
-        />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterDeviceId"
-          allow-clear
-          placeholder="请输入设备号"
-        >
-          <template #addonBefore>设备号</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @press-enter="gridApi.reload()"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="[
+              { label: '全部产品', value: '' },
+              ...packageOptions
+                .filter((item) => item.PackageId !== '')
+                .map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                })),
+            ]"
+            allow-clear
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterDeviceId"
+            allow-clear
+            placeholder="请输入设备号"
+          >
+            <template #addonBefore>设备号</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Space wrap>
-        <Button :loading="loading" type="primary" @click="gridApi.reload()">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button v-if="canCreate" type="primary" @click="openCreate">
-          手动添加
-        </Button>
-        <Button v-if="canAutoConfig" @click="openAuto">自动条件设置</Button>
-        <Button
-          v-if="canBatchDelete"
-          danger
-          :disabled="!selectedIds.length"
-          @click="handleBatchDelete"
-        >
-          批量删除
-        </Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="gridApi.reload()">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+            <Button v-if="canCreate" type="primary" @click="openCreate">
+              手动添加
+            </Button>
+            <Button v-if="canAutoConfig" @click="openAuto">自动条件设置</Button>
+            <Button
+              v-if="canBatchDelete"
+              danger
+              :disabled="selectedIds.length === 0"
+              @click="handleBatchDelete"
+            >
+              批量删除
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

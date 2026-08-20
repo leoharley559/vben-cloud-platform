@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Card, Result, Spin, Switch, message } from 'ant-design-vue';
+import { Button, Card, message, Result, Spin, Switch } from 'ant-design-vue';
 
 import {
   fetchCountriesConfigListApi,
@@ -75,9 +75,9 @@ async function loadData() {
     selectedIds.value = countriesForBackstage
       .split(',')
       .filter(Boolean)
-      .map((item) => Number(item))
+      .map(Number)
       .filter((item) => !Number.isNaN(item));
-    originalIds.value = [...selectedIds.value].sort((a, b) => a - b).join(',');
+    originalIds.value = [...selectedIds.value].toSorted((a, b) => a - b).join(',');
   } catch {
     configurationList.value = [];
     selectedIds.value = [];
@@ -136,7 +136,10 @@ onMounted(() => {
       </Button>
     </div>
 
-    <div v-if="!loading && !continents.length" class="py-8 text-center text-gray-400">
+    <div
+      v-if="!loading && continents.length === 0"
+      class="py-8 text-center text-gray-400"
+    >
       暂无国家/地区配置数据
     </div>
 

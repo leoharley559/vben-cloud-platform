@@ -1,9 +1,10 @@
-import { requestClient } from '#/api/request';
 import type {
   RoleFormModel,
   RoleListQuery,
   RoleListResult,
 } from '#/types/system-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -21,8 +22,7 @@ export function fetchRoleListApi(query: RoleListQuery) {
     .then((data) => ({
       Items: data?.Items ?? [],
       Pagination: {
-        MaxCount:
-          data?.Pagination?.MaxCount ?? data?.Items?.length ?? 0,
+        MaxCount: data?.Pagination?.MaxCount ?? data?.Items?.length ?? 0,
       },
     }));
 }

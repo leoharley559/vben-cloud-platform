@@ -14,9 +14,9 @@ defineOptions({ name: 'MemberLogManage' });
 
 const { checkPermission } = useCloudPermission();
 
-const canViewPage = computed(() => checkPermission(12220));
-const canViewDetail = computed(() => checkPermission(12221));
-const canViewSummary = computed(() => checkPermission(12222));
+const canViewPage = computed(() => checkPermission(12_220));
+const canViewDetail = computed(() => checkPermission(12_221));
+const canViewSummary = computed(() => checkPermission(12_222));
 
 const canViewAny = computed(() => canViewDetail.value || canViewSummary.value);
 

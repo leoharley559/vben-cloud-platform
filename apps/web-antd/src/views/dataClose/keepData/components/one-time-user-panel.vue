@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { TableColumnType } from 'ant-design-vue';
 
+import type { KeepDetailsParam, KeepRow } from '../utils';
+
 import { onMounted, reactive, ref } from 'vue';
 
 import { Button, message, Table } from 'ant-design-vue';
@@ -8,12 +10,7 @@ import { Button, message, Table } from 'ant-design-vue';
 import { fetchKeepDataOneTimeUserListApi } from '#/api/dataClose/keep-data';
 import { exportRowsToXlsx } from '#/views/dataClose/shared/report-utils';
 
-import {
-  type KeepDetailsParam,
-  type KeepRow,
-  num,
-  ONE_TIME_FIELDS,
-} from '../utils';
+import { num, ONE_TIME_FIELDS } from '../utils';
 import DetailsPanel from './details-panel.vue';
 import KeepQueryBar from './keep-query-bar.vue';
 
@@ -130,9 +127,7 @@ onMounted(() => {
             </a>
             <span v-else>{{ record.TotalRegisteredPlayers }}</span>
           </template>
-          <template
-            v-else-if="ONE_TIME_FIELDS.includes(column.key as any)"
-          >
+          <template v-else-if="ONE_TIME_FIELDS.includes(column.key as any)">
             <a
               v-if="num(record[column.key as string]) > 0"
               @click="

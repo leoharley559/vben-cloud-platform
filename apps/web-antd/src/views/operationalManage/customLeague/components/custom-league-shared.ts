@@ -1,8 +1,8 @@
 import type { GameInfo } from '#/utils/game-config';
 
-import { formatOperationDateTime } from '#/utils/operation-status';
 
-export { formatOperationDateTime as formatCustomLeagueDateTime };
+
+
 
 /* ==================== 开关 / 状态 ==================== */
 
@@ -165,7 +165,7 @@ export function ensureLeagueLangMap(
   existing?: Record<string, LeagueLangEntry>,
 ): Record<string, LeagueLangEntry> {
   const src = existing || {};
-  const ids = langGroupIds.length ? langGroupIds : [1];
+  const ids = langGroupIds.length > 0 ? langGroupIds : [1];
   return Object.fromEntries(
     ids.map((id) => [
       String(id),
@@ -223,21 +223,21 @@ export function resolveLeagueOptionValue(
 /* ==================== 语言群组 ==================== */
 
 export function resolveLangGroupIds(
-  projectConfig?: {
+  projectConfig?: null | {
     LangGroup?: Array<{ Default?: boolean; Id: number }>;
-  } | null,
+  },
 ): number[] {
   const groups = projectConfig?.LangGroup || [];
   const ids = groups
     .map((group) => Number(group.Id))
     .filter((id) => !Number.isNaN(id));
-  return ids.length ? ids : [1];
+  return ids.length > 0 ? ids : [1];
 }
 
 export function resolveDefaultLangGroupId(
-  projectConfig?: {
+  projectConfig?: null | {
     LangGroup?: Array<{ Default?: boolean; Id: number }>;
-  } | null,
+  },
 ): number {
   const groups = projectConfig?.LangGroup || [];
   const found = groups.find((group) => group.Default);
@@ -291,3 +291,5 @@ export function toDateTimeString(value: unknown) {
   const str = String(value);
   return /^\d+$/.test(str) ? unixToDateTimeString(Number(str)) : str;
 }
+
+export {formatOperationDateTime as formatCustomLeagueDateTime} from '#/utils/operation-status';

@@ -17,13 +17,12 @@ export const PAY_TYPE_OPTIONS = [
   { label: '极速支付', value: 4 },
 ];
 
-export const MULTIPLY_OPTIONS = [-1, 0, 10, 50, 100, 500, 1000, 5000, 10_000].map(
-  (value) => ({
-    label:
-      value === -1 ? '使用出款设置' : value === 0 ? '全部' : `${value}倍`,
-    value,
-  }),
-);
+export const MULTIPLY_OPTIONS = [
+  -1, 0, 10, 50, 100, 500, 1000, 5000, 10_000,
+].map((value) => ({
+  label: value === -1 ? '使用出款设置' : (value === 0 ? '全部' : `${value}倍`),
+  value,
+}));
 
 export function payTypeLabel(value: unknown) {
   const key = Number(value);

@@ -1,20 +1,22 @@
 <script lang="ts" setup>
+import type { VoucherRuleItem } from './voucher-shared';
+
 import { reactive, ref, watch } from 'vue';
 
-import { Form, Modal, Tabs, message } from 'ant-design-vue';
+import { Form, message, Modal, Tabs } from 'ant-design-vue';
 
 import RichTextEditor from '#/components/global/rich-text-editor.vue';
 
-import { type VoucherRuleItem, createEmptyVoucherRule } from './voucher-shared';
 import VoucherImageField from './voucher-image-field.vue';
 import VoucherRedirectField from './voucher-redirect-field.vue';
+import { createEmptyVoucherRule } from './voucher-shared';
 
 defineOptions({ name: 'VoucherRuleModal' });
 
 const props = defineProps<{
   langGroupIds: number[];
   mode: 'add' | 'edit';
-  rule?: VoucherRuleItem | null;
+  rule?: null | VoucherRuleItem;
 }>();
 
 const emit = defineEmits<{ submit: [VoucherRuleItem] }>();

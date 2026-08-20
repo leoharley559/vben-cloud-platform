@@ -8,10 +8,10 @@ export type DrawmoneyPayload = Record<string, unknown>;
 /** 提现列表查询参数（含分页与筛选） */
 export type DrawmoneyQuery = DrawmoneyPayload & Partial<NetcashListQuery>;
 /** 提现列表单行数据 */
-export type DrawmoneyRow = DrawmoneyPayload & {
+export type DrawmoneyRow = {
   /** 记录 Id */
   Id?: number | string;
-};
+} & DrawmoneyPayload;
 /** 提现列表响应结构 */
 export type DrawmoneyListResult = NetcashListResult<DrawmoneyRow>;
 
@@ -23,7 +23,9 @@ export type DrawmoneyListResult = NetcashListResult<DrawmoneyRow>;
  * @param result 接口原始响应
  * @returns 归一化后的提现列表结构
  */
-function normalizeList(result?: DrawmoneyListResult | null): DrawmoneyListResult {
+function normalizeList(
+  result?: DrawmoneyListResult | null,
+): DrawmoneyListResult {
   return {
     ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
@@ -163,7 +165,11 @@ export async function fetchDrawingsChannelSettingListApi(
 
 export const drawmoneyRequest = {
   addRemark: (data: DrawmoneyPayload) =>
-    requestClient.post('/backend/netcashwithdraw/addremark', {}, { params: data }),
+    requestClient.post(
+      '/backend/netcashwithdraw/addremark',
+      {},
+      { params: data },
+    ),
   autoRefresh: (params: DrawmoneyPayload) =>
     requestClient.get<string>('/api/loginuser/getstatus', { params }),
   autoSettings: async (params: DrawmoneyPayload) => {
@@ -182,11 +188,20 @@ export const drawmoneyRequest = {
   channelAccounts: (params: DrawmoneyPayload) =>
     getList('/backend/netcashwithdraw/agentwithdrawaccountlist', params),
   channelDetail: (Id: number | string) =>
-    requestClient.get<DrawmoneyPayload>('/backend/netcashwithdraw/agentwithdrawaccountdetail', { params: { Id } }),
+    requestClient.get<DrawmoneyPayload>(
+      '/backend/netcashwithdraw/agentwithdrawaccountdetail',
+      { params: { Id } },
+    ),
   channelEdit: (data: DrawmoneyPayload) =>
-    requestClient.put('/backend/netcashwithdraw/thirdwithdrawtypeagentconfigedit', data),
+    requestClient.put(
+      '/backend/netcashwithdraw/thirdwithdrawtypeagentconfigedit',
+      data,
+    ),
   channelLimit: (data: DrawmoneyPayload) =>
-    requestClient.put('/backend/netcashwithdraw/agentwithdrawaccountedit', data),
+    requestClient.put(
+      '/backend/netcashwithdraw/agentwithdrawaccountedit',
+      data,
+    ),
   channelRound: (data: DrawmoneyPayload) =>
     requestClient.put('/backend/netcashwithdraw/round', data),
   channelShelf: (data: DrawmoneyPayload) =>
@@ -223,7 +238,11 @@ export const drawmoneyRequest = {
   transitionPending: (data: DrawmoneyPayload) =>
     requestClient.post('/backend/netcashwithdraw/transitionpending/', data),
   typeLimit: (data: DrawmoneyPayload) =>
-    requestClient.put('/backend/netcashwithdraw/editlimit', {}, { params: data }),
+    requestClient.put(
+      '/backend/netcashwithdraw/editlimit',
+      {},
+      { params: data },
+    ),
   typeSwitch: (data: DrawmoneyPayload) =>
     requestClient.put('/backend/netcashwithdraw/open', {}, { params: data }),
   updateBalance: (data: DrawmoneyPayload) =>

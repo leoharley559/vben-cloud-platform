@@ -15,9 +15,7 @@ defineOptions({ name: 'JuniorMember' });
 const { checkPermission } = useCloudPermission();
 const canViewMember = computed(() => checkPermission(10_153));
 const canViewChange = computed(() => checkPermission(10_154));
-const canViewPage = computed(
-  () => canViewMember.value || canViewChange.value,
-);
+const canViewPage = computed(() => canViewMember.value || canViewChange.value);
 
 const tabs = computed(() =>
   [

@@ -23,8 +23,8 @@ import {
   fetchSmsOverviewApi,
   updateSmsAutoBuyApi,
 } from '#/api/gameManage/message-manage';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
@@ -206,10 +206,7 @@ void loadSummary();
   <div>
     <div v-if="canSummary || canBuy" class="mb-4">
       <SummaryCards :items="overviewSummaryItems" />
-      <div
-        v-if="canSummary"
-        class="mt-2 flex gap-6 text-xs text-gray-400"
-      >
+      <div v-if="canSummary" class="mt-2 flex gap-6 text-xs text-gray-400">
         <span>本月赠送：{{ summary.MonthGift || 0 }}</span>
         <span>本月购买：{{ summary.MonthBuy || 0 }}</span>
       </div>

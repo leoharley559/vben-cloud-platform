@@ -5,10 +5,10 @@ import {
   Button,
   Form,
   InputNumber,
+  message,
   Spin,
   Switch,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -17,8 +17,8 @@ import {
   updateBonusWithdrawElementApi,
 } from '#/api/operationManage/bonus-withdraw-config';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { formatAmountFromCent } from '#/utils/format-amount';
 import { parseJsonArray } from '#/utils/activity-manage';
+import { formatAmountFromCent } from '#/utils/format-amount';
 
 defineOptions({ name: 'ActivityBonusWithdrawPanel' });
 
@@ -37,7 +37,7 @@ const WITHDRAW_TYPE_MAP: Record<number, string> = {
 };
 
 const { checkPermission } = useCloudPermission();
-const canEdit = computed(() => checkPermission(12396));
+const canEdit = computed(() => checkPermission(12_396));
 
 const loading = ref(false);
 const savingCountdown = ref(false);
@@ -65,17 +65,17 @@ const columns = [
   },
   {
     customRender: ({ record }: { record: ParamRow }) =>
-      record.BonusRate !== undefined
-        ? `${Number(record.BonusRate) / 100}%`
-        : '-',
+      record.BonusRate === undefined
+        ? '-'
+        : `${Number(record.BonusRate) / 100}%`,
     key: 'BonusRate',
     title: '加送比例',
   },
   {
     customRender: ({ record }: { record: ParamRow }) =>
-      record.BonusMax !== undefined
-        ? formatAmountFromCent(record.BonusMax)
-        : '-',
+      record.BonusMax === undefined
+        ? '-'
+        : formatAmountFromCent(record.BonusMax),
     key: 'BonusMax',
     title: '最高加送',
   },
@@ -191,7 +191,9 @@ onMounted(() => {
         :columns="columns"
         :data-source="paramRows"
         :pagination="false"
-        :row-key="(row) => `param-${row.Key ?? row.Name ?? JSON.stringify(row)}`"
+        :row-key="
+          (row) => `param-${row.Key ?? row.Name ?? JSON.stringify(row)}`
+        "
         size="small"
       >
         <template #bodyCell="{ column, record }">

@@ -20,10 +20,6 @@ import {
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import AgencyAccountLink from '#/components/global/agency-account-link.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import SummaryCards from '#/components/global/summary-cards.vue';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   exportBackWaterRecordApi,
   fetchBackWaterOrderDetailsApi,
@@ -32,11 +28,15 @@ import {
   fetchBackWaterSchemesApi,
 } from '#/api/gameManage/back-water';
 import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   formatGameName,
@@ -289,11 +289,17 @@ const summaryColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
     title: 'VIP 等级',
   },
   { field: 'LevelName', minWidth: 110, title: '玩家层级' },
-  { field: 'AdminName', minWidth: 110, slots: { default: 'adminName' }, title: '代理账号' },
+  {
+    field: 'AdminName',
+    minWidth: 110,
+    slots: { default: 'adminName' },
+    title: '代理账号',
+  },
   { field: 'PackageName', minWidth: 120, title: '所属产品' },
   {
     field: 'ChannelName',
-    formatter: ({ row }) => `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
+    formatter: ({ row }) =>
+      `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
     minWidth: 140,
     title: '所属渠道',
   },
@@ -358,11 +364,17 @@ const detailColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
   {
     field: 'Date',
     formatter: ({ cellValue }) =>
-      formatOperationDateTime(cellValue as number | string).split(' ')[0] || '-',
+      formatOperationDateTime(cellValue as number | string).split(' ')[0] ||
+      '-',
     minWidth: 130,
     title: '游戏时间',
   },
-  { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
+  {
+    field: 'LoginAccount',
+    minWidth: 120,
+    slots: { default: 'loginAccount' },
+    title: '游戏账号',
+  },
   {
     field: 'VipLevel',
     formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
@@ -373,7 +385,8 @@ const detailColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
   { field: 'PackageName', minWidth: 120, title: '所属产品' },
   {
     field: 'ChannelName',
-    formatter: ({ row }) => `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
+    formatter: ({ row }) =>
+      `${row.ChannelName || '-'}(${row.ChannelId || '-'})`,
     minWidth: 140,
     title: '所属渠道',
   },
@@ -512,7 +525,11 @@ async function openOrderDetails(row: BackWaterRow) {
 }
 
 function buildExportQuery() {
-  const { Page: _page, PageSize: _size, ...rest } = queryParams({
+  const {
+    Page: _page,
+    PageSize: _size,
+    ...rest
+  } = queryParams({
     currentPage: 1,
     pageSize: 20,
   });
@@ -523,7 +540,7 @@ function requestExport() {
   const rows =
     (gridApi.grid?.getTableData?.()?.fullData as BackWaterRow[] | undefined) ||
     [];
-  if (rows.length < 1) {
+  if (rows.length === 0) {
     message.warning('暂无数据可导出');
     return;
   }
@@ -796,11 +813,13 @@ onMounted(async () => {
           {
             title: '时间',
             key: 'Date',
-            customRender: ({ record }) =>
-              formatOperationDateTime(record.Date),
+            customRender: ({ record }) => formatOperationDateTime(record.Date),
           },
         ]"
-        :row-key="(row) => `detail-${row.Id ?? row.PlayerId ?? row.LoginAccount ?? JSON.stringify(row)}`"
+        :row-key="
+          (row) =>
+            `detail-${row.Id ?? row.PlayerId ?? row.LoginAccount ?? JSON.stringify(row)}`
+        "
       />
     </Modal>
 

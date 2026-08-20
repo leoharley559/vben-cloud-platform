@@ -3,18 +3,12 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  Select,
-  Space,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchDailyCheckInListApi } from '#/api/operationManage/activity';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import { buildUnixRangeQuery } from './activity-shared';
 
@@ -89,34 +83,33 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       签到活动完整对话框尚未迁移，编辑按钮已禁用。
     </div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterId"
-          allow-clear
-          placeholder="请输入活动ID"
-        >
-          <template #addonBefore>活动ID</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">活动类型</span>
-        <Select
-          v-model:value="filterEventType"
-          allow-clear
-         
-          :options="eventTypeOptions"
-          placeholder="请选择活动类型"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterId"
+            allow-clear
+            placeholder="请输入活动ID"
+          >
+            <template #addonBefore>活动ID</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">活动类型</span>
+          <Select
+            v-model:value="filterEventType"
+            allow-clear
+            :options="eventTypeOptions"
+            placeholder="请选择活动类型"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="dateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
+      </div>
     </div>
-  </div>
     <Grid>
       <template #action>
         <Button disabled size="small" type="link">编辑</Button>

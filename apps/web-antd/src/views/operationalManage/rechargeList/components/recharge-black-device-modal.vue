@@ -3,7 +3,7 @@ import type { RechargeBlackDeviceItem } from '#/types/operation-manage';
 
 import { computed, ref, watch } from 'vue';
 
-import { Checkbox, Form, Input, Modal, Switch, message } from 'ant-design-vue';
+import { Checkbox, Form, Input, message, Modal, Switch } from 'ant-design-vue';
 
 import {
   createRechargeBlackDeviceApi,
@@ -19,7 +19,7 @@ defineOptions({ name: 'RechargeBlackDeviceModal' });
 const props = defineProps<{
   mode: 'create' | 'edit';
   open: boolean;
-  row: RechargeBlackDeviceItem | null;
+  row: null | RechargeBlackDeviceItem;
 }>();
 
 const emit = defineEmits<{

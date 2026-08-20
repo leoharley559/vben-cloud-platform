@@ -12,7 +12,12 @@ const { playSound, toggleSound } = useHeaderAlertSound();
 
 <template>
   <Tooltip :title="playSound ? '关闭语音提示' : '开启语音提示'">
-    <Button type="text" size="small" class="header-sound-toggle mr-1" @click="toggleSound">
+    <Button
+      type="text"
+      size="small"
+      class="header-sound-toggle mr-1"
+      @click="toggleSound"
+    >
       <IconifyIcon
         :icon="playSound ? 'lucide:volume-2' : 'lucide:volume-x'"
         class="size-4"

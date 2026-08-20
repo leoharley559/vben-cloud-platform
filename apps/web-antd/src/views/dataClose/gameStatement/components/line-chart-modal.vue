@@ -1,23 +1,19 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import type { GameStatementRow } from '../utils';
 
 import { computed, ref, watch } from 'vue';
 
-import {
-  Button,
-  Modal,
-  Space,
-  Spin,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import { Button, Modal, Spin } from 'ant-design-vue';
+import dayjs from 'dayjs';
 
 import {
   fetchClassifiedDetailReportApi,
   fetchGameDetailReportApi,
   fetchSubGameDetailReportApi,
 } from '#/api/dataClose/game-statement';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
 import {
   calcProfit,
@@ -66,22 +62,20 @@ function metricValue(row: GameStatementRow): number {
       return Number(row.CountNum || 0);
     }
     case 'gameDetailsBetMoney': {
-      return Number(((Number(row.SumBet || 0) / 100).toFixed(2)));
+      return Number((Number(row.SumBet || 0) / 100).toFixed(2));
     }
     case 'giftMoney': {
-      return Number(((Number(row.SumWin || 0) / 100).toFixed(2)));
+      return Number((Number(row.SumWin || 0) / 100).toFixed(2));
     }
     case 'profitAmt': {
-      return Number(
-        (calcProfit(row.SumBet, row.SumWin) / 100).toFixed(2),
-      );
+      return Number((calcProfit(row.SumBet, row.SumWin) / 100).toFixed(2));
     }
     case 'profitCompare': {
       const rate = calcProfitRate(row.SumBet, row.SumWin);
       return Number(String(rate).replace('%', '')) || 0;
     }
     case 'validBetAmount': {
-      return Number(((Number(row.SumValidBet || 0) / 100).toFixed(2)));
+      return Number((Number(row.SumValidBet || 0) / 100).toFixed(2));
     }
     default: {
       return 0;
@@ -98,7 +92,7 @@ async function loadChart() {
       EndTime: dateRange.value?.[1]?.endOf('day').unix() || '',
     };
     const data = await resolveFetcher()(query);
-    const items = [...(data.Items || [])].sort(
+    const items = [...(data.Items || [])].toSorted(
       (a, b) =>
         new Date(String(a.ReportDay || '')).getTime() -
         new Date(String(b.ReportDay || '')).getTime(),
@@ -140,16 +134,22 @@ watch(
   >
     <Spin :spinning="loading">
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
+        <div class="ops-query-filters">
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker
+              v-model="dateRange"
+              precision="date"
+              :disabled-date="
+                (current) => disabledDateBeyond90(current, dateRange, 'end')
+              "
+            />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="loadChart">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </div>
         </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="loadChart">查询</Button>
-        <Button @click="handleReset">重置</Button>
-        </div>
-    </div>
-  </div>
+      </div>
       <ReportLineChart
         :categories="categories"
         :series="[{ data: seriesData, name: title, type: 'line' }]"

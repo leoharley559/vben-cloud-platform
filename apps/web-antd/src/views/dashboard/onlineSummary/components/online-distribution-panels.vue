@@ -103,7 +103,9 @@ const userColumns = [
           :data-source="venueList"
           :pagination="false"
           :scroll="{ y: 360 }"
-          :row-key="(row) => `v-${resolveVenueGameId(row) || row.GameName || ''}`"
+          :row-key="
+            (row) => `v-${resolveVenueGameId(row) || row.GameName || ''}`
+          "
           size="small"
         />
       </div>

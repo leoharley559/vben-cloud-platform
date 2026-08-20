@@ -14,7 +14,7 @@ function normalizeListResult<T>(
   result: NetcashListResult<T> | null | undefined,
 ): NetcashListResult<T> {
   return {
-    ...(result ?? {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
   };
 }

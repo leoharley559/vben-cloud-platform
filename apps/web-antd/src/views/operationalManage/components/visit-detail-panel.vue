@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router';
 
 import {
   Button,
-  DatePicker,
   Input,
   message,
   Modal,
@@ -16,15 +15,15 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportVisitStatisticApi,
   fetchNoticeDetailDataApi,
 } from '#/api/operationManage/game-notice';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import PassPopup from '#/components/security/pass-popup.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import PassPopup from '#/components/security/pass-popup.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -318,11 +317,19 @@ async function handleExport(payload: Record<string, unknown>) {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterVisitRange" label="访问时间（最多 7 天）" :disabled-date="visitRangeLimit.disabledDate" />
-        </div>
+        <QueryDatetimeRangePicker
+          v-model="filterVisitRange"
+          label="访问时间（最多 7 天）"
+          :disabled-date="visitRangeLimit.disabledDate"
+        />
+      </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterLeaveRange" label="离开时间" :disabled-date="leaveRangeLimit.disabledDate" />
-        </div>
+        <QueryDatetimeRangePicker
+          v-model="filterLeaveRange"
+          label="离开时间"
+          :disabled-date="leaveRangeLimit.disabledDate"
+        />
+      </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">访问时长</span>
@@ -350,18 +357,18 @@ async function handleExport(payload: Record<string, unknown>) {
           />
         </Space.Compact>
       </div>
-        <div class="query-filter-actions">
-          <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
-      <Button
-        v-if="canExport"
-        :loading="exportLoading"
-        @click="handleExportClick"
-      >
-        导出 Excel
-      </Button>
-        </div>
-      </template>
+      <div class="query-filter-actions">
+        <Button type="primary" @click="handleSearch">查询</Button>
+        <Button @click="handleReset">重置</Button>
+        <Button
+          v-if="canExport"
+          :loading="exportLoading"
+          @click="handleExportClick"
+        >
+          导出 Excel
+        </Button>
+      </div>
+    </template>
 
     <div v-if="canLoad === false" class="py-10 text-center text-gray-400">
       无明细数据查询权限
@@ -375,10 +382,6 @@ async function handleExport(payload: Record<string, unknown>) {
       </template>
     </Grid>
 
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </OpsListPanel>
 </template>

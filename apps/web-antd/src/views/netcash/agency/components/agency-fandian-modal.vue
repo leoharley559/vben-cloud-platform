@@ -5,8 +5,8 @@ import { computed } from 'vue';
 
 import { Empty, Modal, Table } from 'ant-design-vue';
 
-import venueConfig from '#/config/venue-config.json';
 import { useGameConfig } from '#/composables/use-game-config';
+import venueConfig from '#/config/venue-config.json';
 import { formatVenueName } from '#/utils/game-config';
 import {
   formatAgentFanDianRebate,
@@ -123,9 +123,7 @@ const tableRows = computed(() => {
     const rebates: Record<string, string> = {};
     for (const grade of gradeColumns.value) {
       const line = matchCategoryLine(grade.lines, category);
-      rebates[grade.key] = line
-        ? formatAgentFanDianRebate(line.rebate)
-        : '-';
+      rebates[grade.key] = line ? formatAgentFanDianRebate(line.rebate) : '-';
     }
     const venuesFromConfig = resolveVenueNames(category.gameIdList);
     // 配置未命中时，回退接口行里的 name

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { TimeshareHourItem } from '#/types/promotion';
+import type { TimeshareChartType, TimeshareMetricKey } from '#/utils/timeshare-data';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
@@ -18,15 +19,11 @@ import dayjs from 'dayjs';
 
 import { fetchTimeshareDataApi } from '#/api/promotion/timeshare-data';
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
-import {
-  TIMESHARE_METRIC_MAP,
-  type TimeshareChartType,
-  type TimeshareMetricKey,
-} from '#/utils/timeshare-data';
+import { TIMESHARE_METRIC_MAP } from '#/utils/timeshare-data';
 
 import TimesharePanel from './components/timeshare-panel.vue';
 
@@ -188,9 +185,15 @@ watch(visibleTabs, (tabs) => {
       </div>
       <div class="mb-3 flex items-center justify-between gap-3">
         <div class="text-xs text-gray-500">*图表每小时记录一次</div>
-        <Radio.Group v-model:value="chartType" button-style="solid" size="small">
+        <Radio.Group
+          v-model:value="chartType"
+          button-style="solid"
+          size="small"
+        >
           <Radio.Button title="点击切换柱形图" value="bar">柱状图</Radio.Button>
-          <Radio.Button title="点击切换折线图" value="line">折线图</Radio.Button>
+          <Radio.Button title="点击切换折线图" value="line">
+折线图
+</Radio.Button>
           <Radio.Button title="点击切换表格" value="table">表格</Radio.Button>
         </Radio.Group>
       </div>

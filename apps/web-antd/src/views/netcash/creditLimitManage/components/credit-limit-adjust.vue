@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { DateRange, Row } from './shared';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -20,22 +22,12 @@ import {
   getAgentCreditLimitApi,
   getNetCashAccountListApi,
 } from '#/api/netcash/credit-limit';
-import { useCloudPermission } from '#/composables/use-cloud-permission';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
+import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
-import {
-  accountTypeMap,
-  accountTypeOptions,
-  amount,
-  date,
-  type DateRange,
-  exportRows,
-  rangeParams,
-  type Row,
-  unwrapCreditLimitItem,
-} from './shared';
+import { accountTypeMap, accountTypeOptions, amount, date, exportRows, rangeParams, unwrapCreditLimitItem } from './shared';
 
 const { checkPermission } = useCloudPermission();
 const loading = ref(false);
@@ -58,23 +50,44 @@ const agentModelMap: Record<number, string> = {
   2: '多层单返',
   3: '多层多返',
 };
-const settlementMap: Record<number, string> = { 1: '日结', 2: '周结', 3: '月结' };
+const settlementMap: Record<number, string> = {
+  1: '日结',
+  2: '周结',
+  3: '月结',
+};
 const columns = [
   { key: 'seq', title: '序号', width: 70 },
   { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '代理账号' },
   { dataIndex: 'Type', key: 'Type', title: '代理类型' },
   { dataIndex: 'AccountType', key: 'AccountType', title: '代理模式' },
   { dataIndex: 'SettlementType', key: 'SettlementType', title: '佣金周期' },
-  { dataIndex: 'AgentCreateTime', key: 'AgentCreateTime', title: '成为代理时间', width: 180 },
+  {
+    dataIndex: 'AgentCreateTime',
+    key: 'AgentCreateTime',
+    title: '成为代理时间',
+    width: 180,
+  },
   { dataIndex: 'Credit', key: 'Credit', title: '剩余额度（元）' },
   { dataIndex: 'CreditDue', key: 'CreditDue', title: '代充欠款（元）' },
   { key: 'actions', title: '操作', width: 150 },
 ];
 const exportColumns = [
   { field: 'AgentAccount', title: '代理账号' },
-  { field: 'Type', formatter: (value: unknown) => accountTypeMap[Number(value)] || '-', title: '代理类型' },
-  { field: 'AccountType', formatter: (value: unknown) => agentModelMap[Number(value)] || '-', title: '代理模式' },
-  { field: 'SettlementType', formatter: (value: unknown) => settlementMap[Number(value)] || '-', title: '佣金周期' },
+  {
+    field: 'Type',
+    formatter: (value: unknown) => accountTypeMap[Number(value)] || '-',
+    title: '代理类型',
+  },
+  {
+    field: 'AccountType',
+    formatter: (value: unknown) => agentModelMap[Number(value)] || '-',
+    title: '代理模式',
+  },
+  {
+    field: 'SettlementType',
+    formatter: (value: unknown) => settlementMap[Number(value)] || '-',
+    title: '佣金周期',
+  },
   { field: 'AgentCreateTime', formatter: date, title: '成为代理时间' },
   { field: 'Credit', formatter: amount, title: '剩余额度（元）' },
   { field: 'CreditDue', formatter: amount, title: '代充欠款（元）' },
@@ -150,7 +163,9 @@ async function handleExport() {
       ...buildQuery(1, Math.max(total.value + 1, 1000)),
       IsExp: true,
     });
-    if (!(await exportRows('代理额度管理', exportColumns, result.Items || []))) {
+    if (
+      !(await exportRows('代理额度管理', exportColumns, result.Items || []))
+    ) {
       message.info('暂无可导出数据');
     }
   } catch {
@@ -197,7 +212,8 @@ async function submitAdjust() {
   }
   if (
     adjustForm.TransferType === 8 &&
-    (adjustForm.AdjustAmount <= 0 || adjustForm.AdjustAmount > adjustForm.CreditDue)
+    (adjustForm.AdjustAmount <= 0 ||
+      adjustForm.AdjustAmount > adjustForm.CreditDue)
   ) {
     message.warning('还款金额必须大于 0 且不能超过当前欠款');
     return;
@@ -281,91 +297,240 @@ onMounted(load);
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="query.AgentAccount"
-          allow-clear
-          @press-enter="search"
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
-        <Space.Compact>
-          <span class="query-field-addon">代理类型</span>
-          <Select
-            v-model:value="query.AccountTypes"
-            :options="accountTypeOptions.slice(1)"
-            mode="multiple"
-            placeholder="请选择代理类型"
-          />
-        </Space.Compact>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.AgentAccount"
+            allow-clear
+            @press-enter="search"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
+          <Space.Compact>
+            <span class="query-field-addon">代理类型</span>
+            <Select
+              v-model:value="query.AccountTypes"
+              :options="accountTypeOptions.slice(1)"
+              mode="multiple"
+              placeholder="请选择代理类型"
+            />
+          </Space.Compact>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="agentCreateRange" />
         </div>
-      <Space.Compact>
-        <span class="query-field-addon">额度</span>
-        <InputNumber
-          v-model:value="query.BeginCreditRange"
-          :min="0"
-          :precision="2"
-          placeholder="请输入起"
-        />
-        <InputNumber
-          v-model:value="query.EndCreditRange"
-          :min="0"
-          :precision="2"
-          placeholder="请输入止"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">额度</span>
+          <InputNumber
+            v-model:value="query.BeginCreditRange"
+            :min="0"
+            :precision="2"
+            placeholder="请输入起"
+          />
+          <InputNumber
+            v-model:value="query.EndCreditRange"
+            :min="0"
+            :precision="2"
+            placeholder="请输入止"
+          />
+        </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
-      <Button @click="reset">重置</Button>
-      <Button v-if="checkPermission(11_802)" :loading="exporting" @click="handleExport">导出 Excel</Button>
-      <Button v-if="checkPermission(11_753)" @click="openTransferLimit">转账限额设置</Button>
-      <Button v-if="checkPermission(11_754)" type="primary" @click="openAdjust()">批量调整代理</Button>
+          <Button @click="reset">重置</Button>
+          <Button
+            v-if="checkPermission(11_802)"
+            :loading="exporting"
+            @click="handleExport"
+            >
+导出 Excel
+</Button>
+          <Button v-if="checkPermission(11_753)" @click="openTransferLimit">
+转账限额设置
+</Button>
+          <Button
+            v-if="checkPermission(11_754)"
+            type="primary"
+            @click="openAdjust()"
+            >
+批量调整代理
+</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 
-    <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="AgentAccount" :scroll="{ x: 1200 }" size="small">
+    <Table
+      bordered
+      :columns="columns"
+      :data-source="rows"
+      :loading="loading"
+      :pagination="false"
+      row-key="AgentAccount"
+      :scroll="{ x: 1200 }"
+      size="small"
+    >
       <template #bodyCell="{ column, record, index }">
-        <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>
-        <template v-else-if="column.key === 'Type'">{{ accountTypeMap[Number(record.Type)] || '-' }}</template>
-        <template v-else-if="column.key === 'AccountType'">{{ agentModelMap[Number(record.AccountType)] || '-' }}</template>
-        <template v-else-if="column.key === 'SettlementType'">{{ settlementMap[Number(record.SettlementType)] || '-' }}</template>
-        <template v-else-if="column.key === 'AgentCreateTime'">{{ date(record.AgentCreateTime) }}</template>
-        <template v-else-if="column.key === 'Credit' || column.key === 'CreditDue'">{{ amount(record[column.key]) }}</template>
+        <template v-if="column.key === 'seq'">
+{{
+          (query.Page - 1) * query.PageSize + index + 1
+        }}
+</template>
+        <template v-else-if="column.key === 'Type'">
+{{
+          accountTypeMap[Number(record.Type)] || '-'
+        }}
+</template>
+        <template v-else-if="column.key === 'AccountType'">
+{{
+          agentModelMap[Number(record.AccountType)] || '-'
+        }}
+</template>
+        <template v-else-if="column.key === 'SettlementType'">
+{{
+          settlementMap[Number(record.SettlementType)] || '-'
+        }}
+</template>
+        <template v-else-if="column.key === 'AgentCreateTime'">
+{{
+          date(record.AgentCreateTime)
+        }}
+</template>
+        <template
+          v-else-if="column.key === 'Credit' || column.key === 'CreditDue'"
+          >
+{{ amount(record[column.key]) }}
+</template>
         <template v-else-if="column.key === 'actions'">
-          <Button :disabled="Number(record.Type) === 3" size="small" type="link" @click="openAdjust(record, 'adjust')">调整</Button>
-          <Button :disabled="Number(record.Type) === 3 || Number(record.CreditDue) <= 0" size="small" type="link" @click="openAdjust(record, 'receipt')">还款</Button>
+          <Button
+            :disabled="Number(record.Type) === 3"
+            size="small"
+            type="link"
+            @click="openAdjust(record, 'adjust')"
+            >
+调整
+</Button>
+          <Button
+            :disabled="
+              Number(record.Type) === 3 || Number(record.CreditDue) <= 0
+            "
+            size="small"
+            type="link"
+            @click="openAdjust(record, 'receipt')"
+            >
+还款
+</Button>
         </template>
       </template>
     </Table>
-    <Pagination v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize" :page-size-options="['10', '20', '50', '100']" :total="total" class="mt-4 text-right" show-size-changer @change="load" @show-size-change="load" />
+    <Pagination
+      v-if="total"
+      v-model:current="query.Page"
+      v-model:page-size="query.PageSize"
+      :page-size-options="['10', '20', '50', '100']"
+      :total="total"
+      class="mt-4 text-right"
+      show-size-changer
+      @change="load"
+      @show-size-change="load"
+    />
 
-    <Modal v-model:open="adjustOpen" :confirm-loading="adjustSubmitting" :title="adjustForm.mode === 'receipt' ? '代充还款' : adjustForm.mode === 'batch' ? '批量调整代理' : '调整代理额度'" @ok="submitAdjust">
+    <Modal
+      v-model:open="adjustOpen"
+      :confirm-loading="adjustSubmitting"
+      :title="
+        adjustForm.mode === 'receipt'
+          ? '代充还款'
+          : adjustForm.mode === 'batch'
+            ? '批量调整代理'
+            : '调整代理额度'
+      "
+      @ok="submitAdjust"
+    >
       <Form layout="vertical">
-        <Form.Item label="代理账号（多个用英文逗号分隔）" required><Input v-model:value="adjustForm.AgentAccounts" :disabled="adjustForm.mode !== 'batch'" /></Form.Item>
-        <Form.Item v-if="adjustForm.mode === 'adjust'" label="当前额度（元）"><Input :value="adjustForm.CurrentCredit.toFixed(2)" disabled /></Form.Item>
-        <Form.Item v-if="adjustForm.mode === 'batch'" label="类型"><Select v-model:value="adjustForm.TransferType" :options="[{ label: '调整', value: 3 }, { label: '还款', value: 8 }]" /></Form.Item>
-        <Form.Item :label="adjustForm.TransferType === 8 ? '还款金额（元）' : '调整金额（元）'" required>
-          <InputNumber v-model:value="adjustForm.AdjustAmount" :max="adjustForm.TransferType === 8 ? adjustForm.CreditDue : undefined" :min="adjustForm.TransferType === 8 ? 0.01 : undefined" :precision="2" class="w-full" :placeholder="adjustForm.TransferType === 3 ? '正数增加，负数扣除' : '请输入还款金额'" />
+        <Form.Item label="代理账号（多个用英文逗号分隔）" required>
+<Input
+            v-model:value="adjustForm.AgentAccounts"
+            :disabled="adjustForm.mode !== 'batch'"
+        />
+</Form.Item>
+        <Form.Item v-if="adjustForm.mode === 'adjust'" label="当前额度（元）">
+<Input :value="adjustForm.CurrentCredit.toFixed(2)" disabled />
+</Form.Item>
+        <Form.Item v-if="adjustForm.mode === 'batch'" label="类型">
+<Select
+            v-model:value="adjustForm.TransferType"
+            :options="[
+              { label: '调整', value: 3 },
+              { label: '还款', value: 8 },
+            ]"
+        />
+</Form.Item>
+        <Form.Item
+          :label="
+            adjustForm.TransferType === 8 ? '还款金额（元）' : '调整金额（元）'
+          "
+          required
+        >
+          <InputNumber
+            v-model:value="adjustForm.AdjustAmount"
+            :max="
+              adjustForm.TransferType === 8 ? adjustForm.CreditDue : undefined
+            "
+            :min="adjustForm.TransferType === 8 ? 0.01 : undefined"
+            :precision="2"
+            class="w-full"
+            :placeholder="
+              adjustForm.TransferType === 3
+                ? '正数增加，负数扣除'
+                : '请输入还款金额'
+            "
+          />
         </Form.Item>
-        <Form.Item label="申请备注"><Input.TextArea v-model:value="adjustForm.ApplyNote" :maxlength="100" :rows="4" /></Form.Item>
+        <Form.Item label="申请备注">
+<Input.TextArea
+            v-model:value="adjustForm.ApplyNote"
+            :maxlength="100"
+            :rows="4"
+        />
+</Form.Item>
       </Form>
     </Modal>
 
-    <Modal v-model:open="limitOpen" :confirm-loading="limitSubmitting" title="转账限额设置" @ok="submitTransferLimit">
+    <Modal
+      v-model:open="limitOpen"
+      :confirm-loading="limitSubmitting"
+      title="转账限额设置"
+      @ok="submitTransferLimit"
+    >
       <Form layout="vertical">
-        <Form.Item label="最低单笔金额（元）" required><InputNumber v-model:value="limitForm.MinTransferAmount" :min="0" :precision="2" class="w-full" /></Form.Item>
-        <Form.Item label="最高单笔金额（元）" required><InputNumber v-model:value="limitForm.MaxTransferAmount" :min="0" :precision="2" class="w-full" /></Form.Item>
-        <Form.Item label="每日转账额度（元）" required><InputNumber v-model:value="limitForm.DailyTransferAmount" :min="0" :precision="2" class="w-full" /></Form.Item>
+        <Form.Item label="最低单笔金额（元）" required>
+<InputNumber
+            v-model:value="limitForm.MinTransferAmount"
+            :min="0"
+            :precision="2"
+            class="w-full"
+        />
+</Form.Item>
+        <Form.Item label="最高单笔金额（元）" required>
+<InputNumber
+            v-model:value="limitForm.MaxTransferAmount"
+            :min="0"
+            :precision="2"
+            class="w-full"
+        />
+</Form.Item>
+        <Form.Item label="每日转账额度（元）" required>
+<InputNumber
+            v-model:value="limitForm.DailyTransferAmount"
+            :min="0"
+            :precision="2"
+            class="w-full"
+        />
+</Form.Item>
       </Form>
     </Modal>
   </div>

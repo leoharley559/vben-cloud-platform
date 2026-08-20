@@ -1,6 +1,7 @@
-import { calcDailyReportRow } from '#/utils/everyday-data-calc';
-import type { DailyReportRow } from '#/utils/everyday-data-calc';
 import type { AgentGroupNode } from '#/api/operationalData/group-daily';
+import type { DailyReportRow } from '#/utils/everyday-data-calc';
+
+import { calcDailyReportRow } from '#/utils/everyday-data-calc';
 
 export type GroupDailyRow = DailyReportRow & {
   GroupStyle?: string;
@@ -41,7 +42,7 @@ export function normalizeGroupTree(
       ...item,
       // Cascader 对数字 0 容易当空值，统一转字符串
       Id: item.Id === undefined || item.Id === null ? item.Id : String(item.Id),
-      List: children.length ? children : undefined,
+      List: children.length > 0 ? children : undefined,
     };
   });
 }
@@ -56,9 +57,9 @@ export function buildParentTreeState(
   const arr = groupTemp.map((path) => [...path]);
   const temp = arr.filter((item, index) => {
     const str = `,${item.join(',')},`;
-    for (let i = 0; i < arr.length; i += 1) {
+    for (const [i, element] of arr.entries()) {
       if (i === index) continue;
-      const test = `,${arr[i]!.join(',')},`;
+      const test = `,${element!.join(',')},`;
       if (test.includes(str)) return false;
     }
     return true;
@@ -96,20 +97,31 @@ export function applyGroupDrillStyles(
     delete next.GroupStyle1;
     delete next.GroupStyle2;
     delete next.GroupStyle3;
-    if (level === 0) {
+    switch (level) {
+    case 0: {
       next.GroupStyle1 = 'GroupStyle1';
-    } else if (level === 1) {
+    
+    break;
+    }
+    case 1: {
       next.GroupStyle1 = 'GroupStyle1';
       next.GroupStyle2 = 'GroupStyle2';
-    } else if (level === 2) {
+    
+    break;
+    }
+    case 2: {
       next.GroupStyle1 = 'GroupStyle1';
       next.GroupStyle2 = 'GroupStyle2';
       next.GroupStyle3 = 'GroupStyle3';
-    } else {
+    
+    break;
+    }
+    default: {
       next.GroupStyle1 = 'GroupStyle1';
       next.GroupStyle2 = 'GroupStyle2';
       next.GroupStyle3 = 'GroupStyle3';
       next.GroupStyle = 'GroupStyle';
+    }
     }
     return next;
   });

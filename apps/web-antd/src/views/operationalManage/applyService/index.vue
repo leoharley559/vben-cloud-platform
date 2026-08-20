@@ -13,7 +13,7 @@ defineOptions({ name: 'ApplyService' });
 
 const { checkPermission } = useCloudPermission();
 const canViewPage = computed(
-  () => checkPermission(10925) || checkPermission(10079),
+  () => checkPermission(10_925) || checkPermission(10_079),
 );
 </script>
 

@@ -1,4 +1,3 @@
-import { requestClient } from '#/api/request';
 import type {
   BonusAdminItem,
   BonusBatchResult,
@@ -6,6 +5,8 @@ import type {
   NetcashListQuery,
   NetcashListResult,
 } from '#/types/netcash';
+
+import { requestClient } from '#/api/request';
 
 /**
  * 红利列表空结果占位。
@@ -52,10 +53,11 @@ function normalizeListResult(
  * @see views/netcash/bonusManage/index.vue
  */
 export async function fetchBonusHistoryListApi(query: NetcashListQuery) {
-  const result = await requestClient.get<NetcashListResult<BonusManageItem> | null>(
-    '/backend/agentnetcashbonus/list',
-    { params: query },
-  );
+  const result =
+    await requestClient.get<NetcashListResult<BonusManageItem> | null>(
+      '/backend/agentnetcashbonus/list',
+      { params: query },
+    );
   return normalizeListResult(result);
 }
 
@@ -67,12 +69,13 @@ export async function fetchBonusHistoryListApi(query: NetcashListQuery) {
  * @see views/netcash/bonusManage/index.vue
  */
 export async function fetchBonusApproveListApi(query: NetcashListQuery) {
-  const result = await requestClient.get<NetcashListResult<BonusManageItem> | null>(
-    '/backend/agentnetcashbonus/approvelist',
-    {
-      params: query,
-    },
-  );
+  const result =
+    await requestClient.get<NetcashListResult<BonusManageItem> | null>(
+      '/backend/agentnetcashbonus/approvelist',
+      {
+        params: query,
+      },
+    );
   return normalizeListResult(result);
 }
 
@@ -122,7 +125,7 @@ export async function batchProvideBonusApi(data: Record<string, unknown>) {
  */
 export async function queryBonusAdminIdApi(data: Record<string, unknown>) {
   const result = await requestClient.post<
-    { Items?: BonusAdminItem[] } | BonusAdminItem[] | null
+    BonusAdminItem[] | null | { Items?: BonusAdminItem[] }
   >('/backend/agentnetcashbonus/queryadminid', data);
   if (Array.isArray(result)) {
     return { Items: result };

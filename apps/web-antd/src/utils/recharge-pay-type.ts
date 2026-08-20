@@ -11,13 +11,13 @@ export function useRechargePayTypeOptions() {
   const options = computed(() => {
     const list =
       (
-        projectConfig.value as {
+        projectConfig.value as null | {
           RechargeTypeList?: Array<{
             IsOpen?: boolean;
             Key?: number | string;
             Name?: string;
           }>;
-        } | null
+        }
       )?.RechargeTypeList || [];
 
     return list

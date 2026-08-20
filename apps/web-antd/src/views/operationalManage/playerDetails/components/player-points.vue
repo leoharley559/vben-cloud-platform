@@ -5,12 +5,11 @@ import type { PlayerPointsRecordItem } from '#/types/player-detail';
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { Button, Select, Space } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerPointsRecordApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerPointsRecordApi } from '#/api/operationManage/player-detail-extra';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { POINT_TYPE_MAP, POINT_TYPE_OPTIONS } from '#/utils/player-detail-maps';
 
@@ -49,8 +48,7 @@ function formatPointType(type?: number) {
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
-    ApplyTimeBegin: begin ? begin.unix()
-      : '',
+    ApplyTimeBegin: begin ? begin.unix() : '',
     ApplyTimeEnd: end ? end.unix() : '',
     Full: true,
     PlayerId: String(props.playerId),
@@ -149,31 +147,31 @@ onMounted(() => {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">账变类型</span>
-          <Select
-            v-model:value="filterPointType"
-            :options="POINT_TYPE_OPTIONS"
-            placeholder="请选择账变类型"
-          />
-        </Space.Compact>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">账变类型</span>
+            <Select
+              v-model:value="filterPointType"
+              :options="POINT_TYPE_OPTIONS"
+              placeholder="请选择账变类型"
+            />
+          </Space.Compact>
+        </div>
 
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #point="{ row }">

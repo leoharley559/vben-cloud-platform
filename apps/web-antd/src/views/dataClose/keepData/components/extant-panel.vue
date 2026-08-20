@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { TableColumnType } from 'ant-design-vue';
 
+import type { KeepDetailsParam, KeepRow } from '../utils';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -15,13 +17,7 @@ import { fetchKeepDataExtantListApi } from '#/api/dataClose/keep-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { exportRowsToXlsx } from '#/views/dataClose/shared/report-utils';
 
-import {
-  EXTANT_DAY_INDEXES,
-  type KeepDetailsParam,
-  type KeepRow,
-  num,
-  ratioText,
-} from '../utils';
+import { EXTANT_DAY_INDEXES, num, ratioText } from '../utils';
 import DetailsPanel from './details-panel.vue';
 import KeepQueryBar from './keep-query-bar.vue';
 
@@ -168,9 +164,7 @@ defineExpose({ init });
             <RadioButton value="SumLoginNum">登录留存</RadioButton>
             <RadioButton value="SumBetNum">投注留存</RadioButton>
           </RadioGroup>
-          <Button v-if="canExport" @click="handleExport">
-            导出 Excel
-          </Button>
+          <Button v-if="canExport" @click="handleExport"> 导出 Excel </Button>
         </div>
       </div>
       <Table

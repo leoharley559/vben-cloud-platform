@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { WithdrawAccountItem } from '#/types/promotion';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -10,7 +12,6 @@ import {
   fetchWithdrawAccountListApi,
 } from '#/api/promotion/close-manage';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import type { WithdrawAccountItem } from '#/types/promotion';
 
 import WithdrawAccountModal from '../closeManage/components/withdraw-account-modal.vue';
 
@@ -22,7 +23,7 @@ const loading = ref(false);
 const accountOpen = ref(false);
 const accountList = ref<WithdrawAccountItem[]>([]);
 
-const canViewPage = computed(() => checkPermission(10929));
+const canViewPage = computed(() => checkPermission(10_929));
 
 const columns = [
   {

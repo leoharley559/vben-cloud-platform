@@ -1,10 +1,11 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   PlayerBonusRewardItem,
   PlayerBonusRewardQuery,
   PlayerBonusRewardSummary,
 } from '#/types/player-detail';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -19,7 +20,7 @@ function normalizeBonusRewardQuery(query: PlayerBonusRewardQuery) {
   const params = trimSpace({ ...query }) as Record<string, unknown>;
   const bonusType = params.BonusType;
   if (Array.isArray(bonusType)) {
-    params.BonusType = bonusType.length ? bonusType.join(',') : '';
+    params.BonusType = bonusType.length > 0 ? bonusType.join(',') : '';
   }
   return params;
 }

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -6,9 +8,7 @@ import { Page } from '@vben/common-ui';
 import { Card, Empty, Result } from 'ant-design-vue';
 
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -43,7 +43,7 @@ const canViewPage = computed(() => {
   return true;
 });
 
-const listConfig = computed((): OperationListConfig | null => {
+const listConfig = computed((): null | OperationListConfig => {
   if (!props.fetchApi || !props.columns?.length) {
     return null;
   }

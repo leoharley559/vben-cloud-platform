@@ -17,11 +17,11 @@ defineOptions({ name: 'OperationalBonusManage' });
 const { checkPermission } = useCloudPermission();
 
 const canBonusAudit = computed(
-  () => checkPermission(10112) || checkPermission(11968),
+  () => checkPermission(10_112) || checkPermission(11_968),
 );
-const canBonusRecord = computed(() => checkPermission(10114));
-const canMatchRecord = computed(() => checkPermission(11658));
-const canPlatformTransfer = computed(() => checkPermission(10116));
+const canBonusRecord = computed(() => checkPermission(10_114));
+const canMatchRecord = computed(() => checkPermission(11_658));
+const canPlatformTransfer = computed(() => checkPermission(10_116));
 
 const canViewAny = computed(
   () =>

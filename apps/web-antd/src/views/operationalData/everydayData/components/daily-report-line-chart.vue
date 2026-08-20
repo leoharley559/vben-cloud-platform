@@ -1,24 +1,17 @@
 <script lang="ts" setup>
 import type { EchartsUIType } from '@vben/plugins/echarts';
 
+import type { DailyReportRow } from '#/utils/everyday-data-calc';
+
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
 
-import { RadioGroup, RadioButton } from 'ant-design-vue';
+import { RadioButton, RadioGroup } from 'ant-design-vue';
 
 import { CHART_COLORS } from '#/utils/dashboard';
-import type { DailyReportRow } from '#/utils/everyday-data-calc';
 
 defineOptions({ name: 'DailyReportLineChart' });
-
-type ChartMetric =
-  | 'betMoney'
-  | 'betNum'
-  | 'payMoney'
-  | 'payNum'
-  | 'pay_withdraw'
-  | 'profit';
 
 const props = withDefaults(
   defineProps<{
@@ -33,6 +26,14 @@ const props = withDefaults(
     visibleTabs: () => ({}),
   },
 );
+
+type ChartMetric =
+  | 'betMoney'
+  | 'betNum'
+  | 'pay_withdraw'
+  | 'payMoney'
+  | 'payNum'
+  | 'profit';
 
 const chartRef = ref<EchartsUIType>();
 const { renderEcharts, resize } = useEcharts(chartRef);
@@ -119,6 +120,28 @@ function buildSeries(metric: ChartMetric) {
         xData,
       };
     }
+    case 'pay_withdraw': {
+      return {
+        legend: ['充兑差', '充兑比'],
+        series: [
+          {
+            data: props.tabList.map((row) => toYuan(row.DiffPayWithdrawMoney)),
+            name: '充兑差',
+            type: 'line',
+            yAxisIndex: 0,
+          },
+          {
+            data: props.tabList.map((row) =>
+              Number(row.PercentPayWithdraw || 0),
+            ),
+            name: '充兑比',
+            type: 'line',
+            yAxisIndex: 1,
+          },
+        ],
+        xData,
+      };
+    }
     case 'payMoney': {
       return {
         legend: ['充值金额', 'ARPPU', '付费人数'],
@@ -167,28 +190,6 @@ function buildSeries(metric: ChartMetric) {
             data: props.tabList.map((row) => Number(row.SumPayMergerNum || 0)),
             name: '付费人数',
             type: 'line',
-          },
-        ],
-        xData,
-      };
-    }
-    case 'pay_withdraw': {
-      return {
-        legend: ['充兑差', '充兑比'],
-        series: [
-          {
-            data: props.tabList.map((row) => toYuan(row.DiffPayWithdrawMoney)),
-            name: '充兑差',
-            type: 'line',
-            yAxisIndex: 0,
-          },
-          {
-            data: props.tabList.map((row) =>
-              Number(row.PercentPayWithdraw || 0),
-            ),
-            name: '充兑比',
-            type: 'line',
-            yAxisIndex: 1,
           },
         ],
         xData,
@@ -253,7 +254,7 @@ async function renderChart() {
     yAxis: [
       { type: 'value' },
       {
-        axisLabel: { formatter: (value: number) => String(value) },
+        axisLabel: { formatter: String },
         splitLine: { show: false },
         type: 'value',
       },

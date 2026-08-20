@@ -68,9 +68,11 @@ export function currentMonth(offset = 0): string {
 }
 
 export function settlementLabel(value: unknown): string {
-  return ({ 1: '日结', 2: '周结', 3: '月结' } as Record<number, string>)[
-    Number(value)
-  ] ?? '-';
+  return (
+    ({ 1: '日结', 2: '周结', 3: '月结' } as Record<number, string>)[
+      Number(value)
+    ] ?? '-'
+  );
 }
 
 export function settlementDate(row: CommissionRow): string {

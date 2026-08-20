@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -7,9 +9,7 @@ import { Card, Result } from 'ant-design-vue';
 
 import { fetchBlockedMoneyListApi } from '#/api/telesalesCenter/report';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import { telesalesPlayerColumns } from '../shared/columns';
 
@@ -25,7 +25,7 @@ const listConfig = computed(
   }),
 );
 
-const canViewPage = computed(() => checkPermission(11558));
+const canViewPage = computed(() => checkPermission(11_558));
 </script>
 
 <template>

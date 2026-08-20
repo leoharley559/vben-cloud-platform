@@ -25,7 +25,7 @@ import { trimSpace } from '#/utils/string';
  * @see views/mobile/openAccount/index.vue
  */
 export async function fetchPromoterListApi(query: PromoterListQuery) {
-  const data = await requestClient.get<PromoterListResult | null>(
+  const data = await requestClient.get<null | PromoterListResult>(
     '/backend/promoter/list',
     {
       params: trimSpace(query),

@@ -21,27 +21,27 @@ api-docs/
 
 ## 内置示例：`swagger/example.openapi.json`
 
-| 项 | 说明 |
-|---|---|
-| 是否真实 | **否**，全部为虚构示例数据 |
-| 用途 | 学习 OpenAPI 结构、演示 AI 如何根据文档生成前端代码 |
+| 项         | 说明                                                         |
+| ---------- | ------------------------------------------------------------ |
+| 是否真实   | **否**，全部为虚构示例数据                                   |
+| 用途       | 学习 OpenAPI 结构、演示 AI 如何根据文档生成前端代码          |
 | 与模版关系 | 路径风格对齐 vben `backend-mock`（`/auth/login`、`code: 0`） |
-| 业务示例 | 虚构「订单管理」CRUD：`/order/list`、`/order`、`/order/{id}` |
+| 业务示例   | 虚构「订单管理」CRUD：`/order/list`、`/order`、`/order/{id}` |
 
 ### 示例包含的接口
 
-| 分组 | 路径 | 方法 | 说明 |
-|---|---|---|---|
-| 认证 | `/auth/login` | POST | 登录，返回 `accessToken` |
-| 认证 | `/auth/logout` | POST | 登出 |
-| 认证 | `/auth/refresh` | POST | 刷新 Token |
-| 认证 | `/auth/codes` | GET | 权限码列表 |
-| 用户 | `/user/info` | GET | 当前用户信息 |
-| 订单 | `/order/list` | GET | 分页列表（虚构） |
-| 订单 | `/order` | POST | 创建 |
-| 订单 | `/order/{id}` | GET | 详情 |
-| 订单 | `/order/{id}` | PUT | 更新 |
-| 订单 | `/order/{id}` | DELETE | 删除 |
+| 分组 | 路径            | 方法   | 说明                     |
+| ---- | --------------- | ------ | ------------------------ |
+| 认证 | `/auth/login`   | POST   | 登录，返回 `accessToken` |
+| 认证 | `/auth/logout`  | POST   | 登出                     |
+| 认证 | `/auth/refresh` | POST   | 刷新 Token               |
+| 认证 | `/auth/codes`   | GET    | 权限码列表               |
+| 用户 | `/user/info`    | GET    | 当前用户信息             |
+| 订单 | `/order/list`   | GET    | 分页列表（虚构）         |
+| 订单 | `/order`        | POST   | 创建                     |
+| 订单 | `/order/{id}`   | GET    | 详情                     |
+| 订单 | `/order/{id}`   | PUT    | 更新                     |
+| 订单 | `/order/{id}`   | DELETE | 删除                     |
 
 ### 统一响应约定（示例）
 
@@ -59,18 +59,18 @@ api-docs/
 
 ## 新项目：如何替换为真实 Swagger
 
-1. 向后端或 Swagger UI 索取 OpenAPI 3.0 导出文件  
-2. 保存为 `api-docs/swagger/<项目名>.openapi.json`（不要覆盖 `example.openapi.json`，保留作参考）  
-3. 检查 `code` 成功值、分页字段名是否与前端 `request.ts` 一致  
-4. 在 Cursor 中 `@api-docs/swagger/你的文件.json` 开始生成代码  
+1. 向后端或 Swagger UI 索取 OpenAPI 3.0 导出文件
+2. 保存为 `api-docs/swagger/<项目名>.openapi.json`（不要覆盖 `example.openapi.json`，保留作参考）
+3. 检查 `code` 成功值、分页字段名是否与前端 `request.ts` 一致
+4. 在 Cursor 中 `@api-docs/swagger/你的文件.json` 开始生成代码
 
 ---
 
 ## Postman Collection
 
-1. Postman → Export → **Collection v2.1**  
-2. 保存到 `api-docs/postman/<项目名>.collection.json`  
-3. AI 对话中 `@api-docs/postman/...` 引用  
+1. Postman → Export → **Collection v2.1**
+2. 保存到 `api-docs/postman/<项目名>.collection.json`
+3. AI 对话中 `@api-docs/postman/...` 引用
 
 敏感信息（密码、Token、生产域名）请使用 Postman Environment，**不要写进仓库**。
 
@@ -98,7 +98,7 @@ api-docs/
 ## 文档更新规范
 
 | 场景 | 操作 |
-|---|---|
+| --- | --- |
 | 后端新增接口 | 重新导出 Swagger，更新对应 json |
 | 字段变更 | 同步改 `src/api/`、`src/types/`，必要时改页面 |
 | 多模块 | 按模块拆分多个文件，如 `user.openapi.json`、`order.openapi.json` |
@@ -108,8 +108,8 @@ api-docs/
 
 ## 在线预览（可选）
 
-- [Swagger Editor](https://editor.swagger.io/)：粘贴 JSON 可视化查看  
-- VS Code 插件：OpenAPI (Swagger) Editor  
+- [Swagger Editor](https://editor.swagger.io/)：粘贴 JSON 可视化查看
+- VS Code 插件：OpenAPI (Swagger) Editor
 
 ---
 

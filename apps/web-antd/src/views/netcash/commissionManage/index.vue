@@ -24,48 +24,50 @@ interface TopTab {
 }
 
 const tabs = computed<TopTab[]>(() =>
-  ([
-    {
-      component: 'scheme',
-      key: 'single',
-      mode: 'single',
-      permission: 10_201,
-      tab: '单层佣金方案',
-    },
-    {
-      component: 'scheme',
-      key: 'multi',
-      mode: 'multi',
-      permission: 12_539,
-      tab: '多层（多费率）佣金方案',
-    },
-    {
-      component: 'scheme',
-      key: 'venue',
-      mode: 'venue',
-      permission: 10_202,
-      tab: '场馆费率',
-    },
-    {
-      component: 'grant',
-      key: 'grant',
-      permission: 10_203,
-      tab: '发放佣金',
-    },
-    {
-      component: 'record',
-      key: 'record',
-      permission: 11_478,
-      tab: '佣金记录',
-    },
-    {
-      component: 'scheme',
-      key: 'algorithm',
-      mode: 'algorithm',
-      permission: 10_204,
-      tab: '佣金算法设置',
-    },
-  ] as TopTab[]).filter((item) => checkPermission(item.permission)),
+  (
+    [
+      {
+        component: 'scheme',
+        key: 'single',
+        mode: 'single',
+        permission: 10_201,
+        tab: '单层佣金方案',
+      },
+      {
+        component: 'scheme',
+        key: 'multi',
+        mode: 'multi',
+        permission: 12_539,
+        tab: '多层（多费率）佣金方案',
+      },
+      {
+        component: 'scheme',
+        key: 'venue',
+        mode: 'venue',
+        permission: 10_202,
+        tab: '场馆费率',
+      },
+      {
+        component: 'grant',
+        key: 'grant',
+        permission: 10_203,
+        tab: '发放佣金',
+      },
+      {
+        component: 'record',
+        key: 'record',
+        permission: 11_478,
+        tab: '佣金记录',
+      },
+      {
+        component: 'scheme',
+        key: 'algorithm',
+        mode: 'algorithm',
+        permission: 10_204,
+        tab: '佣金算法设置',
+      },
+    ] as TopTab[]
+  ).filter((item) => checkPermission(item.permission)),
 );
 
 const canViewPage = computed(() => tabs.value.length > 0);

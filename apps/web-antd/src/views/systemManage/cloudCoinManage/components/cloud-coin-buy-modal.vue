@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref } from 'vue';
 
-import { Button, Form, Input, Modal, Space, message } from 'ant-design-vue';
+import { Button, Form, Input, message, Modal, Space } from 'ant-design-vue';
 
 import { getUserInfoApi } from '#/api';
 import { buyCloudCoinApi } from '#/api/systemManage/extra';
@@ -23,11 +23,11 @@ const formModel = reactive({
 });
 
 /** 旧站购买按钮权限 187；列表区 11429 也允许入口 */
-const canBuy = computed(() => checkPermission(187) || checkPermission(11429));
+const canBuy = computed(() => checkPermission(187) || checkPermission(11_429));
 
 const cloudCoinPrice = computed(() =>
   Number(
-    (projectConfig.value as { CloudCoinPrice?: number } | undefined)
+    (projectConfig.value as undefined | { CloudCoinPrice?: number })
       ?.CloudCoinPrice ?? 0,
   ),
 );

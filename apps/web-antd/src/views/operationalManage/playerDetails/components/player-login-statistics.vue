@@ -6,8 +6,8 @@ import { onMounted, watch } from 'vue';
 
 import { Card } from 'ant-design-vue';
 
-import { fetchPlayerLoginInfoListApi } from '#/api/operationManage/player';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerLoginInfoListApi } from '#/api/operationManage/player';
 
 defineOptions({ name: 'PlayerLoginStatistics' });
 

@@ -1,14 +1,15 @@
 import type { CloudRole } from '#/types/cloud-platform';
+
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 
 /** 权限 key → 子菜单 ID 列表（按需从各模块 permissionKeyList 汇总） */
 const permissionKeyList: Record<string, Array<number | string>> = {
   // 系统管理 - 员工账号
-  adminManageView: [10018],
-  adminManageAdd: [10019],
-  adminManageEdit: [10020],
-  adminManageDelete: [10021],
-  adminManageStatus: [10022],
+  adminManageView: [10_018],
+  adminManageAdd: [10_019],
+  adminManageEdit: [10_020],
+  adminManageDelete: [10_021],
+  adminManageStatus: [10_022],
 };
 
 /**

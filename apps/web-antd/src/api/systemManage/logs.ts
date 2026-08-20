@@ -1,10 +1,11 @@
-import { requestClient } from '#/api/request';
 import type {
   LogListQuery,
   LogListResult,
   LogTypeOption,
   LogUserOption,
 } from '#/types/system-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -22,8 +23,7 @@ export function fetchLogListApi(query: LogListQuery) {
     .then((data) => ({
       Items: data?.Items ?? [],
       Pagination: {
-        MaxCount:
-          data?.Pagination?.MaxCount ?? data?.Items?.length ?? 0,
+        MaxCount: data?.Pagination?.MaxCount ?? data?.Items?.length ?? 0,
       },
     }));
 }

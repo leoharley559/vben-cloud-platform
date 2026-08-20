@@ -282,20 +282,20 @@ async function submitAuditAction() {
     return;
   }
   const ids = auditAction.value.startsWith('batch')
-    ? selectedAuditRows.value.map((row) => row.Id).filter(Boolean).join(',')
+    ? selectedAuditRows.value
+        .map((row) => row.Id)
+        .filter(Boolean)
+        .join(',')
     : String(auditCurrentRow.value?.Id || '');
   if (!ids) return;
 
   auditSubmitting.value = true;
   try {
-    if (auditAction.value === 'adjust') {
-      await adjustBonusApi({
+    await (auditAction.value === 'adjust' ? adjustBonusApi({
         Amount: Math.round(Number(auditForm.Amount) * 100),
         HandleDesc: auditForm.HandleDesc.trim(),
         Id: ids,
-      });
-    } else {
-      await approveBonusApi({
+      }) : approveBonusApi({
         Amount:
           auditAction.value === 'singleApprove'
             ? Math.round(Number(auditForm.Amount) * 100)
@@ -303,8 +303,7 @@ async function submitAuditAction() {
         Approve: auditAction.value.includes('Approve') ? 2 : 3,
         HandleDesc: auditForm.HandleDesc.trim(),
         Ids: ids,
-      });
-    }
+      }));
     message.success('操作成功');
     auditModalOpen.value = false;
     selectedAuditRows.value = [];
@@ -464,7 +463,9 @@ onMounted(() => {
         </div>
         <Form.Item
           v-if="needAuditAmount"
-          :label="auditAction === 'adjust' ? '调整金额（元）' : '支付金额（元）'"
+          :label="
+            auditAction === 'adjust' ? '调整金额（元）' : '支付金额（元）'
+          "
           required
         >
           <InputNumber

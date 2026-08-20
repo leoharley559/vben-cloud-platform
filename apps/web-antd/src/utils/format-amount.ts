@@ -5,10 +5,7 @@ import BigNumber from 'bignumber.js';
  * @param amount 元
  * @param digits 小数位数，默认 2
  */
-export function formatAmount(
-  amount?: BigNumber.Value | null,
-  digits = 2,
-) {
+export function formatAmount(amount?: BigNumber.Value | null, digits = 2) {
   if (amount === undefined || amount === null || amount === '') {
     return (0).toFixed(digits);
   }

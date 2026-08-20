@@ -41,8 +41,7 @@ function parseLangText(
     if (Array.isArray(parsed)) return parsed as HelpCenterLangTextItem[];
     return Object.entries(parsed || {}).map(([langGroupId, item]) => ({
       ...(item as HelpCenterLangTextItem),
-      LangGroupId:
-        (item as HelpCenterLangTextItem).LangGroupId ?? langGroupId,
+      LangGroupId: (item as HelpCenterLangTextItem).LangGroupId ?? langGroupId,
     }));
   } catch {
     return [];

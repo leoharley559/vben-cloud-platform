@@ -5,18 +5,12 @@ import type { GameStatementRow } from '../utils';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import {
-  Button,
-  Input,
-  Select,
-  Space,
-  Table,
-} from 'ant-design-vue';
+import { Button, Input, Select, Space, Table } from 'ant-design-vue';
 
 import { fetchClassifiedReportListApi } from '#/api/dataClose/game-statement';
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -235,7 +229,7 @@ onMounted(async () => {
           style="width: 180px"
           allow-clear
           placeholder="请输入代理账号"
-          />
+        />
       </Space.Compact>
       <Space.Compact>
         <Select
@@ -259,7 +253,7 @@ onMounted(async () => {
           style="width: 180px"
           allow-clear
           placeholder="请输入渠道"
-          />
+        />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">产品</span>
@@ -314,10 +308,18 @@ onMounted(async () => {
         />
       </Space.Compact>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
-        </div>
+        <QueryDatetimeRangePicker
+          v-model="dateRange"
+          precision="date"
+          :disabled-date="
+            (current) => disabledDateBeyond90(current, dateRange, 'end')
+          "
+        />
+      </div>
       <template #actions>
-        <Button type="primary" :loading="loading" @click="loadList">查询</Button>
+        <Button type="primary" :loading="loading" @click="loadList">
+查询
+</Button>
         <Button @click="handleReset">重置</Button>
       </template>
     </ReportQueryCard>

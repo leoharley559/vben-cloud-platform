@@ -3,12 +3,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -26,7 +21,7 @@ defineOptions({ name: 'ActivityAppointmentRecordsPanel' });
 
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
-const canView = checkPermission(11912);
+const canView = checkPermission(11_912);
 
 /** 对齐旧站 getBeforeDateStr(1)：默认今天 00:00:00～23:59:59 */
 function defaultDayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
@@ -68,7 +63,12 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
     { field: 'OrderId', minWidth: 140, title: '订单号' },
-    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PackageName', minWidth: 120, title: '产品包' },
     { field: 'ChannelName', minWidth: 120, title: '渠道' },
     {
@@ -89,7 +89,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     {
       field: 'Rate',
       formatter: ({ cellValue }) =>
-        cellValue !== undefined ? `${cellValue}%` : '-',
+        cellValue === undefined ? '-' : `${cellValue}%`,
       minWidth: 90,
       title: '加送比例',
     },
@@ -129,75 +129,74 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
     </div>
     <template v-else>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterOrderId"
-            allow-clear
-            placeholder="请输入订单号"
-          >
-            <template #addonBefore>订单号</template>
-          </Input>
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterOrderId"
+              allow-clear
+              placeholder="请输入订单号"
+            >
+              <template #addonBefore>订单号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterLoginAccount"
+              allow-clear
+              @change="
+                filterLoginAccount = String(filterLoginAccount || '')
+                  .trim()
+                  .toLowerCase()
+              "
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">产品包</span>
+            <Select
+              v-model:value="filterPackageId"
+              allow-clear
+              :options="packageOptions"
+              placeholder="请选择产品包"
+            />
+          </Space.Compact>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterWithdrawOrderId"
+              allow-clear
+              placeholder="请输入取款订单号"
+            >
+              <template #addonBefore>取款订单号</template>
+            </Input>
+          </div>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="withdrawTimeRange" />
+          </div>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="awardTimeRange" />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="gridApi.reload()">查询</Button>
+            <Button
+              @click="
+                () => {
+                  filterOrderId = '';
+                  filterLoginAccount = '';
+                  filterPackageId = undefined;
+                  filterWithdrawOrderId = '';
+                  withdrawTimeRange = defaultDayRange();
+                  awardTimeRange = defaultDayRange();
+                  gridApi.reload();
+                }
+              "
+            >
+              重置
+            </Button>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterLoginAccount"
-            allow-clear
-            @change="
-              filterLoginAccount = String(filterLoginAccount || '')
-                .trim()
-                .toLowerCase()
-            "
-            placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">产品包</span>
-          <Select
-            v-model:value="filterPackageId"
-            allow-clear
-           
-            :options="packageOptions"
-            placeholder="请选择产品包"
-          />
-        </Space.Compact>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterWithdrawOrderId"
-            allow-clear
-            placeholder="请输入取款订单号"
-          >
-            <template #addonBefore>取款订单号</template>
-          </Input>
-        </div>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="withdrawTimeRange" />
-        </div>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="awardTimeRange" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="gridApi.reload()">查询</Button>
-        <Button
-          @click="
-            () => {
-              filterOrderId = '';
-              filterLoginAccount = '';
-              filterPackageId = undefined;
-              filterWithdrawOrderId = '';
-              withdrawTimeRange = defaultDayRange();
-              awardTimeRange = defaultDayRange();
-              gridApi.reload();
-            }
-          "
-        >
-          重置
-        </Button>
-        </div>
-    </div>
-  </div>
+      </div>
       <Grid>
         <template #loginAccount="{ row }">
           <PlayerAccountLink

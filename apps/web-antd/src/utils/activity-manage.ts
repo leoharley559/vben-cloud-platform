@@ -1,6 +1,6 @@
 import type { CloudListResult } from '#/types/operation-manage';
 
-export const PROMO_CODE_TYPE = 10017;
+export const PROMO_CODE_TYPE = 10_017;
 
 export function normalizeCloudList<T>(data: unknown): CloudListResult<T> {
   if (Array.isArray(data)) {

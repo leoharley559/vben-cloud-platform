@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -107,7 +108,7 @@ export function deletePlayerLevelMembersApi(data: {
  */
 export async function fetchPlayerLevelSchemeOptionsApi() {
   const data = await requestClient.get<
-    Record<string, unknown>[] | CloudListResult<Record<string, unknown>>
+    CloudListResult<Record<string, unknown>> | Record<string, unknown>[]
   >('/backend/playerbackwaterscheme/allscheme');
   if (Array.isArray(data)) {
     return data;

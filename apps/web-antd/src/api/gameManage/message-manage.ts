@@ -25,7 +25,9 @@ export interface SmsChannelListResult {
 
 function withItems<T extends { Items?: null | unknown[] }>(
   result: null | T | undefined,
-): T & { Items: NonNullable<T['Items']> extends Array<infer U> ? U[] : unknown[] } {
+): T & {
+  Items: NonNullable<T['Items']> extends Array<infer U> ? U[] : unknown[];
+} {
   return {
     ...(result ?? ({} as T)),
     Items: (result?.Items ?? []) as never,
@@ -279,14 +281,10 @@ export async function fetchRecallDetailApi(
  * @returns Promise，resolve 为更新/操作结果
  * @see views/gameManage/messageManage
  */
-export function sendRecallApi(
-  type: 'deposit' | 'register',
-  BeginTime: string,
-) {
-  return requestClient.put(
-    `/backend/operation/${recallPath(type)}send`,
-    { BeginTime },
-  );
+export function sendRecallApi(type: 'deposit' | 'register', BeginTime: string) {
+  return requestClient.put(`/backend/operation/${recallPath(type)}send`, {
+    BeginTime,
+  });
 }
 
 /**
@@ -301,9 +299,7 @@ export function updateRecallSwitchApi(
   type: 'deposit' | 'register',
   config: { IsAuto: boolean; IsOpen: boolean },
 ) {
-  return requestClient.put(
-    `/backend/operation/${recallPath(type)}switch`,
-    { Config: JSON.stringify(config) },
-  );
+  return requestClient.put(`/backend/operation/${recallPath(type)}switch`, {
+    Config: JSON.stringify(config),
+  });
 }
-

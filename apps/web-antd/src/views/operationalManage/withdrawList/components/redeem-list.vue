@@ -7,20 +7,21 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
+  addWithdrawRemarkApi,
   approveWithdrawRiskApi,
   batchDenyWithdrawApi,
   batchManualWithdrawApi,
-  addWithdrawRemarkApi,
   checkThirdPartyWithdrawApi,
   fetchWithdrawListApi,
   transitionPendingWithdrawApi,
@@ -28,23 +29,14 @@ import {
   withdrawNoticeApi,
 } from '#/api/operationManage/withdraw';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getLast3CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import {
-  calcWithdrawStatusText,
-  formatReceivedStatus,
-  formatRiskStatus,
-  getReceivedStatusColor,
-  getRiskStatusColor,
-  WITHDRAW_STATUS_OPTIONS,
-  WITHDRAW_TIME_TYPE_OPTIONS,
-} from '#/utils/withdraw-status';
+import { isSameAcctActionRestricted } from '#/utils/security-restriction';
 import {
   canShowWithdrawAutoPay,
   canShowWithdrawCheckThirdParty,
@@ -57,7 +49,15 @@ import {
   isWithdrawRiskBlockingPay,
   WITHDRAW_RISK_SECURITY_PAGE_ID,
 } from '#/utils/withdraw-actions';
-import { isSameAcctActionRestricted } from '#/utils/security-restriction';
+import {
+  calcWithdrawStatusText,
+  formatReceivedStatus,
+  formatRiskStatus,
+  getReceivedStatusColor,
+  getRiskStatusColor,
+  WITHDRAW_STATUS_OPTIONS,
+  WITHDRAW_TIME_TYPE_OPTIONS,
+} from '#/utils/withdraw-status';
 
 import WithdrawActionModal from './withdraw-action-modal.vue';
 
@@ -66,26 +66,26 @@ defineOptions({ name: 'WithdrawRedeemList' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(10352));
-const canManualPay = computed(() => checkPermission(10353));
-const canAutoPay = computed(() => checkPermission(10354));
-const canRiskApprove = computed(() => checkPermission(10355));
-const canRejectPay = computed(() => checkPermission(10356));
-const canEditRemark = computed(() => checkPermission(10365));
-const canWithdrawNotice = computed(() => checkPermission(11551));
-const canCheckThirdParty = computed(() => checkPermission(12151));
-const canTransitionPending = computed(() => checkPermission(12152));
-const canBatchManual = computed(() => checkPermission(12258));
-const canBatchReject = computed(() => checkPermission(12259));
+const canViewTable = computed(() => checkPermission(10_352));
+const canManualPay = computed(() => checkPermission(10_353));
+const canAutoPay = computed(() => checkPermission(10_354));
+const canRiskApprove = computed(() => checkPermission(10_355));
+const canRejectPay = computed(() => checkPermission(10_356));
+const canEditRemark = computed(() => checkPermission(10_365));
+const canWithdrawNotice = computed(() => checkPermission(11_551));
+const canCheckThirdParty = computed(() => checkPermission(12_151));
+const canTransitionPending = computed(() => checkPermission(12_152));
+const canBatchManual = computed(() => checkPermission(12_258));
+const canBatchReject = computed(() => checkPermission(12_259));
 
 const selectedRows = ref<WithdrawListItem[]>([]);
 const actionOpen = ref(false);
 const actionMode = ref<'agree' | 'manual' | 'reject'>('manual');
-const actionRow = ref<WithdrawListItem | null>(null);
+const actionRow = ref<null | WithdrawListItem>(null);
 const batchLoading = ref(false);
 const remarkOpen = ref(false);
 const remarkSaving = ref(false);
-const remarkRow = ref<WithdrawListItem | null>(null);
+const remarkRow = ref<null | WithdrawListItem>(null);
 const remarkText = ref('');
 
 const defaultRange = getLast3CalendarDaysRangeSeconds();
@@ -323,8 +323,7 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
         let sortParam = '';
         if (sortField && sortOrder) {
           // 对齐旧站 withdrawList/list：升序 field，降序 -field（`field desc` 会导致 Items=null）
-          sortParam =
-            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
+          sortParam = sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
 
         const result = await fetchWithdrawListApi({
@@ -581,154 +580,157 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPlayerId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入玩家ID"
-        >
-          <template #addonBefore>玩家ID</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterAccountNum"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入出款账号"
-        >
-          <template #addonBefore>出款账号</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterRealName"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入真实姓名"
-        >
-          <template #addonBefore>真实姓名</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterHandlerName"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入操作人员"
-        >
-          <template #addonBefore>操作人员</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterRiskAuditorName"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入风控人员"
-        >
-          <template #addonBefore>风控人员</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterShowName"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入出款通道"
-        >
-          <template #addonBefore>出款通道</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">渠道</span>
-          <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
-        </Space.Compact>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">产品</span>
-          <Select
-            v-model:value="filterPackageId"
-            :options="
-              packageOptions.map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-            "
-            placeholder="请选择产品"
-          />
-        </Space.Compact>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select
-            v-model:value="filterWithdrawStatus"
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
             allow-clear
-            :options="WITHDRAW_STATUS_OPTIONS"
-            placeholder="请选择状态"
-          />
-        </Space.Compact>
-      </div>
+            @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">时间类型</span>
-          <Select
-            v-model:value="filterSelectTimeType"
-            :options="WITHDRAW_TIME_TYPE_OPTIONS"
-            placeholder="请选择时间类型"
-          />
-        </Space.Compact>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPlayerId"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入玩家ID"
+          >
+            <template #addonBefore>玩家ID</template>
+          </Input>
+        </div>
 
-      <div class="query-filter-wide">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAccountNum"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入出款账号"
+          >
+            <template #addonBefore>出款账号</template>
+          </Input>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterRealName"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入真实姓名"
+          >
+            <template #addonBefore>真实姓名</template>
+          </Input>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterHandlerName"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入操作人员"
+          >
+            <template #addonBefore>操作人员</template>
+          </Input>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterRiskAuditorName"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入风控人员"
+          >
+            <template #addonBefore>风控人员</template>
+          </Input>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterShowName"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入出款通道"
+          >
+            <template #addonBefore>出款通道</template>
+          </Input>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">渠道</span>
+            <ChannelSelect
+              v-model="filterChannelIds"
+              placeholder="请输入渠道号"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">产品</span>
+            <Select
+              v-model:value="filterPackageId"
+              :options="
+                packageOptions.map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+              "
+              placeholder="请选择产品"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="filterWithdrawStatus"
+              allow-clear
+              :options="WITHDRAW_STATUS_OPTIONS"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">时间类型</span>
+            <Select
+              v-model:value="filterSelectTimeType"
+              :options="WITHDRAW_TIME_TYPE_OPTIONS"
+              placeholder="请选择时间类型"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 

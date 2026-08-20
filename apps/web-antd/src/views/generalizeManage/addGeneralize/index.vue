@@ -146,8 +146,7 @@ const groupCheckAll = computed({
       ? steamerGroups.value
           .map((item) => item.Id)
           .filter(
-            (id): id is number | string =>
-              id !== undefined && id !== null,
+            (id): id is number | string => id !== undefined && id !== null,
           )
       : (defaultSteamerGroupId.value === undefined
         ? []
@@ -258,8 +257,7 @@ async function loadDetail() {
       formQingLiu.value = Boolean(directGroup.CanQingLiu);
       formTeamIds.value =
         directGroup.Teams?.filter(
-          (item) =>
-            item.Checked && item.Id !== undefined && item.Id !== null,
+          (item) => item.Checked && item.Id !== undefined && item.Id !== null,
         ).map((item) => item.Id!) || [];
       ensureDefaultTeamIfEmpty();
     } catch {
@@ -284,17 +282,17 @@ function validateStepOne() {
     message.warning('请输入密码');
     return false;
   }
-  if (
-    formPassword.value &&
-    !/^[a-z0-9_]{6,20}$/i.test(formPassword.value)
-  ) {
+  if (formPassword.value && !/^[a-z0-9_]{6,20}$/i.test(formPassword.value)) {
     message.warning('密码必须为 6～20 位字母、数字或下划线');
     return false;
   }
-  if ((formPassword.value || formConfirmPassword.value) && formPassword.value !== formConfirmPassword.value) {
-      message.warning('两次密码不一致');
-      return false;
-    }
+  if (
+    (formPassword.value || formConfirmPassword.value) &&
+    formPassword.value !== formConfirmPassword.value
+  ) {
+    message.warning('两次密码不一致');
+    return false;
+  }
   if (!formName.value.trim()) {
     message.warning('请输入账号姓名');
     return false;
@@ -312,11 +310,7 @@ function validateStepOne() {
 
 function validateStepTwo() {
   if (isRateSettleType.value) {
-    if (
-      !/^([0-9]\d?(\.\d{1,2})?|0\.\d{1,2}|100)$/.test(
-        formSettleRate.value,
-      )
-    ) {
+    if (!/^([0-9]\d?(\.\d{1,2})?|0\.\d{1,2}|100)$/.test(formSettleRate.value)) {
       message.warning('分成比例须为 0～100，最多两位小数');
       return false;
     }
@@ -419,10 +413,7 @@ async function loadPage() {
   if (!canViewPage.value) {
     return;
   }
-  const results = await Promise.allSettled([
-    loadSteamerGroups(),
-    loadDetail(),
-  ]);
+  const results = await Promise.allSettled([loadSteamerGroups(), loadDetail()]);
   if (results[0]?.status === 'rejected') {
     message.warning('直播分组加载失败，请稍后重试');
   }
@@ -631,11 +622,7 @@ onMounted(async () => {
           <div>账号：{{ formUsername }}</div>
           <div>
             密码：{{
-              formPassword
-                ? formPassword
-                : isEdit
-                  ? '（未修改）'
-                  : '-'
+              formPassword ? formPassword : isEdit ? '（未修改）' : '-'
             }}
           </div>
           <div>姓名：{{ formName }}</div>
@@ -678,9 +665,7 @@ onMounted(async () => {
               </Tag>
             </template>
             <Tag
-              v-else-if="
-                column.key === 'content' && record.key === 'qingliu'
-              "
+              v-else-if="column.key === 'content' && record.key === 'qingliu'"
               :color="formQingLiu ? 'green' : 'default'"
             >
               {{ record.content }}

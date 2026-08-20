@@ -7,10 +7,10 @@ import {
   Descriptions,
   Form,
   Input,
+  message,
   Modal,
   Radio,
   Select,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -26,7 +26,7 @@ defineOptions({ name: 'WithdrawActionModal' });
 
 const props = defineProps<{
   mode: 'agree' | 'manual' | 'reject';
-  row: WithdrawListItem | null;
+  row: null | WithdrawListItem;
 }>();
 
 const emit = defineEmits<{
@@ -52,12 +52,15 @@ const mailContentMap = ref<Record<string, string>>({});
 
 const title = computed(() => {
   switch (props.mode) {
-    case 'agree':
+    case 'agree': {
       return '同意出款';
-    case 'manual':
+    }
+    case 'manual': {
       return '人工出款';
-    default:
+    }
+    default: {
       return '拒绝出款';
+    }
   }
 });
 

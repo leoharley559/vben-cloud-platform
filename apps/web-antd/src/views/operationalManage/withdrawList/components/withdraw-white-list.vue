@@ -4,17 +4,17 @@ import type { WithdrawWhiteItem } from '#/types/withdraw-extra';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Input, Modal, Result, Select, message } from 'ant-design-vue';
+import { Button, Input, message, Modal, Result, Select } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteWithdrawWhiteApi,
   fetchWithdrawWhiteListApi,
 } from '#/api/operationManage/withdraw-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 
 import WithdrawWhiteFormModal from './withdraw-white-form-modal.vue';
 
@@ -23,14 +23,14 @@ defineOptions({ name: 'WithdrawWhiteList' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(10366));
-const canCreate = computed(() => checkPermission(10367));
-const canEdit = computed(() => checkPermission(10368));
-const canDelete = computed(() => checkPermission(10369));
+const canViewTable = computed(() => checkPermission(10_366));
+const canCreate = computed(() => checkPermission(10_367));
+const canEdit = computed(() => checkPermission(10_368));
+const canDelete = computed(() => checkPermission(10_369));
 
 const formOpen = ref(false);
 const formMode = ref<'create' | 'update'>('create');
-const formRow = ref<WithdrawWhiteItem | null>(null);
+const formRow = ref<null | WithdrawWhiteItem>(null);
 
 const filterLoginAccount = ref('');
 const filterPackageId = ref<number | string>('');
@@ -135,34 +135,34 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
-      />
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterPackageId"
+          :options="
+            packageOptions
+              .filter((item) => item.PackageId !== '')
+              .map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+          "
+        />
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
+            查询
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { StatementRow } from '#/views/dataClose/shared/statement-helpers';
+
 import { computed, ref, watch } from 'vue';
 
 import { Modal, Table } from 'ant-design-vue';
@@ -6,15 +8,7 @@ import { Modal, Table } from 'ant-design-vue';
 import { fetchDayStatementSonDetailApi } from '#/api/dataClose/day-statement';
 import { useReportOptions } from '#/composables/use-report-options';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import {
-  asNumber,
-  dayDetailUnix,
-  displayAmount,
-  displayCent,
-  fromCent,
-  type StatementRow,
-  venueName,
-} from '#/views/dataClose/shared/statement-helpers';
+import { asNumber, dayDetailUnix, displayAmount, displayCent, fromCent, venueName } from '#/views/dataClose/shared/statement-helpers';
 
 defineOptions({ name: 'DaySonDetailModal' });
 
@@ -53,9 +47,19 @@ const summaryItems = computed(() => [
 ]);
 
 const columns = [
-  { align: 'center' as const, dataIndex: 'ReportDay', key: 'ReportDay', title: '时间' },
+  {
+    align: 'center' as const,
+    dataIndex: 'ReportDay',
+    key: 'ReportDay',
+    title: '时间',
+  },
   { align: 'center' as const, key: 'AgentName', title: '子代理名称' },
-  { align: 'center' as const, dataIndex: 'PlatforName', key: 'PlatforName', title: '产品名称' },
+  {
+    align: 'center' as const,
+    dataIndex: 'PlatforName',
+    key: 'PlatforName',
+    title: '产品名称',
+  },
   { align: 'center' as const, key: 'SelfBetGold', title: '投注金币' },
   { align: 'center' as const, key: 'SelfWinGold', title: '派送金币' },
   { align: 'center' as const, key: 'SelfOtherGold', title: '其它金币消耗' },

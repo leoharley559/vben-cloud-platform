@@ -20,15 +20,15 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   editPlatformTransferStateApi,
   fetchPlatformTransferListApi,
   manualPlatformTransferApi,
 } from '#/api/operationManage/platform-transfer';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
@@ -47,10 +47,10 @@ const LOGIN_ACCOUNT_RE = /^[a-zA-Z0-9]{4,20}$/;
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
 
-const canViewPage = computed(() => checkPermission(12210));
-const canExport = computed(() => checkPermission(12211));
-const canManual = computed(() => checkPermission(12212));
-const canChangeState = computed(() => checkPermission(12213));
+const canViewPage = computed(() => checkPermission(12_210));
+const canExport = computed(() => checkPermission(12_211));
+const canManual = computed(() => checkPermission(12_212));
+const canChangeState = computed(() => checkPermission(12_213));
 
 const defaultRange = getTodayRangeSeconds();
 const exportLoading = ref(false);
@@ -167,9 +167,9 @@ function formatGameAccount(
       ? '中心钱包'
       : formatVenueName(gameId, gameConfig.value);
   }
-  return transferType !== 1
-    ? '中心钱包'
-    : formatVenueName(gameId, gameConfig.value);
+  return transferType === 1
+    ? formatVenueName(gameId, gameConfig.value)
+    : '中心钱包';
 }
 
 function validateBeforeQuery() {
@@ -184,7 +184,12 @@ function validateBeforeQuery() {
 const gridOptions: VxeTableGridOptions<PlatformTransferItem> = {
   columns: [
     { type: 'seq', title: '序号', width: 60 },
-    { field: 'LoginAccount', minWidth: 130, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 130,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     {
       field: 'Type',
       formatter: ({ cellValue }) => formatTransferType(cellValue),
@@ -351,10 +356,10 @@ async function handleExport() {
       CurrPage: 1,
       IsExp: true,
       Page: 1,
-      PageSize: 99999,
+      PageSize: 99_999,
     });
     const rows = result.Items || [];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -495,22 +500,22 @@ onMounted(async () => {
             </Space.Compact>
           </div>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
-        </div>
-        <div class="query-filter-actions">
-          <Button :loading="loading" type="primary" @click="handleSearch">
-            查询
-          </Button>
-          <Button @click="handleReset">重置</Button>
-          <Button
-            v-if="canExport"
-            :loading="exportLoading"
-            @click="handleExport"
-          >
-            导出 Excel
-          </Button>
-        </div>
-      </template>
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
+          </div>
+          <div class="query-filter-actions">
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+            <Button
+              v-if="canExport"
+              :loading="exportLoading"
+              @click="handleExport"
+            >
+              导出 Excel
+            </Button>
+          </div>
+        </template>
 
         <Grid>
           <template #loginAccount="{ row }">

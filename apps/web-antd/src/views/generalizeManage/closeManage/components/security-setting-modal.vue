@@ -42,8 +42,21 @@ const confirmPassword = ref('');
 const privateCode = ref('');
 let timer: ReturnType<typeof setInterval> | undefined;
 
-const areaOptions = ['86', '1', '60', '62', '63', '65', '66', '84', '82', '853', '855', '886', '852']
-  .map((value) => ({ label: `+ ${value}`, value }));
+const areaOptions = [
+  '86',
+  '1',
+  '60',
+  '62',
+  '63',
+  '65',
+  '66',
+  '84',
+  '82',
+  '853',
+  '855',
+  '886',
+  '852',
+].map((value) => ({ label: `+ ${value}`, value }));
 
 function clearTimer() {
   if (timer) clearInterval(timer);
@@ -185,7 +198,11 @@ onUnmounted(clearTimer);
         <Form layout="vertical">
           <Form.Item v-if="!info.Phone" label="手机号" required>
             <div class="flex gap-2">
-              <Select v-model:value="areaCode" :options="areaOptions" class="w-28" />
+              <Select
+                v-model:value="areaCode"
+                :options="areaOptions"
+                class="w-28"
+              />
               <Input v-model:value="phone" placeholder="请输入手机号" />
             </div>
           </Form.Item>

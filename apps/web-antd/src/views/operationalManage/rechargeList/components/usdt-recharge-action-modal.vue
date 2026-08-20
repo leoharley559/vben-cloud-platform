@@ -15,7 +15,7 @@ defineOptions({ name: 'UsdtRechargeActionModal' });
 const props = defineProps<{
   mode: 'confirm' | 'review';
   open: boolean;
-  row: PlayerEasyRechargeItem | null;
+  row: null | PlayerEasyRechargeItem;
 }>();
 
 const emit = defineEmits<{
@@ -58,11 +58,7 @@ async function handleSubmit() {
       ConfirmAmount: confirmAmount.value,
       Id: props.row.Id,
     };
-    if (props.mode === 'confirm') {
-      await confirmUsdtRechargeApi(payload);
-    } else {
-      await reviewUsdtRechargeApi(payload);
-    }
+    await (props.mode === 'confirm' ? confirmUsdtRechargeApi(payload) : reviewUsdtRechargeApi(payload));
     closeModal();
     emit('success');
   } finally {

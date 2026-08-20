@@ -1,14 +1,16 @@
 <script lang="ts" setup>
+import type { BankCardImportRow } from '#/utils/risk-import';
+
 import { computed, ref, watch } from 'vue';
 
 import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Table,
   Upload,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -18,11 +20,7 @@ import {
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatBankCode } from '#/utils/bank-card';
-import {
-  downloadRiskImportTemplate,
-  parseBankCardRiskImportText,
-  type BankCardImportRow,
-} from '#/utils/risk-import';
+import { downloadRiskImportTemplate, parseBankCardRiskImportText } from '#/utils/risk-import';
 
 defineOptions({ name: 'BankCardRiskImportModal' });
 
@@ -67,8 +65,8 @@ const previewColumns = [
 ];
 
 function resolveOperator() {
-  const info = adminInfo.value as Record<string, unknown> | null;
-  const admin = info?.Admin as { Username?: string } | undefined;
+  const info = adminInfo.value as null | Record<string, unknown>;
+  const admin = info?.Admin as undefined | { Username?: string };
   return admin?.Username || String(info?.AdminName || info?.Account || '');
 }
 
@@ -132,7 +130,7 @@ async function loadPreview(rows: BankCardImportRow[]) {
       Type: 1,
     });
     const items = result?.Items || [];
-    previewRows.value = items.length
+    previewRows.value = items.length > 0
       ? items
       : rows.map((item) => ({
           BankCardNum: item.BankCardNum,
@@ -148,7 +146,7 @@ async function loadPreview(rows: BankCardImportRow[]) {
 }
 
 async function handleOk() {
-  if (!importedRows.value.length && !previewRows.value.length) {
+  if (importedRows.value.length === 0 && previewRows.value.length === 0) {
     message.warning('请先上传导入文件');
     return;
   }

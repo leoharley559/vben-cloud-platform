@@ -1,12 +1,13 @@
 <script lang="ts" setup>
 import type { ColumnsType } from 'ant-design-vue/es/table';
 
+import type { GroupDailyRow } from '#/utils/group-daily';
+
 import { computed, h } from 'vue';
 
 import { Table, Tooltip } from 'ant-design-vue';
 
 import { formatAmountFromCent } from '#/utils/format-amount';
-import type { GroupDailyRow } from '#/utils/group-daily';
 import { antTableScrollY } from '#/utils/table-height';
 
 defineOptions({ name: 'GroupDailyTable' });
@@ -15,10 +16,10 @@ const props = withDefaults(
   defineProps<{
     list: GroupDailyRow[];
     loading?: boolean;
-    /** true：显示单元代理人数；false：显示代理编号/名称（Level=4） */
-    showAgentCount?: boolean;
     /** 1 日报隐藏净输赢/场馆费用；2 月报显示 */
     reportType?: number;
+    /** true：显示单元代理人数；false：显示代理编号/名称（Level=4） */
+    showAgentCount?: boolean;
   }>(),
   {
     loading: false,
@@ -42,7 +43,7 @@ function percent(value: unknown) {
 
 function coloredMoney(value: unknown) {
   const num = Number(value || 0);
-  const color = num > 0 ? '#059669' : num < 0 ? '#ef4444' : undefined;
+  const color = num > 0 ? '#059669' : (num < 0 ? '#ef4444' : undefined);
   return h('span', { style: color ? { color } : undefined }, money(value));
 }
 

@@ -51,8 +51,7 @@ const currentRate = computed(() => {
     return '';
   }
   const rateItem = props.accountRate.find(
-    (item) =>
-      Number(item.PayType ?? item.Type) === Number(account.AccountType),
+    (item) => Number(item.PayType ?? item.Type) === Number(account.AccountType),
   );
   if (!rateItem) {
     return '未设置手续费';

@@ -17,13 +17,12 @@ export function validRemark(value: string, required: boolean) {
 }
 
 export function statusText(value?: number) {
-  return ({ 1: '待审核', 2: '已通过', 3: '已拒绝' })[Number(value)] || '-';
+  return { 1: '待审核', 2: '已通过', 3: '已拒绝' }[Number(value)] || '-';
 }
 
 export function statusColor(value?: number) {
   return (
-    ({ 1: 'processing', 2: 'success', 3: 'error' })[Number(value)] ||
-    'default'
+    { 1: 'processing', 2: 'success', 3: 'error' }[Number(value)] || 'default'
   );
 }
 

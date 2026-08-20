@@ -1,10 +1,11 @@
-import { requestClient } from '#/api/request';
-import type { CloudListResult } from '#/types/operation-manage';
 import type {
   EWalletFormPayload,
   EWalletListItem,
   EWalletListQuery,
 } from '#/types/e-wallet';
+import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 function normalizeList<T>(result: CloudListResult<T> | null | undefined) {
@@ -86,6 +87,6 @@ export function deleteEWalletApi(
  */
 export function fetchPlayerPayAcctListApi(playerId: number | string) {
   return requestClient.get<
-    EWalletListItem[] | CloudListResult<EWalletListItem>
+    CloudListResult<EWalletListItem> | EWalletListItem[]
   >(`/backend/playerwalletaccount/list/${playerId}`);
 }

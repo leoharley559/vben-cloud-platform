@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OngoingActivityRow } from './activity-shared';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, ref } from 'vue';
@@ -12,8 +14,6 @@ import {
   Space,
   Tag,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -21,25 +21,17 @@ import {
   fetchActivityListApi,
   offshelfActivityApi,
 } from '#/api/operationManage/activity';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
-import {
-  ACTIVITY_FILTER_TYPE_OPTIONS,
-  type OngoingActivityRow,
-  buildUnixRangeQuery,
-  computeOngoingDisplayStatus,
-  formatActivityTimeCell,
-  formatActivityType,
-  formatOngoingDisplayStatus,
-  formatShowTimeCell,
-} from './activity-shared';
+import { ACTIVITY_FILTER_TYPE_OPTIONS, buildUnixRangeQuery, computeOngoingDisplayStatus, formatActivityTimeCell, formatActivityType, formatOngoingDisplayStatus, formatShowTimeCell } from './activity-shared';
 
 defineOptions({ name: 'ActivityOngoingPanel' });
 
 const { checkPermission } = useCloudPermission();
-const canViewList = computed(() => checkPermission(10305));
-const canOffshelf = computed(() => checkPermission(10307));
+const canViewList = computed(() => checkPermission(10_305));
+const canOffshelf = computed(() => checkPermission(10_307));
 
 const filterId = ref('');
 const filterName = ref('');
@@ -199,47 +191,46 @@ function handleOffshelf(row: OngoingActivityRow) {
 
     <template v-else>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterId"
-            allow-clear
-            placeholder="请输入活动ID"
-          >
-            <template #addonBefore>活动ID</template>
-          </Input>
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterId"
+              allow-clear
+              placeholder="请输入活动ID"
+            >
+              <template #addonBefore>活动ID</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterName"
+              allow-clear
+              placeholder="请输入活动名称"
+            >
+              <template #addonBefore>活动名称</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">活动类型</span>
+            <Select
+              v-model:value="filterType"
+              allow-clear
+              :options="typeOptions"
+              placeholder="请选择活动类型"
+            />
+          </Space.Compact>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="showTimeRange" />
+          </div>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="activityTimeRange" />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterName"
-            allow-clear
-            placeholder="请输入活动名称"
-          >
-            <template #addonBefore>活动名称</template>
-          </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">活动类型</span>
-          <Select
-            v-model:value="filterType"
-            allow-clear
-           
-            :options="typeOptions"
-            placeholder="请选择活动类型"
-          />
-        </Space.Compact>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="showTimeRange" />
-        </div>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="activityTimeRange" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <Grid>
         <template #displayStatus="{ row }">

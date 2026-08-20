@@ -154,10 +154,9 @@ export function updatePhoneBlockSettingApi(data: Record<string, unknown>) {
  * @see views/gameManage/systemSetting
  */
 export function fetchSportsTutorialListApi(query: Record<string, unknown>) {
-  return requestClient.get<SystemListResult>(
-    '/backend/sportsconfig/list',
-    { params: trimSpace({ ...query, ConfigType: 1 }) },
-  );
+  return requestClient.get<SystemListResult>('/backend/sportsconfig/list', {
+    params: trimSpace({ ...query, ConfigType: 1 }),
+  });
 }
 
 /**
@@ -216,9 +215,10 @@ export function sortSportsTutorialApi(data: {
  * @see views/gameManage/systemSetting
  */
 export function fetchExchangeRateListApi(query: Record<string, unknown>) {
-  return requestClient.get<
-    Record<string, unknown>[] | SystemListResult
-  >('/backend/operation/exchangeratesetting', { params: trimSpace(query) });
+  return requestClient.get<Record<string, unknown>[] | SystemListResult>(
+    '/backend/operation/exchangeratesetting',
+    { params: trimSpace(query) },
+  );
 }
 
 /**
@@ -251,9 +251,7 @@ export function updateExchangeRateApi(data: Record<string, unknown>) {
  * @see views/gameManage/systemSetting
  */
 export function deleteExchangeRateApi(id: number | string) {
-  return requestClient.delete(
-    `/backend/operation/exchangeratesetting/${id}`,
-  );
+  return requestClient.delete(`/backend/operation/exchangeratesetting/${id}`);
 }
 
 /**
@@ -264,9 +262,10 @@ export function deleteExchangeRateApi(id: number | string) {
  * @see views/gameManage/systemSetting
  */
 export function fetchSystemTemplateListApi(query: Record<string, unknown>) {
-  return requestClient.get<
-    Record<string, unknown>[] | SystemListResult
-  >('/backend/netcashconfig/list', { params: trimSpace(query) });
+  return requestClient.get<Record<string, unknown>[] | SystemListResult>(
+    '/backend/netcashconfig/list',
+    { params: trimSpace(query) },
+  );
 }
 
 /**
@@ -277,10 +276,7 @@ export function fetchSystemTemplateListApi(query: Record<string, unknown>) {
  * @see views/gameManage/systemSetting
  */
 export function createSystemTemplateApi(data: Record<string, unknown>) {
-  return requestClient.post(
-    '/backend/netcashconfig/netcashconfigadd',
-    data,
-  );
+  return requestClient.post('/backend/netcashconfig/netcashconfigadd', data);
 }
 
 /**
@@ -291,10 +287,7 @@ export function createSystemTemplateApi(data: Record<string, unknown>) {
  * @see views/gameManage/systemSetting
  */
 export function updateSystemTemplateApi(data: Record<string, unknown>) {
-  return requestClient.put(
-    '/backend/netcashconfig/netcashconfigedit',
-    data,
-  );
+  return requestClient.put('/backend/netcashconfig/netcashconfigedit', data);
 }
 
 /**
@@ -305,8 +298,5 @@ export function updateSystemTemplateApi(data: Record<string, unknown>) {
  * @see views/gameManage/systemSetting
  */
 export function deleteSystemTemplateApi(id: number | string) {
-  return requestClient.delete(
-    `/backend/netcashconfig/netcashconfigdel/${id}`,
-  );
+  return requestClient.delete(`/backend/netcashconfig/netcashconfigdel/${id}`);
 }
-

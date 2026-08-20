@@ -3,15 +3,15 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, reactive, ref } from 'vue';
 
-import { Button, Form, Input, Modal, message } from 'ant-design-vue';
+import { Button, Form, Input, message, Modal } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getUserInfoApi } from '#/api';
 import {
   createGoldRefundApi,
   createGoldSellApi,
   fetchGoldSellListApi,
 } from '#/api/systemManage/extra';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
@@ -46,17 +46,17 @@ const formModel = reactive({
   Note: '',
 });
 
-const canViewTable = computed(() => checkPermission(11434));
-const canSell = computed(() => checkPermission(11435));
-const canRefund = computed(() => checkPermission(11436));
-const canLookRecord = computed(() => checkPermission(11425));
+const canViewTable = computed(() => checkPermission(11_434));
+const canSell = computed(() => checkPermission(11_435));
+const canRefund = computed(() => checkPermission(11_436));
+const canLookRecord = computed(() => checkPermission(11_425));
 
 const myAccountScores = computed(() => {
   const account = adminInfo.value?.Account as
-    | { Scores?: number | string }
     | number
     | string
-    | undefined;
+    | undefined
+    | { Scores?: number | string };
   if (account && typeof account === 'object') {
     return Number(account.Scores || 0);
   }
@@ -64,7 +64,7 @@ const myAccountScores = computed(() => {
 });
 
 const operatorName = computed(() => {
-  const admin = adminInfo.value?.Admin as { Username?: string } | undefined;
+  const admin = adminInfo.value?.Admin as undefined | { Username?: string };
   if (admin?.Username) return String(admin.Username);
   const name = adminInfo.value?.AdminName;
   if (name !== undefined && name !== null && name !== '') {
@@ -257,24 +257,24 @@ function handleLookRecord(row: SellRow) {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterUsername"
-          allow-clear
-          class="!w-[260px]"
-          @press-enter="handleSearch"
-          placeholder="请输入包网账号"
-        >
-          <template #addonBefore>包网账号</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterUsername"
+            allow-clear
+            class="!w-[260px]"
+            @press-enter="handleSearch"
+            placeholder="请输入包网账号"
+          >
+            <template #addonBefore>包网账号</template>
+          </Input>
+        </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
+          <Button @click="handleReset">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid v-if="canViewTable">
       <template #action="{ row }">

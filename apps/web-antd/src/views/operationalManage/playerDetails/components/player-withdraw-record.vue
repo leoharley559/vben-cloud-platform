@@ -5,12 +5,11 @@ import type { WithdrawListItem } from '#/types/operation-manage';
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { Button, Input, Select, Space, Tag } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchWithdrawListApi } from '#/api/operationManage/withdraw';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchWithdrawListApi } from '#/api/operationManage/withdraw';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -196,43 +195,43 @@ onMounted(() => {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select
-            v-model:value="filterWithdrawStatus"
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
             allow-clear
-            :options="WITHDRAW_STATUS_OPTIONS"
-            placeholder="请选择状态"
-          />
-        </Space.Compact>
-      </div>
+            @press-enter="handleSearch"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
 
-      <div class="query-filter-wide">
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="filterWithdrawStatus"
+              allow-clear
+              :options="WITHDRAW_STATUS_OPTIONS"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <div class="mb-3 text-sm">
       兑换总额：

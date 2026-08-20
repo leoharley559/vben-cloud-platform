@@ -7,26 +7,26 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   confirmRechargeEmptyOrderApi,
   deleteRechargeBlankOrderApi,
   fetchRechargeListApi,
 } from '#/api/operationManage/recharge';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getLast3CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -62,18 +62,18 @@ const serviceAccount = computed(() => {
   return String(admin?.Username || operatorName.value || '');
 });
 
-const canManualReview = computed(() => checkPermission(11643));
-const canSecondReview = computed(() => checkPermission(11644));
-const canConfirmEmpty = computed(() => checkPermission(10276));
-const canDeleteEmpty = computed(() => checkPermission(10277));
-const canReplaceOrder = computed(() => checkPermission(10275));
-const canBlankOrder = computed(() => checkPermission(10278));
+const canManualReview = computed(() => checkPermission(11_643));
+const canSecondReview = computed(() => checkPermission(11_644));
+const canConfirmEmpty = computed(() => checkPermission(10_276));
+const canDeleteEmpty = computed(() => checkPermission(10_277));
+const canReplaceOrder = computed(() => checkPermission(10_275));
+const canBlankOrder = computed(() => checkPermission(10_278));
 
 const reviewOpen = ref(false);
 const reviewMode = ref<'manual' | 'second'>('manual');
-const reviewRow = ref<RechargeListItem | null>(null);
+const reviewRow = ref<null | RechargeListItem>(null);
 const replaceOpen = ref(false);
-const replaceRow = ref<RechargeListItem | null>(null);
+const replaceRow = ref<null | RechargeListItem>(null);
 const blankOpen = ref(false);
 
 /** 列表上方统计，对齐旧站 aisleRecharge Total */
@@ -243,8 +243,7 @@ const gridOptions: VxeTableGridOptions<RechargeListItem> = {
         let sortParam = '';
         if (sortField && sortOrder) {
           // 对齐旧站 aisleRecharge：升序 field，降序 -field（`field desc` 会导致 Items=null）
-          sortParam =
-            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
+          sortParam = sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
 
         const result = await fetchRechargeListApi({
@@ -353,111 +352,119 @@ defineExpose({
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPlayerId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入玩家ID"
-        >
-          <template #addonBefore>玩家ID</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">产品</span>
-          <Select
-            v-model:value="filterPackageId"
-            :options="
-              packageOptions.map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-            "
-            placeholder="请选择产品"
-          />
-        </Space.Compact>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">渠道</span>
-          <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
-        </Space.Compact>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterNickName"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入通道名称"
-        >
-          <template #addonBefore>通道名称</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select
-            v-model:value="filterStatus"
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
             allow-clear
-            :options="RECHARGE_STATUS_OPTIONS"
-            placeholder="请选择状态"
-          />
-        </Space.Compact>
-      </div>
+            @press-enter="handleSearch"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">数据类型</span>
-          <Select
-            v-model:value="filterDataSearchType"
-            :options="memberTypeOptions"
-            placeholder="请选择数据类型"
-          />
-        </Space.Compact>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
 
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPlayerId"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入玩家ID"
+          >
+            <template #addonBefore>玩家ID</template>
+          </Input>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">产品</span>
+            <Select
+              v-model:value="filterPackageId"
+              :options="
+                packageOptions.map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+              "
+              placeholder="请选择产品"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">渠道</span>
+            <ChannelSelect
+              v-model="filterChannelIds"
+              placeholder="请输入渠道号"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterNickName"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入通道名称"
+          >
+            <template #addonBefore>通道名称</template>
+          </Input>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="filterStatus"
+              allow-clear
+              :options="RECHARGE_STATUS_OPTIONS"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">数据类型</span>
+            <Select
+              v-model:value="filterDataSearchType"
+              :options="memberTypeOptions"
+              placeholder="请选择数据类型"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="创建时间"
+          />
         </div>
         <div class="query-filter-actions">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button v-if="canBlankOrder" @click="blankOpen = true">补空单</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+            <Button v-if="canBlankOrder" @click="blankOpen = true">
+补空单
+</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 

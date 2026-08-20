@@ -946,9 +946,9 @@ onMounted(() => {
                   placeholder="模板名称"
                   @press-enter="saveTemplate"
                 />
-                <Button :loading="saving" @click="saveTemplate"
-                  >收藏模板</Button
-                >
+                <Button :loading="saving" @click="saveTemplate">
+收藏模板
+</Button>
               </div>
             </Form.Item>
             <Form.Item class="md:col-span-2" label="会员层级">

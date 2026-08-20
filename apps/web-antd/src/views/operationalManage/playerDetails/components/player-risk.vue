@@ -9,11 +9,11 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import { Card, Result, Tag } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchPlayerRiskAnalysisApi,
   fetchPlayerRiskAnalysisGameApi,
 } from '#/api/operationManage/player-detail-extra';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -32,7 +32,7 @@ const props = defineProps<{
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
 
-const canView = computed(() => checkPermission(12377));
+const canView = computed(() => checkPermission(12_377));
 const loading = ref(false);
 
 function formatBehaviorType(type?: number) {

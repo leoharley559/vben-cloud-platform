@@ -4,21 +4,20 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import { onMounted, ref } from 'vue';
 
 import { Button, Input, Select, Space } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchRewardProductListApi,
   fetchRewardProductTagListApi,
 } from '#/api/operationManage/reward-mall';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 import GoodsDetailsModal from './goods-details-modal.vue';
 import GoodsUpsertModal from './goods-upsert-modal.vue';
 import {
-  PRODUCT_TYPE_OPTIONS,
   formatEffectiveTime,
+  PRODUCT_TYPE_OPTIONS,
   resolveProductDesc,
   resolveProductName,
 } from './reward-goods-shared';
@@ -180,45 +179,43 @@ function openDetails(row: GoodsRow) {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterName"
-          allow-clear
-          placeholder="请输入商品名称"
-        >
-          <template #addonBefore>商品名称</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">商品类型</span>
-        <Select
-          v-model:value="filterType"
-          allow-clear
-         
-          :options="PRODUCT_TYPE_OPTIONS"
-          placeholder="请选择商品类型"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">商品页签</span>
-        <Select
-          v-model:value="filterTag"
-          allow-clear
-         
-          :options="tagOptions"
-          placeholder="请选择商品页签"
-        />
-      </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterName"
+            allow-clear
+            placeholder="请输入商品名称"
+          >
+            <template #addonBefore>商品名称</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">商品类型</span>
+          <Select
+            v-model:value="filterType"
+            allow-clear
+            :options="PRODUCT_TYPE_OPTIONS"
+            placeholder="请选择商品类型"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">商品页签</span>
+          <Select
+            v-model:value="filterTag"
+            allow-clear
+            :options="tagOptions"
+            placeholder="请选择商品页签"
+          />
+        </Space.Compact>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
+          <Button @click="handleReset">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #name="{ row }">

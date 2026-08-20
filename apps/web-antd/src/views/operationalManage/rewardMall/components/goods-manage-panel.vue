@@ -39,7 +39,7 @@ onMounted(() => {
     <GoodsActivePanel v-if="activeSubTab === 'active'" />
     <GoodsHistoryPanel v-else-if="activeSubTab === 'history'" />
 
-    <div v-if="!subTabs.length" class="py-8 text-center text-gray-400">
+    <div v-if="subTabs.length === 0" class="py-8 text-center text-gray-400">
       无商品设置查看权限
     </div>
   </div>

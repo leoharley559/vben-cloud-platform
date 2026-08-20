@@ -116,9 +116,9 @@ const packageCapacity = computed(() => {
   const key =
     accountLevel.value === 3
       ? 'PackageNumAccountLevelThree'
-      : accountLevel.value === 2
+      : (accountLevel.value === 2
         ? 'PackageNumAccountLevelTwo'
-        : 'PackageNumAccountLevelOne';
+        : 'PackageNumAccountLevelOne');
   const item = configs.find(
     (config) =>
       config &&
@@ -396,7 +396,7 @@ const gridOptions: VxeTableGridOptions<PackageListItem> = {
             Page: page.currentPage,
             PageSize: page.pageSize,
           }),
-          rebateSchemes.value.length
+          rebateSchemes.value.length > 0
             ? Promise.resolve(null)
             : fetchBackWaterSchemeListApi({}).then((schemes) => {
                 const items = Array.isArray(schemes)

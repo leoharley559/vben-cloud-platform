@@ -178,13 +178,13 @@ const vipOptions = computed(() => {
 
 const rechargeOptions = computed(() => {
   const list = (
-    projectConfig.value as {
+    projectConfig.value as null | {
       RechargeTypeList?: Array<{
         IsOpen?: boolean | number;
         Key?: OptionValue;
         Name?: string;
       }>;
-    } | null
+    }
   )?.RechargeTypeList;
   return [
     { label: '代理', value: -1 },
@@ -199,8 +199,8 @@ const rechargeOptions = computed(() => {
 
 const currencyOptions = computed(() => {
   const parent = projectConfig.value?.ParentInfo as
-    | { Currency?: string }
-    | undefined;
+    | undefined
+    | { Currency?: string };
   return [
     { label: parent?.Currency || '法币', value: 1 },
     { label: 'USDT', value: 2 },
@@ -260,7 +260,7 @@ function optionNames(
 }
 
 function formatTemplate(template: string, values: unknown[]) {
-  return template.replace(/\{(\d+)\}/g, (_, index: string) =>
+  return template.replaceAll(/\{(\d+)\}/g, (_, index: string) =>
     String(values[Number(index)] ?? '-'),
   );
 }
@@ -336,7 +336,7 @@ async function loadRules() {
     const items = result || [];
     rules.value = items
       .map((item) => ({ ...item, Setting: parseSettings(item.Setting) }))
-      .sort((a, b) => Number(a.Index || 0) - Number(b.Index || 0));
+      .toSorted((a, b) => Number(a.Index || 0) - Number(b.Index || 0));
   } finally {
     loading.value = false;
   }
@@ -453,7 +453,7 @@ function openEditor(row: WithdrawRiskRule) {
 function validateRule(rule: RiskEditRule) {
   if (!String(rule.Abbr || '').trim()) return '请输入规则简称';
   if (!rule.Index || Number(rule.Index) < 1) return '派单优先级必须大于 0';
-  if (usesMultiSelect.value && !(rule.Str as OptionValue[]).length) {
+  if (usesMultiSelect.value && (rule.Str as OptionValue[]).length === 0) {
     return '请至少选择一个条件参数';
   }
   if (
@@ -477,7 +477,7 @@ function validateRule(rule: RiskEditRule) {
 function serializeRule(rule: RiskEditRule): WithdrawRiskRule {
   return {
     ...clone(rule),
-    Setting: rule.Setting.length ? JSON.stringify(rule.Setting) : '',
+    Setting: rule.Setting.length > 0 ? JSON.stringify(rule.Setting) : '',
     Str: Array.isArray(rule.Str) ? rule.Str.join(',') : rule.Str,
   };
 }

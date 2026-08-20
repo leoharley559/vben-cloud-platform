@@ -17,6 +17,7 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   createWhiteListApi,
   createWhiteListUserApi,
@@ -30,7 +31,6 @@ import {
   updateWhiteListUserApi,
   updateWhiteListUserRemarkApi,
 } from '#/api/operationManage/white-list';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { createRequestHash } from '#/utils/crypto';
@@ -118,7 +118,7 @@ const remarkForm = reactive({
 });
 
 function getAdminMeta() {
-  const info = cloudStore.adminInfo as Record<string, unknown> | null;
+  const info = cloudStore.adminInfo as null | Record<string, unknown>;
   const admin = (info?.Admin as Record<string, unknown>) || info || {};
   return {
     AgentId:
@@ -128,13 +128,16 @@ function getAdminMeta() {
 }
 
 function displayUserName(row: WhiteRow) {
-  return String(row.WhiteUsername || row.UserName || row.Name || '') || '管理员';
+  return (
+    String(row.WhiteUsername || row.UserName || row.Name || '') || '管理员'
+  );
 }
 
 function displayCreator(row: WhiteRow) {
-  return String(
-    row.AddUserName || row.AdminName || row.AgentIdName || '',
-  ) || '管理员';
+  return (
+    String(row.AddUserName || row.AdminName || row.AgentIdName || '') ||
+    '管理员'
+  );
 }
 
 function buildQuery(page: { currentPage: number; pageSize: number }) {
@@ -346,8 +349,7 @@ async function submitCreate() {
 
   submitting.value = true;
   try {
-    if (isIp.value) {
-      await createWhiteListApi({
+    await (isIp.value ? createWhiteListApi({
         AgentId: meta.AgentId,
         ExpirationTime: String(form.ExpirationTime!.unix()),
         Hash: createRequestHash(),
@@ -355,15 +357,12 @@ async function submitCreate() {
         Remark: form.Remark,
         WhiteDomain: meta.WhiteDomain,
         WhiteIp: form.WhiteIp.trim(),
-      });
-    } else {
-      await createWhiteListUserApi({
+      }) : createWhiteListUserApi({
         AgentId: meta.AgentId,
         Hash: createRequestHash(),
         Name: form.Name.trim(),
         Remark: form.Remark,
-      });
-    }
+      }));
     message.success('新增成功');
     modalOpen.value = false;
     await gridApi.reload();
@@ -393,11 +392,7 @@ function handleToggle(row: WhiteRow, checked: boolean | number | string) {
     onOk: async () => {
       actionId.value = row.Id;
       try {
-        if (isIp.value) {
-          await updateWhiteListApi({ Id: row.Id, Status: next });
-        } else {
-          await updateWhiteListUserApi({ Id: row.Id, Status: next });
-        }
+        await (isIp.value ? updateWhiteListApi({ Id: row.Id, Status: next }) : updateWhiteListUserApi({ Id: row.Id, Status: next }));
         row.Status = next;
         message.success('状态已更新');
         emit('changed');
@@ -420,17 +415,13 @@ function openRemark(row: WhiteRow) {
 async function submitRemark() {
   submitting.value = true;
   try {
-    if (isIp.value) {
-      await updateWhiteListRemarkApi({
+    await (isIp.value ? updateWhiteListRemarkApi({
         Id: remarkForm.Id,
         Remark: remarkForm.Remark,
-      });
-    } else {
-      await updateWhiteListUserRemarkApi({
+      }) : updateWhiteListUserRemarkApi({
         Id: remarkForm.Id,
         Remark: remarkForm.Remark,
-      });
-    }
+      }));
     message.success('备注已更新');
     remarkOpen.value = false;
     await gridApi.reload();
@@ -447,11 +438,7 @@ function handleDelete(row: WhiteRow) {
     onOk: async () => {
       actionId.value = row.Id;
       try {
-        if (isIp.value) {
-          await deleteWhiteListApi(row.Id);
-        } else {
-          await deleteWhiteListUserApi(row.Id);
-        }
+        await (isIp.value ? deleteWhiteListApi(row.Id) : deleteWhiteListUserApi(row.Id));
         message.success('删除成功');
         await gridApi.reload();
         emit('changed');
@@ -503,21 +490,32 @@ onMounted(() => {
 <template>
   <div v-if="canViewList">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <template v-if="isIp">
-        <div class="flex flex-col gap-1">
+      <div class="ops-query-filters">
+        <template v-if="isIp">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterWhiteIp"
+              allow-clear
+              @press-enter="handleSearch"
+              placeholder="请输入IP地址"
+            >
+              <template #addonBefore>IP地址</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterWhiteUsername"
+              allow-clear
+              @press-enter="handleSearch"
+              placeholder="请输入使用者"
+            >
+              <template #addonBefore>使用者</template>
+            </Input>
+          </div>
+        </template>
+        <div v-else class="flex flex-col gap-1">
           <Input
-            v-model:value="filterWhiteIp"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入IP地址"
-          >
-            <template #addonBefore>IP地址</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterWhiteUsername"
+            v-model:value="filterUserName"
             allow-clear
             @press-enter="handleSearch"
             placeholder="请输入使用者"
@@ -525,41 +523,29 @@ onMounted(() => {
             <template #addonBefore>使用者</template>
           </Input>
         </div>
-      </template>
-      <div v-else class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterUserName"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入使用者"
-        >
-          <template #addonBefore>使用者</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select
-            v-model:value="filterStatus"
-            allow-clear
-            :options="statusOptions"
-            placeholder="请选择状态"
-          />
-        </Space.Compact>
-      
-      </div>
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="filterStatus"
+              allow-clear
+              :options="statusOptions"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
+        </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
-      <Button
-        v-if="(isIp && canCreateIp) || (!isIp && canCreateUser)"
-        @click="openCreate"
-      >
-        新增
-      </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button
+            v-if="(isIp && canCreateIp) || (!isIp && canCreateUser)"
+            @click="openCreate"
+          >
+            新增
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
     <Grid>
       <template #status="{ row }">
         <Switch

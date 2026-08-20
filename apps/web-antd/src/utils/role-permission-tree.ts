@@ -1,5 +1,6 @@
 import type { CloudNavItem } from '#/types/cloud-platform';
 import type { CloudSubMenuItem } from '#/types/system-manage';
+
 import { translateMenuTitle } from '#/utils/menu-i18n';
 
 export interface RoleTreeNode {
@@ -115,22 +116,22 @@ export function splitCheckedRoleKeys(keys: Array<number | string>) {
 }
 
 export function mergeRoleCheckedKeys(
-  menuIds?: string | Array<number | string>,
-  subMenuIds?: string | Array<number | string>,
+  menuIds?: Array<number | string> | string,
+  subMenuIds?: Array<number | string> | string,
 ) {
   const menuList = Array.isArray(menuIds)
     ? menuIds
-    : menuIds
+    : (menuIds
       ? String(menuIds).split(',')
-      : [];
+      : []);
   const subMenuList = Array.isArray(subMenuIds)
     ? subMenuIds
-    : subMenuIds
+    : (subMenuIds
       ? String(subMenuIds).split(',')
-      : [];
+      : []);
 
   return [...menuList, ...subMenuList]
-    .map((item) => Number(item))
+    .map(Number)
     .filter((item) => !Number.isNaN(item) && item !== 0);
 }
 

@@ -150,7 +150,9 @@ const venueOptions = [
 ];
 const languageGroups = computed(() => {
   const groups = projectConfig.value?.LangGroup || [];
-  return groups.length > 0 ? groups : [{ Default: true, Id: 0, Name: '默认语言' }];
+  return groups.length > 0
+    ? groups
+    : [{ Default: true, Id: 0, Name: '默认语言' }];
 });
 const defaultLanguageId = computed(
   () =>
@@ -233,7 +235,12 @@ function buildColumns(): VxeTableGridOptions<OtherRow>['columns'] {
         title: '跳转类型',
         width: 110,
       },
-      { field: 'Jump', minWidth: 130, showOverflow: 'tooltip', title: '跳转参数' },
+      {
+        field: 'Jump',
+        minWidth: 130,
+        showOverflow: 'tooltip',
+        title: '跳转参数',
+      },
     );
   } else if (subtype.value === 2) {
     if (displayMode.value === 1) {
@@ -255,8 +262,18 @@ function buildColumns(): VxeTableGridOptions<OtherRow>['columns'] {
       );
     } else {
       result.push(
-        { field: 'UrlApp', minWidth: 260, showOverflow: 'tooltip', title: 'APP 地址' },
-        { field: 'UrlWeb', minWidth: 260, showOverflow: 'tooltip', title: 'PC 地址' },
+        {
+          field: 'UrlApp',
+          minWidth: 260,
+          showOverflow: 'tooltip',
+          title: 'APP 地址',
+        },
+        {
+          field: 'UrlWeb',
+          minWidth: 260,
+          showOverflow: 'tooltip',
+          title: 'PC 地址',
+        },
       );
     }
   } else {
@@ -274,7 +291,12 @@ function buildColumns(): VxeTableGridOptions<OtherRow>['columns'] {
         title: '跳转类型',
         width: 110,
       },
-      { field: 'Jump', minWidth: 160, showOverflow: 'tooltip', title: '跳转参数' },
+      {
+        field: 'Jump',
+        minWidth: 160,
+        showOverflow: 'tooltip',
+        title: '跳转参数',
+      },
     );
     if ([3, 4].includes(subtype.value)) {
       result.push(
@@ -284,7 +306,12 @@ function buildColumns(): VxeTableGridOptions<OtherRow>['columns'] {
           showOverflow: 'tooltip',
           title: '活动标题',
         },
-        { field: 'Desc', minWidth: 140, showOverflow: 'tooltip', title: '描述内容1' },
+        {
+          field: 'Desc',
+          minWidth: 140,
+          showOverflow: 'tooltip',
+          title: '描述内容1',
+        },
       );
       if (subtype.value === 4) {
         result.push({
@@ -351,9 +378,8 @@ async function loadProgrammes(preferredId?: number | string) {
     await fetchAdvertisementProgrammesApi({ Type: 4 }),
   ) as ProgrammeRow[];
   activeProgrammeId.value =
-    programmes.value.find(
-      (item) => String(item.Id) === String(preferredId),
-    )?.Id ||
+    programmes.value.find((item) => String(item.Id) === String(preferredId))
+      ?.Id ||
     programmes.value[0]?.Id ||
     '';
   syncProgrammeConfig();
@@ -414,7 +440,9 @@ async function saveProgrammeConfig(actionText = '操作成功') {
 
 function openProgramme(edit = false) {
   programmeEditing.value = edit;
-  programmeName.value = edit ? String(currentProgramme.value?.TemplateName || '') : '';
+  programmeName.value = edit
+    ? String(currentProgramme.value?.TemplateName || '')
+    : '';
   programmeVisible.value = true;
 }
 
@@ -430,7 +458,9 @@ async function saveProgramme() {
       TemplateName: programmeName.value.trim(),
       Type: 4,
     };
-    await (programmeEditing.value ? updateAdvertisementProgrammeApi(payload) : createAdvertisementProgrammeApi(payload));
+    await (programmeEditing.value
+      ? updateAdvertisementProgrammeApi(payload)
+      : createAdvertisementProgrammeApi(payload));
     programmeVisible.value = false;
     message.success(programmeEditing.value ? '编辑成功' : '新增成功');
     await loadProgrammes();
@@ -533,10 +563,7 @@ async function saveRow() {
       message.warning('请完整填写场馆标题');
       return;
     }
-    if (
-      String(form.Title).length > 8 ||
-      String(form.SubTitle).length > 15
-    ) {
+    if (String(form.Title).length > 8 || String(form.SubTitle).length > 15) {
       message.warning('场馆主标题最多 8 字，副标题最多 15 字');
       return;
     }
@@ -561,7 +588,9 @@ async function saveRow() {
     delete payload.IntroTexts;
     delete payload.IsRebate;
     delete payload.RebatePercent;
-    await (editing.value ? updateVenueRebateApi(payload) : createVenueRebateApi(payload));
+    await (editing.value
+      ? updateVenueRebateApi(payload)
+      : createVenueRebateApi(payload));
   } else {
     const current = languageData[String(defaultLanguageId.value)];
     if (!current?.Title) {
@@ -577,7 +606,9 @@ async function saveRow() {
       TemplateId: activeProgrammeId.value,
       Type: 4,
     };
-    await (editing.value ? updateAdvertisementApi(payload) : createAdvertisementApi(payload));
+    await (editing.value
+      ? updateAdvertisementApi(payload)
+      : createAdvertisementApi(payload));
   }
   formVisible.value = false;
   message.success(editing.value ? '编辑成功' : '新增成功');
@@ -590,7 +621,9 @@ function removeRow(source: OtherRow | Record<string, unknown>) {
     content: '确认删除？',
     title: '提示',
     onOk: async () => {
-      await (subtype.value === 7 ? deleteVenueRebateApi(row.Id) : deleteAdvertisementApi(row.Id));
+      await (subtype.value === 7
+        ? deleteVenueRebateApi(row.Id)
+        : deleteAdvertisementApi(row.Id));
       message.success('删除成功');
       await loadRows();
     },
@@ -610,12 +643,14 @@ function recover() {
     content: '确认恢复系统预设？',
     title: '提示',
     onOk: async () => {
-      await (subtype.value === 7 ? recoverVenueRebateApi({
-          TemplateId: activeProgrammeId.value,
-        }) : recoverAdvertisementProgrammeApi({
-          // 旧站仅传 Id（首个方案），不传 SubType
-          Id: programmes.value[0]?.Id,
-        }));
+      await (subtype.value === 7
+        ? recoverVenueRebateApi({
+            TemplateId: activeProgrammeId.value,
+          })
+        : recoverAdvertisementProgrammeApi({
+            // 旧站仅传 Id（首个方案），不传 SubType
+            Id: programmes.value[0]?.Id,
+          }));
       message.success('操作成功');
       await loadRows();
     },
@@ -623,7 +658,10 @@ function recover() {
 }
 
 function venueName(value: unknown) {
-  return venueOptions.find((item) => String(item.value) === String(value))?.label || value;
+  return (
+    venueOptions.find((item) => String(item.value) === String(value))?.label ||
+    value
+  );
 }
 
 function rowImage(
@@ -675,7 +713,9 @@ onMounted(loadProgrammes);
           v-for="item in programmes"
           :key="item.Id"
           :type="
-            String(activeProgrammeId) === String(item.Id) ? 'primary' : 'default'
+            String(activeProgrammeId) === String(item.Id)
+              ? 'primary'
+              : 'default'
           "
           @click="selectProgramme(item.Id)"
         >
@@ -706,9 +746,7 @@ onMounted(loadProgrammes);
           <Button
             v-if="checkPermission(11_234)"
             danger
-            :disabled="
-              String(activeProgrammeId) === String(programmes[0]?.Id)
-            "
+            :disabled="String(activeProgrammeId) === String(programmes[0]?.Id)"
             size="small"
             @click="removeProgramme"
           >
@@ -718,44 +756,42 @@ onMounted(loadProgrammes);
       </div>
     </Card>
 
-      <div class="header-row mb-3">
-        <div>
-          <Radio.Group
-            v-model:value="subtype"
-            :options="subtypeOptions"
-            @change="changeSubtype"
-          />
-          <Space v-if="[1, 2].includes(subtype)">
-            <template v-if="subtype === 2">
-              <span>显示模式：</span>
-              <Select
-                v-model:value="displayMode"
-                :options="[
-                  { label: '图片模式', value: 1 },
-                  { label: '链接模式', value: 2 },
-                ]"
-                style="width: 120px"
-              />
-              <Button @click="saveProgrammeConfig('更换成功')">更换</Button>
-            </template>
-            <span>开关：</span>
-            <Switch
-              v-model:checked="schemeEnabled"
-              @change="
-                saveProgrammeConfig(schemeEnabled ? '已开启' : '已关闭')
-              "
+    <div class="header-row mb-3">
+      <div>
+        <Radio.Group
+          v-model:value="subtype"
+          :options="subtypeOptions"
+          @change="changeSubtype"
+        />
+        <Space v-if="[1, 2].includes(subtype)">
+          <template v-if="subtype === 2">
+            <span>显示模式：</span>
+            <Select
+              v-model:value="displayMode"
+              :options="[
+                { label: '图片模式', value: 1 },
+                { label: '链接模式', value: 2 },
+              ]"
+              style="width: 120px"
             />
-          </Space>
-        </div>
-        <Space>
-          <Button type="primary" @click="openForm()">
-            {{ subtype === 1 ? '新增广告图' : '新增' }}
-          </Button>
-          <Button v-if="checkPermission(11_235)" @click="recover">
-            恢复系统预设
-          </Button>
+            <Button @click="saveProgrammeConfig('更换成功')">更换</Button>
+          </template>
+          <span>开关：</span>
+          <Switch
+            v-model:checked="schemeEnabled"
+            @change="saveProgrammeConfig(schemeEnabled ? '已开启' : '已关闭')"
+          />
         </Space>
       </div>
+      <Space>
+        <Button type="primary" @click="openForm()">
+          {{ subtype === 1 ? '新增广告图' : '新增' }}
+        </Button>
+        <Button v-if="checkPermission(11_235)" @click="recover">
+          恢复系统预设
+        </Button>
+      </Space>
+    </div>
 
     <Card
       v-if="subtype === 1 && checkPermission(11_242)"
@@ -1034,11 +1070,10 @@ onMounted(loadProgrammes);
 
 .header-row {
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
 }
- 
 
 .qr-grid {
   display: grid;

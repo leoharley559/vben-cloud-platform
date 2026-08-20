@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -19,9 +21,7 @@ import {
 } from '#/api/chatroomManage';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 defineOptions({ name: 'ChatroomManage' });
 
@@ -125,7 +125,7 @@ const tabs = computed(() =>
         filters: ['username'],
       } satisfies OperationListConfig,
       key: 'systemRooms',
-      permission: 12036,
+      permission: 12_036,
       tab: '比赛聊天室',
     },
     {
@@ -219,9 +219,9 @@ const tabs = computed(() =>
   ].filter((item) =>
     item.permissionKey
       ? checkPermissionByKey(item.permissionKey)
-      : item.permission
+      : (item.permission
         ? checkPermission(item.permission)
-        : true,
+        : true),
   ),
 );
 

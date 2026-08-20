@@ -187,21 +187,17 @@ async function submitTeam() {
   if (!teamForm.TeamName.trim()) return void message.warning('请输入团队名称');
   teamSubmitting.value = true;
   try {
-    if (isCreate.value) {
-      await createTeamApi({
+    await (isCreate.value ? createTeamApi({
         AdminId: teamForm.AdminId,
         Remark: teamForm.Remark,
         TeamName: teamForm.TeamName.trim(),
         Type: teamForm.Type,
-      });
-    } else {
-      await updateTeamApi({
+      }) : updateTeamApi({
         Id: teamForm.Id,
         Remark: teamForm.Remark,
         TeamName: teamForm.TeamName.trim(),
         Type: teamForm.Type,
-      });
-    }
+      }));
     message.success('操作成功');
     teamModalOpen.value = false;
     loadTeams();
@@ -250,8 +246,9 @@ function openAddDeputy(row: Row) {
 }
 function selectDeputy(adminId: number | string) {
   deputyForm.Name = String(
-    principalOptions.value.find((item) => String(item.value) === String(adminId))
-      ?.raw?.Name || '',
+    principalOptions.value.find(
+      (item) => String(item.value) === String(adminId),
+    )?.raw?.Name || '',
   );
 }
 async function submitDeputy() {
@@ -277,7 +274,12 @@ const detailLoading = ref(false);
 const detailTeam = ref<Row>();
 const detailRows = ref<Row[]>([]);
 const detailColumns = [
-  { dataIndex: 'TeamCreateTime', key: 'TeamCreateTime', title: '加入时间', width: 170 },
+  {
+    dataIndex: 'TeamCreateTime',
+    key: 'TeamCreateTime',
+    title: '加入时间',
+    width: 170,
+  },
   { dataIndex: 'Username', key: 'Username', title: '副线账号' },
   { dataIndex: 'Name', key: 'Name', title: '姓名' },
   { dataIndex: 'Members', key: 'Members', title: '成员数' },
@@ -314,7 +316,7 @@ function removeDeputy(row: Row) {
         detailRows.value = detailRows.value.filter(
           (item) => String(item.AdminId) !== String(row.AdminId),
         );
-        if (!detailRows.value.length) detailOpen.value = false;
+        if (detailRows.value.length === 0) detailOpen.value = false;
         loadTeams();
       } catch {
         // 全局拦截已提示
@@ -371,7 +373,7 @@ async function openTransfer() {
   } catch {
     deputyOptions.value = [];
   }
-  if (!teamRows.value.length) await loadTeams();
+  if (teamRows.value.length === 0) await loadTeams();
 }
 function selectTransferDeputy(adminId: number | string) {
   const row = deputyOptions.value.find(
@@ -390,8 +392,9 @@ function selectTransferDeputy(adminId: number | string) {
 }
 function selectTransferTeam(teamId: number | string) {
   transferForm.ToMainUsername = String(
-    transferTeamOptions.value.find((item) => String(item.value) === String(teamId))
-      ?.raw?.Username || '',
+    transferTeamOptions.value.find(
+      (item) => String(item.value) === String(teamId),
+    )?.raw?.Username || '',
   );
 }
 async function submitTransfer() {
@@ -422,51 +425,57 @@ onMounted(() => {
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="teamQuery.TeamName"
-          allow-clear
-          placeholder="请输入团队名称"
-        >
-          <template #addonBefore>团队名称</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="teamQuery.Username"
-          allow-clear
-          placeholder="请输入主线账号"
-        >
-          <template #addonBefore>主线账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="teamQuery.SubUserName"
-          allow-clear
-          placeholder="请输入副线账号"
-        >
-          <template #addonBefore>副线账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="teamQuery.Type"
-        :options="[{ label: '全部类型', value: -1 }, { label: '普通团队', value: 1 }, { label: '正式团队', value: 2 }]"
-      />
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="teamQuery.TeamName"
+            allow-clear
+            placeholder="请输入团队名称"
+          >
+            <template #addonBefore>团队名称</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="teamQuery.Username"
+            allow-clear
+            placeholder="请输入主线账号"
+          >
+            <template #addonBefore>主线账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="teamQuery.SubUserName"
+            allow-clear
+            placeholder="请输入副线账号"
+          >
+            <template #addonBefore>副线账号</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="teamQuery.Type"
+          :options="[
+            { label: '全部类型', value: -1 },
+            { label: '普通团队', value: 1 },
+            { label: '正式团队', value: 2 },
+          ]"
+        />
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="teamDateRange" />
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="searchTeams">查询</Button>
-      <Button @click="resetTeams">重置</Button>
-      <Button v-if="canTransfer" @click="openTransfer">转移副线</Button>
-      <Button v-if="canCreate" type="primary" @click="openCreateModal">新增团队</Button>
+          <Button @click="resetTeams">重置</Button>
+          <Button v-if="canTransfer" @click="openTransfer">转移副线</Button>
+          <Button v-if="canCreate" type="primary" @click="openCreateModal">
+新增团队
+</Button>
         </div>
+      </div>
     </div>
-  </div>
     <Table
-    bordered
+      bordered
       v-if="canViewList"
       :columns="teamColumns"
       :data-source="teamRows"
@@ -477,25 +486,70 @@ onMounted(() => {
       size="small"
     >
       <template #bodyCell="{ column, record, index }">
-        <template v-if="column.key === 'index'">{{ (teamQuery.Page - 1) * teamQuery.PageSize + index + 1 }}</template>
+        <template v-if="column.key === 'index'">
+{{
+          (teamQuery.Page - 1) * teamQuery.PageSize + index + 1
+        }}
+</template>
         <AgencyAccountLink
           v-else-if="column.key === 'Username'"
           :admin-id="resolveAgencyAdminId(record)"
           :username="record.Username"
         />
-        <template v-else-if="column.key === 'CreateTime'">{{ formatNetcashDateTime(record.CreateTime) }}</template>
+        <template v-else-if="column.key === 'CreateTime'">
+{{
+          formatNetcashDateTime(record.CreateTime)
+        }}
+</template>
         <template v-else-if="column.key === 'Deputys'">
-          <Button type="link" size="small" @click="openDetail(record)">{{ record.Deputys ?? 0 }}</Button>
+          <Button type="link" size="small" @click="openDetail(record)">
+{{
+            record.Deputys ?? 0
+          }}
+</Button>
         </template>
         <template v-else-if="column.key === 'Type'">
-          <Tag>{{ Number(record.Type) === 1 ? '普通团队' : Number(record.Type) === 2 ? '正式团队' : record.Type }}</Tag>
+          <Tag>
+{{
+            Number(record.Type) === 1
+              ? '普通团队'
+              : Number(record.Type) === 2
+                ? '正式团队'
+                : record.Type
+          }}
+</Tag>
         </template>
         <template v-else-if="column.key === 'actions'">
           <Space :size="0">
-            <Button v-if="canAddDeputy" type="link" size="small" @click="openAddDeputy(record)">添加副线</Button>
-            <Button type="link" size="small" @click="openDetail(record)">查看副线</Button>
-            <Button v-if="canEdit" type="link" size="small" @click="openEditModal(record)">编辑</Button>
-            <Button v-if="canDissolve" danger type="link" size="small" :disabled="Number(record.Deputys ?? 0) > 0" @click="dissolve(record)">解散</Button>
+            <Button
+              v-if="canAddDeputy"
+              type="link"
+              size="small"
+              @click="openAddDeputy(record)"
+              >
+添加副线
+</Button>
+            <Button type="link" size="small" @click="openDetail(record)">
+查看副线
+</Button>
+            <Button
+              v-if="canEdit"
+              type="link"
+              size="small"
+              @click="openEditModal(record)"
+              >
+编辑
+</Button>
+            <Button
+              v-if="canDissolve"
+              danger
+              type="link"
+              size="small"
+              :disabled="Number(record.Deputys ?? 0) > 0"
+              @click="dissolve(record)"
+              >
+解散
+</Button>
           </Space>
         </template>
       </template>
@@ -516,7 +570,12 @@ onMounted(() => {
       @change="loadTeams"
     />
 
-    <Modal v-model:open="teamModalOpen" :confirm-loading="teamSubmitting" :title="isCreate ? '新增团队' : '编辑团队'" @ok="submitTeam">
+    <Modal
+      v-model:open="teamModalOpen"
+      :confirm-loading="teamSubmitting"
+      :title="isCreate ? '新增团队' : '编辑团队'"
+      @ok="submitTeam"
+    >
       <Form layout="vertical">
         <Form.Item label="主线账号" required>
           <Select
@@ -533,17 +592,34 @@ onMounted(() => {
           />
           <Input v-else v-model:value="teamForm.MainUsername" disabled />
         </Form.Item>
-        <Form.Item label="团队名称" required><Input v-model:value="teamForm.TeamName" /></Form.Item>
+        <Form.Item label="团队名称" required>
+<Input v-model:value="teamForm.TeamName" />
+</Form.Item>
         <Form.Item label="团队类型" required>
-          <Select v-model:value="teamForm.Type" :options="[{ label: '普通团队', value: 1 }, { label: '正式团队', value: 2 }]" />
+          <Select
+            v-model:value="teamForm.Type"
+            :options="[
+              { label: '普通团队', value: 1 },
+              { label: '正式团队', value: 2 },
+            ]"
+          />
         </Form.Item>
-        <Form.Item label="备注"><Input.TextArea v-model:value="teamForm.Remark" :rows="3" /></Form.Item>
+        <Form.Item label="备注">
+<Input.TextArea v-model:value="teamForm.Remark" :rows="3" />
+</Form.Item>
       </Form>
     </Modal>
 
-    <Modal v-model:open="deputyModalOpen" :confirm-loading="deputySubmitting" title="添加副线" @ok="submitDeputy">
+    <Modal
+      v-model:open="deputyModalOpen"
+      :confirm-loading="deputySubmitting"
+      title="添加副线"
+      @ok="submitDeputy"
+    >
       <Form layout="vertical">
-        <Form.Item label="团队名称"><Input v-model:value="deputyForm.TeamName" disabled /></Form.Item>
+        <Form.Item label="团队名称">
+<Input v-model:value="deputyForm.TeamName" disabled />
+</Form.Item>
         <Form.Item label="副线账号" required>
           <Select
             v-model:value="deputyForm.AdminId"
@@ -558,27 +634,58 @@ onMounted(() => {
             @change="(value) => selectDeputy(value as number | string)"
           />
         </Form.Item>
-        <Form.Item label="副线姓名"><Input v-model:value="deputyForm.Name" disabled /></Form.Item>
+        <Form.Item label="副线姓名">
+<Input v-model:value="deputyForm.Name" disabled />
+</Form.Item>
       </Form>
     </Modal>
 
-    <Modal v-model:open="detailOpen" :footer="null" :title="`副线明细 · ${detailTeam?.TeamName || ''}`" width="760px">
-      <Table :columns="detailColumns" :data-source="detailRows" :loading="detailLoading" :pagination="false" row-key="AdminId" size="small">
+    <Modal
+      v-model:open="detailOpen"
+      :footer="null"
+      :title="`副线明细 · ${detailTeam?.TeamName || ''}`"
+      width="760px"
+    >
+      <Table
+        :columns="detailColumns"
+        :data-source="detailRows"
+        :loading="detailLoading"
+        :pagination="false"
+        row-key="AdminId"
+        size="small"
+      >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'TeamCreateTime'">{{ formatNetcashDateTime(record.TeamCreateTime) }}</template>
+          <template v-if="column.key === 'TeamCreateTime'">
+{{
+            formatNetcashDateTime(record.TeamCreateTime)
+          }}
+</template>
           <AgencyAccountLink
             v-else-if="column.key === 'Username'"
             :admin-id="resolveAgencyAdminId(record)"
             :username="record.Username"
           />
           <template v-else-if="column.key === 'actions'">
-            <Button v-if="canRemoveDeputy" danger type="link" size="small" @click="removeDeputy(record)">移除</Button>
+            <Button
+              v-if="canRemoveDeputy"
+              danger
+              type="link"
+              size="small"
+              @click="removeDeputy(record)"
+              >
+移除
+</Button>
           </template>
         </template>
       </Table>
     </Modal>
 
-    <Modal v-model:open="transferOpen" :confirm-loading="transferSubmitting" title="转移副线" @ok="submitTransfer">
+    <Modal
+      v-model:open="transferOpen"
+      :confirm-loading="transferSubmitting"
+      title="转移副线"
+      @ok="submitTransfer"
+    >
       <Form layout="vertical">
         <Form.Item label="副线账号" required>
           <Select
@@ -590,10 +697,18 @@ onMounted(() => {
             @change="(value) => selectTransferDeputy(value as number | string)"
           />
         </Form.Item>
-        <Form.Item label="副线姓名"><Input v-model:value="transferForm.Name" disabled /></Form.Item>
-        <Form.Item label="副线成员数"><Input v-model:value="transferForm.Members" disabled /></Form.Item>
-        <Form.Item label="转出团队"><Input v-model:value="transferForm.FromTeamName" disabled /></Form.Item>
-        <Form.Item label="原主线"><Input v-model:value="transferForm.MainUsername" disabled /></Form.Item>
+        <Form.Item label="副线姓名">
+<Input v-model:value="transferForm.Name" disabled />
+</Form.Item>
+        <Form.Item label="副线成员数">
+<Input v-model:value="transferForm.Members" disabled />
+</Form.Item>
+        <Form.Item label="转出团队">
+<Input v-model:value="transferForm.FromTeamName" disabled />
+</Form.Item>
+        <Form.Item label="原主线">
+<Input v-model:value="transferForm.MainUsername" disabled />
+</Form.Item>
         <Form.Item label="转入团队" required>
           <Select
             v-model:value="transferForm.ToTeamId"
@@ -604,7 +719,9 @@ onMounted(() => {
             @change="(value) => selectTransferTeam(value as number | string)"
           />
         </Form.Item>
-        <Form.Item label="转入主线"><Input v-model:value="transferForm.ToMainUsername" disabled /></Form.Item>
+        <Form.Item label="转入主线">
+<Input v-model:value="transferForm.ToMainUsername" disabled />
+</Form.Item>
       </Form>
     </Modal>
   </div>

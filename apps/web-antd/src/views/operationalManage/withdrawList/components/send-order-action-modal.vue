@@ -3,7 +3,7 @@ import type { WithdrawFinanceItem } from '#/types/withdraw-extra';
 
 import { computed, ref, watch } from 'vue';
 
-import { Form, Input, Modal, Radio, message } from 'ant-design-vue';
+import { Form, Input, message, Modal, Radio } from 'ant-design-vue';
 
 import { refuseWithdrawApi } from '#/api/operationManage/withdraw';
 import { updateSendOrderListApi } from '#/api/operationManage/withdraw-extra';
@@ -14,7 +14,7 @@ defineOptions({ name: 'SendOrderActionModal' });
 const props = defineProps<{
   mode: 'hangup' | 'reject';
   open: boolean;
-  row: WithdrawFinanceItem | null;
+  row: null | WithdrawFinanceItem;
 }>();
 
 const emit = defineEmits<{
@@ -54,21 +54,17 @@ async function handleSubmit() {
 
   submitting.value = true;
   try {
-    if (props.mode === 'hangup') {
-      await updateSendOrderListApi({
+    await (props.mode === 'hangup' ? updateSendOrderListApi({
         Id: props.row.Id,
         RiskRemarks: riskRemarks.value,
         RiskStatus: 3,
-      });
-    } else {
-      await refuseWithdrawApi({
+      }) : refuseWithdrawApi({
         HandlerInf: remark.value,
         Id: props.row.Id,
         RefundScore: refundScore.value,
         Remark: remark.value,
         RiskStatus: 2,
-      });
-    }
+      }));
     message.success('操作成功');
     closeModal();
     emit('success');

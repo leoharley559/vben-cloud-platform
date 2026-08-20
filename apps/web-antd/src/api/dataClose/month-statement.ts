@@ -1,5 +1,7 @@
+import type { ReportListResult } from '#/api/dataClose/shared';
+
+import { toListResult } from '#/api/dataClose/shared';
 import { requestClient } from '#/api/request';
-import { toListResult, type ReportListResult } from '#/api/dataClose/shared';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -24,7 +26,9 @@ function fetchMonthList(
  * @returns 标准列表结构 Items + Pagination + Total
  * @see views/dataClose/monthStatement/components/total-panel.vue
  */
-export function fetchMonthStatementTotalListApi(query: Record<string, unknown>) {
+export function fetchMonthStatementTotalListApi(
+  query: Record<string, unknown>,
+) {
   return fetchMonthList('/backend/agentbetwinmanagemonth/totallist', query);
 }
 

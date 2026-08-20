@@ -17,7 +17,7 @@ const router = useRouter();
 const { checkPermission } = useCloudPermission();
 
 const canOpenDetail = computed(() =>
-  checkPermission(props.permissionId ?? 10442),
+  checkPermission(props.permissionId ?? 10_442),
 );
 
 const hasLink = computed(

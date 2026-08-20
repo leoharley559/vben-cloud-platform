@@ -1,10 +1,11 @@
-import { requestClient } from '#/api/request';
-import type { CloudListResult } from '#/types/operation-manage';
 import type {
   BonusAuditListItem,
   BonusAuditListQuery,
   BonusRecordListItem,
 } from '#/types/bonus-audit';
+import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -19,11 +20,11 @@ function normalizeBonusAuditQuery(query: BonusAuditListQuery) {
   const params = trimSpace({ ...query }) as Record<string, unknown>;
   const channelIds = params.ChannelIds;
   if (Array.isArray(channelIds)) {
-    params.ChannelIds = channelIds.length ? channelIds.join(',') : '';
+    params.ChannelIds = channelIds.length > 0 ? channelIds.join(',') : '';
   }
   const bonusType = params.BonusType;
   if (Array.isArray(bonusType)) {
-    params.BonusType = bonusType.length ? bonusType.join(',') : '';
+    params.BonusType = bonusType.length > 0 ? bonusType.join(',') : '';
   }
   return params;
 }

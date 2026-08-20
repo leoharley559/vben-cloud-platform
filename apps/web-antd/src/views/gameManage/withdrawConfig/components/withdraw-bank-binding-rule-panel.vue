@@ -7,13 +7,13 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Pagination,
   Select,
   Space,
   Switch,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {

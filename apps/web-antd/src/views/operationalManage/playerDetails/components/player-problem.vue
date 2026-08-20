@@ -6,8 +6,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { Radio, Result } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerAiSearchRecordApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerAiSearchRecordApi } from '#/api/operationManage/player-detail-extra';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import PlayerVisitRecordPanel from './player-visit-record.vue';
@@ -20,9 +20,9 @@ const props = defineProps<{
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTab = computed(() => checkPermission(11865));
-const canViewSearch = computed(() => checkPermission(12730));
-const canViewVisit = computed(() => checkPermission(12736));
+const canViewTab = computed(() => checkPermission(11_865));
+const canViewSearch = computed(() => checkPermission(12_730));
+const canViewVisit = computed(() => checkPermission(12_736));
 
 const activeTab = ref<'search' | 'visit'>('search');
 
@@ -50,7 +50,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     {
       field: 'CreateTime',
       formatter: ({ cellValue }) =>
-        formatDateTime(cellValue as string | number),
+        formatDateTime(cellValue as number | string),
       minWidth: 170,
       title: '创建时间',
     },

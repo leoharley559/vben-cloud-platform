@@ -1,12 +1,19 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue';
 
-import { Form, Input, Modal, Select, message } from 'ant-design-vue';
+import { Form, Input, message, Modal, Select } from 'ant-design-vue';
 
 import { updatePlayerLevelAssignApi } from '#/api/operationManage/player';
 import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 
 defineOptions({ name: 'PlayerLevelModal' });
+
+const props = defineProps<{
+  playerId?: null | number | string;
+  playerLevelId?: null | number | string;
+}>();
+
+const emit = defineEmits<{ success: [] }>();
 
 interface LevelOption {
   Id: number | string;
@@ -16,12 +23,6 @@ interface LevelOption {
 }
 
 const open = defineModel<boolean>('open', { default: false });
-const props = defineProps<{
-  playerId?: number | string | null;
-  playerLevelId?: number | string | null;
-}>();
-const emit = defineEmits<{ success: [] }>();
-
 const submitting = ref(false);
 const levelId = ref<number | string>(0);
 const levels = ref<LevelOption[]>([]);

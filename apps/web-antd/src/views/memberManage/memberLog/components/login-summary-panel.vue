@@ -3,20 +3,15 @@ import type { LoginLogSummaryData } from '#/types/member-logs';
 
 import { computed, onMounted, ref } from 'vue';
 
-import {
-  Button,
-  Select,
-  Space,
-  Table,
-} from 'ant-design-vue';
+import { Button, Select, Space, Table } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchLoginLogSummaryApi } from '#/api/memberManage/member-logs';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
-import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 
 defineOptions({ name: 'LoginSummaryPanel' });
@@ -25,7 +20,7 @@ const { checkPermission } = useCloudPermission();
 const { memberTypeOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
-const canViewSummary = computed(() => checkPermission(12222));
+const canViewSummary = computed(() => checkPermission(12_222));
 
 const defaultRange = getTodayRangeSeconds();
 const loading = ref(false);
@@ -50,7 +45,7 @@ const vipLevelColumns = computed(() => {
   const map = projectConfig.value?.VIPLevelMap as
     | Array<{ VipLevelName?: string }>
     | undefined;
-  if (!Array.isArray(map) || !map.length) {
+  if (!Array.isArray(map) || map.length === 0) {
     return [{ dataIndex: 'TotalVip', title: '总登录人次' }];
   }
   return [
@@ -161,14 +156,19 @@ onMounted(() => {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="统计时间" precision="date" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button :loading="loading" type="primary" @click="handleSearch">
-        查询
-      </Button>
-      <Button @click="handleReset">重置</Button>
-        </div></template>
+        <QueryDatetimeRangePicker
+          v-model="filterDateRange"
+          label="统计时间"
+          precision="date"
+        />
+      </div>
+      <div class="query-filter-actions query-filter-actions-single">
+        <Button :loading="loading" type="primary" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
+      </div>
+</template>
 
     <div class="mb-6">
       <div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">

@@ -22,17 +22,17 @@ const tabs = computed(() =>
   [
     {
       key: 'inventory',
-      permission: 11423,
+      permission: 11_423,
       tab: '库存',
     },
     {
       key: 'sell',
-      permission: 11424,
+      permission: 11_424,
       tab: '授信',
     },
     {
       key: 'record',
-      permission: 11425,
+      permission: 11_425,
       tab: '授信记录',
     },
   ].filter((item) => checkPermission(item.permission)),

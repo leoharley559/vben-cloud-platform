@@ -9,14 +9,15 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Result,
   Space,
   Switch,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   createGameTitleGroupApi,
   deleteGameTitleGroupApi,
@@ -24,7 +25,6 @@ import {
   fetchGameTitleGroupListApi,
   updateGameTitleGroupSwitchApi,
 } from '#/api/memberManage/game-title';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
@@ -32,11 +32,11 @@ defineOptions({ name: 'GameTitleGroupList' });
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(13151));
-const canAdd = computed(() => checkPermission(13152));
-const canEdit = computed(() => checkPermission(13153));
-const canDelete = computed(() => checkPermission(13154));
-const canSwitch = computed(() => checkPermission(13155));
+const canViewTable = computed(() => checkPermission(13_151));
+const canAdd = computed(() => checkPermission(13_152));
+const canEdit = computed(() => checkPermission(13_153));
+const canDelete = computed(() => checkPermission(13_154));
+const canSwitch = computed(() => checkPermission(13_155));
 
 const filterName = ref('');
 const formOpen = ref(false);
@@ -195,15 +195,15 @@ onMounted(() => {
           <template #addonBefore>类别名称</template>
         </Input>
       </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Space>
-        <Button type="primary" @click="handleSearch">查询</Button>
-        <Button v-if="canAdd" type="primary" @click="openForm('add')">
-          新增类别
-        </Button>
-      </Space>
-        </div>
-      </template>
+      <div class="query-filter-actions query-filter-actions-single">
+        <Space>
+          <Button type="primary" @click="handleSearch">查询</Button>
+          <Button v-if="canAdd" type="primary" @click="openForm('add')">
+            新增类别
+          </Button>
+        </Space>
+      </div>
+    </template>
 
     <Grid>
       <template #switch="{ row }">

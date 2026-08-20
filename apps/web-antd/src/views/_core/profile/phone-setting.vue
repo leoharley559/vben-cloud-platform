@@ -119,18 +119,10 @@ onUnmounted(clearTimer);
 </script>
 
 <template>
-  <Form
-    class="max-w-xl"
-    :label-col="{ span: 5 }"
-    :wrapper-col="{ span: 16 }"
-  >
+  <Form class="max-w-xl" :label-col="{ span: 5 }" :wrapper-col="{ span: 16 }">
     <Form.Item v-if="!info.Phone" label="手机号" required>
       <div class="flex gap-2">
-        <Select
-          v-model:value="areaCode"
-          :options="areaOptions"
-          class="w-28"
-        />
+        <Select v-model:value="areaCode" :options="areaOptions" class="w-28" />
         <Input v-model:value="phone" placeholder="请输入手机号" />
       </div>
     </Form.Item>

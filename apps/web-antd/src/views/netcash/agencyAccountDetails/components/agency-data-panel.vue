@@ -1,11 +1,13 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import type { AgencyListItem, AgentFanDianLine } from '#/types/netcash';
 
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { Button, Space, Table } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import { Button, Table } from 'ant-design-vue';
+import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
 
 import {
@@ -108,11 +110,15 @@ function matchFanDianLine(
   gameId: number,
   typeCode: string,
 ) {
-  const normalizedType = String(typeCode || '').trim().toLowerCase();
+  const normalizedType = String(typeCode || '')
+    .trim()
+    .toLowerCase();
   return (
     lines.find((line) => {
       const id = Number(line.id);
-      const type = String(line.type || '').trim().toLowerCase();
+      const type = String(line.type || '')
+        .trim()
+        .toLowerCase();
       return (
         (!Number.isNaN(id) && id > 0 && id === gameId) ||
         (normalizedType && type === normalizedType) ||
@@ -170,9 +176,13 @@ function resolveVenueMeta(rawGameId: number | string, rawTypeCode: string) {
       );
     }) || undefined;
 
-  const typeCode = String(category?.type || codeHint || codeFromId || '').trim();
+  const typeCode = String(
+    category?.type || codeHint || codeFromId || '',
+  ).trim();
   const venueLabel =
-    venue?.Description || category?.name || (gameId > 0 ? String(gameId) : '') ||
+    venue?.Description ||
+    category?.name ||
+    (gameId > 0 ? String(gameId) : '') ||
     codeHint ||
     codeFromId ||
     '-';
@@ -204,13 +214,10 @@ function normalizeGameTypeStats(raw: unknown) {
 
   return list
     .map((item) => {
-      const rawGameId = item.GameId ?? item.Id ?? item.gameId ?? item.ApiId ?? '';
+      const rawGameId =
+        item.GameId ?? item.Id ?? item.gameId ?? item.ApiId ?? '';
       const rawTypeCode = String(
-        item.Type ??
-          item.GameType ??
-          item.VenueCode ??
-          item.ApiType ??
-          '',
+        item.Type ?? item.GameType ?? item.VenueCode ?? item.ApiType ?? '',
       ).trim();
       // 对象键为 by_qp 这类 VenueCode 时，补进 typeCode
       const typeCode =
@@ -357,7 +364,9 @@ const venueDetailColumns = [
 function routeTime(value: unknown, fallback: Dayjs) {
   const number = Number(value);
   if (!number) return fallback;
-  return dayjs(String(Math.trunc(number)).length <= 10 ? number * 1000 : number);
+  return dayjs(
+    String(Math.trunc(number)).length <= 10 ? number * 1000 : number,
+  );
 }
 
 const dateRange = ref<[Dayjs, Dayjs]>([
@@ -425,7 +434,9 @@ async function load() {
       fetchAgentDirectMemberStatsApi(
         query(memberPager.current, memberPager.pageSize),
       ),
-      fetchAgentDirectAdminStatsApi(query(agentPager.current, agentPager.pageSize)),
+      fetchAgentDirectAdminStatsApi(
+        query(agentPager.current, agentPager.pageSize),
+      ),
     ]);
     personal.value = Object.keys(self).length > 0 ? [self] : [];
     members.value = memberResult.Items || [];
@@ -507,17 +518,10 @@ function exportData() {
 
 onMounted(load);
 watch(
-  () => [
-    props.adminId,
-    route.query.CountBeginTime,
-    route.query.CountEndTime,
-  ],
+  () => [props.adminId, route.query.CountBeginTime, route.query.CountEndTime],
   () => {
     dateRange.value = [
-      routeTime(
-        route.query.CountBeginTime,
-        dayjs().startOf('day'),
-      ),
+      routeTime(route.query.CountBeginTime, dayjs().startOf('day')),
       routeTime(route.query.CountEndTime, dayjs().endOf('day')),
     ];
     memberPager.current = 1;
@@ -531,34 +535,45 @@ watch(
   <div class="space-y-5">
     <div>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" />
+        <div class="ops-query-filters">
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="dateRange" />
+          </div>
+          <div class="query-filter-actions">
+            <Button type="primary" @click="load">查询</Button>
+            <Button
+              @click="
+                dateRange = [dayjs().startOf('day'), dayjs().endOf('day')];
+                load();
+              "
+            >
+              重置
+            </Button>
+            <Button @click="exportData">导出当前数据</Button>
+            <Button type="primary" @click="openFanDianModal">
+查看返水配置
+</Button>
+          </div>
         </div>
-        <div class="query-filter-actions">
-          <Button type="primary" @click="load">查询</Button>
-        <Button @click="
-          dateRange = [
-            dayjs().startOf('day'),
-            dayjs().endOf('day'),
-          ];
-        load();
-        ">
-          重置
-        </Button>
-        <Button @click="exportData">导出当前数据</Button>
-        <Button type="primary" @click="openFanDianModal">查看返水配置</Button>
-        </div>
-    </div>
-  </div>
+      </div>
     </div>
     <AgencyFanDianModal v-model:open="fanDianOpen" :row="fanDianRow" />
-    
+
     <section>
-      <Table bordered :columns="columns('personal')" :data-source="personal" :loading="loading" :pagination="false"
-        row-key="AdminId" :scroll="{ x: 1200 }" size="small">
+      <Table
+        bordered
+        :columns="columns('personal')"
+        :data-source="personal"
+        :loading="loading"
+        :pagination="false"
+        row-key="AdminId"
+        :scroll="{ x: 1200 }"
+        size="small"
+      >
         <template #bodyCell="{ column, record }">
-          <template v-if="amountFields.some((item) => item.dataIndex === column.key)">
+          <template
+            v-if="amountFields.some((item) => item.dataIndex === column.key)"
+          >
             <span
               :class="
                 amountCellClass(
@@ -568,9 +583,7 @@ watch(
               "
             >
               {{
-                formatAmountFromCent(
-                  amountValue(record, String(column.key)),
-                )
+                formatAmountFromCent(amountValue(record, String(column.key)))
               }}
             </span>
           </template>
@@ -630,22 +643,41 @@ watch(
         </template>
       </Table>
     </section>
-     
+
     <!-- 直属会员 -->
     <section>
       <h3 class="mb-2 font-medium">直属会员</h3>
-      <Table bordered :columns="columns('member')" :data-source="members" :loading="loading" :pagination="{
-        current: memberPager.current,
-        pageSize: memberPager.pageSize,
-        total: memberPager.total,
-        showSizeChanger: true,
-      }" :row-key="(row) => String(row.PlayerId || row.LoginAccount)" :scroll="{ x: 1200 }" size="small"
-        @change="(page) => changePage('member', page.current || 1, page.pageSize || 20)">
+      <Table
+        bordered
+        :columns="columns('member')"
+        :data-source="members"
+        :loading="loading"
+        :pagination="{
+          current: memberPager.current,
+          pageSize: memberPager.pageSize,
+          total: memberPager.total,
+          showSizeChanger: true,
+        }"
+        :row-key="(row) => String(row.PlayerId || row.LoginAccount)"
+        :scroll="{ x: 1200 }"
+        size="small"
+        @change="
+          (page) => changePage('member', page.current || 1, page.pageSize || 20)
+        "
+      >
         <template #bodyCell="{ column, record }">
-          <Button v-if="column.key === 'account'" type="link" @click="drillPlayer(record)">
+          <Button
+            v-if="column.key === 'account'"
+            type="link"
+            @click="drillPlayer(record)"
+          >
             {{ record.LoginAccount || '-' }}
           </Button>
-          <template v-else-if="amountFields.some((item) => item.dataIndex === column.key)">
+          <template
+            v-else-if="
+              amountFields.some((item) => item.dataIndex === column.key)
+            "
+          >
             <span
               :class="
                 amountCellClass(
@@ -664,7 +696,11 @@ watch(
           <Table.Summary fixed>
             <Table.Summary.Row>
               <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
-              <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
+              <Table.Summary.Cell
+                v-for="(item, index) in amountFields"
+                :key="item.dataIndex"
+                :index="index + 1"
+              >
                 <span
                   :class="
                     amountCellClass(
@@ -687,10 +723,19 @@ watch(
     </section>
     <section>
       <h3 class="mb-2 font-medium">团队合计</h3>
-      <Table bordered :columns="columns('agent')" :data-source="combinedRows" :pagination="false" row-key="Username"
-        :scroll="{ x: 1200 }" size="small">
+      <Table
+        bordered
+        :columns="columns('agent')"
+        :data-source="combinedRows"
+        :pagination="false"
+        row-key="Username"
+        :scroll="{ x: 1200 }"
+        size="small"
+      >
         <template #bodyCell="{ column, record }">
-          <template v-if="amountFields.some((item) => item.dataIndex === column.key)">
+          <template
+            v-if="amountFields.some((item) => item.dataIndex === column.key)"
+          >
             <span
               :class="
                 amountCellClass(
@@ -709,7 +754,11 @@ watch(
           <Table.Summary fixed>
             <Table.Summary.Row>
               <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
-              <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
+              <Table.Summary.Cell
+                v-for="(item, index) in amountFields"
+                :key="item.dataIndex"
+                :index="index + 1"
+              >
                 <span
                   :class="
                     amountCellClass(
@@ -733,21 +782,40 @@ watch(
 
     <section>
       <h3 class="mb-2 font-medium">直属代理</h3>
-      <Table bordered :columns="columns('agent')" :data-source="agents" :loading="loading" :pagination="{
-        current: agentPager.current,
-        pageSize: agentPager.pageSize,
-        total: agentPager.total,
-        showSizeChanger: true,
-      }" :row-key="(row) => String(row.AdminId || row.Username)" :scroll="{ x: 1200 }" size="small"
-        @change="(page) => changePage('agent', page.current || 1, page.pageSize || 20)">
+      <Table
+        bordered
+        :columns="columns('agent')"
+        :data-source="agents"
+        :loading="loading"
+        :pagination="{
+          current: agentPager.current,
+          pageSize: agentPager.pageSize,
+          total: agentPager.total,
+          showSizeChanger: true,
+        }"
+        :row-key="(row) => String(row.AdminId || row.Username)"
+        :scroll="{ x: 1200 }"
+        size="small"
+        @change="
+          (page) => changePage('agent', page.current || 1, page.pageSize || 20)
+        "
+      >
         <template #bodyCell="{ column, record }">
-          <AgencyAccountLink v-if="column.key === 'account'" :admin-id="record.AdminId as number | string | undefined"
+          <AgencyAccountLink
+            v-if="column.key === 'account'"
+            :admin-id="record.AdminId as number | string | undefined"
             :query="{
               Name: String(record.Username || ''),
               CountBeginTime: dateRange?.[0]?.startOf('day').unix() || '',
               CountEndTime: dateRange?.[1]?.endOf('day').unix() || '',
-            }" :username="record.Username" />
-          <template v-else-if="amountFields.some((item) => item.dataIndex === column.key)">
+            }"
+            :username="record.Username"
+          />
+          <template
+            v-else-if="
+              amountFields.some((item) => item.dataIndex === column.key)
+            "
+          >
             <span
               :class="
                 amountCellClass(
@@ -766,7 +834,11 @@ watch(
           <Table.Summary fixed>
             <Table.Summary.Row>
               <Table.Summary.Cell :index="0">总计</Table.Summary.Cell>
-              <Table.Summary.Cell v-for="(item, index) in amountFields" :key="item.dataIndex" :index="index + 1">
+              <Table.Summary.Cell
+                v-for="(item, index) in amountFields"
+                :key="item.dataIndex"
+                :index="index + 1"
+              >
                 <span
                   :class="
                     amountCellClass(

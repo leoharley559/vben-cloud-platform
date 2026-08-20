@@ -12,7 +12,7 @@ import HelpManagePanel from './components/help-manage-panel.vue';
 defineOptions({ name: 'HelpManage' });
 
 const { checkPermission } = useCloudPermission();
-const canViewPage = computed(() => checkPermission(10230));
+const canViewPage = computed(() => checkPermission(10_230));
 </script>
 
 <template>

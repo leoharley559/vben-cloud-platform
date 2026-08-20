@@ -15,9 +15,9 @@ defineOptions({ name: 'OperationalAccountAdjust' });
 
 const { checkPermission } = useCloudPermission();
 
-const canAdjust = computed(() => checkPermission(10094));
-const canAudit = computed(() => checkPermission(10095));
-const canRecord = computed(() => checkPermission(10096));
+const canAdjust = computed(() => checkPermission(10_094));
+const canAudit = computed(() => checkPermission(10_095));
+const canRecord = computed(() => checkPermission(10_096));
 
 const canViewAny = computed(
   () => canAdjust.value || canAudit.value || canRecord.value,

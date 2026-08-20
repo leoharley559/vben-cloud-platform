@@ -27,9 +27,7 @@ const props = withDefaults(
 );
 const modelValue = defineModel<string>({ default: '' });
 const previewUrl = computed(() => getServiceImageUrl(modelValue.value));
-const uploadAction = computed(
-  () => props.action || getUploadMd5ImageUrl(),
-);
+const uploadAction = computed(() => props.action || getUploadMd5ImageUrl());
 
 function beforeUpload(file: File) {
   if (!['image/jpeg', 'image/png'].includes(file.type)) {
@@ -106,12 +104,7 @@ function handleChange(info: UploadChangeParam) {
       >
         <Button size="small">{{ modelValue ? '重新上传' : '上传图片' }}</Button>
       </Upload>
-      <Button
-        v-if="modelValue"
-        danger
-        size="small"
-        @click="modelValue = ''"
-      >
+      <Button v-if="modelValue" danger size="small" @click="modelValue = ''">
         删除
       </Button>
       <small>{{ hint }}</small>
@@ -122,8 +115,8 @@ function handleChange(info: UploadChangeParam) {
 <style scoped>
 .image-field {
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
 }
 
 .preview {
@@ -143,8 +136,8 @@ function handleChange(info: UploadChangeParam) {
 .actions {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 5px;
+  align-items: flex-start;
 }
 
 .actions small {

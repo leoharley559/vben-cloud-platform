@@ -1,14 +1,16 @@
+import type { ReportListResult } from '#/api/dataClose/shared';
+
+import { toListResult } from '#/api/dataClose/shared';
 import { requestClient } from '#/api/request';
-import { toListResult, type ReportListResult } from '#/api/dataClose/shared';
 import { trimSpace } from '#/utils/string';
 
 type Query = Record<string, unknown>;
 
 /** 游戏报表列表响应（含盈亏符号约定） */
-export type GameStatementResult = ReportListResult & {
+export type GameStatementResult = {
   /** 是否以负数表示盈利 */
   IsNegativeWinCount?: boolean;
-};
+} & ReportListResult;
 
 /**
  * 包装游戏报表响应，选取列表行并保留盈亏符号约定
@@ -18,12 +20,12 @@ export type GameStatementResult = ReportListResult & {
  */
 function wrapGameStatement(
   data: {
-    IsNegativeWinCount?: boolean;
-    Items?: Record<string, unknown>[] | null;
-    ItemsMoney?: Record<string, unknown>[] | null;
-    Pagination?: { MaxCount?: number };
-    Total?: Record<string, unknown> | number;
     [key: string]: unknown;
+    IsNegativeWinCount?: boolean;
+    Items?: null | Record<string, unknown>[];
+    ItemsMoney?: null | Record<string, unknown>[];
+    Pagination?: { MaxCount?: number };
+    Total?: number | Record<string, unknown>;
   },
   preferMoney = false,
 ): GameStatementResult {
@@ -195,11 +197,12 @@ export function fetchVenueTemplateListApi(query: Query = {}) {
  * @see views/dataClose/gameStatement/components/game-report-panel.vue
  */
 export function fetchVenueFeeConfigListApi(query: Query) {
-  return requestClient.get<
-    Array<{ ApiName?: number | string; Fee?: number }>
-  >('/backend/apifeeconfig/list', {
-    params: query,
-  });
+  return requestClient.get<Array<{ ApiName?: number | string; Fee?: number }>>(
+    '/backend/apifeeconfig/list',
+    {
+      params: query,
+    },
+  );
 }
 
 /**

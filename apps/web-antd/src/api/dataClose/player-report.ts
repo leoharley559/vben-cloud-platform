@@ -1,17 +1,17 @@
-import { requestClient } from '#/api/request';
 import { toListResult } from '#/api/dataClose/shared';
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 type RawListPayload = {
-  Items?: Record<string, unknown>[] | null;
-  MoreItems?: Record<string, unknown> | null;
-  Pagination?: { MaxCount?: number } | null;
-  Total?: Record<string, unknown> | number | null;
   [key: string]: unknown;
+  Items?: null | Record<string, unknown>[];
+  MoreItems?: null | Record<string, unknown>;
+  Pagination?: null | { MaxCount?: number };
+  Total?: null | number | Record<string, unknown>;
 };
 
 /** 将接口可能返回的 null / 非对象 payload 归一化为稳定列表结构 */
-function normalizeListPayload(data: RawListPayload | null | undefined) {
+function normalizeListPayload(data: null | RawListPayload | undefined) {
   return toListResult(data ?? null);
 }
 
@@ -43,9 +43,9 @@ export function fetchPlayerStatisticsListApi(query: Record<string, unknown>) {
  */
 export function exportPlayerStatisticsCsvApi(query: Record<string, unknown>) {
   return requestClient.get<{
-    Id?: number | null;
-    Remark?: string | null;
-    Status?: number | null;
+    Id?: null | number;
+    Remark?: null | string;
+    Status?: null | number;
   }>('/backend/operation/playerstatisticscsv', {
     params: trimSpace(query),
   });

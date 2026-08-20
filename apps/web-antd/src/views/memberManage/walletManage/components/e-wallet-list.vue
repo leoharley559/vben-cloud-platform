@@ -8,20 +8,20 @@ import {
   Button,
   Checkbox,
   Input,
+  message,
   Select,
   Space,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteEWalletApi,
   fetchEWalletListApi,
 } from '#/api/memberManage/e-wallet';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { E_WALLET_PAY_TYPES, formatEWalletPayType } from '#/types/e-wallet';
@@ -35,10 +35,10 @@ const E_WALLET_SECURITY_PAGE_ID = 9;
 
 const { checkPermission } = useCloudPermission();
 
-const canView = computed(() => checkPermission(12945));
-const canAdd = computed(() => checkPermission(12946));
-const canEdit = computed(() => checkPermission(12947));
-const canDelete = computed(() => checkPermission(12948));
+const canView = computed(() => checkPermission(12_945));
+const canAdd = computed(() => checkPermission(12_946));
+const canEdit = computed(() => checkPermission(12_947));
+const canDelete = computed(() => checkPermission(12_948));
 
 const defaultBegin = dayjs().subtract(1, 'month').startOf('day');
 const defaultEnd = dayjs().endOf('day');
@@ -225,20 +225,20 @@ onMounted(() => {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button v-if="canAdd" type="primary" @click="openCreate">
-          新增电子钱包
-        </Button>
-      </Space>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+      </div>
+      <div class="query-filter-actions">
+        <Space>
+          <Button :loading="loading" type="primary" @click="handleSearch">
+            查询
+          </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button v-if="canAdd" type="primary" @click="openCreate">
+            新增电子钱包
+          </Button>
+        </Space>
+      </div>
+    </template>
 
     <Grid>
       <template #loginAccount="{ row }">

@@ -3,7 +3,7 @@ import type { EWalletListItem } from '#/types/e-wallet';
 
 import { computed, ref, watch } from 'vue';
 
-import { Form, Input, Modal, Select, message } from 'ant-design-vue';
+import { Form, Input, message, Modal, Select } from 'ant-design-vue';
 
 import {
   createEWalletApi,
@@ -17,20 +17,18 @@ import { createRequestHash } from '#/utils/crypto';
 
 defineOptions({ name: 'EWalletFormModal' });
 
-/** 与旧站 GoogleCode page-id=9 一致 */
-const E_WALLET_SECURITY_PAGE_ID = 9;
-const ACCOUNT_PATTERN = /^(?=.{11,12}$)(09|639|\*)[0-9*]*$/;
-
 const props = defineProps<{
   mode: 'create' | 'edit';
   open: boolean;
   row: EWalletListItem | null;
 }>();
-
 const emit = defineEmits<{
   success: [];
   'update:open': [value: boolean];
 }>();
+/** 与旧站 GoogleCode page-id=9 一致 */
+const E_WALLET_SECURITY_PAGE_ID = 9;
+const ACCOUNT_PATTERN = /^(?=.{11,12}$)(09|639|\*)[0-9*]*$/;
 
 const { packageOptions } = useOperationOptions();
 

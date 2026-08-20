@@ -1,9 +1,10 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import { onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  Card,
   Input,
   message,
   Popover,
@@ -12,7 +13,7 @@ import {
   Table,
   Tag,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 import { fetchVipRecordListApi } from '#/api/gameManage/vip-setting';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
@@ -82,9 +83,24 @@ const giftMap: Record<number, string> = {
 };
 const columns = [
   { key: 'CreateTime', title: '时间', width: 170 },
-  { dataIndex: 'LoginAccount', key: 'LoginAccount', title: '游戏账号', width: 130 },
-  { dataIndex: 'PackageName', key: 'PackageName', title: '所属产品', width: 130 },
-  { dataIndex: 'BeforeVipLevel', key: 'BeforeVipLevel', title: '修改前 VIP 等级', width: 140 },
+  {
+    dataIndex: 'LoginAccount',
+    key: 'LoginAccount',
+    title: '游戏账号',
+    width: 130,
+  },
+  {
+    dataIndex: 'PackageName',
+    key: 'PackageName',
+    title: '所属产品',
+    width: 130,
+  },
+  {
+    dataIndex: 'BeforeVipLevel',
+    key: 'BeforeVipLevel',
+    title: '修改前 VIP 等级',
+    width: 140,
+  },
   { dataIndex: 'VipLevel', key: 'VipLevel', title: 'VIP 等级', width: 100 },
   { key: 'BeforeTotalCharge', title: '修改前总存款', width: 140 },
   { key: 'TotalCharge', title: '总存款', width: 120 },
@@ -112,7 +128,10 @@ function queryParams(isExport = false) {
     Page: pager.Page,
     PageSize: pager.PageSize,
     PlayerId: filters.PlayerId,
-    Status: filters.Status === undefined || filters.Status === null ? '' : filters.Status,
+    Status:
+      filters.Status === undefined || filters.Status === null
+        ? ''
+        : filters.Status,
     VipLevel: filters.VipLevel,
   };
 }
@@ -141,14 +160,14 @@ async function loadData() {
 function search() {
   pager.Page = 1;
   filters.LoginAccount = filters.LoginAccount.trim().toLowerCase();
-  if (
-    filters.LoginAccount &&
-    !/^[a-z0-9]{4,20}$/.test(filters.LoginAccount)
-  ) {
+  if (filters.LoginAccount && !/^[a-z0-9]{4,20}$/.test(filters.LoginAccount)) {
     message.warning('游戏账号必须为 4～20 位字母或数字');
     return;
   }
-  if (toUnix(dateRange.value?.[0]) === undefined || toUnix(dateRange.value?.[1]) === undefined) {
+  if (
+    toUnix(dateRange.value?.[0]) === undefined ||
+    toUnix(dateRange.value?.[1]) === undefined
+  ) {
     message.warning('请选择有效的时间范围');
     return;
   }
@@ -172,7 +191,9 @@ function formatTime(value: unknown) {
     Number.isFinite(numeric) && String(value).length <= 10
       ? dayjs.unix(numeric)
       : dayjs(value as string);
-  return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : String(value);
+  return parsed.isValid()
+    ? parsed.format('YYYY-MM-DD HH:mm:ss')
+    : String(value);
 }
 
 function displayMoney(value: unknown) {
@@ -334,99 +355,100 @@ onMounted(() => {
         </div>
       </div>
     </div>
- 
-      <Table
+
+    <Table
       bordered
-        v-if="checkPermission(11_003)"
-        :columns="columns"
-        :data-source="rows"
-        :loading="loading"
-        :pagination="{
-          current: pager.Page,
-          pageSize: pager.PageSize,
-          showSizeChanger: true,
-          total,
-        }"
-        :row-key="(row) => `${row.CreateTime}-${row.LoginAccount}-${row.VipLevel ?? row.Id ?? ''}`"
-        :scroll="{ x: 1400 }"
-        size="small"
-        @change="
-          (pagination) => {
-            pager.Page = pagination.current || 1;
-            pager.PageSize = pagination.pageSize || 10;
-            loadData();
-          }
-        "
-      >
-        <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'LoginAccount'">
-            <PlayerAccountLink
-              :login-account="String(record.LoginAccount || '')"
-              :player-id="record.PlayerId as number | string | undefined"
-            />
-          </template>
-          <span v-else-if="column.key === 'CreateTime'">
-            {{ formatTime(record.CreateTime) }}
-          </span>
-          <span v-else-if="moneyKeys.has(String(column.key))">
-            {{ displayMoney(record[String(column.key)]) }}
-          </span>
-          <span v-else-if="column.key === 'HandlerUsername'">
-            {{ record.HandlerUsername || '系统' }}
-            <Popover
-              v-if="record.IsSendLevelGift > 0 || record.IsSendGift > 0"
-              placement="right"
-              title="操作记录"
-            >
-              <template #content>
-                <div>升级红利：{{ giftMap[record.IsSendLevelGift] }}</div>
-                <div>等级礼金：{{ giftMap[record.IsSendGift] }}</div>
-              </template>
-              <span class="info-dot">i</span>
-            </Popover>
-          </span>
-          <Tag
-            v-else-if="column.key === 'Status'"
-            :color="statusMap[record.Status]?.color"
+      v-if="checkPermission(11_003)"
+      :columns="columns"
+      :data-source="rows"
+      :loading="loading"
+      :pagination="{
+        current: pager.Page,
+        pageSize: pager.PageSize,
+        showSizeChanger: true,
+        total,
+      }"
+      :row-key="
+        (row) =>
+          `${row.CreateTime}-${row.LoginAccount}-${row.VipLevel ?? row.Id ?? ''}`
+      "
+      :scroll="{ x: 1400 }"
+      size="small"
+      @change="
+        (pagination) => {
+          pager.Page = pagination.current || 1;
+          pager.PageSize = pagination.pageSize || 10;
+          loadData();
+        }
+      "
+    >
+      <template #bodyCell="{ column, record }">
+        <template v-if="column.key === 'LoginAccount'">
+          <PlayerAccountLink
+            :login-account="String(record.LoginAccount || '')"
+            :player-id="record.PlayerId as number | string | undefined"
+          />
+        </template>
+        <span v-else-if="column.key === 'CreateTime'">
+          {{ formatTime(record.CreateTime) }}
+        </span>
+        <span v-else-if="moneyKeys.has(String(column.key))">
+          {{ displayMoney(record[String(column.key)]) }}
+        </span>
+        <span v-else-if="column.key === 'HandlerUsername'">
+          {{ record.HandlerUsername || '系统' }}
+          <Popover
+            v-if="record.IsSendLevelGift > 0 || record.IsSendGift > 0"
+            placement="right"
+            title="操作记录"
           >
-            {{ statusMap[record.Status]?.text || record.Status }}
-          </Tag>
-        </template>
-        <template #summary>
-          <Table.Summary fixed>
-            <Table.Summary.Row>
-              <Table.Summary.Cell :index="0">合计：</Table.Summary.Cell>
-              <Table.Summary.Cell
-                v-for="index in 4"
-                :key="`empty-${index}`"
-                :index="index"
-              >
-                -
-              </Table.Summary.Cell>
-              <Table.Summary.Cell :index="5">
-                {{ displayMoney(aggregate.SumBeforeTotalCharge) }}
-              </Table.Summary.Cell>
-              <Table.Summary.Cell :index="6">
-                {{ displayMoney(aggregate.SumTotalCharge) }}
-              </Table.Summary.Cell>
-              <Table.Summary.Cell :index="7">
-                {{ displayMoney(aggregate.SumBeforeTotalWater) }}
-              </Table.Summary.Cell>
-              <Table.Summary.Cell :index="8">
-                {{ displayMoney(aggregate.SumTotalWater) }}
-              </Table.Summary.Cell>
-              <Table.Summary.Cell :index="9">-</Table.Summary.Cell>
-              <Table.Summary.Cell :index="10">-</Table.Summary.Cell>
-            </Table.Summary.Row>
-          </Table.Summary>
-        </template>
-      </Table> 
+            <template #content>
+              <div>升级红利：{{ giftMap[record.IsSendLevelGift] }}</div>
+              <div>等级礼金：{{ giftMap[record.IsSendGift] }}</div>
+            </template>
+            <span class="info-dot">i</span>
+          </Popover>
+        </span>
+        <Tag
+          v-else-if="column.key === 'Status'"
+          :color="statusMap[record.Status]?.color"
+        >
+          {{ statusMap[record.Status]?.text || record.Status }}
+        </Tag>
+      </template>
+      <template #summary>
+        <Table.Summary fixed>
+          <Table.Summary.Row>
+            <Table.Summary.Cell :index="0">合计：</Table.Summary.Cell>
+            <Table.Summary.Cell
+              v-for="index in 4"
+              :key="`empty-${index}`"
+              :index="index"
+            >
+              -
+            </Table.Summary.Cell>
+            <Table.Summary.Cell :index="5">
+              {{ displayMoney(aggregate.SumBeforeTotalCharge) }}
+            </Table.Summary.Cell>
+            <Table.Summary.Cell :index="6">
+              {{ displayMoney(aggregate.SumTotalCharge) }}
+            </Table.Summary.Cell>
+            <Table.Summary.Cell :index="7">
+              {{ displayMoney(aggregate.SumBeforeTotalWater) }}
+            </Table.Summary.Cell>
+            <Table.Summary.Cell :index="8">
+              {{ displayMoney(aggregate.SumTotalWater) }}
+            </Table.Summary.Cell>
+            <Table.Summary.Cell :index="9">-</Table.Summary.Cell>
+            <Table.Summary.Cell :index="10">-</Table.Summary.Cell>
+          </Table.Summary.Row>
+        </Table.Summary>
+      </template>
+    </Table>
   </div>
 </template>
 
 <style scoped>
- 
-
 .info-dot {
   display: inline-flex;
   align-items: center;

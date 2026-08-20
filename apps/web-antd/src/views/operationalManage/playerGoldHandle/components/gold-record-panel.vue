@@ -3,26 +3,19 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  message,
-  Select,
-  Space,
-  Tag,
-} from 'ant-design-vue';
+import { Button, Input, message, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerGoldHandleListApi } from '#/api/operationManage/player-gold-handle';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
-import { exportRowsToCsv } from '#/utils/export-csv';
 import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
+import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -96,9 +89,7 @@ const TAKE_REASON_MAP: Record<number, string> = {
   2: '人工提现',
 };
 
-const doneMap = computed(() =>
-  isTake.value ? TAKE_DONE_MAP : GRANT_DONE_MAP,
-);
+const doneMap = computed(() => (isTake.value ? TAKE_DONE_MAP : GRANT_DONE_MAP));
 const reasonMap = computed(() =>
   isTake.value ? TAKE_REASON_MAP : GRANT_REASON_MAP,
 );
@@ -205,7 +196,7 @@ function multiFilterParam(values: Array<number | string>) {
 function normalizeLoginAccount() {
   filterLoginAccount.value = filterLoginAccount.value
     .toLowerCase()
-    .replace(/\s/g, '');
+    .replaceAll(/\s/g, '');
 }
 
 function buildListQuery(page?: { currentPage: number; pageSize: number }) {
@@ -258,8 +249,7 @@ const grantColumns: VxeTableGridOptions<RecordRow>['columns'] = [
   },
   {
     field: 'CreateTime',
-    formatter: ({ cellValue }) =>
-      formatOperationDateTime(cellValue as string),
+    formatter: ({ cellValue }) => formatOperationDateTime(cellValue as string),
     minWidth: 160,
     title: '时间',
   },
@@ -322,9 +312,9 @@ const grantColumns: VxeTableGridOptions<RecordRow>['columns'] = [
     formatter: ({ cellValue }) =>
       Number(cellValue) === 2
         ? '金额'
-        : Number(cellValue) === 1
+        : (Number(cellValue) === 1
           ? '倍数'
-          : String(cellValue ?? '-'),
+          : String(cellValue ?? '-')),
     minWidth: 90,
     title: '流水类型',
   },
@@ -364,8 +354,7 @@ const takeColumns: VxeTableGridOptions<RecordRow>['columns'] = [
   },
   {
     field: 'CreateTime',
-    formatter: ({ cellValue }) =>
-      formatOperationDateTime(cellValue as string),
+    formatter: ({ cellValue }) => formatOperationDateTime(cellValue as string),
     minWidth: 160,
     title: '时间',
   },
@@ -452,7 +441,7 @@ const gridOptions: VxeTableGridOptions<RecordRow> = {
         const items = (result.Items || []) as unknown as RecordRow[];
         totalAmount.value = Number(result.Total?.Total || 0);
         totalRealAmount.value = Number(
-          (result.Total as { TotalReal?: number } | undefined)?.TotalReal || 0,
+          (result.Total as undefined | { TotalReal?: number })?.TotalReal || 0,
         );
         return {
           items,
@@ -488,7 +477,7 @@ async function handleExport() {
       IsExp: true,
     });
     const rows = (result.Items || []) as unknown as RecordRow[];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -601,9 +590,9 @@ async function handleExport() {
             value: (row: RecordRow) =>
               Number(row.WaterType) === 2
                 ? '金额'
-                : Number(row.WaterType) === 1
+                : (Number(row.WaterType) === 1
                   ? '倍数'
-                  : '-',
+                  : '-'),
           },
           { header: '流水要求', value: (row: RecordRow) => formatWater(row) },
           { header: '备注', value: (row: RecordRow) => row.HandleDesc || '-' },
@@ -631,133 +620,131 @@ async function handleExport() {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @change="normalizeLoginAccount"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="normalizeLoginAccount"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPlayerId"
-          allow-clear
-          placeholder="请输入玩家ID"
-        >
-          <template #addonBefore>玩家ID</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPlayerId"
+            allow-clear
+            placeholder="请输入玩家ID"
+          >
+            <template #addonBefore>玩家ID</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPlayerName"
-          allow-clear
-          placeholder="请输入玩家昵称"
-        >
-          <template #addonBefore>玩家昵称</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPlayerName"
+            allow-clear
+            placeholder="请输入玩家昵称"
+          >
+            <template #addonBefore>玩家昵称</template>
+          </Input>
+        </div>
 
-      <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="packageSelectOptions"
-          show-search
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-          placeholder="请选择所属产品"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
 
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
 
-      <Space.Compact v-if="!isTake">
-        <span class="query-field-addon">流水类型</span>
-        <Select
-          v-model:value="filterWaterType"
-         
-          :options="waterTypeOptions"
-          placeholder="请选择流水类型"
-        />
-      </Space.Compact>
+        <Space.Compact v-if="!isTake">
+          <span class="query-field-addon">流水类型</span>
+          <Select
+            v-model:value="filterWaterType"
+            :options="waterTypeOptions"
+            placeholder="请选择流水类型"
+          />
+        </Space.Compact>
 
-      <Space.Compact>
-        <span class="query-field-addon">状态</span>
-        <Select
-          v-model:value="filterDone"
-          allow-clear
-         
-          :max-tag-count="1"
-          mode="multiple"
-          :options="doneOptions"
-          placeholder="请选择状态"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterDone"
+            allow-clear
+            :max-tag-count="1"
+            mode="multiple"
+            :options="doneOptions"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
 
-      <Space.Compact>
-        <span class="query-field-addon">类型</span>
-        <Select
-          v-model:value="filterReason"
-          allow-clear
-         
-          :max-tag-count="1"
-          mode="multiple"
-          :options="reasonOptions"
-          placeholder="请选择类型"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">类型</span>
+          <Select
+            v-model:value="filterReason"
+            allow-clear
+            :max-tag-count="1"
+            mode="multiple"
+            :options="reasonOptions"
+            placeholder="请选择类型"
+          />
+        </Space.Compact>
 
-      <Space.Compact v-if="!isTake">
-        <span class="query-field-addon">数据类型</span>
-        <Select
-          v-model:value="filterDataSearchType"
-         
-          :options="dataSearchTypeOptions"
-          placeholder="请选择数据类型"
-        />
-      </Space.Compact>
+        <Space.Compact v-if="!isTake">
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="filterDataSearchType"
+            :options="dataSearchTypeOptions"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
 
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button
-        v-if="canExport"
-        :loading="exportLoading"
-        @click="handleExport"
-      >
-        导出 Excel
-      </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 

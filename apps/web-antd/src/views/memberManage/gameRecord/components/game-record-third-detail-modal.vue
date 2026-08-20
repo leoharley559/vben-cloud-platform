@@ -1,18 +1,24 @@
 <script lang="ts" setup>
+import type { GameInfo } from '#/utils/game-config';
+
 import { computed, ref, watch } from 'vue';
 
-import { Descriptions, Modal, Spin, Tag, message } from 'ant-design-vue';
+import { Descriptions, message, Modal, Spin, Tag } from 'ant-design-vue';
 
 import { fetchGameRecordThirdDetailApi } from '#/api/memberManage/game-record';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatVenueName } from '#/utils/game-config';
-import type { GameInfo } from '#/utils/game-config';
 import {
   buildDetailSections,
   getDetailModeLabel,
 } from '#/utils/third-detail-display.js';
 
 defineOptions({ name: 'GameRecordThirdDetailModal' });
+
+const props = defineProps<{
+  games?: Record<string, GameInfo>;
+  row?: BetRow | null;
+}>();
 
 interface BetRow {
   Detail?: unknown;
@@ -46,11 +52,6 @@ interface DetailSection {
 }
 
 const open = defineModel<boolean>('open', { default: false });
-const props = defineProps<{
-  games?: Record<string, GameInfo>;
-  row?: BetRow | null;
-}>();
-
 const { gameConfig } = useGameConfig();
 const loading = ref(false);
 const displayMode = ref<'legacy' | 'structured'>('legacy');
@@ -115,7 +116,7 @@ async function loadDetail() {
     });
     extraDetails.value = Array.isArray(data) ? data : [];
     displayMode.value = 'legacy';
-    if (!extraDetails.value.length) {
+    if (extraDetails.value.length === 0) {
       message.info('暂无三方详情');
     }
   } catch {
@@ -212,7 +213,7 @@ watch(open, (visible) => {
             </div>
           </div>
           <div
-            v-if="!detailSections.length"
+            v-if="detailSections.length === 0"
             class="py-8 text-center text-gray-400"
           >
             暂无详情
@@ -227,14 +228,14 @@ watch(open, (visible) => {
           >
             <template v-if="item.Type === 'html'">
               <div class="mb-1 text-xs text-gray-500">{{ item.Name }}</div>
-              <div v-html="String(item.Value || '')" />
+              <div v-html="String(item.Value || '')"></div>
             </template>
             <template v-else-if="item.Type === 'Iframe' || item.Type === 'url'">
               <div class="mb-1 text-xs text-gray-500">{{ item.Name }}</div>
               <iframe
                 class="h-[360px] w-full rounded border"
                 :src="iframeSrc(item.Value)"
-              />
+              ></iframe>
             </template>
             <template v-else-if="item.Type === 'string'">
               <div class="flex gap-2 text-sm">
@@ -250,7 +251,7 @@ watch(open, (visible) => {
             </template>
           </div>
           <div
-            v-if="!extraDetails.length"
+            v-if="extraDetails.length === 0"
             class="py-8 text-center text-gray-400"
           >
             暂无详情

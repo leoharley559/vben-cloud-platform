@@ -1,8 +1,8 @@
-import {
-  VOUCHER_TYPE_MAP,
-  formatOperationDateTime,
-} from '#/utils/operation-status';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import {
+  formatOperationDateTime,
+  VOUCHER_TYPE_MAP,
+} from '#/utils/operation-status';
 
 export const VOUCHER_TYPE = {
   RED_PACKET: 1,
@@ -204,13 +204,13 @@ export function parseLangTextMap(raw: unknown) {
 
 export function resolveVoucherName(raw: unknown) {
   const lang = parseLangTextMap(raw);
-  const first = Object.values(lang)[0] as { Name?: string } | undefined;
+  const first = Object.values(lang)[0] as undefined | { Name?: string };
   return first?.Name || '-';
 }
 
 export function resolveVoucherDesc(raw: unknown) {
   const lang = parseLangTextMap(raw);
-  const first = Object.values(lang)[0] as { Desc?: string } | undefined;
+  const first = Object.values(lang)[0] as undefined | { Desc?: string };
   return first?.Desc || '-';
 }
 
@@ -272,7 +272,7 @@ export function deriveActivityName(
   activityType?: number | string,
   langText?: unknown,
 ) {
-  if (Number(activityType) === 10020) {
+  if (Number(activityType) === 10_020) {
     return '每日签到';
   }
   return resolveVoucherName(langText);
@@ -302,21 +302,21 @@ export function generateUid() {
 /* ------------------------------------------------------------------ */
 
 export function resolveLangGroupIds(
-  projectConfig?: {
+  projectConfig?: null | {
     LangGroup?: Array<{ Default?: boolean; Id: number }>;
-  } | null,
+  },
 ): number[] {
   const groups = projectConfig?.LangGroup || [];
   const ids = groups
     .map((group) => Number(group.Id))
     .filter((id) => !Number.isNaN(id));
-  return ids.length ? ids : [1];
+  return ids.length > 0 ? ids : [1];
 }
 
 export function resolveDefaultLangGroupId(
-  projectConfig?: {
+  projectConfig?: null | {
     LangGroup?: Array<{ Default?: boolean; Id: number }>;
-  } | null,
+  },
 ): number {
   const groups = projectConfig?.LangGroup || [];
   const found = groups.find((group) => group.Default);
@@ -329,11 +329,11 @@ export function resolveDefaultLangGroupId(
 /** 为每个语言群组补齐一份默认值，已有的值优先保留 */
 export function ensureLangMap<T extends Record<string, unknown>>(
   langGroupIds: Array<number | string>,
-  existing: Record<string, unknown> | undefined | null,
+  existing: null | Record<string, unknown> | undefined,
   factory: () => T,
 ): Record<string, T> {
   const src = (existing || {}) as Record<string, Partial<T>>;
-  const ids = langGroupIds.length ? langGroupIds : [1];
+  const ids = langGroupIds.length > 0 ? langGroupIds : [1];
   return Object.fromEntries(
     ids.map((id) => [String(id), { ...factory(), ...src[String(id)] } as T]),
   );
@@ -357,12 +357,12 @@ function isArrayIndexKey(key: string) {
   return /^\d+$/.test(key);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function getObjectPath<T = any>(
   obj: unknown,
   path: Array<number | string>,
 ): T | undefined {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   let cur: any = obj;
   for (const key of path) {
     if (cur === undefined || cur === null) {
@@ -378,7 +378,7 @@ export function setObjectPath(
   path: Array<number | string>,
   value: unknown,
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   let cur: any = obj;
   for (let i = 0; i < path.length - 1; i++) {
     const key = String(path[i]);
@@ -414,15 +414,15 @@ function isPrimitiveValue(value: unknown) {
  * 把散落在各层级的 LangText 收集到根节点的单一 LangText 对象中
  * (镜像旧站 useLangTextConverter().consolidate)
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function consolidateVoucherLangText(
   root: Record<string, unknown>,
   langGroupIds: Array<number | string>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 ): Record<string, any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const clone: any = deepClone(root);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const outputLangText: Record<string, any> = {};
   walkConsolidate(clone, [], outputLangText, langGroupIds);
   clone.LangText = outputLangText;
@@ -430,10 +430,10 @@ export function consolidateVoucherLangText(
 }
 
 function walkConsolidate(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   node: any,
   pathArr: string[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   outputLangText: Record<string, any>,
   langGroupIds: Array<number | string>,
 ) {
@@ -483,9 +483,9 @@ export function breakupVoucherLangText(
   root: Record<string, unknown>,
   langText: Record<string, unknown>,
   langGroupIds: Array<number | string>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 ): Record<string, any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const clone: any = deepClone(root);
   delete clone.LangText;
   walkBreakup(langText, [], clone, langGroupIds);
@@ -495,7 +495,7 @@ export function breakupVoucherLangText(
 function walkBreakup(
   langText: Record<string, unknown>,
   pathArr: string[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   root: any,
   langGroupIds: Array<number | string>,
 ) {
@@ -547,21 +547,17 @@ export function parseVoucherLangText(
       throw new Error('empty LangText');
     }
     const parsed = typeof raw === 'string' ? JSON.parse(raw || '{}') : raw;
-    if (Array.isArray(parsed)) {
-      lt = Object.fromEntries(
+    lt = Array.isArray(parsed) ? Object.fromEntries(
         (parsed as Array<Record<string, unknown>>).map((item) => [
           String(item.LangGroupId ?? ''),
           item,
         ]),
-      );
-    } else {
-      lt = (parsed as Record<string, Record<string, unknown>>) || {};
-    }
+      ) : (parsed as Record<string, Record<string, unknown>>) || {};
   } catch {
     lt = {};
   }
 
-  const ids = langGroupIds.length ? langGroupIds : [1];
+  const ids = langGroupIds.length > 0 ? langGroupIds : [1];
   const missing: number[] = [];
   let lastValidId: number | undefined;
 
@@ -599,13 +595,6 @@ export function parseVoucherLangText(
 
 export function getRewardTiersPath(voucherType: number): string[] {
   switch (voucherType) {
-    case VOUCHER_TYPE.RED_PACKET: {
-      return [
-        'LuckyRedPacketVoucherPriceSetting',
-        'LuckyRedPacketVoucherPriceList',
-        'Tiers',
-      ];
-    }
     case VOUCHER_TYPE.CASH: {
       return [
         'CashExchangeVoucherPriceSetting',
@@ -622,6 +611,13 @@ export function getRewardTiersPath(voucherType: number): string[] {
         'GrandGiftWheelVoucherPriceList',
       ];
     }
+    case VOUCHER_TYPE.RED_PACKET: {
+      return [
+        'LuckyRedPacketVoucherPriceSetting',
+        'LuckyRedPacketVoucherPriceList',
+        'Tiers',
+      ];
+    }
     default: {
       return [];
     }
@@ -630,13 +626,6 @@ export function getRewardTiersPath(voucherType: number): string[] {
 
 export function getDrawWaterPath(voucherType: number): string[] {
   switch (voucherType) {
-    case VOUCHER_TYPE.RED_PACKET: {
-      return [
-        'LuckyRedPacketVoucherPriceSetting',
-        'LuckyRedPacketVoucherPriceList',
-        'DrawWaterSrctp',
-      ];
-    }
     case VOUCHER_TYPE.CASH: {
       return [
         'CashExchangeVoucherPriceSetting',
@@ -649,6 +638,13 @@ export function getDrawWaterPath(voucherType: number): string[] {
     }
     case VOUCHER_TYPE.PRIZE_WHEEL: {
       return ['GrandGiftWheelVoucherPriceSetting', 'DrawWaterSrctp'];
+    }
+    case VOUCHER_TYPE.RED_PACKET: {
+      return [
+        'LuckyRedPacketVoucherPriceSetting',
+        'LuckyRedPacketVoucherPriceList',
+        'DrawWaterSrctp',
+      ];
     }
     default: {
       return [];
@@ -748,17 +744,6 @@ export function createDefaultExInfo(
     VoucherRules: [] as VoucherRuleItem[],
   };
   switch (voucherType) {
-    case VOUCHER_TYPE.RED_PACKET: {
-      return {
-        ...base,
-        LuckyRedPacketVoucherPriceSetting: {
-          LuckyRedPacketVoucherPriceList: {
-            DrawWaterSrctp: createEmptyDrawWaterSrctp(),
-            Tiers: [createEmptyRedPacketTier()],
-          },
-        },
-      };
-    }
     case VOUCHER_TYPE.CASH: {
       return {
         ...base,
@@ -789,6 +774,17 @@ export function createDefaultExInfo(
           GrandGiftWheelVoucherPriceList: Array.from({ length: 8 }, () =>
             createEmptyProbabilityPrize(voucherType, langGroupIds),
           ),
+        },
+      };
+    }
+    case VOUCHER_TYPE.RED_PACKET: {
+      return {
+        ...base,
+        LuckyRedPacketVoucherPriceSetting: {
+          LuckyRedPacketVoucherPriceList: {
+            DrawWaterSrctp: createEmptyDrawWaterSrctp(),
+            Tiers: [createEmptyRedPacketTier()],
+          },
         },
       };
     }
@@ -839,7 +835,7 @@ export type VoucherFormState = ReturnType<typeof createDefaultVoucherForm>;
 export function breakupVoucherDetail(
   raw: Record<string, unknown>,
   langGroupIds: number[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 ): Record<string, any> {
   const exInfo = parseJsonField(raw.ExInfo, {});
   const langTextRaw = parseVoucherLangText(raw.LangText, langGroupIds, [
@@ -901,7 +897,7 @@ export function createDefaultVoucherGlobalConfigForm(langGroupIds: number[]) {
 export function breakupVoucherGlobalConfig(
   raw: Record<string, unknown>,
   langGroupIds: number[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 ): Record<string, any> {
   const rulesConfig = parseJsonField(raw.RulesConfig, []);
   const langTextRaw = parseVoucherLangText(raw.LangText, langGroupIds, [

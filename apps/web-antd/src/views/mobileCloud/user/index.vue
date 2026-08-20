@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { Button, Card, Descriptions } from 'ant-design-vue';
 
@@ -16,6 +16,11 @@ defineOptions({ name: 'MobileCloudUser' });
 const authStore = useAuthStore();
 const userInfo = ref<Record<string, unknown>>({});
 const subView = ref<'accountpsd' | 'menu' | 'phone'>('menu');
+
+const displayUsername = computed(() => {
+  const admin = userInfo.value.Admin as Record<string, unknown> | undefined;
+  return String(admin?.Username || userInfo.value.Username || '-');
+});
 
 async function loadUserInfo() {
   userInfo.value = await fetchWithdrawUserInfoApi();
@@ -35,10 +40,7 @@ onMounted(loadUserInfo);
       <Card class="mb-3" size="small" title="个人中心">
         <Descriptions :column="1" size="small">
           <Descriptions.Item label="账号">
-            {{
-              (userInfo.Admin as Record<string, unknown> | undefined)
-                ?.Username || userInfo.Username || '-'
-            }}
+            {{ displayUsername }}
           </Descriptions.Item>
           <Descriptions.Item label="可用余额">
             {{ formatAmountFromCent(Number(userInfo.UseMoney || 0)) }}

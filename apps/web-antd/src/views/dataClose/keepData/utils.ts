@@ -8,17 +8,17 @@ import { formatPercent } from '#/views/dataClose/shared/report-utils';
 export type KeepRow = Record<string, unknown>;
 
 export type KeepDetailsParam = {
-  page: 'retention' | 'login' | 'qujian' | 'ltv' | 'oneTime';
-  type: string | number;
+  AdminGroupIds?: string;
+  AdminIds?: string;
+  BeginTime?: string;
+  ChannelIds?: string;
   date: string;
   days?: number;
-  reportType?: number;
-  ChannelIds?: string;
-  AdminIds?: string;
-  AdminGroupIds?: string;
-  PackageId?: string | number;
-  BeginTime?: string;
   EndTime?: string;
+  PackageId?: number | string;
+  page: 'login' | 'ltv' | 'oneTime' | 'qujian' | 'retention';
+  reportType?: number;
+  type: number | string;
 };
 
 export const EXTANT_DAY_INDEXES = [1, 3, 4, 5, 6, 7, 15, 30, 60, 90];
@@ -150,7 +150,7 @@ export function pivotLoginRetention(items: KeepRow[]): KeepRow[] {
     }
     result.push(temp);
   }
-  return result.sort((a, b) =>
+  return result.toSorted((a, b) =>
     String(b.RegisterDate).localeCompare(String(a.RegisterDate)),
   );
 }
@@ -185,7 +185,7 @@ export function pivotLtvRows(items: KeepRow[]): KeepRow[] {
     }
     result.push(temp);
   }
-  return result.sort((a, b) =>
+  return result.toSorted((a, b) =>
     String(b.RegisterDate).localeCompare(String(a.RegisterDate)),
   );
 }
@@ -245,7 +245,7 @@ export function keepDetailsTitle(page: KeepDetailsParam['page']) {
   return map[page] || page;
 }
 
-export function keepDetailsSubTitle(type: string | number, days?: number) {
+export function keepDetailsSubTitle(type: number | string, days?: number) {
   if (type === 'reg') return '注册人数详情';
   if (type === 'new') return '新增人数详情';
   if (type === 'pay') return '首存人数详情';

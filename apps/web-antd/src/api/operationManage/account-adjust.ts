@@ -1,9 +1,10 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   PlayerAdjustListItem,
   PlayerAdjustListQuery,
 } from '#/types/player-detail';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**

@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -48,7 +49,7 @@ export function fetchLegacyRoleListApi(query: Record<string, unknown>) {
  */
 export function fetchLanguageGroupListApi(query: Record<string, unknown> = {}) {
   return requestClient
-    .get<{ Items?: Record<string, unknown>[] } | Record<string, unknown>[]>(
+    .get<Record<string, unknown>[] | { Items?: Record<string, unknown>[] }>(
       '/backend/agentgrouplang/list',
       { params: query },
     )

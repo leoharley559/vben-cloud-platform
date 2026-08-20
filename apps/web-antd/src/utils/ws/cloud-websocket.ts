@@ -1,6 +1,6 @@
-import { wsDecrypt } from '#/utils/crypto';
-
 import type { CloudWsOptions, CloudWsStatus } from './types';
+
+import { wsDecrypt } from '#/utils/crypto';
 
 /**
  * 云后台通用 WebSocket 客户端
@@ -11,20 +11,28 @@ import type { CloudWsOptions, CloudWsStatus } from './types';
  * 仅负责连接生命周期；Protobuf 编解码由各业务域自行接入。
  */
 export class CloudWebSocket {
-  private readonly url: string;
-  private readonly options: Required<
+  get currentStatus() {
+    return this.status;
+  }
+  get readyState() {
+    return this.socket?.readyState ?? WebSocket.CLOSED;
+  }
+
+  private manualClose = false;
+  private readonly options: CloudWsOptions &
+    Required<
     Pick<
       CloudWsOptions,
       'autoReconnect' | 'decrypt' | 'maxRetries' | 'reconnectInterval'
     >
-  > &
-    CloudWsOptions;
-
-  private socket: null | WebSocket = null;
-  private status: CloudWsStatus = 'closed';
-  private retries = 0;
-  private manualClose = false;
+  >;
   private reconnectTimer: null | ReturnType<typeof setTimeout> = null;
+  private retries = 0;
+  private socket: null | WebSocket = null;
+
+  private status: CloudWsStatus = 'closed';
+
+  private readonly url: string;
 
   constructor(url: string, options: CloudWsOptions = {}) {
     this.url = url;
@@ -42,12 +50,14 @@ export class CloudWebSocket {
     };
   }
 
-  get readyState() {
-    return this.socket?.readyState ?? WebSocket.CLOSED;
-  }
-
-  get currentStatus() {
-    return this.status;
+  close(code?: number, reason?: string) {
+    this.manualClose = true;
+    this.clearReconnectTimer();
+    if (this.socket) {
+      this.socket.close(code, reason);
+      this.socket = null;
+    }
+    this.setStatus('closed');
   }
 
   connect() {
@@ -114,23 +124,8 @@ export class CloudWebSocket {
       console.warn('[CloudWebSocket] send ignored, socket not open');
       return false;
     }
-    this.socket.send(data as Blob | ArrayBuffer | string);
+    this.socket.send(data as ArrayBuffer | Blob | string);
     return true;
-  }
-
-  close(code?: number, reason?: string) {
-    this.manualClose = true;
-    this.clearReconnectTimer();
-    if (this.socket) {
-      this.socket.close(code, reason);
-      this.socket = null;
-    }
-    this.setStatus('closed');
-  }
-
-  private setStatus(status: CloudWsStatus) {
-    this.status = status;
-    this.options.onStatusChange?.(status);
   }
 
   private clearReconnectTimer() {
@@ -158,6 +153,11 @@ export class CloudWebSocket {
     this.reconnectTimer = setTimeout(() => {
       this.connect();
     }, delay);
+  }
+
+  private setStatus(status: CloudWsStatus) {
+    this.status = status;
+    this.options.onStatusChange?.(status);
   }
 }
 

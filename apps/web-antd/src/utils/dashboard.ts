@@ -141,13 +141,13 @@ export function formatDeltaPercent(today: number, yesterday: number) {
 }
 
 export type PanelMetricKey =
+  | 'profits'
   | 'SumOnlinePlayerNum'
+  | 'SumTotalPayMoney'
   | 'SumTransBetMoney1'
   | 'SumTransWinMoney1'
-  | 'WinSubBet'
-  | 'SumTotalPayMoney'
   | 'SumWithdrawMoney'
-  | 'profits';
+  | 'WinSubBet';
 
 export interface PanelMetricDef {
   calc: (row: Record<string, unknown>) => number;

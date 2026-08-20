@@ -42,7 +42,9 @@ onMounted(() => {
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <TotalPanel v-if="activeTab === 'first' && item.key === 'first'" />
-          <SelfPanel v-else-if="activeTab === 'second' && item.key === 'second'" />
+          <SelfPanel
+            v-else-if="activeTab === 'second' && item.key === 'second'"
+          />
           <SonPanel v-else-if="activeTab === 'third' && item.key === 'third'" />
         </Tabs.TabPane>
       </Tabs>

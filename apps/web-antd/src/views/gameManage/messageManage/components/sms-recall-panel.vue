@@ -25,8 +25,8 @@ import {
   sendRecallApi,
   updateRecallSwitchApi,
 } from '#/api/gameManage/message-manage';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'SmsRecallPanel' });
@@ -500,9 +500,9 @@ async function exportDetail() {
 .detail-header,
 .detail-pagination {
   display: flex;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
 }
 
 .data-grid {

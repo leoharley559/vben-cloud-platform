@@ -75,11 +75,7 @@ watch(
         type="line"
         size="small"
       >
-        <Tabs.TabPane
-          v-for="item in tabs"
-          :key="item.key"
-          :tab="item.label"
-        >
+        <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.label">
           <AdvertisementProgrammePanel
             v-if="item.type !== 4 && activeTab === item.key"
             :ad-type="item.type"

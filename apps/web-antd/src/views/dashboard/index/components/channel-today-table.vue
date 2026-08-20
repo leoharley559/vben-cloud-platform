@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { h, onMounted, ref } from 'vue';
 
-import { Button, Card, Table, message } from 'ant-design-vue';
+import { Button, Card, message, Table } from 'ant-design-vue';
 
 import { fetchDashboardChannelApi } from '#/api/dashboard';
 import { exportRowsToCsv } from '#/utils/export-csv';
@@ -13,10 +13,10 @@ const loading = ref(false);
 const list = ref<Record<string, unknown>[]>([]);
 
 function pickChannelRows(
-  result: {
+  result: null | {
     Items?: Array<Record<string, unknown>>;
     RealtimeItems?: Array<Record<string, unknown>>;
-  } | null,
+  },
 ) {
   if (!result || typeof result !== 'object') {
     return [];
@@ -24,7 +24,7 @@ function pickChannelRows(
   const realtime = Array.isArray(result.RealtimeItems)
     ? result.RealtimeItems
     : [];
-  if (realtime.length) {
+  if (realtime.length > 0) {
     return realtime;
   }
   // 兼容：RealtimeItems 为空/null 时尝试 Items
@@ -118,7 +118,7 @@ async function loadList() {
   try {
     const result = (await fetchDashboardChannelApi({})) || {};
     const items = pickChannelRows(result);
-    list.value = [...items].sort(
+    list.value = [...items].toSorted(
       (a, b) => Number(b.NewCountNum || 0) - Number(a.NewCountNum || 0),
     );
   } catch {
@@ -130,7 +130,7 @@ async function loadList() {
 }
 
 function handleExport() {
-  if (!list.value.length) {
+  if (list.value.length === 0) {
     message.warning('暂无数据可导出');
     return;
   }
@@ -197,9 +197,7 @@ onMounted(() => {
     <template #title>
       <div class="flex items-center justify-between">
         <span>渠道今日数据</span>
-        <Button size="small" @click="handleExport">
-          导出 Excel
-        </Button>
+        <Button size="small" @click="handleExport"> 导出 Excel </Button>
       </div>
     </template>
     <Table

@@ -1,10 +1,10 @@
-import CryptoJS from 'crypto-js';
-
 import type {
   AdminDetailRecord,
   AdminFormModel,
   AdminSonUserRoleDataField,
 } from '#/types/system-manage';
+
+import CryptoJS from 'crypto-js';
 
 function cleanArray<T>(arr?: T[]) {
   if (!arr?.length) {
@@ -16,7 +16,7 @@ function cleanArray<T>(arr?: T[]) {
 }
 
 function toNumberArray(values?: Array<number | string>) {
-  return cleanArray(values).map((item) => Number(item));
+  return cleanArray(values).map(Number);
 }
 
 function splitToNumberArray(value?: string) {

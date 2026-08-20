@@ -4,13 +4,13 @@ import type { MobileVerifyCodeListItem } from '#/types/mobile-verify-code';
 
 import { computed, ref } from 'vue';
 
-import { Button, Input, Select, Space, message } from 'ant-design-vue';
+import { Button, Input, message, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchMobileVerifyCodeListApi } from '#/api/memberManage/mobile-verify-code';
-import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchMobileVerifyCodeListApi } from '#/api/memberManage/mobile-verify-code';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 
@@ -22,7 +22,7 @@ defineOptions({ name: 'MobileCodeQueryList' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canWhitelist = computed(() => checkPermission(12565));
+const canWhitelist = computed(() => checkPermission(12_565));
 
 const generateOpen = ref(false);
 const whitelistOpen = ref(false);
@@ -75,7 +75,12 @@ const gridOptions: VxeTableGridOptions<MobileVerifyCodeListItem> = {
       title: '申请时间',
     },
     { field: 'PhoneNum', minWidth: 130, title: '手机号' },
-    { field: 'LoginAccount', minWidth: 130, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 130,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'VerifyCode', minWidth: 100, title: '验证码' },
   ],
@@ -157,17 +162,21 @@ function handleReset() {
           <template #addonBefore>手机号</template>
         </Input>
       </div>
-        <div class="query-filter-actions">
-          <Button :loading="loading" type="primary" @click="handleSearch">
-        查询
-      </Button>
-      <Button @click="handleReset">重置</Button>
-      <Button @click="generateOpen = true">后台生成验证码</Button>
-      <Button v-if="canWhitelist" type="primary" @click="whitelistOpen = true">
-        白名单设置
-      </Button>
-        </div>
-      </template>
+      <div class="query-filter-actions">
+        <Button :loading="loading" type="primary" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
+        <Button @click="generateOpen = true">后台生成验证码</Button>
+        <Button
+          v-if="canWhitelist"
+          type="primary"
+          @click="whitelistOpen = true"
+        >
+          白名单设置
+        </Button>
+      </div>
+    </template>
 
     <Grid>
       <template #loginAccount="{ row }">

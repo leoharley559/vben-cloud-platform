@@ -5,13 +5,7 @@ import type { ChannelDataItem } from '#/types/promotion';
 
 import { computed, onMounted, ref } from 'vue';
 
-import {
-  Result,
-  Select,
-  Space,
-  Table,
-  Tooltip,
-} from 'ant-design-vue';
+import { Result, Select, Space, Table, Tooltip } from 'ant-design-vue';
 
 import {
   fetchChannelDataListApi,
@@ -45,9 +39,7 @@ const rows = ref<ChannelDataRow[]>([]);
 const expandedKeys = ref<string[]>([]);
 
 function numeric(row: ChannelDataItem, field: string) {
-  return Number(
-    (row as unknown as Record<string, unknown>)[field] || 0,
-  );
+  return Number((row as unknown as Record<string, unknown>)[field] || 0);
 }
 
 function plainValue(row: ChannelDataRow, field: string) {
@@ -100,9 +92,7 @@ function buildTree(
       SumPayMergerMoney: Number(
         findTotal(totals, date, 'SumPayMergerMoney') || 0,
       ),
-      SumPayMergerNum: Number(
-        findTotal(totals, date, 'SumPayMergerNum') || 0,
-      ),
+      SumPayMergerNum: Number(findTotal(totals, date, 'SumPayMergerNum') || 0),
       SumPayMoney: children.reduce(
         (sum, item) => sum + Number(item.SumPayMoney || 0),
         0,
@@ -150,8 +140,19 @@ function money(value: number) {
 }
 
 const columns: TableColumnsType<ChannelDataRow> = [
-  { dataIndex: 'NowDate', fixed: 'left', key: 'NowDate', title: '日期', width: 150 },
-  { dataIndex: 'SumRegDevice', key: 'SumRegDevice', title: '新增设备', width: 100 },
+  {
+    dataIndex: 'NowDate',
+    fixed: 'left',
+    key: 'NowDate',
+    title: '日期',
+    width: 150,
+  },
+  {
+    dataIndex: 'SumRegDevice',
+    key: 'SumRegDevice',
+    title: '新增设备',
+    width: 100,
+  },
   { dataIndex: 'SumReg', key: 'SumReg', title: '新增用户', width: 100 },
   { key: 'devicePercent', title: '设备比', width: 100 },
   { dataIndex: 'SumLogin', key: 'SumLogin', title: '登录人数', width: 100 },
@@ -184,7 +185,10 @@ function cellValue(row: ChannelDataRow, key: string) {
       return (cost * currentRate.value).toFixed(2);
     }
     case 'devicePercent': {
-      return calcPercent(Number(row.SumRegDevice || 0), Number(row.SumReg || 0));
+      return calcPercent(
+        Number(row.SumRegDevice || 0),
+        Number(row.SumReg || 0),
+      );
     }
     case 'ltv': {
       return calcArppu(Number(row.SumReg || 0), payMoney * currentRate.value);
@@ -206,8 +210,7 @@ function cellValue(row: ChannelDataRow, key: string) {
     }
     case 'profit': {
       return money(
-        Number(row.SumPayMergerMoney || 0) -
-          Number(row.SumWithdrawMoney || 0),
+        Number(row.SumPayMergerMoney || 0) - Number(row.SumWithdrawMoney || 0),
       );
     }
     case 'profitRoi': {
@@ -277,10 +280,7 @@ onMounted(async () => {
       @expanded-rows-change="(keys) => (expandedKeys = keys.map(String))"
     >
       <template #headerCell="{ column }">
-        <Tooltip
-          v-if="column.key === 'payRoi'"
-          title="充值金额 ÷ 投放成本"
-        >
+        <Tooltip v-if="column.key === 'payRoi'" title="充值金额 ÷ 投放成本">
           充值ROI ⓘ
         </Tooltip>
         <Tooltip
@@ -295,12 +295,9 @@ onMounted(async () => {
         <span
           v-if="
             column.key &&
-            ![
-              'NowDate',
-              'SumRegDevice',
-              'SumReg',
-              'SumLogin',
-            ].includes(String(column.key))
+            !['NowDate', 'SumRegDevice', 'SumReg', 'SumLogin'].includes(
+              String(column.key),
+            )
           "
         >
           {{ cellValue(record, String(column.key)) }}

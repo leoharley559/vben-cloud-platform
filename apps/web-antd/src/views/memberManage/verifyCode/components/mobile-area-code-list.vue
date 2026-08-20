@@ -7,14 +7,15 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Space,
   Switch,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchPhoneAreaCodeListApi,
   resetPhoneAreaCodeDefaultApi,
@@ -22,7 +23,6 @@ import {
   switchPhoneAreaCodeFrequentlyApi,
   switchPhoneAreaCodeStatusApi,
 } from '#/api/memberManage/mobile-verify-code';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatCountryName } from '#/utils/phone-area-code';
@@ -31,11 +31,11 @@ defineOptions({ name: 'MobileAreaCodeList' });
 
 const { checkPermission } = useCloudPermission();
 
-const canView = computed(() => checkPermission(11921));
-const canSwitchStatus = computed(() => checkPermission(11923));
-const canSwitchFrequently = computed(() => checkPermission(11926));
-const canResetDefault = computed(() => checkPermission(11928));
-const canBatchSwitch = computed(() => checkPermission(11929));
+const canView = computed(() => checkPermission(11_921));
+const canSwitchStatus = computed(() => checkPermission(11_923));
+const canSwitchFrequently = computed(() => checkPermission(11_926));
+const canResetDefault = computed(() => checkPermission(11_928));
+const canBatchSwitch = computed(() => checkPermission(11_929));
 
 const filterCountryName = ref('');
 const filterDialingCode = ref('');
@@ -192,7 +192,7 @@ async function handleFrequentlyChange(
 }
 
 async function handleBatchStatus(status: number) {
-  if (!selectedKeys.value.length) {
+  if (selectedKeys.value.length === 0) {
     return;
   }
   Modal.confirm({
@@ -268,34 +268,34 @@ onMounted(() => {
           <template #addonBefore>区码</template>
         </Input>
       </div>
-        <div class="query-filter-actions">
-          <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button
-          v-if="canBatchSwitch"
-          :disabled="!selectedKeys.length"
-          type="primary"
-          @click="handleBatchStatus(1)"
-        >
-          一键开启
-        </Button>
-        <Button
-          v-if="canBatchSwitch"
-          :disabled="!selectedKeys.length"
-          danger
-          @click="handleBatchStatus(0)"
-        >
-          一键关闭
-        </Button>
-        <Button v-if="canResetDefault" @click="handleResetDefault">
-          恢复默认
-        </Button>
-      </Space>
-        </div>
-      </template>
+      <div class="query-filter-actions">
+        <Space>
+          <Button :loading="loading" type="primary" @click="handleSearch">
+            查询
+          </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button
+            v-if="canBatchSwitch"
+            :disabled="selectedKeys.length === 0"
+            type="primary"
+            @click="handleBatchStatus(1)"
+          >
+            一键开启
+          </Button>
+          <Button
+            v-if="canBatchSwitch"
+            :disabled="selectedKeys.length === 0"
+            danger
+            @click="handleBatchStatus(0)"
+          >
+            一键关闭
+          </Button>
+          <Button v-if="canResetDefault" @click="handleResetDefault">
+            恢复默认
+          </Button>
+        </Space>
+      </div>
+    </template>
 
     <Grid>
       <template #status="{ row }">

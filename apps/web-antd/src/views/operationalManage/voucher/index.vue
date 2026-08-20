@@ -16,15 +16,15 @@ const { checkPermission } = useCloudPermission();
 
 const subTabs = computed(() =>
   [
-    { key: 'active', label: '票券列表', permission: 13293 },
-    { key: 'history', label: '历史票券', permission: 13350 },
+    { key: 'active', label: '票券列表', permission: 13_293 },
+    { key: 'history', label: '历史票券', permission: 13_350 },
     { key: 'record', label: '票券记录', permission: null },
   ].filter(
     (item) => item.permission === null || checkPermission(item.permission),
   ),
 );
 
-const canViewPage = computed(() => checkPermission(13292));
+const canViewPage = computed(() => checkPermission(13_292));
 const activeSubTab = ref('active');
 
 onMounted(() => {

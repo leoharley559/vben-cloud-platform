@@ -7,20 +7,19 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerCreditRecordListApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
+import { fetchPlayerCreditRecordListApi } from '#/api/operationManage/player-detail-extra';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -36,8 +35,8 @@ defineOptions({ name: 'RechargeCreditRecordList' });
 const { checkPermission } = useCloudPermission();
 const { memberTypeOptions, packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(11829));
-const canExport = computed(() => checkPermission(11830));
+const canViewTable = computed(() => checkPermission(11_829));
+const canExport = computed(() => checkPermission(11_830));
 
 const defaultRange = getYesterdayRangeSeconds();
 const exportLoading = ref(false);
@@ -198,10 +197,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const items = result?.Items || [];
-    if (!items.length) {
+    if (items.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -255,90 +254,94 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPlayerAccount"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPlayerAccount"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
 
-      <Space.Compact>
-        <span class="query-field-addon">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          :options="
-            packageOptions
-              .filter((item) => item.PackageId !== '')
-              .map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-          "
-          placeholder="请选择产品"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="
+              packageOptions
+                .filter((item) => item.PackageId !== '')
+                .map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+            "
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterReferenceId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterReferenceId"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
 
-      <Space.Compact>
-        <span class="query-field-addon">钱包类型</span>
-        <Select
-          v-model:value="filterWalletType"
-          :options="CREDIT_WALLET_TYPE_OPTIONS"
-          placeholder="请选择钱包类型"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">钱包类型</span>
+          <Select
+            v-model:value="filterWalletType"
+            :options="CREDIT_WALLET_TYPE_OPTIONS"
+            placeholder="请选择钱包类型"
+          />
+        </Space.Compact>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterAccountName"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入操作人"
-        >
-          <template #addonBefore>操作人</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAccountName"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入操作人"
+          >
+            <template #addonBefore>操作人</template>
+          </Input>
+        </div>
 
-      <Space.Compact>
-        <span class="query-field-addon">数据类型</span>
-        <Select
-          v-model:value="filterDataSearchType"
-          :options="memberTypeOptions"
-          placeholder="请选择数据类型"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="filterDataSearchType"
+            :options="memberTypeOptions"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
 
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-          导出 Excel
-        </Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+            <Button
+              v-if="canExport"
+              :loading="exportLoading"
+              @click="handleExport"
+            >
+              导出 Excel
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #status="{ row }">

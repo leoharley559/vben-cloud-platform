@@ -20,17 +20,17 @@ defineOptions({ name: 'OperationalWithdrawList' });
 
 const { checkPermission } = useCloudPermission();
 
-const canRedeemList = computed(() => checkPermission(10346));
-const canWhiteList = computed(() => checkPermission(10347));
-const canSendOrderManage = computed(() => checkPermission(10348));
-const canSendOrderList = computed(() => checkPermission(10349));
-const canWithdrawSonList = computed(() => checkPermission(10350));
-const canOrderStat = computed(() => checkPermission(10387));
+const canRedeemList = computed(() => checkPermission(10_346));
+const canWhiteList = computed(() => checkPermission(10_347));
+const canSendOrderManage = computed(() => checkPermission(10_348));
+const canSendOrderList = computed(() => checkPermission(10_349));
+const canWithdrawSonList = computed(() => checkPermission(10_350));
+const canOrderStat = computed(() => checkPermission(10_387));
 // 对齐旧站：页签入口 13164，表权限在子组件用 13165
 const canThirdPartyRecord = computed(
-  () => checkPermission(13164) || checkPermission(13165),
+  () => checkPermission(13_164) || checkPermission(13_165),
 );
-const canWithdrawWater = computed(() => checkPermission(13230));
+const canWithdrawWater = computed(() => checkPermission(13_230));
 
 const canViewAny = computed(
   () =>

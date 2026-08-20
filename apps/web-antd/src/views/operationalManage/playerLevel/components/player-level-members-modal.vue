@@ -3,18 +3,25 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, ref, watch } from 'vue';
 
-import { Button, Input, Modal, Select, message } from 'ant-design-vue';
+import { Button, Input, message, Modal, Select } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deletePlayerLevelMembersApi,
   fetchPlayerLevelMembersApi,
 } from '#/api/operationManage/player-level';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 
 defineOptions({ name: 'PlayerLevelMembersModal' });
+
+const props = defineProps<{
+  levelId?: null | number | string;
+  levelName?: string;
+}>();
+
+const emit = defineEmits<{ refreshed: [] }>();
 
 interface MemberRow {
   ChannelId?: number | string;
@@ -25,15 +32,9 @@ interface MemberRow {
 }
 
 const open = defineModel<boolean>('open', { default: false });
-const props = defineProps<{
-  levelId?: number | string | null;
-  levelName?: string;
-}>();
-const emit = defineEmits<{ refreshed: [] }>();
-
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
-const canFilter = computed(() => checkPermission(12282));
+const canFilter = computed(() => checkPermission(12_282));
 
 const filterLoginAccount = ref('');
 const filterPlayerIdsStr = ref('');
@@ -129,7 +130,7 @@ function handleSearch() {
 }
 
 function handleDelete() {
-  if (!props.levelId || !selectedIds.value.length) {
+  if (!props.levelId || selectedIds.value.length === 0) {
     return;
   }
   Modal.confirm({
@@ -173,54 +174,54 @@ watch(open, (visible) => {
     destroy-on-close
   >
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div v-if="canFilter" class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div v-if="canFilter" class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPlayerIdsStr"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入玩家ID"
-        >
-          <template #addonBefore>玩家ID</template>
-        </Input>
-      </div>
-      <div v-if="canFilter" class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterChannelIds"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入渠道号"
-        >
-          <template #addonBefore>渠道号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterPackageId"
-        :options="packageSelectOptions"
-      />
+      <div class="ops-query-filters">
+        <div v-if="canFilter" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div v-if="canFilter" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPlayerIdsStr"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入玩家ID"
+          >
+            <template #addonBefore>玩家ID</template>
+          </Input>
+        </div>
+        <div v-if="canFilter" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterChannelIds"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入渠道号"
+          >
+            <template #addonBefore>渠道号</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterPackageId"
+          :options="packageSelectOptions"
+        />
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
-      <Button
-        danger
-        :disabled="!selectedIds.length"
-        :loading="deleting"
-        @click="handleDelete"
-      >
-        删除所选
-      </Button>
+          <Button
+            danger
+            :disabled="selectedIds.length === 0"
+            :loading="deleting"
+            @click="handleDelete"
+          >
+            删除所选
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">

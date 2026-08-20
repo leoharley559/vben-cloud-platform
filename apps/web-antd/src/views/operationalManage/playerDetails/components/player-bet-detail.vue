@@ -18,9 +18,9 @@ defineProps<{
 
 const { checkPermission } = useCloudPermission();
 
-const canDetailRecord = computed(() => checkPermission(11639));
-const canVenueStats = computed(() => checkPermission(10431));
-const canDateStats = computed(() => checkPermission(11638));
+const canDetailRecord = computed(() => checkPermission(11_639));
+const canVenueStats = computed(() => checkPermission(10_431));
+const canDateStats = computed(() => checkPermission(11_638));
 
 const activeType = ref<'dateTotal' | 'record' | 'venueTotal'>('record');
 

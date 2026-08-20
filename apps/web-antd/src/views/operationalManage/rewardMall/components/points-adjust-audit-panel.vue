@@ -7,28 +7,28 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   approveRewardPointAdjustApi,
   fetchRewardPointAdjustListApi,
 } from '#/api/operationManage/reward-mall';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -36,11 +36,11 @@ import { REWARD_POINT_ADJUST_AUDIT_PAGE_ID } from '#/utils/security-page-ids';
 import { isSameAcctActionRestricted } from '#/utils/security-restriction';
 
 import {
-  REWARD_ADJUST_HANDLE_TYPE_OPTIONS,
   formatRewardAdjustApprove,
   formatRewardAdjustHandleType,
   getRewardAdjustApproveColor,
   getRewardAdjustHandleTypeColor,
+  REWARD_ADJUST_HANDLE_TYPE_OPTIONS,
 } from './reward-mall-shared';
 
 defineOptions({ name: 'PointsAdjustAuditPanel' });
@@ -63,7 +63,7 @@ interface AdjustRow {
 
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
-const canViewTable = computed(() => checkPermission(13336));
+const canViewTable = computed(() => checkPermission(13_336));
 
 /** 对齐旧站 adjustAudit：getBeforeDateTimestamp(1,false)～今天 23:59 */
 const defaultRange = getTodayRangeSeconds();
@@ -80,7 +80,7 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 
 const selectedRows = ref<AdjustRow[]>([]);
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
-const pendingApprove = ref<{ ids: string } | null>(null);
+const pendingApprove = ref<null | { ids: string }>(null);
 const rejectOpen = ref(false);
 const rejectRemark = ref('');
 const rejectIds = ref('');
@@ -159,7 +159,12 @@ const gridOptions: VxeTableGridOptions<AdjustRow> = {
       slots: { default: 'loginAccount' },
       title: '游戏账号',
     },
-    { field: 'AdminUserName', minWidth: 110, slots: { default: 'adminUserName' }, title: '代理账号' },
+    {
+      field: 'AdminUserName',
+      minWidth: 110,
+      slots: { default: 'adminUserName' },
+      title: '代理账号',
+    },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '所属渠道' },
     {
@@ -260,11 +265,11 @@ function handleBatchApprove() {
 function openReject(row?: AdjustRow) {
   if (row) {
     rejectIds.value = String(row.Id);
-  } else if (!selectedIds.value) {
+  } else if (selectedIds.value) {
+    rejectIds.value = selectedIds.value;
+  } else {
     message.warning('请先选择记录');
     return;
-  } else {
-    rejectIds.value = selectedIds.value;
   }
   rejectRemark.value = '';
   rejectOpen.value = true;
@@ -323,7 +328,7 @@ async function handleExport() {
       IsExp: true,
     });
     const rows = (result?.Items || []) as unknown as AdjustRow[];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -367,80 +372,83 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单号"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          show-search
-          placeholder="请选择所属产品"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model:value="filterChannelIds" placeholder="请输入渠道号" />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterAdminUserName"
-          allow-clear
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">调整方式</span>
-        <Select
-          v-model:value="filterHandleType"
-          allow-clear
-         
-          :options="
-            REWARD_ADJUST_HANDLE_TYPE_OPTIONS.filter((item) => item.value !== -1)
-          "
-          placeholder="请选择调整方式"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            show-search
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model:value="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAdminUserName"
+            allow-clear
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">调整方式</span>
+          <Select
+            v-model:value="filterHandleType"
+            allow-clear
+            :options="
+              REWARD_ADJUST_HANDLE_TYPE_OPTIONS.filter(
+                (item) => item.value !== -1,
+              )
+            "
+            placeholder="请选择调整方式"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button :loading="exportLoading" @click="handleExport">
-        导出 Excel
-      </Button>
-      <Button type="primary" @click="handleBatchApprove">批量通过</Button>
-      <Button danger @click="openReject()">批量拒绝</Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button :loading="exportLoading" @click="handleExport">
+            导出 Excel
+          </Button>
+          <Button type="primary" @click="handleBatchApprove">批量通过</Button>
+          <Button danger @click="openReject()">批量拒绝</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #approve="{ row }">

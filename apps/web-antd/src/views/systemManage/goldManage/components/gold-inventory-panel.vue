@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
@@ -7,13 +8,13 @@ import { computed, onMounted, ref } from 'vue';
 import { Button, Card, Tooltip } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchGoldInventoryApi,
   fetchGoldInventoryDetailApi,
 } from '#/api/systemManage/extra';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
@@ -72,8 +73,8 @@ const dateRange = ref<[Dayjs, Dayjs]>([
 ]);
 const totalData = ref<TotalSum>(emptyTotalSum());
 
-const canBanner = computed(() => checkPermission(11432));
-const canDetail = computed(() => checkPermission(11433));
+const canBanner = computed(() => checkPermission(11_432));
+const canDetail = computed(() => checkPermission(11_433));
 
 const bannerPlayerOut = computed(
   () =>
@@ -361,7 +362,7 @@ onMounted(() => {
             <span
               class="mt-1 inline-block h-2.5 w-2.5 shrink-0 rounded-full"
               :style="{ background: card.accent }"
-            />
+            ></span>
           </div>
         </Card>
       </div>

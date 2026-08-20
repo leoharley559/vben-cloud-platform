@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import type { CreditPanelConfig } from '../credit-components/credit-data-panel.vue';
 
-import AgencyAccountLink from '#/components/global/agency-account-link.vue';
-
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -47,6 +45,7 @@ import {
   getPlayerAvailableDeductCreditApi,
   queryDkPlayersByExcelApi,
 } from '#/api/netcash/dk-credit';
+import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
@@ -65,7 +64,9 @@ defineOptions({ name: 'DkCreditManage' });
 
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
-const panelRefs = reactive<Record<string, InstanceType<typeof CreditDataPanel>>>({});
+const panelRefs = reactive<
+  Record<string, InstanceType<typeof CreditDataPanel>>
+>({});
 const amount = (value: unknown) => formatAmountFromCent(Number(value || 0));
 const date = (value: unknown) => formatNetcashDateTime(value as string);
 const canApply = computed(() => checkPermission(11_881));
@@ -91,7 +92,9 @@ function maskInfo(value: unknown) {
 }
 function maskName(value: unknown) {
   const text = String(value || '');
-  return text ? `${text.slice(0, 1)}${'*'.repeat(Math.min(text.length - 1, 11))}` : '-';
+  return text
+    ? `${text.slice(0, 1)}${'*'.repeat(Math.min(text.length - 1, 11))}`
+    : '-';
 }
 function changeType(row: Record<string, unknown>) {
   if (Number(row.TransferType) === 3) {
@@ -110,7 +113,11 @@ const playerConfig: CreditPanelConfig = {
     { field: 'LoginAccount', slot: 'loginAccount', title: '会员账号' },
     { field: 'PackageName', title: '产品包' },
     { field: 'Gold', formatter: amount, title: '主钱包（元）' },
-    { field: 'VipLevel', formatter: (value) => `VIP ${value ?? '-'}`, title: '会员等级' },
+    {
+      field: 'VipLevel',
+      formatter: (value) => `VIP ${value ?? '-'}`,
+      title: '会员等级',
+    },
     {
       field: 'BindPhone',
       formatter: (_value, row) =>
@@ -122,7 +129,8 @@ const playerConfig: CreditPanelConfig = {
     { field: 'PromoterUserName', title: '所属代理' },
     {
       field: 'Status',
-      formatter: (value) => playerStatusMap[Number(value)] || String(value ?? '-'),
+      formatter: (value) =>
+        playerStatusMap[Number(value)] || String(value ?? '-'),
       title: '状态',
     },
   ],
@@ -178,7 +186,9 @@ const pendingConfig: CreditPanelConfig = {
     { field: 'AgentNickName', label: '账号昵称' },
   ],
   showActions: true,
-  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '申请额度合计' }],
+  summaries: [
+    { amount: true, field: 'TotalAdjustAmount', label: '申请额度合计' },
+  ],
 };
 
 const rechargeConfig: CreditPanelConfig = {
@@ -215,7 +225,8 @@ const rechargeConfig: CreditPanelConfig = {
     { field: 'PlayerWallet', formatter: () => '主钱包', title: '玩家钱包' },
     {
       field: 'Status',
-      formatter: (value) => ({ 0: '-', 2: '成功', 3: '拒绝' })[Number(value)] || '-',
+      formatter: (value) =>
+        ({ 0: '-', 2: '成功', 3: '拒绝' })[Number(value)] || '-',
       title: '状态',
     },
   ],
@@ -250,7 +261,11 @@ const accountConfig: CreditPanelConfig = {
     { field: 'AgentAccount', slot: 'agentAccount', title: '系统账号' },
     { field: 'AgentNickName', title: '账号昵称' },
     { field: 'TotalCreditLimit', formatter: amount, title: '总额度（元）' },
-    { field: 'AccumulateCredit', formatter: amount, title: '累计额度申请（元）' },
+    {
+      field: 'AccumulateCredit',
+      formatter: amount,
+      title: '累计额度申请（元）',
+    },
     { field: 'Credit', formatter: amount, title: '可用额度（元）' },
     { field: 'AccumulateRecharge', formatter: amount, title: '累计充值（元）' },
     { field: 'AccumulateDeduct', formatter: amount, title: '累计下分（元）' },
@@ -280,7 +295,11 @@ const adjustRecordConfig: CreditPanelConfig = {
   // Status 空串=全部；旧站 -1 实测恒空（同平台额度 API-080）
   baseQuery: { AgentType: 3, Status: '', WalletType: 3 },
   columns: [
-    { field: 'TransferType', formatter: (_value, row) => changeType(row), title: '变更类型' },
+    {
+      field: 'TransferType',
+      formatter: (_value, row) => changeType(row),
+      title: '变更类型',
+    },
     { field: 'AgentAccount', slot: 'agentAccount', title: '系统账号' },
     { field: 'AgentNickName', title: '账号昵称' },
     { field: 'AdjustAmount', formatter: amount, title: '额度变更（元）' },
@@ -326,13 +345,19 @@ const adjustRecordConfig: CreditPanelConfig = {
       type: 'dateRange',
     },
   ],
-  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '额度变更合计' }],
+  summaries: [
+    { amount: true, field: 'TotalAdjustAmount', label: '额度变更合计' },
+  ],
 };
 
 const logConfig: CreditPanelConfig = {
   baseQuery: { AgentType: 3, WalletType: 3 },
   columns: [
-    { field: 'TransferType', formatter: (_value, row) => changeType(row), title: '变更类型' },
+    {
+      field: 'TransferType',
+      formatter: (_value, row) => changeType(row),
+      title: '变更类型',
+    },
     { field: 'AdminAccount', title: '系统账号' },
     { field: 'AgentNickName', title: '账号昵称' },
     { field: 'AdjustAmount', formatter: amount, title: '额度变更（元）' },
@@ -363,23 +388,65 @@ const logConfig: CreditPanelConfig = {
       type: 'dateRange',
     },
   ],
-  summaries: [{ amount: true, field: 'TotalAdjustAmount', label: '额度变更合计' }],
+  summaries: [
+    { amount: true, field: 'TotalAdjustAmount', label: '额度变更合计' },
+  ],
 };
 
 const tabs = computed(() =>
   [
-    { config: playerConfig, inner: 11_906, key: 'player', outer: 11_880, tab: '代客充值' },
-    { config: pendingConfig, inner: 11_893, key: 'pending', outer: 11_883, tab: '额度审核' },
-    { config: rechargeConfig, inner: 11_904, key: 'recharge', outer: 11_884, tab: '充值/下分记录' },
-    { config: accountConfig, inner: 11_889, key: 'account', outer: 11_885, tab: '账号列表' },
-    { config: adjustRecordConfig, inner: 11_899, key: 'record', outer: 11_887, tab: '额度调整记录' },
-    { config: logConfig, inner: 11_900, key: 'log', outer: 11_888, tab: '额度帐变记录' },
+    {
+      config: playerConfig,
+      inner: 11_906,
+      key: 'player',
+      outer: 11_880,
+      tab: '代客充值',
+    },
+    {
+      config: pendingConfig,
+      inner: 11_893,
+      key: 'pending',
+      outer: 11_883,
+      tab: '额度审核',
+    },
+    {
+      config: rechargeConfig,
+      inner: 11_904,
+      key: 'recharge',
+      outer: 11_884,
+      tab: '充值/下分记录',
+    },
+    {
+      config: accountConfig,
+      inner: 11_889,
+      key: 'account',
+      outer: 11_885,
+      tab: '账号列表',
+    },
+    {
+      config: adjustRecordConfig,
+      inner: 11_899,
+      key: 'record',
+      outer: 11_887,
+      tab: '额度调整记录',
+    },
+    {
+      config: logConfig,
+      inner: 11_900,
+      key: 'log',
+      outer: 11_888,
+      tab: '额度帐变记录',
+    },
   ].filter((tab) => checkPermission(tab.outer)),
 );
 const activeTab = ref('player');
 const canViewPage = computed(() => tabs.value.length > 0);
 
-const creditInfo = reactive({ AppliableAmount: 0, Credit: 0, TotalCreditLimit: 0 });
+const creditInfo = reactive({
+  AppliableAmount: 0,
+  Credit: 0,
+  TotalCreditLimit: 0,
+});
 const platformCredit = ref(0);
 async function loadCreditInfo(showDeniedTip = false) {
   try {
@@ -394,7 +461,10 @@ async function loadCreditInfo(showDeniedTip = false) {
     creditInfo.AppliableAmount = 0;
     creditInfo.TotalCreditLimit = 0;
     disableDkActions.value = true;
-    if (showDeniedTip || Number((error as { status?: number })?.status) === 10_505) {
+    if (
+      showDeniedTip ||
+      Number((error as { status?: number })?.status) === 10_505
+    ) {
       message.warning('您没有充值权限，请联系管理员');
     }
   }
@@ -411,7 +481,10 @@ async function loadPlatformCredit() {
 
 const applyOpen = ref(false);
 const applySubmitting = ref(false);
-const applyForm = reactive({ AdjustAmount: undefined as number | undefined, ApplyNote: '' });
+const applyForm = reactive({
+  AdjustAmount: undefined as number | undefined,
+  ApplyNote: '',
+});
 function openApply() {
   if (disableDkActions.value) {
     message.warning('您没有充值权限，请联系管理员');
@@ -424,7 +497,11 @@ function openApply() {
 }
 async function submitApply() {
   const max = creditInfo.AppliableAmount / 100;
-  if (!applyForm.AdjustAmount || applyForm.AdjustAmount <= 0 || applyForm.AdjustAmount > max) {
+  if (
+    !applyForm.AdjustAmount ||
+    applyForm.AdjustAmount <= 0 ||
+    applyForm.AdjustAmount > max
+  ) {
     message.warning(`申请额度必须大于 0 且不超过 ${max.toFixed(2)} 元`);
     return;
   }
@@ -781,16 +858,17 @@ function selectAccount(value: unknown) {
   );
   accountForm.AgentNickName = selected?.nickname || '';
 }
-function openAccount(mode: typeof accountForm.mode, row?: Record<string, unknown>) {
+function openAccount(
+  mode: typeof accountForm.mode,
+  row?: Record<string, unknown>,
+) {
   Object.assign(accountForm, {
     AgentAccount: String(row?.AgentAccount || ''),
     AgentNickName: String(row?.AgentNickName || ''),
     Credit: Number(row?.Credit || 0) / 100,
     CreditDeduct: undefined,
     Id: (row?.Id || '') as number | string,
-    TotalCreditLimit: row
-      ? Number(row.TotalCreditLimit || 0) / 100
-      : undefined,
+    TotalCreditLimit: row ? Number(row.TotalCreditLimit || 0) / 100 : undefined,
     mode,
   });
   accountOpen.value = true;
@@ -828,12 +906,16 @@ async function submitAccount() {
     if (accountForm.mode === 'add') {
       await createDkAccountApi({
         ...common,
-        TotalCreditLimit: Math.round(Number(accountForm.TotalCreditLimit) * 100),
+        TotalCreditLimit: Math.round(
+          Number(accountForm.TotalCreditLimit) * 100,
+        ),
       });
     } else if (accountForm.mode === 'edit') {
       await editDkAccountApi({
         ...common,
-        TotalCreditLimit: Math.round(Number(accountForm.TotalCreditLimit) * 100),
+        TotalCreditLimit: Math.round(
+          Number(accountForm.TotalCreditLimit) * 100,
+        ),
       });
     } else {
       await deductDkAccountCreditApi({
@@ -1028,10 +1110,16 @@ onMounted(() => {
           <Input :value="formatAmountFromCent(creditInfo.Credit)" disabled />
         </Form.Item>
         <Form.Item label="总额度（元）">
-          <Input :value="formatAmountFromCent(creditInfo.TotalCreditLimit)" disabled />
+          <Input
+            :value="formatAmountFromCent(creditInfo.TotalCreditLimit)"
+            disabled
+          />
         </Form.Item>
         <Form.Item label="可申请额度（元）">
-          <Input :value="formatAmountFromCent(creditInfo.AppliableAmount)" disabled />
+          <Input
+            :value="formatAmountFromCent(creditInfo.AppliableAmount)"
+            disabled
+          />
         </Form.Item>
         <Form.Item label="本次申请（元）" required>
           <InputNumber
@@ -1043,7 +1131,11 @@ onMounted(() => {
           />
         </Form.Item>
         <Form.Item label="申请备注" required>
-          <Input.TextArea v-model:value="applyForm.ApplyNote" :maxlength="100" :rows="4" />
+          <Input.TextArea
+            v-model:value="applyForm.ApplyNote"
+            :maxlength="100"
+            :rows="4"
+          />
         </Form.Item>
       </Form>
     </Modal>
@@ -1062,12 +1154,18 @@ onMounted(() => {
           <Input :value="adjustForm.Gold.toFixed(2)" disabled />
         </Form.Item>
         <Form.Item
-          :label="adjustForm.mode === 'topup' ? '充值金额（元）' : '下分金额（元）'"
+          :label="
+            adjustForm.mode === 'topup' ? '充值金额（元）' : '下分金额（元）'
+          "
           required
         >
           <InputNumber
             v-model:value="adjustForm.Amount"
-            :max="adjustForm.mode === 'deduct' ? adjustForm.AvailableDeductAmount : undefined"
+            :max="
+              adjustForm.mode === 'deduct'
+                ? adjustForm.AvailableDeductAmount
+                : undefined
+            "
             :min="0.01"
             :precision="2"
             class="w-full"
@@ -1086,8 +1184,15 @@ onMounted(() => {
             class="w-full"
           />
         </Form.Item>
-        <Form.Item :label="adjustForm.mode === 'topup' ? '申请备注' : '下分备注'" required>
-          <Input.TextArea v-model:value="adjustForm.Remarks" :maxlength="100" :rows="4" />
+        <Form.Item
+          :label="adjustForm.mode === 'topup' ? '申请备注' : '下分备注'"
+          required
+        >
+          <Input.TextArea
+            v-model:value="adjustForm.Remarks"
+            :maxlength="100"
+            :rows="4"
+          />
         </Form.Item>
         <Form.Item label="支付密码" required>
           <Input.Password v-model:value="adjustForm.PayPassword" />
@@ -1103,7 +1208,11 @@ onMounted(() => {
       @ok="submitBatch"
     >
       <Space class="mb-4">
-        <Upload :before-upload="beforeBatchUpload" :show-upload-list="false" accept=".xlsx,.xls">
+        <Upload
+          :before-upload="beforeBatchUpload"
+          :show-upload-list="false"
+          accept=".xlsx,.xls"
+        >
           <Button>选择 Excel 文件</Button>
         </Upload>
         <Button @click="downloadBatchTemplate">下载模板</Button>
@@ -1175,10 +1284,17 @@ onMounted(() => {
           <Input :value="String(reviewRow?.AgentAccount || '')" disabled />
         </Form.Item>
         <Form.Item label="申请额度（元）">
-          <Input :value="formatAmountFromCent(Number(reviewRow?.AdjustAmount))" disabled />
+          <Input
+            :value="formatAmountFromCent(Number(reviewRow?.AdjustAmount))"
+            disabled
+          />
         </Form.Item>
         <Form.Item label="审核备注">
-          <Input.TextArea v-model:value="reviewNote" :maxlength="100" :rows="4" />
+          <Input.TextArea
+            v-model:value="reviewNote"
+            :maxlength="100"
+            :rows="4"
+          />
         </Form.Item>
       </Form>
     </Modal>
@@ -1210,7 +1326,10 @@ onMounted(() => {
           <Input v-else v-model:value="accountForm.AgentAccount" disabled />
         </Form.Item>
         <Form.Item label="账号昵称">
-          <Input v-model:value="accountForm.AgentNickName" :disabled="accountForm.mode !== 'add'" />
+          <Input
+            v-model:value="accountForm.AgentNickName"
+            :disabled="accountForm.mode !== 'add'"
+          />
         </Form.Item>
         <Form.Item label="总额度（元）" required>
           <InputNumber
@@ -1221,10 +1340,17 @@ onMounted(() => {
             class="w-full"
           />
         </Form.Item>
-        <Form.Item v-if="accountForm.mode === 'deduct'" label="当前可用额度（元）">
+        <Form.Item
+          v-if="accountForm.mode === 'deduct'"
+          label="当前可用额度（元）"
+        >
           <Input :value="accountForm.Credit.toFixed(2)" disabled />
         </Form.Item>
-        <Form.Item v-if="accountForm.mode === 'deduct'" label="扣除可用额度（元）" required>
+        <Form.Item
+          v-if="accountForm.mode === 'deduct'"
+          label="扣除可用额度（元）"
+          required
+        >
           <InputNumber
             v-model:value="accountForm.CreditDeduct"
             :max="accountForm.Credit"

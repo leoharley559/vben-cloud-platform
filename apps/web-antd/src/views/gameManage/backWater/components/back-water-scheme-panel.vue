@@ -182,7 +182,9 @@ const filteredSchemes = computed(() => {
   const keyword = searchName.value.trim().toLowerCase();
   return keyword
     ? schemes.value.filter((item) =>
-        String(item.Name || '').toLowerCase().includes(keyword),
+        String(item.Name || '')
+          .toLowerCase()
+          .includes(keyword),
       )
     : schemes.value;
 });
@@ -207,9 +209,10 @@ const addableGameOptions = computed(() => {
 const ratioStats = computed(() => {
   const values = gameRatios.value.map((item) => Number(item.Percent || 0));
   return {
-    average: values.length > 0
-      ? values.reduce((sum, value) => sum + value, 0) / values.length
-      : 0,
+    average:
+      values.length > 0
+        ? values.reduce((sum, value) => sum + value, 0) / values.length
+        : 0,
     maximum: values.length > 0 ? Math.max(...values) : 0,
     minimum: values.length > 0 ? Math.min(...values) : 0,
     notSet: Math.max(gameOptions.value.length - gameRatios.value.length, 0),
@@ -312,8 +315,16 @@ async function selectScheme(id: number | string) {
 }
 
 function syncRichText() {
-  multiDescText.value = JSON.stringify(currentLang.value?.MultiDesc || [], null, 2);
-  multiRuleText.value = JSON.stringify(currentLang.value?.MultiRule || [], null, 2);
+  multiDescText.value = JSON.stringify(
+    currentLang.value?.MultiDesc || [],
+    null,
+    2,
+  );
+  multiRuleText.value = JSON.stringify(
+    currentLang.value?.MultiRule || [],
+    null,
+    2,
+  );
 }
 
 function changeLanguage(key: number | string) {
@@ -321,7 +332,10 @@ function changeLanguage(key: number | string) {
   syncRichText();
 }
 
-function updateStructuredContent(field: 'MultiDesc' | 'MultiRule', value: string) {
+function updateStructuredContent(
+  field: 'MultiDesc' | 'MultiRule',
+  value: string,
+) {
   try {
     if (currentLang.value) currentLang.value[field] = JSON.parse(value || '[]');
   } catch {
@@ -457,7 +471,8 @@ function updateSelectedRatios(mode: 'decrease' | 'increase' | 'set') {
     const next =
       mode === 'set'
         ? batchRatio.value
-        : current + (mode === 'increase' ? batchRatio.value : -batchRatio.value);
+        : current +
+          (mode === 'increase' ? batchRatio.value : -batchRatio.value);
     item.Percent = Math.min(100, Math.max(0, Number(next.toFixed(2))));
   });
 }
@@ -473,7 +488,10 @@ async function saveConfig() {
     message.warning('请完整填写 VIP 返水配置');
     return;
   }
-  if (Number(configForm.DefaultWater) < 0 || Number(configForm.DefaultWater) > 100) {
+  if (
+    Number(configForm.DefaultWater) < 0 ||
+    Number(configForm.DefaultWater) > 100
+  ) {
     message.warning('默认返水比例范围为 0~100%');
     return;
   }
@@ -950,10 +968,7 @@ onMounted(async () => {
                       编辑
                     </Button>
                     <Button
-                      v-if="
-                        canEditRules &&
-                        Number(record.Id) !== MAX_REBATE_ID
-                      "
+                      v-if="canEditRules && Number(record.Id) !== MAX_REBATE_ID"
                       danger
                       :disabled="currentLangIndex !== 0"
                       type="link"
@@ -1016,18 +1031,14 @@ onMounted(async () => {
                   <Input.TextArea
                     v-model:value="multiDescText"
                     :rows="7"
-                    @blur="
-                      updateStructuredContent('MultiDesc', multiDescText)
-                    "
+                    @blur="updateStructuredContent('MultiDesc', multiDescText)"
                   />
                 </Form.Item>
                 <Form.Item label="活动规则（结构化 JSON）">
                   <Input.TextArea
                     v-model:value="multiRuleText"
                     :rows="7"
-                    @blur="
-                      updateStructuredContent('MultiRule', multiRuleText)
-                    "
+                    @blur="updateStructuredContent('MultiRule', multiRuleText)"
                   />
                 </Form.Item>
               </Form>
@@ -1147,17 +1158,21 @@ onMounted(async () => {
               class="!w-72"
               placeholder="请选择批量选择游戏"
             />
-            <Button :disabled="gamesToAdd.length === 0" @click="addSelectedGames">
+            <Button
+              :disabled="gamesToAdd.length === 0"
+              @click="addSelectedGames"
+            >
               批量添加
             </Button>
             <Button @click="addGameRatio">添加一行</Button>
           </Space>
         </div>
-        <div class="mb-3 flex flex-wrap items-center gap-2 rounded bg-gray-50 p-3">
+        <div
+          class="mb-3 flex flex-wrap items-center gap-2 rounded bg-gray-50 p-3"
+        >
           <Checkbox
             :checked="
-              gameRatios.length > 0 &&
-              gameRatios.every((item) => item.Checked)
+              gameRatios.length > 0 && gameRatios.every((item) => item.Checked)
             "
             @change="(event) => selectAllRatios(event.target.checked)"
           >
@@ -1219,9 +1234,7 @@ onMounted(async () => {
       <Form layout="vertical" class="pt-3">
         <Form.Item
           :label="
-            Number(ruleForm.Id) === MAX_REBATE_ID
-              ? '最大返水'
-              : '返水配置类型'
+            Number(ruleForm.Id) === MAX_REBATE_ID ? '最大返水' : '返水配置类型'
           "
           required
         >
@@ -1235,19 +1248,11 @@ onMounted(async () => {
             required
           >
             <InputNumber
-              v-model:value="
-                ruleForm[`Level${level.VipLevelId}`] as number
-              "
+              v-model:value="ruleForm[`Level${level.VipLevelId}`] as number"
               :min="0"
-              :max="
-                Number(ruleForm.Id) === MAX_REBATE_ID
-                  ? 2_100_000_000
-                  : 100
-              "
+              :max="Number(ruleForm.Id) === MAX_REBATE_ID ? 2_100_000_000 : 100"
               :precision="Number(ruleForm.Id) === MAX_REBATE_ID ? 2 : 2"
-              :addon-after="
-                Number(ruleForm.Id) === MAX_REBATE_ID ? '元' : '%'
-              "
+              :addon-after="Number(ruleForm.Id) === MAX_REBATE_ID ? '元' : '%'"
               :disabled="currentLangIndex !== 0"
               class="!w-full"
             />
@@ -1256,16 +1261,14 @@ onMounted(async () => {
       </Form>
     </Modal>
   </div>
-  <div v-else class="py-16 text-center text-gray-400">
-    无返水配置查看权限
-  </div>
+  <div v-else class="py-16 text-center text-gray-400">无返水配置查看权限</div>
 </template>
 
 <style scoped>
 .scheme-layout {
   display: flex;
-  align-items: flex-start;
   gap: 16px;
+  align-items: flex-start;
 }
 
 .scheme-nav {
@@ -1278,9 +1281,9 @@ onMounted(async () => {
 
 .scheme-radio-list :deep(.ant-radio-group) {
   display: flex;
-  width: 100%;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 }
 
 .section-card {

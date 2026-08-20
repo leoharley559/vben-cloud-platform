@@ -4,20 +4,12 @@ import type { PlayerAdjustListItem } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import {
-  Button,
-  Input,
-  Result,
-  Select,
-  Space,
-  Tag,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { Button, Input, Result, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerAdjustListApi } from '#/api/operationManage/account-adjust';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerAdjustListApi } from '#/api/operationManage/account-adjust';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   ADJUST_HANDLE_TYPE_OPTIONS,
@@ -42,8 +34,8 @@ const props = defineProps<{
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(12098));
-const canExport = computed(() => checkPermission(12099));
+const canViewTable = computed(() => checkPermission(12_098));
+const canExport = computed(() => checkPermission(12_099));
 
 const defaultRange = getTodayRangeSeconds();
 const totalAmount = ref(0);
@@ -268,56 +260,59 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">调整类型</span>
-          <Select
-            v-model:value="filterReason"
-            :options="ADJUST_REASON_OPTIONS"
-            placeholder="请选择调整类型"
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">调整类型</span>
+            <Select
+              v-model:value="filterReason"
+              :options="ADJUST_REASON_OPTIONS"
+              placeholder="请选择调整类型"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">调整方式</span>
+            <Select
+              v-model:value="filterHandleType"
+              :options="ADJUST_HANDLE_TYPE_OPTIONS"
+              placeholder="请选择调整方式"
+            />
+          </Space.Compact>
+        </div>
+
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="创建时间"
           />
-        </Space.Compact>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">调整方式</span>
-          <Select
-            v-model:value="filterHandleType"
-            :options="ADJUST_HANDLE_TYPE_OPTIONS"
-            placeholder="请选择调整方式"
-          />
-        </Space.Compact>
-      </div>
-
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
         </div>
         <div class="query-filter-actions">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button v-if="canExport" disabled @click="handleExport">
-          导出 Excel
-        </Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+            <Button v-if="canExport" disabled @click="handleExport">
+              导出 Excel
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #amount="{ row }">

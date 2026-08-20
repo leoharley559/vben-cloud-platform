@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { DateRange, Row } from './shared';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -11,21 +13,11 @@ import {
 } from 'ant-design-vue';
 
 import { getCreditLimitApplyRecordListApi } from '#/api/netcash/credit-limit';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { CREDIT_APPROVE_STATUS_MAP } from '#/utils/netcash';
 
-import {
-  accountTypeMap,
-  accountTypeOptions,
-  amount,
-  date,
-  type DateRange,
-  rangeParams,
-  type Row,
-  transferTypeMap,
-  transferTypeOptions,
-} from './shared';
+import { accountTypeMap, accountTypeOptions, amount, date, rangeParams, transferTypeMap, transferTypeOptions } from './shared';
 
 const loading = ref(false);
 const rows = ref<Row[]>([]);
@@ -120,71 +112,136 @@ onMounted(load);
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="query.AgentAccount"
-          allow-clear
-          @press-enter="search"
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">代理类型</span>
-        <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="请选择代理类型" />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">申请类型</span>
-        <Select v-model:value="query.TransferType" :options="transferTypeOptions" placeholder="请选择申请类型" />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="query.ApplyAccount"
-          allow-clear
-          placeholder="请输入申请人"
-        >
-          <template #addonBefore>申请人</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.AgentAccount"
+            allow-clear
+            @press-enter="search"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">代理类型</span>
+          <Select
+            v-model:value="query.AccountType"
+            :options="accountTypeOptions"
+            placeholder="请选择代理类型"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">申请类型</span>
+          <Select
+            v-model:value="query.TransferType"
+            :options="transferTypeOptions"
+            placeholder="请选择申请类型"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.ApplyAccount"
+            allow-clear
+            placeholder="请输入申请人"
+          >
+            <template #addonBefore>申请人</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="applyRange" />
         </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="query.FinishAccount"
-          allow-clear
-          placeholder="请输入审核人"
-        >
-          <template #addonBefore>审核人</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">审核结果</span>
-        <Select v-model:value="query.Status" :options="statusOptions" placeholder="请选择审核结果" />
-      </Space.Compact>
-      <div class="query-filter-wide">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.FinishAccount"
+            allow-clear
+            placeholder="请输入审核人"
+          >
+            <template #addonBefore>审核人</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">审核结果</span>
+          <Select
+            v-model:value="query.Status"
+            :options="statusOptions"
+            placeholder="请选择审核结果"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="finishRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="search">查询</Button>
-      <Button @click="reset">重置</Button>
+          <Button @click="reset">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
-    <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1850 }" size="small">
+    <Table
+      bordered
+      :columns="columns"
+      :data-source="rows"
+      :loading="loading"
+      :pagination="false"
+      row-key="Id"
+      :scroll="{ x: 1850 }"
+      size="small"
+    >
       <template #bodyCell="{ column, record, index }">
-        <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>
-        <template v-else-if="column.key === 'AccountType'">{{ accountTypeMap[Number(record.AccountType)] || '-' }}</template>
-        <template v-else-if="column.key === 'TransferType'">{{ transferTypeMap[Number(record.TransferType)] || '-' }}</template>
-        <template v-else-if="column.key === 'AdjustAmount'"><span :class="Number(record.AdjustAmount) < 0 ? 'text-red-500' : 'text-green-600'">{{ amount(record.AdjustAmount) }}</span></template>
-        <template v-else-if="column.key === 'ApplyTime' || column.key === 'FinishTime'">{{ date(record[column.key]) }}</template>
-        <template v-else-if="column.key === 'Status'"><span :class="Number(record.Status) === 2 ? 'text-green-600' : Number(record.Status) === 3 ? 'text-red-500' : ''">{{ CREDIT_APPROVE_STATUS_MAP[Number(record.Status)] || '-' }}</span></template>
+        <template v-if="column.key === 'seq'">
+{{
+          (query.Page - 1) * query.PageSize + index + 1
+        }}
+</template>
+        <template v-else-if="column.key === 'AccountType'">
+{{
+          accountTypeMap[Number(record.AccountType)] || '-'
+        }}
+</template>
+        <template v-else-if="column.key === 'TransferType'">
+{{
+          transferTypeMap[Number(record.TransferType)] || '-'
+        }}
+</template>
+        <template v-else-if="column.key === 'AdjustAmount'">
+<span
+            :class="
+              Number(record.AdjustAmount) < 0
+                ? 'text-red-500'
+                : 'text-green-600'
+            "
+            >{{ amount(record.AdjustAmount) }}</span>
+</template>
+        <template
+          v-else-if="column.key === 'ApplyTime' || column.key === 'FinishTime'"
+          >
+{{ date(record[column.key]) }}
+</template>
+        <template v-else-if="column.key === 'Status'">
+<span
+            :class="
+              Number(record.Status) === 2
+                ? 'text-green-600'
+                : Number(record.Status) === 3
+                  ? 'text-red-500'
+                  : ''
+            "
+            >{{ CREDIT_APPROVE_STATUS_MAP[Number(record.Status)] || '-' }}</span>
+</template>
       </template>
     </Table>
-    <Pagination v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize" :page-size-options="['10', '20', '50', '100']" :total="total" class="mt-4 text-right" show-size-changer @change="load" @show-size-change="load" />
+    <Pagination
+      v-if="total"
+      v-model:current="query.Page"
+      v-model:page-size="query.PageSize"
+      :page-size-options="['10', '20', '50', '100']"
+      :total="total"
+      class="mt-4 text-right"
+      show-size-changer
+      @change="load"
+      @show-size-change="load"
+    />
   </div>
 </template>

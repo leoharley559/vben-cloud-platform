@@ -7,14 +7,7 @@ import type { PackageAnalyticsConfig } from '#/api/gameManage/package-settings';
 
 import { reactive, ref, watch } from 'vue';
 
-import {
-  Form,
-  Input,
-  message,
-  Modal,
-  Switch,
-  Tabs,
-} from 'ant-design-vue';
+import { Form, Input, message, Modal, Switch, Tabs } from 'ant-design-vue';
 
 import {
   fetchShelfAnalyticsApi,

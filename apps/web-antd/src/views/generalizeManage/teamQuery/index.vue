@@ -67,9 +67,9 @@ function onCalendarChange(
 ) {
   const first = dates?.[0];
   rangeSelecting.value = first
-    ? dayjs.isDayjs(first)
+    ? (dayjs.isDayjs(first)
       ? first
-      : dayjs(first)
+      : dayjs(first))
     : undefined;
 }
 
@@ -366,5 +366,4 @@ onMounted(() => {
   border-left: 3px solid hsl(var(--primary));
   border-radius: 8px;
 }
-
 </style>

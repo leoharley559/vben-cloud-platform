@@ -1,5 +1,4 @@
 import { requestClient } from '#/api/request';
-
 import { normalizeCloudList } from '#/utils/activity-manage';
 
 /**

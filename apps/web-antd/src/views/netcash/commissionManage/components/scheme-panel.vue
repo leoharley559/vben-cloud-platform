@@ -78,7 +78,10 @@ const editingTemplate = ref(false);
 const editingItem = ref<null | Record<string, any>>(null);
 const templateFormRef = ref<FormInstance>();
 const itemFormRef = ref<FormInstance>();
-const templateForm = reactive({ Id: undefined as number | string | undefined, TemplateName: '' });
+const templateForm = reactive({
+  Id: undefined as number | string | undefined,
+  TemplateName: '',
+});
 const itemForm = reactive<Record<string, any>>({});
 
 const currentTemplate = computed(() => templateList.value[activeIndex.value]);
@@ -181,7 +184,9 @@ function parseServiceRates(value: unknown) {
 }
 
 function algorithmName(row: Record<string, any>) {
-  return row.TypeNameC || String(row.TypeName || '').replaceAll('_', ' ') || '-';
+  return (
+    row.TypeNameC || String(row.TypeName || '').replaceAll('_', ' ') || '-'
+  );
 }
 
 function algorithmValue(row: Record<string, any>) {
@@ -192,7 +197,9 @@ function algorithmValue(row: Record<string, any>) {
     return `存款费率 ${percent100(row.Value)}；取款费率 ${percent100(row.Value2)}`;
   }
   if (Number(row.Type) === 13) {
-    const [daily = 0, weekly = 0, monthly = 0] = String(row.Values || '').split(',');
+    const [daily = 0, weekly = 0, monthly = 0] = String(row.Values || '').split(
+      ',',
+    );
     return `日结 ${daily} 人；周结 ${weekly} 人；月结 ${monthly} 人`;
   }
   return percent100(row.Value);
@@ -203,20 +210,21 @@ async function loadTemplates(selectLast = false) {
   try {
     let result: unknown;
     switch (props.mode) {
-    case 'multi': {
-    result = await fetchMultCommTempListApi();
-    break;
-    }
-    case 'single': {
-    result = await fetchCommTempListApi();
-    break;
-    }
-    case 'venue': {
-    result = await fetchVenueTemplateListApi();
-    break;
-    }
-    default: { result = await fetchAlgorithmTemplateListApi();
-    }
+      case 'multi': {
+        result = await fetchMultCommTempListApi();
+        break;
+      }
+      case 'single': {
+        result = await fetchCommTempListApi();
+        break;
+      }
+      case 'venue': {
+        result = await fetchVenueTemplateListApi();
+        break;
+      }
+      default: {
+        result = await fetchAlgorithmTemplateListApi();
+      }
     }
     templateList.value = normalizeList(result).items;
     if (templateList.value.length === 0) {
@@ -246,29 +254,35 @@ async function loadRows() {
   try {
     let result: unknown;
     switch (props.mode) {
-    case 'multi': {
-    result = await fetchMultCommConfigApi({ TemplateId: templateId });
-    break;
-    }
-    case 'single': {
-    result = await fetchCommListApi({ TemplateId: templateId });
-    break;
-    }
-    case 'venue': {
-    result = await fetchVenueListApi({ TemplateId: templateId });
-    break;
-    }
-    default: { result = await fetchCommAlgorithmDataApi({ TemplateId: templateId });
-    }
+      case 'multi': {
+        result = await fetchMultCommConfigApi({ TemplateId: templateId });
+        break;
+      }
+      case 'single': {
+        result = await fetchCommListApi({ TemplateId: templateId });
+        break;
+      }
+      case 'venue': {
+        result = await fetchVenueListApi({ TemplateId: templateId });
+        break;
+      }
+      default: {
+        result = await fetchCommAlgorithmDataApi({ TemplateId: templateId });
+      }
     }
     if (props.mode === 'multi') {
       const body = ((result ?? {}) as Record<string, any>).Data ?? result ?? {};
       multiConfig.value = { ...(body as Record<string, any>) };
-      rows.value = safeRateRows((body as Record<string, any>)?.CommissionRateMulti);
+      rows.value = safeRateRows(
+        (body as Record<string, any>)?.CommissionRateMulti,
+      );
     } else {
       const normalizedRows = normalizeRows(result);
       if (props.mode === 'venue') {
-        const accountInfo = (projectConfig.value?.AccountInfo || {}) as Record<string, unknown>;
+        const accountInfo = (projectConfig.value?.AccountInfo || {}) as Record<
+          string,
+          unknown
+        >;
         const serviceRates = parseServiceRates(accountInfo.ServiceRateV2);
         const knownKeys = new Set([
           ...Object.keys(gameConfig.value.platformGameTypeAll || {}),
@@ -277,8 +291,7 @@ async function loadRows() {
         const hasVenueNames = knownKeys.size > 0;
         rows.value = normalizedRows
           .filter(
-            (row) =>
-              !hasVenueNames || knownKeys.has(String(row.ApiName ?? '')),
+            (row) => !hasVenueNames || knownKeys.has(String(row.ApiName ?? '')),
           )
           .map((row) => ({
             ...row,
@@ -309,7 +322,9 @@ async function selectTemplate(index: number) {
 function openTemplate(edit = false) {
   editingTemplate.value = edit;
   templateForm.Id = edit ? currentTemplate.value?.Id : undefined;
-  templateForm.TemplateName = edit ? String(currentTemplate.value?.TemplateName || '') : '';
+  templateForm.TemplateName = edit
+    ? String(currentTemplate.value?.TemplateName || '')
+    : '';
   templateOpen.value = true;
 }
 
@@ -319,30 +334,32 @@ async function submitTemplate() {
   try {
     const payload = { ...templateForm };
     switch (props.mode) {
-    case 'multi': {
-      await (editingTemplate.value
-        ? updateMultCommTemplateApi(payload)
-        : createMultCommTemplateApi(payload));
-    
-    break;
-    }
-    case 'single': {
-      await (editingTemplate.value ? updateCommTemplateApi(payload) : createCommTemplateApi(payload));
-    
-    break;
-    }
-    case 'venue': {
-      await (editingTemplate.value
-        ? updateVenueTemplateApi(payload)
-        : createVenueTemplateApi(payload));
-    
-    break;
-    }
-    default: {
-      await (editingTemplate.value
-        ? updateAlgorithmTemplateApi(payload)
-        : createAlgorithmTemplateApi(payload));
-    }
+      case 'multi': {
+        await (editingTemplate.value
+          ? updateMultCommTemplateApi(payload)
+          : createMultCommTemplateApi(payload));
+
+        break;
+      }
+      case 'single': {
+        await (editingTemplate.value
+          ? updateCommTemplateApi(payload)
+          : createCommTemplateApi(payload));
+
+        break;
+      }
+      case 'venue': {
+        await (editingTemplate.value
+          ? updateVenueTemplateApi(payload)
+          : createVenueTemplateApi(payload));
+
+        break;
+      }
+      default: {
+        await (editingTemplate.value
+          ? updateAlgorithmTemplateApi(payload)
+          : createAlgorithmTemplateApi(payload));
+      }
     }
     message.success(editingTemplate.value ? '方案名称已更新' : '方案已新增');
     templateOpen.value = false;
@@ -361,20 +378,21 @@ function confirmDeleteTemplate() {
     onOk: async () => {
       const id = template.Id;
       switch (props.mode) {
-      case 'multi': {
-      await deleteMultCommTemplateApi(id);
-      break;
-      }
-      case 'single': {
-      await deleteCommTemplateApi(id);
-      break;
-      }
-      case 'venue': {
-      await deleteVenueTemplateApi(id);
-      break;
-      }
-      default: { await deleteAlgorithmTemplateApi(id);
-      }
+        case 'multi': {
+          await deleteMultCommTemplateApi(id);
+          break;
+        }
+        case 'single': {
+          await deleteCommTemplateApi(id);
+          break;
+        }
+        case 'venue': {
+          await deleteVenueTemplateApi(id);
+          break;
+        }
+        default: {
+          await deleteAlgorithmTemplateApi(id);
+        }
       }
       activeIndex.value = 0;
       message.success('删除成功');
@@ -404,47 +422,47 @@ function openItem(row?: Record<string, any>) {
   editingItem.value = row || null;
   for (const key of Object.keys(itemForm)) delete itemForm[key];
   switch (props.mode) {
-  case 'multi': {
-    Object.assign(itemForm, {
-      GameType: row?.GameType,
-      Name: row?.Name,
-      WaterRate: Number(row?.WaterRate ?? 0) / 100,
-      WinLoseRate: Number(row?.WinLoseRate ?? 0) / 100,
-    });
-  
-  break;
-  }
-  case 'single': {
-    Object.assign(itemForm, {
-      ActiveNum: row?.ActiveNum ?? 0,
-      CommissionRate: row?.CommissionRate ?? 0,
-      Id: row?.Id,
-      LevelName: row?.LevelName ?? '',
-      SumWinLose: row ? Number(row.SumWinLose ?? 0) / 100 : 0,
-    });
-  
-  break;
-  }
-  case 'venue': {
-    Object.assign(itemForm, {
-      ApiName: row?.ApiName,
-      Fee: Number(row?.Fee ?? 0) / 100,
-      Id: row?.Id,
-      Name: row?.Name || row?.GameName || row?.ApiName,
-    });
-  
-  break;
-  }
-  default: {
-    Object.assign(itemForm, row, {
-      Value: Number(row?.Value ?? 0) / 100,
-      Value2: Number(row?.Value2 ?? 0) / 100,
-    });
-    const values = String(row?.Values || '').split(',');
-    itemForm.minDaily = Number(values[0] || 0);
-    itemForm.minWeekly = Number(values[1] || 0);
-    itemForm.minMonthly = Number(values[2] || 0);
-  }
+    case 'multi': {
+      Object.assign(itemForm, {
+        GameType: row?.GameType,
+        Name: row?.Name,
+        WaterRate: Number(row?.WaterRate ?? 0) / 100,
+        WinLoseRate: Number(row?.WinLoseRate ?? 0) / 100,
+      });
+
+      break;
+    }
+    case 'single': {
+      Object.assign(itemForm, {
+        ActiveNum: row?.ActiveNum ?? 0,
+        CommissionRate: row?.CommissionRate ?? 0,
+        Id: row?.Id,
+        LevelName: row?.LevelName ?? '',
+        SumWinLose: row ? Number(row.SumWinLose ?? 0) / 100 : 0,
+      });
+
+      break;
+    }
+    case 'venue': {
+      Object.assign(itemForm, {
+        ApiName: row?.ApiName,
+        Fee: Number(row?.Fee ?? 0) / 100,
+        Id: row?.Id,
+        Name: row?.Name || row?.GameName || row?.ApiName,
+      });
+
+      break;
+    }
+    default: {
+      Object.assign(itemForm, row, {
+        Value: Number(row?.Value ?? 0) / 100,
+        Value2: Number(row?.Value2 ?? 0) / 100,
+      });
+      const values = String(row?.Values || '').split(',');
+      itemForm.minDaily = Number(values[0] || 0);
+      itemForm.minWeekly = Number(values[1] || 0);
+      itemForm.minMonthly = Number(values[2] || 0);
+    }
   }
   itemOpen.value = true;
 }
@@ -454,7 +472,9 @@ async function submitItem() {
   if (saving.value) return;
   if (props.mode === 'single') {
     const currentIndex = editingItem.value
-      ? rows.value.findIndex((row) => String(row.Id) === String(editingItem.value?.Id))
+      ? rows.value.findIndex(
+          (row) => String(row.Id) === String(editingItem.value?.Id),
+        )
       : rows.value.length;
     const previous = rows.value[currentIndex - 1];
     const next = editingItem.value ? rows.value[currentIndex + 1] : undefined;
@@ -469,59 +489,67 @@ async function submitItem() {
       (active <= Number(next.ActiveNum) &&
         winLose < Number(next.SumWinLose) / 100);
     if (!validPrevious || !validNext) {
-      message.error('活跃会员数不得低于上一档且不得高于下一档，月总输赢须严格递增');
+      message.error(
+        '活跃会员数不得低于上一档且不得高于下一档，月总输赢须严格递增',
+      );
       return;
     }
   }
   saving.value = true;
   try {
     switch (props.mode) {
-    case 'multi': {
-      const rateRows = safeRateRows(rows.value).map((item) =>
-        String(item.GameType) === String(itemForm.GameType)
-          ? {
-              ...item,
-              WaterRate: Math.round(Number(itemForm.WaterRate) * 100),
-              WinLoseRate: Math.round(Number(itemForm.WinLoseRate) * 100),
-            }
-          : item,
-      );
-      await updateMultCommConfigApi({
-        ...multiConfig.value,
-        CommissionRateMulti: JSON.stringify(rateRows),
-      });
-    
-    break;
-    }
-    case 'single': {
-      const payload = {
-        ...itemForm,
-        SumWinLose: Math.round(Number(itemForm.SumWinLose) * 100),
-        TemplateId: currentTemplate.value?.Id,
-      };
-      await (editingItem.value ? updateCommConfigApi(payload) : createCommConfigApi(payload));
-    
-    break;
-    }
-    case 'venue': {
-      await updateVenueConfigApi({
-        ...itemForm,
-        Fee: Math.round(Number(itemForm.Fee) * 100),
-      });
-    
-    break;
-    }
-    default: {
-      const payload: Record<string, any> = {
-        ...itemForm,
-        Value: Math.round(Number(itemForm.Value) * 100),
-        Value2: Math.round(Number(itemForm.Value2) * 100),
-      };
-      if (Number(itemForm.Type) === 13) {
-        payload.Values = [itemForm.minDaily, itemForm.minWeekly, itemForm.minMonthly].join(',');
+      case 'multi': {
+        const rateRows = safeRateRows(rows.value).map((item) =>
+          String(item.GameType) === String(itemForm.GameType)
+            ? {
+                ...item,
+                WaterRate: Math.round(Number(itemForm.WaterRate) * 100),
+                WinLoseRate: Math.round(Number(itemForm.WinLoseRate) * 100),
+              }
+            : item,
+        );
+        await updateMultCommConfigApi({
+          ...multiConfig.value,
+          CommissionRateMulti: JSON.stringify(rateRows),
+        });
+
+        break;
       }
-      await updateAlgorithmApi(payload);
-    }
+      case 'single': {
+        const payload = {
+          ...itemForm,
+          SumWinLose: Math.round(Number(itemForm.SumWinLose) * 100),
+          TemplateId: currentTemplate.value?.Id,
+        };
+        await (editingItem.value
+          ? updateCommConfigApi(payload)
+          : createCommConfigApi(payload));
+
+        break;
+      }
+      case 'venue': {
+        await updateVenueConfigApi({
+          ...itemForm,
+          Fee: Math.round(Number(itemForm.Fee) * 100),
+        });
+
+        break;
+      }
+      default: {
+        const payload: Record<string, any> = {
+          ...itemForm,
+          Value: Math.round(Number(itemForm.Value) * 100),
+          Value2: Math.round(Number(itemForm.Value2) * 100),
+        };
+        if (Number(itemForm.Type) === 13) {
+          payload.Values = [
+            itemForm.minDaily,
+            itemForm.minWeekly,
+            itemForm.minMonthly,
+          ].join(',');
+        }
+        await updateAlgorithmApi(payload);
+      }
     }
     itemOpen.value = false;
     message.success(editingItem.value ? '编辑成功' : '新增成功');
@@ -533,7 +561,8 @@ async function submitItem() {
 
 async function updateAlgorithmRadio(row: Record<string, any>, value: number) {
   if (algorithmUpdating.value !== undefined) return;
-  const field = Number(row.Type) === 6 || Number(row.Type) === 8 ? 'Value' : 'Additional';
+  const field =
+    Number(row.Type) === 6 || Number(row.Type) === 8 ? 'Value' : 'Additional';
   algorithmUpdating.value = row.Id;
   try {
     await updateAlgorithmApi({ ...row, [field]: value });
@@ -585,7 +614,12 @@ onMounted(async () => {
         <Space wrap>
           <span class="scheme-name-label">方案名称</span>
           <strong>{{ currentTemplate?.TemplateName || '暂无方案' }}</strong>
-          <Button v-if="permissions.edit && currentTemplate" @click="openTemplate(true)">编辑名称</Button>
+          <Button
+            v-if="permissions.edit && currentTemplate"
+            @click="openTemplate(true)"
+            >
+编辑名称
+</Button>
           <Button
             v-if="permissions.delete && currentTemplate"
             danger
@@ -626,35 +660,87 @@ onMounted(async () => {
         <template #emptyText><Empty description="暂无配置数据" /></template>
         <template #bodyCell="{ column, record, index }">
           <template v-if="column.key === 'index'">{{ index + 1 }}</template>
-          <template v-else-if="column.key === 'ActiveNum'">≥ {{ record.ActiveNum ?? 0 }}</template>
-          <template v-else-if="column.key === 'SumWinLose'">{{ cent(record.SumWinLose) }}</template>
-          <template v-else-if="column.key === 'CommissionRate'">{{ record.CommissionRate ?? 0 }}%</template>
-          <template v-else-if="column.key === 'WinLoseRate'">{{ percent100(record.WinLoseRate) }}</template>
-          <template v-else-if="column.key === 'WaterRate'">{{ percent100(record.WaterRate) }}</template>
-          <template v-else-if="column.key === 'venue'">{{ record.Name || record.GameName || record.ApiName || '-' }}</template>
-          <template v-else-if="column.key === 'Rate'">{{ record.Rate ?? 0 }}%</template>
-          <template v-else-if="column.key === 'Fee'">{{ percent100(record.Fee) }}</template>
-          <template v-else-if="column.key === 'typeName'">{{ algorithmName(record) }}</template>
+          <template v-else-if="column.key === 'ActiveNum'">
+≥ {{ record.ActiveNum ?? 0 }}
+</template>
+          <template v-else-if="column.key === 'SumWinLose'">
+{{
+            cent(record.SumWinLose)
+          }}
+</template>
+          <template v-else-if="column.key === 'CommissionRate'">
+{{ record.CommissionRate ?? 0 }}%
+</template>
+          <template v-else-if="column.key === 'WinLoseRate'">
+{{
+            percent100(record.WinLoseRate)
+          }}
+</template>
+          <template v-else-if="column.key === 'WaterRate'">
+{{
+            percent100(record.WaterRate)
+          }}
+</template>
+          <template v-else-if="column.key === 'venue'">
+{{
+            record.Name || record.GameName || record.ApiName || '-'
+          }}
+</template>
+          <template v-else-if="column.key === 'Rate'">
+{{ record.Rate ?? 0 }}%
+</template>
+          <template v-else-if="column.key === 'Fee'">
+{{
+            percent100(record.Fee)
+          }}
+</template>
+          <template v-else-if="column.key === 'typeName'">
+{{
+            algorithmName(record)
+          }}
+</template>
           <template v-else-if="column.key === 'parameter'">
             <Space direction="vertical" size="small">
-              <span v-if="inputTypes.has(Number(record.Type)) || [5, 7, 13].includes(Number(record.Type))">
+              <span
+                v-if="
+                  inputTypes.has(Number(record.Type)) ||
+                  [5, 7, 13].includes(Number(record.Type))
+                "
+              >
                 {{ algorithmValue(record) }}
                 <Button type="link" size="small" @click="openItem(record)">编辑</Button>
               </span>
               <Radio.Group
                 v-if="radioTypes.has(Number(record.Type))"
                 :disabled="algorithmUpdating !== undefined"
-                :value="[6, 8].includes(Number(record.Type)) ? record.Value : record.Additional"
+                :value="
+                  [6, 8].includes(Number(record.Type))
+                    ? record.Value
+                    : record.Additional
+                "
                 @change="updateAlgorithmRadio(record, $event.target.value)"
               >
-                <Radio :value="0">{{ radioTexts[Number(record.Type)]?.[0] }}</Radio>
-                <Radio :value="1">{{ radioTexts[Number(record.Type)]?.[1] }}</Radio>
+                <Radio :value="0">
+{{
+                  radioTexts[Number(record.Type)]?.[0]
+                }}
+</Radio>
+                <Radio :value="1">
+{{
+                  radioTexts[Number(record.Type)]?.[1]
+                }}
+</Radio>
               </Radio.Group>
             </Space>
           </template>
           <template v-else-if="column.key === 'actions'">
             <Space>
-              <Button v-if="permissions.editItem" type="link" size="small" @click="openItem(record)">
+              <Button
+                v-if="permissions.editItem"
+                type="link"
+                size="small"
+                @click="openItem(record)"
+              >
                 编辑
               </Button>
               <Button
@@ -679,8 +765,16 @@ onMounted(async () => {
       @ok="submitTemplate"
     >
       <Form ref="templateFormRef" :model="templateForm" layout="vertical">
-        <Form.Item label="方案名称" name="TemplateName" :rules="[{ required: true, message: '请输入方案名称' }]">
-          <Input v-model:value="templateForm.TemplateName" :maxlength="50" placeholder="请输入方案名称" />
+        <Form.Item
+          label="方案名称"
+          name="TemplateName"
+          :rules="[{ required: true, message: '请输入方案名称' }]"
+        >
+          <Input
+            v-model:value="templateForm.TemplateName"
+            :maxlength="50"
+            placeholder="请输入方案名称"
+          />
         </Form.Item>
       </Form>
     </Modal>
@@ -694,52 +788,182 @@ onMounted(async () => {
     >
       <Form ref="itemFormRef" :model="itemForm" :label-col="{ span: 7 }">
         <template v-if="mode === 'single'">
-          <Form.Item label="等级名称" name="LevelName" :rules="[{ required: true, message: '请输入等级名称' }]">
+          <Form.Item
+            label="等级名称"
+            name="LevelName"
+            :rules="[{ required: true, message: '请输入等级名称' }]"
+          >
             <Input v-model:value="itemForm.LevelName" />
           </Form.Item>
-          <Form.Item label="活跃会员" name="ActiveNum" :rules="[{ required: true, message: '请输入活跃会员数' }]">
-            <InputNumber v-model:value="itemForm.ActiveNum" :min="0" :precision="0" class="w-full" addon-before="≥" />
+          <Form.Item
+            label="活跃会员"
+            name="ActiveNum"
+            :rules="[{ required: true, message: '请输入活跃会员数' }]"
+          >
+            <InputNumber
+              v-model:value="itemForm.ActiveNum"
+              :min="0"
+              :precision="0"
+              class="w-full"
+              addon-before="≥"
+            />
           </Form.Item>
-          <Form.Item label="月总输赢" name="SumWinLose" :rules="[{ required: true, message: '请输入月总输赢' }]">
-            <InputNumber v-model:value="itemForm.SumWinLose" :min="0" :precision="2" class="w-full" />
+          <Form.Item
+            label="月总输赢"
+            name="SumWinLose"
+            :rules="[{ required: true, message: '请输入月总输赢' }]"
+          >
+            <InputNumber
+              v-model:value="itemForm.SumWinLose"
+              :min="0"
+              :precision="2"
+              class="w-full"
+            />
           </Form.Item>
-          <Form.Item label="佣金比例" name="CommissionRate" :rules="[{ required: true, message: '请输入佣金比例' }]">
-            <InputNumber v-model:value="itemForm.CommissionRate" :min="0" :max="100" :precision="0" class="w-full" addon-after="%" />
+          <Form.Item
+            label="佣金比例"
+            name="CommissionRate"
+            :rules="[{ required: true, message: '请输入佣金比例' }]"
+          >
+            <InputNumber
+              v-model:value="itemForm.CommissionRate"
+              :min="0"
+              :max="100"
+              :precision="0"
+              class="w-full"
+              addon-after="%"
+            />
           </Form.Item>
         </template>
         <template v-else-if="mode === 'multi'">
-          <Form.Item label="场馆类型"><Input v-model:value="itemForm.Name" disabled /></Form.Item>
-          <Form.Item label="输赢分成" name="WinLoseRate" :rules="[{ required: true, message: '请输入输赢分成' }]">
-            <InputNumber v-model:value="itemForm.WinLoseRate" :min="0" :max="100" :precision="2" class="w-full" addon-after="%" />
+          <Form.Item label="场馆类型">
+<Input v-model:value="itemForm.Name" disabled />
+</Form.Item>
+          <Form.Item
+            label="输赢分成"
+            name="WinLoseRate"
+            :rules="[{ required: true, message: '请输入输赢分成' }]"
+          >
+            <InputNumber
+              v-model:value="itemForm.WinLoseRate"
+              :min="0"
+              :max="100"
+              :precision="2"
+              class="w-full"
+              addon-after="%"
+            />
           </Form.Item>
-          <Form.Item label="流水分成" name="WaterRate" :rules="[{ required: true, message: '请输入流水分成' }]">
-            <InputNumber v-model:value="itemForm.WaterRate" :min="0" :max="100" :precision="2" class="w-full" addon-after="%" />
+          <Form.Item
+            label="流水分成"
+            name="WaterRate"
+            :rules="[{ required: true, message: '请输入流水分成' }]"
+          >
+            <InputNumber
+              v-model:value="itemForm.WaterRate"
+              :min="0"
+              :max="100"
+              :precision="2"
+              class="w-full"
+              addon-after="%"
+            />
           </Form.Item>
         </template>
         <template v-else-if="mode === 'venue'">
-          <Form.Item label="场馆名称"><Input v-model:value="itemForm.Name" disabled /></Form.Item>
-          <Form.Item label="收取费率" name="Fee" :rules="[{ required: true, message: '请输入收取费率' }]">
-            <InputNumber v-model:value="itemForm.Fee" :min="0.01" :max="100" :precision="2" class="w-full" addon-after="%" />
+          <Form.Item label="场馆名称">
+<Input v-model:value="itemForm.Name" disabled />
+</Form.Item>
+          <Form.Item
+            label="收取费率"
+            name="Fee"
+            :rules="[{ required: true, message: '请输入收取费率' }]"
+          >
+            <InputNumber
+              v-model:value="itemForm.Fee"
+              :min="0.01"
+              :max="100"
+              :precision="2"
+              class="w-full"
+              addon-after="%"
+            />
           </Form.Item>
         </template>
         <template v-else>
           <template v-if="Number(itemForm.Type) === 13">
-            <Form.Item label="日结人数" name="minDaily" :rules="[{ required: true, message: '请输入日结人数' }]">
-              <InputNumber v-model:value="itemForm.minDaily" :min="0" :precision="0" class="w-full" addon-after="人" />
+            <Form.Item
+              label="日结人数"
+              name="minDaily"
+              :rules="[{ required: true, message: '请输入日结人数' }]"
+            >
+              <InputNumber
+                v-model:value="itemForm.minDaily"
+                :min="0"
+                :precision="0"
+                class="w-full"
+                addon-after="人"
+              />
             </Form.Item>
-            <Form.Item label="周结人数" name="minWeekly" :rules="[{ required: true, message: '请输入周结人数' }]">
-              <InputNumber v-model:value="itemForm.minWeekly" :min="0" :precision="0" class="w-full" addon-after="人" />
+            <Form.Item
+              label="周结人数"
+              name="minWeekly"
+              :rules="[{ required: true, message: '请输入周结人数' }]"
+            >
+              <InputNumber
+                v-model:value="itemForm.minWeekly"
+                :min="0"
+                :precision="0"
+                class="w-full"
+                addon-after="人"
+              />
             </Form.Item>
-            <Form.Item label="月结人数" name="minMonthly" :rules="[{ required: true, message: '请输入月结人数' }]">
-              <InputNumber v-model:value="itemForm.minMonthly" :min="0" :precision="0" class="w-full" addon-after="人" />
+            <Form.Item
+              label="月结人数"
+              name="minMonthly"
+              :rules="[{ required: true, message: '请输入月结人数' }]"
+            >
+              <InputNumber
+                v-model:value="itemForm.minMonthly"
+                :min="0"
+                :precision="0"
+                class="w-full"
+                addon-after="人"
+              />
             </Form.Item>
           </template>
           <template v-else>
-            <Form.Item :label="Number(itemForm.Type) === 5 ? '充值金额' : (Number(itemForm.Type) === 7 ? '存款费率' : algorithmName(itemForm))" name="Value" :rules="[{ required: true, message: '请输入参数值' }]">
-              <InputNumber v-model:value="itemForm.Value" :min="0" :max="Number(itemForm.Type) === 5 ? undefined : 100" :precision="2" class="w-full" :addon-after="Number(itemForm.Type) === 5 ? undefined : '%'" />
+            <Form.Item
+              :label="
+                Number(itemForm.Type) === 5
+                  ? '充值金额'
+                  : Number(itemForm.Type) === 7
+                    ? '存款费率'
+                    : algorithmName(itemForm)
+              "
+              name="Value"
+              :rules="[{ required: true, message: '请输入参数值' }]"
+            >
+              <InputNumber
+                v-model:value="itemForm.Value"
+                :min="0"
+                :max="Number(itemForm.Type) === 5 ? undefined : 100"
+                :precision="2"
+                class="w-full"
+                :addon-after="Number(itemForm.Type) === 5 ? undefined : '%'"
+              />
             </Form.Item>
-            <Form.Item v-if="[5, 7].includes(Number(itemForm.Type))" :label="Number(itemForm.Type) === 5 ? '有效投注' : '取款费率'" name="Value2" :rules="[{ required: true, message: '请输入参数值' }]">
-              <InputNumber v-model:value="itemForm.Value2" :min="0" :max="Number(itemForm.Type) === 7 ? 100 : undefined" :precision="2" class="w-full" :addon-after="Number(itemForm.Type) === 7 ? '%' : undefined" />
+            <Form.Item
+              v-if="[5, 7].includes(Number(itemForm.Type))"
+              :label="Number(itemForm.Type) === 5 ? '有效投注' : '取款费率'"
+              name="Value2"
+              :rules="[{ required: true, message: '请输入参数值' }]"
+            >
+              <InputNumber
+                v-model:value="itemForm.Value2"
+                :min="0"
+                :max="Number(itemForm.Type) === 7 ? 100 : undefined"
+                :precision="2"
+                class="w-full"
+                :addon-after="Number(itemForm.Type) === 7 ? '%' : undefined"
+              />
             </Form.Item>
           </template>
         </template>
@@ -752,9 +976,9 @@ onMounted(async () => {
 <style scoped>
 .scheme-toolbar {
   display: flex;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
 }
 
 .scheme-name-label {

@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /** 提现页面访问统计汇总结果 */
@@ -92,4 +93,3 @@ export function exportWithdrawAccessDetailApi(query: Record<string, unknown>) {
     { params: trimSpace(query) },
   );
 }
-

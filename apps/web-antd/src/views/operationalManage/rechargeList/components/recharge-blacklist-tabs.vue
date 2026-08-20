@@ -12,8 +12,8 @@ defineOptions({ name: 'RechargeBlacklistTabs' });
 
 const { checkPermission } = useCloudPermission();
 
-const canGameAccount = computed(() => checkPermission(10283));
-const canDevice = computed(() => checkPermission(10284));
+const canGameAccount = computed(() => checkPermission(10_283));
+const canDevice = computed(() => checkPermission(10_284));
 
 const activeType = ref<'device' | 'game'>('game');
 

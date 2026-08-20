@@ -4,16 +4,16 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import {
   Form,
   Input,
+  message,
   Modal,
   Select,
   Switch,
   Tabs,
-  message,
 } from 'ant-design-vue';
 
 import { fetchAdActivityJumpListApi } from '#/api/operationManage/game-notice';
-import VoucherImageField from '#/views/operationalManage/voucher/components/voucher-image-field.vue';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import VoucherImageField from '#/views/operationalManage/voucher/components/voucher-image-field.vue';
 
 import {
   createDefaultTaskForm,
@@ -26,7 +26,7 @@ defineOptions({ name: 'GoodsTaskUpsertModal' });
 
 const props = defineProps<{
   mode: 'add' | 'edit';
-  task?: Record<string, unknown> | null;
+  task?: null | Record<string, unknown>;
 }>();
 
 const emit = defineEmits<{ submit: [Record<string, unknown>] }>();
@@ -50,7 +50,7 @@ const activityOptions = ref<Array<{ label: string; value: number | string }>>(
 
 function extractLangTitle(raw: unknown, fallback: string) {
   const lang = parseLangTextMap(raw);
-  const first = Object.values(lang)[0] as { Title?: string } | undefined;
+  const first = Object.values(lang)[0] as undefined | { Title?: string };
   return first?.Title || fallback;
 }
 

@@ -1,10 +1,11 @@
-import { requestClient } from '#/api/request';
-import type { CloudListResult } from '#/types/operation-manage';
 import type {
   CryptoAddressFormPayload,
   CryptoAddressListItem,
   CryptoAddressListQuery,
 } from '#/types/crypto-address';
+import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 function normalizeList<T>(result: CloudListResult<T> | null | undefined) {

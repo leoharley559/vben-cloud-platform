@@ -8,10 +8,10 @@ import {
   Checkbox,
   Form,
   Input,
+  message,
   Modal,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -27,9 +27,6 @@ import { createRequestHash } from '#/utils/crypto';
 
 defineOptions({ name: 'PlayerAlipayList' });
 
-/** 与银行卡一致，PageId=8 */
-const ALIPAY_SECURITY_PAGE_ID = 8;
-
 const props = defineProps<{
   deviceId?: string;
   loginAccount?: string;
@@ -37,13 +34,16 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
+/** 与银行卡一致，PageId=8 */
+const ALIPAY_SECURITY_PAGE_ID = 8;
+
 const { checkPermission } = useCloudPermission();
 
-const canSection = computed(() => checkPermission(11180));
-const canView = computed(() => checkPermission(11298));
-const canCreate = computed(() => checkPermission(11299));
-const canEdit = computed(() => checkPermission(11405));
-const canDelete = computed(() => checkPermission(11300));
+const canSection = computed(() => checkPermission(11_180));
+const canView = computed(() => checkPermission(11_298));
+const canCreate = computed(() => checkPermission(11_299));
+const canEdit = computed(() => checkPermission(11_405));
+const canDelete = computed(() => checkPermission(11_300));
 
 const loading = ref(false);
 const saving = ref(false);

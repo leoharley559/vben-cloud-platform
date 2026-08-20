@@ -199,7 +199,8 @@ async function loadSelectedGame() {
     if (canViewList.value) {
       tasks.push(
         fetchEnterprisePackageListApi(packageId).then((result) => {
-          enterpriseRows.value = (result.Items || []) as unknown as EnterpriseRow[];
+          enterpriseRows.value = (result.Items ||
+            []) as unknown as EnterpriseRow[];
           if (enterpriseRows.value.some((item) => Number(item.Status) === 0)) {
             pollTimer = setTimeout(() => void loadSelectedGame(), 30_000);
           }
@@ -211,10 +212,7 @@ async function loadSelectedGame() {
         fetchEnterpriseStepApi(packageId).then((result) => {
           stepInfo.value = result.Items || {};
           if (!stepInfo.value.DownUrl) {
-            stepPollTimer = setTimeout(
-              () => void loadSelectedGame(),
-              30_000,
-            );
+            stepPollTimer = setTimeout(() => void loadSelectedGame(), 30_000);
           }
         }),
         fetchEnterpriseChannelsApi(packageId).then((result) => {
@@ -326,8 +324,8 @@ function handleUploadChange(info: UploadChangeParam) {
           Data?: { title?: string; url?: string };
           FileName?: string;
           Path?: string;
-          Url?: string;
           title?: string;
+          Url?: string;
         };
     const url =
       response?.Data?.url ||
@@ -567,12 +565,7 @@ void loadGames();
                   </a>
                   <span v-else>母包打包中</span>
                 </Button>
-                <Button
-                  v-else
-                  size="small"
-                  type="primary"
-                  @click="openBind"
-                >
+                <Button v-else size="small" type="primary" @click="openBind">
                   前往设置
                 </Button>
               </Space>
@@ -710,9 +703,9 @@ void loadGames();
 
 .section-header {
   display: flex;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
   margin-bottom: 16px;
 }
 

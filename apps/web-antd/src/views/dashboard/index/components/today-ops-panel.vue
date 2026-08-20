@@ -21,13 +21,13 @@ function payTypeName(payType: unknown): string {
   if (!key || key === '0') return '';
   const list =
     (
-      projectConfig.value as {
+      projectConfig.value as null | {
         RechargeTypeList?: Array<{
           I18nKey?: string;
           Key?: number | string;
           Name?: string;
         }>;
-      } | null
+      }
     )?.RechargeTypeList || [];
   const found = list.find((item) => String(item.Key) === key);
   return found?.Name || '';
@@ -174,7 +174,7 @@ function enrich15Rows(
       ),
       LastSuccessCount: toNumber(last.SuccessCount),
       LastTotalCount: toNumber(last.TotalCount),
-      children: children.length ? children : undefined,
+      children: children.length > 0 ? children : undefined,
       fakeId: `15-${index}-${curr.PayType || curr.RechargeId}`,
       key: `15-${index}-${curr.PayType || curr.RechargeId}`,
     };
@@ -189,8 +189,7 @@ function enrichOnlineRows(
   return asRows(todayItems).map((today, index) => {
     const yesterday =
       asRows(yesterdayItems).find(
-        (item) =>
-          String(item.RiskAuditorId) === String(today.RiskAuditorId),
+        (item) => String(item.RiskAuditorId) === String(today.RiskAuditorId),
       ) || {};
     return {
       ...today,
@@ -277,7 +276,7 @@ const rechargeColumns = [
       if (
         record.children &&
         Array.isArray(record.children) &&
-        record.children.length
+        record.children.length > 0
       ) {
         return (
           payTypeName(record.PayType) ||
@@ -475,7 +474,9 @@ onMounted(() => {
           :data-source="onlineUser.TodayOnlineUserItems"
           :pagination="false"
           :scroll="{ y: 360 }"
-          :row-key="(row) => String(row.key || row.RiskAuditorId || row.RiskAuditorName)"
+          :row-key="
+            (row) => String(row.key || row.RiskAuditorId || row.RiskAuditorName)
+          "
           size="small"
         />
       </Card>

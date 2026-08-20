@@ -6,10 +6,10 @@ import {
   Drawer,
   Form,
   Input,
+  message,
   Modal,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -27,7 +27,7 @@ defineOptions({ name: 'PlayerListRemarkDrawer' });
 const props = defineProps<{
   loginAccount?: string;
   open: boolean;
-  playerId: number | string | null;
+  playerId: null | number | string;
 }>();
 
 const emit = defineEmits<{
@@ -35,8 +35,8 @@ const emit = defineEmits<{
 }>();
 
 const { checkPermission } = useCloudPermission();
-const canView = computed(() => checkPermission(10015));
-const canCreate = computed(() => checkPermission(10062));
+const canView = computed(() => checkPermission(10_015));
+const canCreate = computed(() => checkPermission(10_062));
 
 const loading = ref(false);
 const saving = ref(false);

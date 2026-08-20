@@ -54,11 +54,7 @@ const activeKey = ref(
 </script>
 
 <template>
-  <Page
-    auto-content-height
-    description="游戏管理 · VIP设置"
-    title="VIP设置"
-  >
+  <Page auto-content-height description="游戏管理 · VIP设置" title="VIP设置">
     <Card v-if="tabs.length > 0" size="small">
       <Tabs
         v-model:active-key="activeKey"
@@ -66,11 +62,7 @@ const activeKey = ref(
         type="line"
         size="small"
       >
-        <Tabs.TabPane
-          v-for="tab in tabs"
-          :key="tab.key"
-          :tab="tab.label"
-        >
+        <Tabs.TabPane v-for="tab in tabs" :key="tab.key" :tab="tab.label">
           <component :is="tab.component" v-if="activeKey === tab.key" />
         </Tabs.TabPane>
       </Tabs>

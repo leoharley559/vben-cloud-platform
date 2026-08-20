@@ -25,10 +25,10 @@ import {
   fetchPlayerStatisticsListApi,
 } from '#/api/dataClose/player-report';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
@@ -193,11 +193,15 @@ function loadVisibleColumns() {
 }
 
 function persistVisibleColumns() {
-  localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(visibleColumns.value));
+  localStorage.setItem(
+    COLUMN_STORAGE_KEY,
+    JSON.stringify(visibleColumns.value),
+  );
 }
 
 const deviceOptions = computed(() => {
-  const map = (projectConfig.value?.DevicePlatformAll as Record<string, string>) || {};
+  const map =
+    (projectConfig.value?.DevicePlatformAll as Record<string, string>) || {};
   const entries = Object.entries(map);
   if (entries.length > 0) {
     return entries.map(([value, label]) => ({ label, value }));
@@ -231,7 +235,10 @@ const packageSelectOptions = computed(() => [
   ...packageOptions.value,
 ]);
 
-const vipSelectOptions = computed(() => [{ label: '全部VIP', value: -1 }, ...vipOptions.value]);
+const vipSelectOptions = computed(() => [
+  { label: '全部VIP', value: -1 },
+  ...vipOptions.value,
+]);
 
 function num(value: unknown) {
   return Number(value || 0);
@@ -250,11 +257,7 @@ function companyWinLoss(row: Row) {
 }
 
 function signedAmountNode(value: number) {
-  return h(
-    'span',
-    { class: signedClass(value) },
-    formatAmountFromCent(value),
-  );
+  return h('span', { class: signedClass(value) }, formatAmountFromCent(value));
 }
 
 function promoteIncome(row: Row) {
@@ -274,7 +277,10 @@ function formatUserSource(value: unknown) {
 
 function rangeUnix(range?: [Dayjs, Dayjs] | null) {
   if (!range?.[0] || !range?.[1]) {
-    return { begin: undefined as number | undefined, end: undefined as number | undefined };
+    return {
+      begin: undefined as number | undefined,
+      end: undefined as number | undefined,
+    };
   }
   return { begin: range[0].unix(), end: range[1].unix() };
 }
@@ -284,9 +290,13 @@ function buildQuery(searchType: 'list' | 'total') {
   const totalRange = rangeUnix(filters.totalRange);
   const firstPay = rangeUnix(filters.firstPayRange);
   const packageId =
-    filters.PackageId === undefined || filters.PackageId === null ? -1 : filters.PackageId;
+    filters.PackageId === undefined || filters.PackageId === null
+      ? -1
+      : filters.PackageId;
   const vipLevel =
-    filters.VipLevel === undefined || filters.VipLevel === null ? -1 : filters.VipLevel;
+    filters.VipLevel === undefined || filters.VipLevel === null
+      ? -1
+      : filters.VipLevel;
   const base: Record<string, unknown> = {
     LoginAccount: filters.LoginAccount.trim().toLowerCase() || undefined,
     PlayerId: filters.PlayerId.trim() || undefined,
@@ -611,7 +621,8 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     FirstWithDrawMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.FirstWithDrawMoney),
+      customRender: ({ record }) =>
+        formatAmountFromCent(record.FirstWithDrawMoney),
       key: 'FirstWithDrawMoney',
       title: '首提金额',
       width: 110,
@@ -632,7 +643,8 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     FirstWithDrawTime: {
       align: 'center',
-      customRender: ({ record }) => formatReportDateTime(record.FirstWithDrawTime),
+      customRender: ({ record }) =>
+        formatReportDateTime(record.FirstWithDrawTime),
       key: 'FirstWithDrawTime',
       title: '首提时间',
       width: 160,
@@ -838,7 +850,10 @@ function handleReset() {
   filters.InviteSite = [];
   filters.BindPhone = '';
   filters.regRange = null;
-  filters.totalRange = [...resolveReportRange('currentMonth')] as [Dayjs, Dayjs];
+  filters.totalRange = [...resolveReportRange('currentMonth')] as [
+    Dayjs,
+    Dayjs,
+  ];
   filters.firstPayRange = null;
   sort.value = '';
   handleSearch();
@@ -869,9 +884,12 @@ async function handleCopy() {
   }
   const fields = visibleColumns.value;
   const headers = fields.map(
-    (field) => COLUMN_OPTIONS.find((item) => item.value === field)?.label || field,
+    (field) =>
+      COLUMN_OPTIONS.find((item) => item.value === field)?.label || field,
   );
-  const rows = tableData.value.map((row) => fields.map((field) => cellText(field, row)));
+  const rows = tableData.value.map((row) =>
+    fields.map((field) => cellText(field, row)),
+  );
   try {
     await copyTableText(headers, rows);
     message.success('复制成功');
@@ -881,7 +899,12 @@ async function handleCopy() {
 }
 
 function buildExportParams() {
-  const { SearchType: _st, Page: _page, PageSize: _size, ...params } = buildQuery('list');
+  const {
+    SearchType: _st,
+    Page: _page,
+    PageSize: _size,
+    ...params
+  } = buildQuery('list');
   return params;
 }
 
@@ -986,7 +1009,10 @@ onMounted(() => {
           <div class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">渠道号</span>
-              <ChannelSelect v-model="filters.ChannelId" placeholder="请输入渠道号" />
+              <ChannelSelect
+                v-model="filters.ChannelId"
+                placeholder="请输入渠道号"
+              />
             </Space.Compact>
           </div>
           <div class="flex flex-col gap-1">
@@ -1086,14 +1112,26 @@ onMounted(() => {
             </Input>
           </div>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.regRange" label="注册时间" precision="date" />
-        </div>
+            <QueryDatetimeRangePicker
+              v-model="filters.regRange"
+              label="注册时间"
+              precision="date"
+            />
+          </div>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.totalRange" label="统计时间" precision="date" />
-        </div>
+            <QueryDatetimeRangePicker
+              v-model="filters.totalRange"
+              label="统计时间"
+              precision="date"
+            />
+          </div>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.firstPayRange" label="首存时间" precision="date" />
-        </div>
+            <QueryDatetimeRangePicker
+              v-model="filters.firstPayRange"
+              label="首存时间"
+              precision="date"
+            />
+          </div>
           <div class="query-filter-wide">
             <Space.Compact>
               <span class="query-field-addon">显示列</span>
@@ -1107,19 +1145,21 @@ onMounted(() => {
               />
             </Space.Compact>
           </div>
-        <div class="query-filter-actions">
-          <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
-          <Button @click="handleReset">重置</Button>
-          <Button @click="handleCopy">复制</Button>
-          <Button
-            v-if="canExport"
-            :loading="exportLoading"
-            @click="handleExportClick"
-          >
-            导出 Excel
-          </Button>
-        </div>
-      </template>
+          <div class="query-filter-actions">
+            <Button type="primary" :loading="loading" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+            <Button @click="handleCopy">复制</Button>
+            <Button
+              v-if="canExport"
+              :loading="exportLoading"
+              @click="handleExportClick"
+            >
+              导出 Excel
+            </Button>
+          </div>
+        </template>
 
         <template #summary>
           <ReportSummaryCards :items="summaryItems" />

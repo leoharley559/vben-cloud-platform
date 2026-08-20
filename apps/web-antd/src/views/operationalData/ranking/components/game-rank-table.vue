@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { RankGameRow } from '#/utils/ranking';
+
 import { computed } from 'vue';
 
 import { Table } from 'ant-design-vue';
@@ -6,7 +8,6 @@ import { Table } from 'ant-design-vue';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatGameId } from '#/utils/dashboard';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import type { RankGameRow } from '#/utils/ranking';
 import { antTableScrollY } from '#/utils/table-height';
 
 defineOptions({ name: 'GameRankTable' });
@@ -14,9 +15,9 @@ defineOptions({ name: 'GameRankTable' });
 const props = withDefaults(
   defineProps<{
     data: RankGameRow[];
+    loading?: boolean;
     profitTitle?: string;
     profitTone?: 'danger' | 'success';
-    loading?: boolean;
   }>(),
   {
     profitTitle: '盈利金额',

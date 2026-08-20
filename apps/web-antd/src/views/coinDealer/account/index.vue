@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -10,9 +12,7 @@ import {
   fetchCoinDealerWorkTimeListApi,
 } from '#/api/coinDealer';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import {
   coinDealerAccountColumns,
@@ -34,13 +34,13 @@ const tabs = computed(() =>
         loginField: 'Username',
       } satisfies OperationListConfig,
       key: 'account',
-      permission: 10452,
+      permission: 10_452,
       tab: '币商账号',
       tip: '新建/编辑、支付码绑定等待下一迭代迁移。',
     },
     {
       key: 'common',
-      permission: 10452,
+      permission: 10_452,
       placeholder: true,
       tab: '通用设置',
     },
@@ -51,7 +51,7 @@ const tabs = computed(() =>
         filters: ['date', 'username'],
       } satisfies OperationListConfig,
       key: 'worktime',
-      permission: 10452,
+      permission: 10_452,
       tab: '工时统计',
     },
   ].filter((item) => checkPermission(item.permission)),

@@ -1,4 +1,10 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
+import type { AgentGroupNode } from '#/api/operationalData/group-daily';
+import type { CsvColumn } from '#/utils/export-csv';
+import type { GroupDailyRow } from '#/utils/group-daily';
+
 import { computed, onMounted, ref, watch } from 'vue';
 
 import {
@@ -11,27 +17,15 @@ import {
   Space,
   Spin,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
-import {
-  fetchAgentGroupDailyReportApi,
-  fetchAgentGroupListApi,
-  type AgentGroupNode,
-} from '#/api/operationalData/group-daily';
+import { fetchAgentGroupDailyReportApi, fetchAgentGroupListApi } from '#/api/operationalData/group-daily';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { calcDailyReportRow } from '#/utils/everyday-data-calc';
-import { exportRowsToCsv, type CsvColumn } from '#/utils/export-csv';
+import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import {
-  applyGroupDrillStyles,
-  buildParentTreeState,
-  calcGroupDailyRows,
-  defaultGroupDailyRange,
-  defaultGroupMonthlyRange,
-  normalizeGroupTree,
-  type GroupDailyRow,
-} from '#/utils/group-daily';
+import { applyGroupDrillStyles, buildParentTreeState, calcGroupDailyRows, defaultGroupDailyRange, defaultGroupMonthlyRange, normalizeGroupTree } from '#/utils/group-daily';
 
 import GroupDailyTable from './group-daily-table.vue';
 
@@ -368,8 +362,8 @@ onMounted(async () => {
 <template>
   <div class="flex flex-col">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-          <Space.Compact>
+      <div class="ops-query-filters">
+        <Space.Compact>
           <span class="query-field-addon">选择分类</span>
           <Cascader
             v-model:value="groupTemp"
@@ -383,7 +377,7 @@ onMounted(async () => {
             change-on-select
             max-tag-count="responsive"
             multiple
-            placeholder="请选择分组" 
+            placeholder="请选择分组"
             @change="handleGroupChange"
           />
         </Space.Compact>
@@ -410,29 +404,28 @@ onMounted(async () => {
             />
           </Space.Compact>
         </div>
-        
 
         <Space.Compact>
-            <span class="query-field-addon">数据类型</span>
-            <Select
-              v-model:value="dataSearchType"
-              :options="memberTypeOptions"
-              placeholder="请选择数据类型"
-            />
-          </Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="dataSearchType"
+            :options="memberTypeOptions"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
-        <Button
-          v-if="canExport"
-          :loading="exportLoading"
-          @click="handleExport"
-        >
-          导出 Excel
-        </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Card size="small" title="代理分组日报">
       <Spin :spinning="loading">

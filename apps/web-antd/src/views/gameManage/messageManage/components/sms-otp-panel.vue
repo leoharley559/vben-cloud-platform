@@ -21,8 +21,8 @@ import {
   fetchRegisterOtpDailyApi,
   fetchRegisterOtpDetailApi,
 } from '#/api/gameManage/message-manage';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -96,9 +96,9 @@ const packageOptions = computed(() => [
   })),
 ]);
 const deviceOptions = computed(() => {
-  const config = projectConfig.value as
-    | null
-    | { DevicePlatformMy?: Record<string, string> };
+  const config = projectConfig.value as null | {
+    DevicePlatformMy?: Record<string, string>;
+  };
   return Object.entries(config?.DevicePlatformMy || {}).map(
     ([value, label]) => ({ label, value }),
   );

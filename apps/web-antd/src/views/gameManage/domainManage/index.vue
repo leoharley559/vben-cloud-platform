@@ -16,8 +16,8 @@ import {
   Result,
   Select,
   Space,
-  Tag,
   Tabs,
+  Tag,
 } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -505,11 +505,7 @@ onMounted(() => {
                   >
                     批量启用
                   </Button>
-                  <Button
-                    v-if="canBatchDisable"
-                    danger
-                    @click="batchSwitch(2)"
-                  >
+                  <Button v-if="canBatchDisable" danger @click="batchSwitch(2)">
                     批量停用
                   </Button>
                 </Space>

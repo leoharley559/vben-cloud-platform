@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { PanelMetricKey } from '#/utils/dashboard';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -8,11 +10,7 @@ import dayjs from 'dayjs';
 
 import { fetchDashboardReportApi } from '#/api/dashboard';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import {
-  normalizeReportDay,
-  normalizeTimedMap,
-  type PanelMetricKey,
-} from '#/utils/dashboard';
+import { normalizeReportDay, normalizeTimedMap } from '#/utils/dashboard';
 
 import BannerStats from './components/banner-stats.vue';
 import ChannelTodayTable from './components/channel-today-table.vue';

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue';
 
-import { Form, Input, Modal, Switch, Tabs, message } from 'ant-design-vue';
+import { Form, Input, message, Modal, Switch, Tabs } from 'ant-design-vue';
 
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 
@@ -15,7 +15,7 @@ defineOptions({ name: 'GoodsTagUpsertModal' });
 
 const props = defineProps<{
   mode: 'add' | 'edit';
-  tag?: Record<string, unknown> | null;
+  tag?: null | Record<string, unknown>;
 }>();
 
 const emit = defineEmits<{ submit: [Record<string, unknown>] }>();

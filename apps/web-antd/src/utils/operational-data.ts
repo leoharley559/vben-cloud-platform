@@ -7,7 +7,7 @@ export function hasOperationalDataRole(
   const cloudStore = useCloudPlatformStore();
   const projectConfig = cloudStore.projectConfig;
   const adminType = (
-    projectConfig?.ParentInfo as { AdminType?: number } | undefined
+    projectConfig?.ParentInfo as undefined | { AdminType?: number }
   )?.AdminType;
 
   if (Number(adminType) !== 2) {

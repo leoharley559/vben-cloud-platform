@@ -1,31 +1,22 @@
 <script lang="ts" setup>
+import type { OngoingActivityRow } from './activity-shared';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchActivityHistoryListApi } from '#/api/operationManage/activity';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
-import {
-  ACTIVITY_FILTER_TYPE_OPTIONS,
-  type OngoingActivityRow,
-  formatActivityTimeCell,
-  formatActivityType,
-  formatShowTimeCell,
-} from './activity-shared';
+import { ACTIVITY_FILTER_TYPE_OPTIONS, formatActivityTimeCell, formatActivityType, formatShowTimeCell } from './activity-shared';
 
 defineOptions({ name: 'ActivityHistoryPanel' });
 
 const { checkPermission } = useCloudPermission();
-const canView = computed(() => checkPermission(10310));
+const canView = computed(() => checkPermission(10_310));
 
 const filterId = ref('');
 const filterName = ref('');
@@ -110,40 +101,39 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
     </div>
     <template v-else>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterId"
-            allow-clear
-            placeholder="请输入活动ID"
-          >
-            <template #addonBefore>活动ID</template>
-          </Input>
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterId"
+              allow-clear
+              placeholder="请输入活动ID"
+            >
+              <template #addonBefore>活动ID</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterName"
+              allow-clear
+              placeholder="请输入活动名称"
+            >
+              <template #addonBefore>活动名称</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">活动类型</span>
+            <Select
+              v-model:value="filterType"
+              allow-clear
+              :options="typeOptions"
+              placeholder="请选择活动类型"
+            />
+          </Space.Compact>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="gridApi.reload()">查询</Button>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterName"
-            allow-clear
-            placeholder="请输入活动名称"
-          >
-            <template #addonBefore>活动名称</template>
-          </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">活动类型</span>
-          <Select
-            v-model:value="filterType"
-            allow-clear
-           
-            :options="typeOptions"
-            placeholder="请选择活动类型"
-          />
-        </Space.Compact>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="gridApi.reload()">查询</Button>
-        </div>
-    </div>
-  </div>
+      </div>
       <Grid>
         <template #showTime="{ row }">
           <div class="whitespace-pre-line text-xs">

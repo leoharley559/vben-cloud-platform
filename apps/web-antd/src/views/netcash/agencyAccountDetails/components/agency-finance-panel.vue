@@ -86,7 +86,9 @@ const visibleTypes = computed(() => {
 });
 
 function typeName(type: number) {
-  return accountTypes.find((item) => item.value === type)?.label || String(type);
+  return (
+    accountTypes.find((item) => item.value === type)?.label || String(type)
+  );
 }
 function listByType(type: number) {
   return rows.value.filter((item) => Number(item.Type) === type);
@@ -140,9 +142,7 @@ async function loadChannelTypes() {
       PageSize: 999,
       Sort: '',
     });
-    channelTypes.value = Array.isArray(result)
-      ? result
-      : (result?.Items ?? []);
+    channelTypes.value = Array.isArray(result) ? result : (result?.Items ?? []);
   } catch {
     channelTypes.value = [];
   }
@@ -263,7 +263,9 @@ async function submitModal() {
     } else {
       payload.RealName = form.RealName.trim().replaceAll('*', '');
     }
-    await (isCreate.value ? createAgentWithdrawAccountApi(payload) : updateAgentWithdrawAccountApi({ ...payload, Id: form.Id }));
+    await (isCreate.value
+      ? createAgentWithdrawAccountApi(payload)
+      : updateAgentWithdrawAccountApi({ ...payload, Id: form.Id }));
     message.success(isCreate.value ? '添加成功' : '编辑成功');
     modalOpen.value = false;
     await loadList();
@@ -393,9 +395,7 @@ onMounted(() => {
           </template>
           <template v-else-if="column.key === 'Type'">
             {{
-              AGENCY_REMARK_TYPE_MAP[Number(record.Type)] ||
-              record.Type ||
-              '-'
+              AGENCY_REMARK_TYPE_MAP[Number(record.Type)] || record.Type || '-'
             }}
           </template>
         </template>
@@ -434,10 +434,7 @@ onMounted(() => {
           <Input v-model:value="form.RealName" />
         </Form.Item>
         <Form.Item :label="form.Type === 3 ? 'USDT 地址' : '账号'" required>
-          <Input
-            :value="form.Account"
-            @update:value="normalizeAccountInput"
-          />
+          <Input :value="form.Account" @update:value="normalizeAccountInput" />
         </Form.Item>
         <Form.Item label="谷歌验证码" required>
           <Input v-model:value="form.ValidCode" :maxlength="6" />
@@ -445,7 +442,12 @@ onMounted(() => {
       </Form>
     </Modal>
 
-    <Modal v-model:open="deleteOpen" ok-type="danger" title="删除提款账户" @ok="submitDelete">
+    <Modal
+      v-model:open="deleteOpen"
+      ok-type="danger"
+      title="删除提款账户"
+      @ok="submitDelete"
+    >
       <Form layout="vertical">
         <Form.Item label="谷歌验证码" required>
           <Input v-model:value="deleteCode" :maxlength="6" />
@@ -453,7 +455,12 @@ onMounted(() => {
       </Form>
     </Modal>
 
-    <Modal v-model:open="logsOpen" :footer="null" title="提款账户操作日志" width="720px">
+    <Modal
+      v-model:open="logsOpen"
+      :footer="null"
+      title="提款账户操作日志"
+      width="720px"
+    >
       <Table
         bordered
         :columns="[

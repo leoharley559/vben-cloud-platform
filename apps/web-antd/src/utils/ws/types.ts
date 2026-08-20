@@ -18,7 +18,7 @@ export interface CloudWsOptions {
   /** 错误回调 */
   onError?: (event: Event) => void;
   /** 文本/已解密消息 */
-  onMessage?: (data: string | ArrayBuffer) => void;
+  onMessage?: (data: ArrayBuffer | string) => void;
   /** 状态变化 */
   onStatusChange?: (status: CloudWsStatus) => void;
 }

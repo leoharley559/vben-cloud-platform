@@ -27,7 +27,12 @@ import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
 import { arrayToCsvParam } from '#/views/dataClose/shared/report-utils';
 
-import { disabledBeforeToday, num, percentText, pickTwoDayItem } from '../utils';
+import {
+  disabledBeforeToday,
+  num,
+  percentText,
+  pickTwoDayItem,
+} from '../utils';
 
 defineOptions({ name: 'IncomeAnalyzePanel' });
 
@@ -321,9 +326,7 @@ const rechargeRateChart = computed(() => {
   };
 });
 
-const hasIntervalCharts = computed(
-  () => intervalTitles(raw.value).length > 0,
-);
+const hasIntervalCharts = computed(() => intervalTitles(raw.value).length > 0);
 
 const channelRows = computed(() => {
   const list = (raw.value.TodayChannelItems ||
@@ -461,7 +464,11 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="filters.ChannelIds" class="min-w-[180px]" placeholder="请输入渠道号" />
+        <ChannelSelect
+          v-model="filters.ChannelIds"
+          class="min-w-[180px]"
+          placeholder="请输入渠道号"
+        />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">产品</span>

@@ -7,32 +7,32 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Popover,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerAuthListApi } from '#/api/memberManage/player-authentication';
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
+import { exportRowsToCsv } from '#/utils/export-csv';
+import { getServiceImageUrl } from '#/utils/media';
 import {
   AUTH_SCENARIO_OPTIONS,
   formatAuthScenario,
   formatRiskInfoType,
   parseRiskInfo,
 } from '#/utils/player-authentication';
-import { exportRowsToCsv } from '#/utils/export-csv';
-import { getServiceImageUrl } from '#/utils/media';
 
 import AuthAuditActionModal from './auth-audit-action-modal.vue';
 
@@ -54,7 +54,7 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 const selectedRows = ref<PlayerAuthListItem[]>([]);
 const actionModalOpen = ref(false);
 const actionType = ref<'approve' | 'reject'>('approve');
-const actionRow = ref<PlayerAuthListItem | null>(null);
+const actionRow = ref<null | PlayerAuthListItem>(null);
 const actionOrderIds = ref('');
 
 const packageSelectOptions = computed(() => [
@@ -78,7 +78,7 @@ function formatDateTime(value?: number | string) {
 
 function formatCommSoftware(row: PlayerAuthListItem) {
   const parts = [row.CommSoftware, row.CommSoftwareAccount].filter(Boolean);
-  return parts.length ? parts.join('｜') : '-';
+  return parts.length > 0 ? parts.join('｜') : '-';
 }
 
 function getQueryParams() {
@@ -136,7 +136,12 @@ const gridOptions: VxeTableGridOptions<PlayerAuthListItem> = {
     { field: 'PlayerId', minWidth: 100, title: '玩家ID' },
     { field: 'PackageName', minWidth: 120, title: '产品名称' },
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
-    { field: 'Username', minWidth: 110, slots: { default: 'username' }, title: '代理账号' },
+    {
+      field: 'Username',
+      minWidth: 110,
+      slots: { default: 'username' },
+      title: '代理账号',
+    },
     {
       field: 'AuthScenario',
       formatter: ({ cellValue }) => formatAuthScenario(cellValue),
@@ -277,7 +282,7 @@ async function handleExport() {
   try {
     const result = await fetchPlayerAuthListApi(getQueryParams());
     const rows = normalizeList(result?.Items || []);
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -379,10 +384,7 @@ onMounted(() => {
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">代理账号</span>
-          <AccountSelect
-            v-model="filterAgentId"
-            :multiple="false"
-          />
+          <AccountSelect v-model="filterAgentId" :multiple="false" />
         </Space.Compact>
       </div>
       <div class="flex flex-col gap-1">
@@ -396,30 +398,32 @@ onMounted(() => {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="上传时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Button :loading="loading" type="primary" @click="handleSearch">
-        查询
-      </Button>
-      <Button @click="handleReset">重置</Button>
-      <Button :loading="exportLoading" @click="handleExport">导出 Excel</Button>
-      <Button
-        :disabled="!canBatchAction"
-        type="primary"
-        @click="openActionModal('approve')"
-      >
-        批量通过
-      </Button>
-      <Button
-        :disabled="!canBatchAction"
-        danger
-        @click="openActionModal('reject')"
-      >
-        批量拒绝
-      </Button>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="上传时间" />
+      </div>
+      <div class="query-filter-actions">
+        <Button :loading="loading" type="primary" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
+        <Button :loading="exportLoading" @click="handleExport">
+导出 Excel
+</Button>
+        <Button
+          :disabled="!canBatchAction"
+          type="primary"
+          @click="openActionModal('approve')"
+        >
+          批量通过
+        </Button>
+        <Button
+          :disabled="!canBatchAction"
+          danger
+          @click="openActionModal('reject')"
+        >
+          批量拒绝
+        </Button>
+      </div>
+    </template>
 
     <Grid>
       <template #username="{ row }">
@@ -440,7 +444,7 @@ onMounted(() => {
       <template #risk="{ row }">
         <Popover
           v-if="
-            Number(row.RiskStatus) !== 1 && parseRiskInfo(row.RiskInfo).length
+            Number(row.RiskStatus) !== 1 && parseRiskInfo(row.RiskInfo).length > 0
           "
           placement="right"
         >

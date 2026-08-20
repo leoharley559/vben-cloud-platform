@@ -1,19 +1,14 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
 
+import type { AgentNode, StatementRow } from '#/views/dataClose/shared/statement-helpers';
+
 import { computed, onMounted, ref } from 'vue';
 
-import {
-  Button,
-  message,
-  Select,
-  Space,
-  Table,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { Button, message, Select, Space, Table } from 'ant-design-vue';
 
 import { fetchDayStatementSonListApi } from '#/api/dataClose/day-statement';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
@@ -25,19 +20,7 @@ import {
   toUnixRange,
 } from '#/views/dataClose/shared/report-utils';
 import StatementAgentTree from '#/views/dataClose/shared/statement-agent-tree.vue';
-import {
-  type AgentNode,
-  asNumber,
-  displayAmount,
-  displayCent,
-  ensureDaySpan,
-  fromCent,
-  mapItemsAgents,
-  profitClass,
-  resolveTotalSum,
-  type StatementRow,
-  venueName,
-} from '#/views/dataClose/shared/statement-helpers';
+import { asNumber, displayAmount, displayCent, ensureDaySpan, fromCent, mapItemsAgents, profitClass, resolveTotalSum, venueName } from '#/views/dataClose/shared/statement-helpers';
 
 import SonDetailModal from './son-detail-modal.vue';
 
@@ -223,7 +206,8 @@ function onDrill(agent: AgentNode) {
 
 function onJump(agent: AgentNode, index: number) {
   adminPath.value = adminPath.value.slice(0, index + 1);
-  adminId.value = String(agent.Id) === String(rootAccount.value.Id) ? '' : agent.Id;
+  adminId.value =
+    String(agent.Id) === String(rootAccount.value.Id) ? '' : agent.Id;
   inquireId.value = agent.Id;
   void loadList();
 }
@@ -340,19 +324,23 @@ onMounted(() => {
         />
       </Space.Compact>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" label="时间范围" precision="date" />
-        </div>
+        <QueryDatetimeRangePicker
+          v-model="dateRange"
+          label="时间范围"
+          precision="date"
+        />
+      </div>
       <template #actions>
-        <Button type="primary" :loading="loading" @click="loadList">查询</Button>
+        <Button type="primary" :loading="loading" @click="loadList">
+查询
+</Button>
         <Button :disabled="loading" @click="reset">重置</Button>
         <Button v-if="canExport" :disabled="loading" @click="handleExport">
           导出 Excel
         </Button>
       </template>
       <template #extra>
-        <div class="text-xs text-muted-foreground">
-          默认今天，最长 7 天
-        </div>
+        <div class="text-xs text-muted-foreground">默认今天，最长 7 天</div>
       </template>
     </ReportQueryCard>
 
@@ -422,7 +410,9 @@ onMounted(() => {
             <Table.Summary.Cell :index="8">
               {{ displayCent(totalSum.SumNegative) }}
             </Table.Summary.Cell>
-            <Table.Summary.Cell v-if="canDetail" :index="9">-</Table.Summary.Cell>
+            <Table.Summary.Cell v-if="canDetail" :index="9">
+-
+</Table.Summary.Cell>
           </Table.Summary.Row>
         </Table.Summary>
       </template>

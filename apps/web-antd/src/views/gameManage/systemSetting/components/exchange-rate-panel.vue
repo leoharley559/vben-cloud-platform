@@ -65,9 +65,9 @@ async function loadData() {
     }
     rows.value = Array.isArray(data)
       ? (data as ExchangeRow[])
-      : Array.isArray(data.Items)
+      : (Array.isArray(data.Items)
         ? (data.Items as ExchangeRow[])
-        : [];
+        : []);
     total.value = Array.isArray(data)
       ? data.length
       : Number(data.Pagination?.MaxCount || rows.value.length);
@@ -94,7 +94,9 @@ async function saveRow() {
   }
   saving.value = true;
   try {
-    await (editing.value ? updateExchangeRateApi({ ...form }) : createExchangeRateApi({ ...form }));
+    await (editing.value
+      ? updateExchangeRateApi({ ...form })
+      : createExchangeRateApi({ ...form }));
     visible.value = false;
     message.success('保存成功');
     await loadData();
@@ -140,11 +142,7 @@ onMounted(() => {
         <strong>汇率设置</strong>
         <span class="tip">配置后将应用于相关业务金额换算</span>
       </div>
-      <Button
-        v-if="checkPermission(13_363)"
-        type="primary"
-        @click="openForm()"
-      >
+      <Button v-if="checkPermission(13_363)" type="primary" @click="openForm()">
         新增
       </Button>
     </div>
@@ -174,11 +172,7 @@ onMounted(() => {
         <span v-else-if="column.key === 'UpdateTime'">
           {{ formatTime(record.UpdateTime) }}
         </span>
-        <Space
-          v-else-if="
-            column.key === 'action' && checkPermission(13_363)
-          "
-        >
+        <Space v-else-if="column.key === 'action' && checkPermission(13_363)">
           <Button size="small" type="primary" @click="openForm(record)">
             编辑
           </Button>

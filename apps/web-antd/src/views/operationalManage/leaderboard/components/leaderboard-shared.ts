@@ -2,9 +2,9 @@ import type { CloudListResult } from '#/types/operation-manage';
 
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
+  formatOperationDateTime,
   LEADERBOARD_INVITE_TYPE,
   LEADERBOARD_TYPE_MAP,
-  formatOperationDateTime,
 } from '#/utils/operation-status';
 
 export const LEADERBOARD_TYPE = {
@@ -99,7 +99,7 @@ export function normalizeCloudList<T>(data: unknown): CloudListResult<T> {
 
 export function normalizeCloudObject<T extends Record<string, unknown>>(
   data: unknown,
-): T | null {
+): null | T {
   if (!data || typeof data !== 'object') {
     return null;
   }
@@ -147,7 +147,7 @@ export function parseLangTextMap(raw: unknown) {
 
 export function resolveLeaderboardTitle(raw: unknown) {
   const lang = parseLangTextMap(raw);
-  const first = Object.values(lang)[0] as { Title?: string } | undefined;
+  const first = Object.values(lang)[0] as undefined | { Title?: string };
   if (first?.Title) {
     return first.Title;
   }
@@ -159,7 +159,7 @@ export function resolveLeaderboardTitle(raw: unknown) {
 
 export function resolveVoucherName(raw: unknown) {
   const lang = parseLangTextMap(raw);
-  const first = Object.values(lang)[0] as { Name?: string } | undefined;
+  const first = Object.values(lang)[0] as undefined | { Name?: string };
   return first?.Name || '-';
 }
 

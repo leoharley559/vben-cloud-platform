@@ -53,9 +53,7 @@ const filters = reactive({
 function normalizeClassify(value: unknown) {
   if (Array.isArray(value)) return value as Array<number | string>;
   if (value === undefined || value === null || value === '') return [];
-  return String(value)
-    .split(',')
-    .filter(Boolean);
+  return String(value).split(',').filter(Boolean);
 }
 
 function parseGameInfo(value: unknown) {
@@ -126,9 +124,10 @@ const stats = computed(() => {
     .map((item) => item.Percent)
     .filter((value): value is number => value !== undefined);
   return {
-    average: values.length > 0
-      ? values.reduce((total, value) => total + value, 0) / values.length
-      : 0,
+    average:
+      values.length > 0
+        ? values.reduce((total, value) => total + value, 0) / values.length
+        : 0,
     maximum: values.length > 0 ? Math.max(...values) : 0,
     minimum: values.length > 0 ? Math.min(...values) : 0,
     notSet: filteredGames.value.length - values.length,
@@ -186,7 +185,8 @@ function applyBatch() {
     const next =
       batchType.value === 'set'
         ? batchValue.value!
-        : current + (batchType.value === 'up' ? batchValue.value! : -batchValue.value!);
+        : current +
+          (batchType.value === 'up' ? batchValue.value! : -batchValue.value!);
     game.Percent = Math.max(0, Math.min(1000, Number(next.toFixed(2))));
   });
   batchValue.value = undefined;
@@ -363,11 +363,7 @@ onMounted(loadData);
       </div>
 
       <div class="save-bar">
-        <Button
-          :loading="saving"
-          type="primary"
-          @click="saveConfig"
-        >
+        <Button :loading="saving" type="primary" @click="saveConfig">
           保存配置
         </Button>
       </div>
@@ -434,9 +430,9 @@ onMounted(loadData);
 
 .game-item {
   display: flex;
+  gap: 8px;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
   min-width: 0;
   padding: 10px 12px;
   background: hsl(var(--background));

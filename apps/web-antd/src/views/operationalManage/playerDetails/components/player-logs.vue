@@ -5,12 +5,11 @@ import type { PlayerLogItem } from '#/types/player-detail';
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { Button, Input, Result, Space } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchPlayerActionLogsApi } from '#/api/operationManage/player-detail-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerActionLogsApi } from '#/api/operationManage/player-detail-extra';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 
@@ -22,7 +21,7 @@ const props = defineProps<{
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(13313));
+const canViewTable = computed(() => checkPermission(13_313));
 
 const defaultRange = getTodayRangeSeconds();
 
@@ -149,42 +148,45 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterUsername"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入操作人员"
-        >
-          <template #addonBefore>操作人员</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterUsername"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入操作人员"
+          >
+            <template #addonBefore>操作人员</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterType"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入类型"
-        >
-          <template #addonBefore>类型</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterType"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入类型"
+          >
+            <template #addonBefore>类型</template>
+          </Input>
+        </div>
 
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="操作时间" />
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="操作时间"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid />
   </div>

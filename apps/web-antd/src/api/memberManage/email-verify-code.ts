@@ -1,10 +1,11 @@
-import { requestClient } from '#/api/request';
 import type {
   EmailOutgoingAccountForm,
   EmailOutgoingAccountItem,
   EmailVerifyCodeListItem,
   EmailVerifyCodeListQuery,
 } from '#/types/email-verify-code';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -18,7 +19,7 @@ export async function fetchEmailVerifyCodeListApi(
   query: EmailVerifyCodeListQuery,
 ) {
   const result = await requestClient.get<
-    EmailVerifyCodeListItem[] | { Items?: EmailVerifyCodeListItem[] } | null
+    EmailVerifyCodeListItem[] | null | { Items?: EmailVerifyCodeListItem[] }
   >('/backend/emailverifycode/list', {
     params: trimSpace({ ...query }),
   });
@@ -39,7 +40,7 @@ export async function fetchEmailVerifyCodeListApi(
  */
 export async function fetchEmailOutgoingAccountListApi() {
   const result = await requestClient.get<
-    EmailOutgoingAccountItem[] | { Items?: EmailOutgoingAccountItem[] } | null
+    EmailOutgoingAccountItem[] | null | { Items?: EmailOutgoingAccountItem[] }
   >('/backend/emailverifycode/listemailconfig');
   if (Array.isArray(result)) {
     return result;

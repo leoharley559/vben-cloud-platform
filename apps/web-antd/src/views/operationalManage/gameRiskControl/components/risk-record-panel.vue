@@ -4,18 +4,10 @@ import type { CloudListResult } from '#/types/operation-manage';
 
 import { computed, onMounted, ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  Modal,
-  Result,
-  Space,
-  message,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { Button, Input, message, Modal, Result, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   batchDeleteDeviceRiskApi,
   batchDeleteIpRiskApi,
@@ -24,7 +16,7 @@ import {
   fetchGameIpRiskListApi,
   fetchGameRiskListApi,
 } from '#/api/operationManage/game-risk-control';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
@@ -43,15 +35,15 @@ const { checkPermission } = useCloudPermission();
 
 const permissionMap = computed(() => {
   if (props.kind === 'ip' && props.listType === 'blacklist') {
-    return { create: 11414, delete: 11417, edit: 11416, view: 11413 };
+    return { create: 11_414, delete: 11_417, edit: 11_416, view: 11_413 };
   }
   if (props.kind === 'device' && props.listType === 'blacklist') {
-    return { create: 10050, delete: 10053, edit: 10051, view: 10049 };
+    return { create: 10_050, delete: 10_053, edit: 10_051, view: 10_049 };
   }
   if (props.kind === 'ip' && props.listType === 'whitelist') {
-    return { create: 11451, delete: 11454, edit: 11453, view: 11450 };
+    return { create: 11_451, delete: 11_454, edit: 11_453, view: 11_450 };
   }
-  return { create: 10067, delete: 10070, edit: 10068, view: 10066 };
+  return { create: 10_067, delete: 10_070, edit: 10_068, view: 10_066 };
 });
 
 const canView = computed(() => checkPermission(permissionMap.value.view));
@@ -206,11 +198,7 @@ function handleDeleteOne(row: Record<string, unknown>) {
   Modal.confirm({
     content: '确认删除该记录？',
     onOk: async () => {
-      if (props.kind === 'ip') {
-        await deleteIpRiskApi(id);
-      } else {
-        await deleteDeviceRiskApi(id);
-      }
+      await (props.kind === 'ip' ? deleteIpRiskApi(id) : deleteDeviceRiskApi(id));
       message.success('已删除');
       gridApi.reload();
     },
@@ -225,18 +213,14 @@ function handleBatchDelete() {
   const ids = records
     .map((item) => item.Id as number | string)
     .filter((id) => id !== undefined && id !== null && id !== '');
-  if (!ids.length) {
+  if (ids.length === 0) {
     message.warning('请先勾选记录');
     return;
   }
   Modal.confirm({
     content: `确认批量删除选中的 ${ids.length} 条记录？`,
     onOk: async () => {
-      if (props.kind === 'ip') {
-        await batchDeleteIpRiskApi(ids);
-      } else {
-        await batchDeleteDeviceRiskApi(ids);
-      }
+      await (props.kind === 'ip' ? batchDeleteIpRiskApi(ids) : batchDeleteDeviceRiskApi(ids));
       message.success('批量删除已提交');
       gridApi.reload();
     },
@@ -256,45 +240,51 @@ defineExpose({ reload: () => gridApi.reload() });
 <template>
   <div v-if="canView">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterKeyword"
-          allow-clear
-          @press-enter="handleSearch"
-          :placeholder="`请输入${kind === 'ip' ? 'IP地址' : '设备标识'}`"
-        >
-          <template #addonBefore>{{ kind === 'ip' ? 'IP地址' : '设备标识' }}</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterKeyword"
+            allow-clear
+            @press-enter="handleSearch"
+            :placeholder="`请输入${kind === 'ip' ? 'IP地址' : '设备标识'}`"
+          >
+            <template #addonBefore>
+{{
+              kind === 'ip' ? 'IP地址' : '设备标识'
+            }}
+</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Space class="ml-auto">
-        <Button v-if="canCreate" type="primary" @click="createOpen = true">
-          新增
-        </Button>
-        <Button v-if="canCreate" @click="importOpen = true">批量导入</Button>
-        <Button v-if="canDelete" danger @click="handleBatchDelete">
-          批量删除
-        </Button>
-      </Space>
+          <Button @click="resetFilters">重置</Button>
+          <Space class="ml-auto">
+            <Button v-if="canCreate" type="primary" @click="createOpen = true">
+              新增
+            </Button>
+            <Button v-if="canCreate" @click="importOpen = true">
+批量导入
+</Button>
+            <Button v-if="canDelete" danger @click="handleBatchDelete">
+              批量删除
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #actions="{ row }">

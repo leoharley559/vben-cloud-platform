@@ -76,7 +76,7 @@ async function loadData() {
   loading.value = true;
   try {
     const result = await fetchTeamDailyListApi({
-      BeginTime: Math.floor(Date.now() / 1000 - 7 * 86400),
+      BeginTime: Math.floor(Date.now() / 1000 - 7 * 86_400),
       EndTime: Math.floor(Date.now() / 1000),
       Page: 1,
       PageSize: 20,

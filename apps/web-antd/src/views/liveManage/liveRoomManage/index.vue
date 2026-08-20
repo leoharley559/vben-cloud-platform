@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -7,9 +9,7 @@ import { Card, Result } from 'ant-design-vue';
 
 import { fetchLiveRoomListApi } from '#/api/liveManage';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import { liveRoomColumns } from '../shared/columns';
 
@@ -25,7 +25,7 @@ const listConfig = computed(
   }),
 );
 
-const canViewPage = computed(() => checkPermission(11533));
+const canViewPage = computed(() => checkPermission(11_533));
 </script>
 
 <template>

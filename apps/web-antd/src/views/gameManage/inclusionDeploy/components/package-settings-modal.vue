@@ -2258,8 +2258,8 @@ watch(
 .settings-body {
   min-height: 470px;
   max-height: calc(100vh - 250px);
-  overflow-y: auto;
   padding: 4px 12px 4px 4px;
+  overflow-y: auto;
 }
 
 .grid-2 {
@@ -2274,19 +2274,19 @@ watch(
 
 .hint {
   margin-top: 6px;
-  color: hsl(var(--muted-foreground));
   font-size: 12px;
+  color: hsl(var(--muted-foreground));
 }
 
 .auth-table {
   display: grid;
   grid-template-columns: 1fr 140px 140px;
-  align-items: center;
   gap: 1px;
+  align-items: center;
   overflow: hidden;
+  background: hsl(var(--border));
   border: 1px solid hsl(var(--border));
   border-radius: 6px;
-  background: hsl(var(--border));
 }
 
 .auth-table > * {
@@ -2296,8 +2296,8 @@ watch(
 }
 
 .auth-head {
-  background: hsl(var(--accent));
   font-weight: 600;
+  background: hsl(var(--accent));
 }
 
 .extra-field-list {
@@ -2309,8 +2309,8 @@ watch(
 .extra-field-row {
   display: grid;
   grid-template-columns: 140px minmax(280px, 1fr) minmax(180px, auto);
-  align-items: center;
   gap: 16px;
+  align-items: center;
   min-height: 54px;
   padding: 8px 12px;
   border-bottom: 1px solid hsl(var(--border));

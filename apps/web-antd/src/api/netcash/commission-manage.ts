@@ -68,10 +68,9 @@ export function deleteCommTemplateApi(id: number | string) {
  * @see views/netcash/commissionManage/components/scheme-panel.vue
  */
 export function fetchCommListApi(query: Query) {
-  return requestClient.get<CommissionRow[]>(
-    '/backend/commissionconfig/list',
-    { params: query },
-  );
+  return requestClient.get<CommissionRow[]>('/backend/commissionconfig/list', {
+    params: query,
+  });
 }
 
 /**
@@ -126,9 +125,12 @@ export function resetCommConfigApi(data: Payload) {
  * @see views/netcash/commissionManage/components/scheme-panel.vue
  */
 export function fetchVenueTemplateListApi(query: Query = {}) {
-  return requestClient.get<NetcashListResult<CommissionRow>>('/backend/apifeetemplate/list', {
-    params: query,
-  });
+  return requestClient.get<NetcashListResult<CommissionRow>>(
+    '/backend/apifeetemplate/list',
+    {
+      params: query,
+    },
+  );
 }
 
 /**
@@ -196,9 +198,12 @@ export function updateVenueConfigApi(data: Payload) {
  * @see views/netcash/commissionManage/components/commission-ledger-panel.vue
  */
 export function fetchSendCommListApi(query: Query) {
-  return requestClient.get<CommissionListResult>('/backend/sendcommission/list', {
-    params: trimSpace(query),
-  });
+  return requestClient.get<CommissionListResult>(
+    '/backend/sendcommission/list',
+    {
+      params: trimSpace(query),
+    },
+  );
 }
 
 /**
@@ -368,9 +373,12 @@ export function deleteMultCommTemplateApi(id: number | string) {
  * @see views/netcash/commissionManage/components/scheme-panel.vue
  */
 export function fetchMultCommConfigApi(query: Query) {
-  return requestClient.get<CommissionRow>('/backend/commissionconfigmulti/list', {
-    params: query,
-  });
+  return requestClient.get<CommissionRow>(
+    '/backend/commissionconfigmulti/list',
+    {
+      params: query,
+    },
+  );
 }
 
 /**
@@ -403,9 +411,12 @@ export function resetMultCommConfigApi(data: Payload) {
  * @see views/netcash/commissionManage/components/commission-ledger-panel.vue
  */
 export function fetchPersonalDetailApi(query: Query) {
-  return requestClient.get<CommissionRow[]>('/backend/sendcommission/personaldetail', {
-    params: query,
-  });
+  return requestClient.get<CommissionRow[]>(
+    '/backend/sendcommission/personaldetail',
+    {
+      params: query,
+    },
+  );
 }
 
 /**
@@ -416,9 +427,12 @@ export function fetchPersonalDetailApi(query: Query) {
  * @see views/netcash/commissionManage/components/commission-ledger-panel.vue
  */
 export function fetchTeamDetailApi(query: Query) {
-  return requestClient.get<CommissionRow[]>('/backend/sendcommission/teamdetail', {
-    params: query,
-  });
+  return requestClient.get<CommissionRow[]>(
+    '/backend/sendcommission/teamdetail',
+    {
+      params: query,
+    },
+  );
 }
 
 /**

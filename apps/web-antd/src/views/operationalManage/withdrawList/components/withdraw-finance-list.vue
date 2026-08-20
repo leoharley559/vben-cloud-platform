@@ -1,23 +1,23 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { WithdrawFinanceItem } from '#/types/withdraw-extra';
 import type { WithdrawListItem } from '#/types/operation-manage';
+import type { WithdrawFinanceItem } from '#/types/withdraw-extra';
 
 import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchWithdrawFinanceListApi } from '#/api/operationManage/withdraw-extra';
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   addWithdrawRemarkApi,
   batchDenyWithdrawApi,
@@ -26,14 +26,13 @@ import {
   transitionPendingWithdrawApi,
   updateWithdrawReceivedStatusApi,
 } from '#/api/operationManage/withdraw';
+import { fetchWithdrawFinanceListApi } from '#/api/operationManage/withdraw-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { calcWithdrawStatusText } from '#/utils/withdraw-status';
 import {
   canShowWithdrawAutoPay,
   canShowWithdrawManualPay,
@@ -41,6 +40,7 @@ import {
   canShowWithdrawReject,
   isWithdrawRiskBlockingPay,
 } from '#/utils/withdraw-actions';
+import { calcWithdrawStatusText } from '#/utils/withdraw-status';
 
 import WithdrawActionModal from './withdraw-action-modal.vue';
 import WithdrawBatchApproveModal from './withdraw-batch-approve-modal.vue';
@@ -51,16 +51,16 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
 // 对齐旧站 withdrawListSon：页签 10350，表格权限 10382
-const canViewTable = computed(() => checkPermission(10382));
-const canManualPay = computed(() => checkPermission(10383));
-const canAutoPay = computed(() => checkPermission(10384));
-const canRejectPay = computed(() => checkPermission(10385));
-const canEditRemark = computed(() => checkPermission(10365));
-const canBatchApprove = computed(() => checkPermission(12032));
-const canBatchManual = computed(() => checkPermission(12258));
-const canBatchReject = computed(() => checkPermission(12259));
-const canCheckThirdParty = computed(() => checkPermission(12153));
-const canTransitionPending = computed(() => checkPermission(12154));
+const canViewTable = computed(() => checkPermission(10_382));
+const canManualPay = computed(() => checkPermission(10_383));
+const canAutoPay = computed(() => checkPermission(10_384));
+const canRejectPay = computed(() => checkPermission(10_385));
+const canEditRemark = computed(() => checkPermission(10_365));
+const canBatchApprove = computed(() => checkPermission(12_032));
+const canBatchManual = computed(() => checkPermission(12_258));
+const canBatchReject = computed(() => checkPermission(12_259));
+const canCheckThirdParty = computed(() => checkPermission(12_153));
+const canTransitionPending = computed(() => checkPermission(12_154));
 
 const defaultRange = getYesterdayRangeSeconds();
 const filterLoginAccount = ref('');
@@ -77,10 +77,10 @@ const batchLoading = ref(false);
 const actionOpen = ref(false);
 const batchApproveOpen = ref(false);
 const actionMode = ref<'agree' | 'manual' | 'reject'>('manual');
-const actionRow = ref<WithdrawListItem | null>(null);
+const actionRow = ref<null | WithdrawListItem>(null);
 const remarkOpen = ref(false);
 const remarkSaving = ref(false);
-const remarkRow = ref<WithdrawFinanceItem | null>(null);
+const remarkRow = ref<null | WithdrawFinanceItem>(null);
 const remarkText = ref('');
 
 function formatDateTime(value?: number | string) {
@@ -375,55 +375,55 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterPackageId"
-        :options="
-          packageOptions
-            .filter((item) => item.PackageId !== '')
-            .map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-        "
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterHandlerName"
-          allow-clear
-          placeholder="请输入处理人"
-        >
-          <template #addonBefore>处理人</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterPackageId"
+          :options="
+            packageOptions
+              .filter((item) => item.PackageId !== '')
+              .map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+          "
+        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterHandlerName"
+            allow-clear
+            placeholder="请输入处理人"
+          >
+            <template #addonBefore>处理人</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
+            查询
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <div
       v-if="canBatchApprove || canBatchManual || canBatchReject"

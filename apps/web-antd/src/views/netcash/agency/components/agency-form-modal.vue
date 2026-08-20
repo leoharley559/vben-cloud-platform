@@ -43,16 +43,16 @@ const optionsLoading = ref(false);
 const developerOptions = ref<
   Array<{ developerName: string; label: string; value: number | string }>
 >([]);
-const commissionOptions = ref<
-  Array<{ label: string; value: number | string }>
->([]);
+const commissionOptions = ref<Array<{ label: string; value: number | string }>>(
+  [],
+);
 const multCommissionOptions = ref<
   Array<{ label: string; value: number | string }>
 >([]);
 const venueOptions = ref<Array<{ label: string; value: number | string }>>([]);
-const algorithmOptions = ref<
-  Array<{ label: string; value: number | string }>
->([]);
+const algorithmOptions = ref<Array<{ label: string; value: number | string }>>(
+  [],
+);
 
 const title = computed(() =>
   props.mode === 'create' ? '新增代理' : '编辑代理',
@@ -118,15 +118,14 @@ function fillFromRow(row: AgencyListItem) {
     | string
     | undefined;
   form.CommissionRate =
-    row.CommissionRate === undefined ? undefined : Number(row.CommissionRate) / 100;
+    row.CommissionRate === undefined
+      ? undefined
+      : Number(row.CommissionRate) / 100;
   form.CommissionRateDiff =
     row.CommissionRateDiff === undefined
       ? undefined
       : Number(row.CommissionRateDiff) / 100;
-  form.ApiFeeTemplateId = row.ApiFeeTemplateId as
-    | number
-    | string
-    | undefined;
+  form.ApiFeeTemplateId = row.ApiFeeTemplateId as number | string | undefined;
   form.AlgorithmTemplateId = row.AlgorithmTemplateId as
     | number
     | string
@@ -143,12 +142,12 @@ async function loadOptions() {
   try {
     const [developers, commissions, multCommissions, venues, algorithms] =
       await Promise.all([
-      fetchDeveloperNamesListApi({ Page: 1, PageSize: 9999 }),
-      fetchCommTempListApi({ Page: 1, PageSize: 9999 }),
-      fetchMultCommTempListApi({ Page: 1, PageSize: 9999 }),
-      fetchVenueTemplateListApi({ Page: 1, PageSize: 9999 }),
-      fetchJuniorAlgorithmOptionsApi(),
-    ]);
+        fetchDeveloperNamesListApi({ Page: 1, PageSize: 9999 }),
+        fetchCommTempListApi({ Page: 1, PageSize: 9999 }),
+        fetchMultCommTempListApi({ Page: 1, PageSize: 9999 }),
+        fetchVenueTemplateListApi({ Page: 1, PageSize: 9999 }),
+        fetchJuniorAlgorithmOptionsApi(),
+      ]);
     developerOptions.value = (developers?.Items || []).map((item) => ({
       developerName: String(item.DeveloperName || ''),
       label: `${item.DeveloperName || '-'}${item.Remark ? `（${item.Remark}）` : ''}`,
@@ -158,10 +157,12 @@ async function loadOptions() {
       label: String(item.Name || item.TemplateName || item.Id || ''),
       value: item.Id as number | string,
     }));
-    multCommissionOptions.value = (multCommissions?.Items || []).map((item) => ({
-      label: String(item.TemplateName || item.Name || item.Id || ''),
-      value: item.Id as number | string,
-    }));
+    multCommissionOptions.value = (multCommissions?.Items || []).map(
+      (item) => ({
+        label: String(item.TemplateName || item.Name || item.Id || ''),
+        value: item.Id as number | string,
+      }),
+    );
     venueOptions.value = (venues?.Items || []).map((item) => ({
       label: String(item.TemplateName || item.Name || item.Id || ''),
       value: item.Id as number | string,
@@ -225,10 +226,7 @@ function validate() {
     message.warning('请选择多层多费率佣金模板');
     return false;
   }
-  if (
-    form.AccountType !== 1 &&
-    !validPercent(form.CommissionRateDiff, false)
-  ) {
+  if (form.AccountType !== 1 && !validPercent(form.CommissionRateDiff, false)) {
     message.warning('佣金级距须大于 0 且不超过 100，最多两位小数');
     return false;
   }
@@ -399,11 +397,7 @@ async function handleSubmit() {
           style="width: 100%"
         />
       </Form.Item>
-      <Form.Item
-        v-if="form.AccountType === 2"
-        label="佣金比例"
-        required
-      >
+      <Form.Item v-if="form.AccountType === 2" label="佣金比例" required>
         <InputNumber
           v-model:value="form.CommissionRate"
           :max="100"

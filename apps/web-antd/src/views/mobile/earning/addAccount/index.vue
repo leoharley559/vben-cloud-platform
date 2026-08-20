@@ -3,9 +3,10 @@ import { Button, Card, Form, Input, Select } from 'ant-design-vue';
 
 import MobileMvpTip from '../../components/mobile-mvp-tip.vue';
 
+defineOptions({ name: 'MobileEarningAddAccount' });
+
 const emit = defineEmits<{ back: [] }>();
 
-defineOptions({ name: 'MobileEarningAddAccount' });
 </script>
 
 <template>

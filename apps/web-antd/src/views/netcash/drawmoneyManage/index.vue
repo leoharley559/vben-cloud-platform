@@ -48,11 +48,7 @@ watch(
   >
     <Card>
       <Tabs v-model:active-key="activeTab" type="line" size="small">
-        <Tabs.TabPane
-          v-for="item in tabs"
-          :key="item.key"
-          :tab="item.label"
-        >
+        <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.label">
           <WithdrawListPanel
             v-if="activeTab === 'drawings' && item.key === 'drawings'"
           />

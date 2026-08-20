@@ -3,7 +3,10 @@ import type { Dayjs } from 'dayjs';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 
-import { formatPercent, formatSeconds } from '#/views/dataClose/shared/report-utils';
+import {
+  formatPercent,
+  formatSeconds,
+} from '#/views/dataClose/shared/report-utils';
 
 export type CompareBucket = Record<string, unknown>;
 
@@ -33,7 +36,7 @@ export function disabledBeforeToday(current: Dayjs) {
 
 /** 从 TwoDayBaseItems 按 ReportDay 精确匹配一行（收入/推广/充值详情） */
 export function pickTwoDayItem(
-  data: Record<string, unknown> | null | undefined,
+  data: null | Record<string, unknown> | undefined,
   reportDay: string,
 ): Record<string, unknown> {
   const list = data?.TwoDayBaseItems;
@@ -44,9 +47,7 @@ export function pickTwoDayItem(
       typeof item === 'object' &&
       String((item as Record<string, unknown>).ReportDay ?? '') === reportDay,
   );
-  return hit && typeof hit === 'object'
-    ? (hit as Record<string, unknown>)
-    : {};
+  return hit && typeof hit === 'object' ? (hit as Record<string, unknown>) : {};
 }
 
 /** 数据比较折线：对齐旧站对各 Field 的换算（金额 /100、比率派生） */
@@ -55,25 +56,8 @@ export function resolveChartFieldValue(
   field: string,
   extra?: Record<string, unknown>,
 ): number {
-  const row = { ...item, ...(extra || {}) };
+  const row = { ...item, ...extra };
   switch (field) {
-    case 'PercentConversion': {
-      const reg = num(row.SumReg);
-      return reg
-        ? Number(((num(row.SumFirstPayNum) / reg) * 100).toFixed(2))
-        : 0;
-    }
-    case 'PerCapita': {
-      const n = num(row.SumFirstPayNum);
-      return n
-        ? Number((num(row.SumFirstPayMoney) / n / 100).toFixed(2))
-        : 0;
-    }
-    case 'SufficientExchange': {
-      const w = num(row.SumWithdrawMoney);
-      const pay = num(row.SumPayMoney) + num(row.SumAgentPayMoney);
-      return w ? Number(((w / (pay || 1)) * 100).toFixed(2)) : 0;
-    }
     case 'FirmBunko': {
       return Number(
         (
@@ -82,11 +66,6 @@ export function resolveChartFieldValue(
         ).toFixed(2),
       );
     }
-    case 'Surplus': {
-      const bet = num(row.SumTransBetMoney1);
-      const firm = bet - num(row.SumTransWinMoney1);
-      return bet ? Number(((firm / bet) * 100).toFixed(2)) : 0;
-    }
     case 'FullBring': {
       return Number(
         (
@@ -94,6 +73,11 @@ export function resolveChartFieldValue(
           100
         ).toFixed(2),
       );
+    }
+    case 'GrossMargin': {
+      const income = resolveChartFieldValue(row, 'Income');
+      const bet = num(row.SumTransBetMoney1) / 100;
+      return bet ? Number(((income / bet) * 100).toFixed(2)) : 0;
     }
     case 'Income': {
       const income =
@@ -105,10 +89,25 @@ export function resolveChartFieldValue(
         num(row.SumAgentCommissionSumNum);
       return Number((income / 100).toFixed(2));
     }
-    case 'GrossMargin': {
-      const income = resolveChartFieldValue(row, 'Income');
-      const bet = num(row.SumTransBetMoney1) / 100;
-      return bet ? Number(((income / bet) * 100).toFixed(2)) : 0;
+    case 'PerCapita': {
+      const n = num(row.SumFirstPayNum);
+      return n ? Number((num(row.SumFirstPayMoney) / n / 100).toFixed(2)) : 0;
+    }
+    case 'PercentConversion': {
+      const reg = num(row.SumReg);
+      return reg
+        ? Number(((num(row.SumFirstPayNum) / reg) * 100).toFixed(2))
+        : 0;
+    }
+    case 'SufficientExchange': {
+      const w = num(row.SumWithdrawMoney);
+      const pay = num(row.SumPayMoney) + num(row.SumAgentPayMoney);
+      return w ? Number(((w / (pay || 1)) * 100).toFixed(2)) : 0;
+    }
+    case 'Surplus': {
+      const bet = num(row.SumTransBetMoney1);
+      const firm = bet - num(row.SumTransWinMoney1);
+      return bet ? Number(((firm / bet) * 100).toFixed(2)) : 0;
     }
     default: {
       if ((MONEY_FIELDS as readonly string[]).includes(field)) {
@@ -181,8 +180,7 @@ export function applyCompareFormulas(data: Record<string, CompareBucket>) {
           100
         ).toFixed(2)
       : '0.00';
-    const firm =
-      num(bucket.SumTransBetMoney1) - num(bucket.SumTransWinMoney1);
+    const firm = num(bucket.SumTransBetMoney1) - num(bucket.SumTransWinMoney1);
     next.FirmBunko = firm.toFixed(2);
     next.Surplus = num(bucket.SumTransBetMoney1)
       ? ((firm / num(bucket.SumTransBetMoney1)) * 100).toFixed(2)
@@ -206,11 +204,11 @@ export function applyCompareFormulas(data: Record<string, CompareBucket>) {
 }
 
 const RATE_FIELDS = new Set([
-  'SufficientExchange',
-  'PercentConversion',
-  'Surplus',
   'GrossMargin',
   'PerCapita',
+  'PercentConversion',
+  'SufficientExchange',
+  'Surplus',
 ]);
 
 export function buildMetricRow(
@@ -284,14 +282,19 @@ export function percentText(a: unknown, b: unknown) {
 
 export type CompareMetricDef = {
   field: string;
+  isRate?: boolean;
   label: string;
   permission?: number;
   section: string;
-  isRate?: boolean;
 };
 
 export const COMPARE_METRICS: CompareMetricDef[] = [
-  { field: 'SumReg', label: '注册人数', permission: 10_518, section: '推广力度' },
+  {
+    field: 'SumReg',
+    label: '注册人数',
+    permission: 10_518,
+    section: '推广力度',
+  },
   {
     field: 'SumFirstPayNum',
     label: '首存人数',
@@ -317,7 +320,12 @@ export const COMPARE_METRICS: CompareMetricDef[] = [
     permission: 10_518,
     section: '推广力度',
   },
-  { field: 'SumLogin', label: '登录人数', permission: 10_519, section: '核心数据' },
+  {
+    field: 'SumLogin',
+    label: '登录人数',
+    permission: 10_519,
+    section: '核心数据',
+  },
   {
     field: 'SumTransBetNum1',
     label: '投注人数',

@@ -35,16 +35,21 @@ export function calcWithdrawStatusText(
 
 export function formatRiskStatus(status?: number) {
   switch (status) {
-    case -1:
+    case -1: {
       return '未处理';
-    case 1:
+    }
+    case 1: {
       return '通过';
-    case 2:
+    }
+    case 2: {
       return '不通过';
-    case 3:
+    }
+    case 3: {
       return '挂起';
-    default:
+    }
+    default: {
       return '-';
+    }
   }
 }
 
@@ -52,28 +57,36 @@ export function getRiskStatusColor(
   status?: number,
 ): 'default' | 'error' | 'success' | 'warning' {
   switch (status) {
-    case 1:
+    case 1: {
       return 'success';
+    }
     case 2:
-    case 3:
+    case 3: {
       return 'error';
-    default:
+    }
+    default: {
       return 'default';
+    }
   }
 }
 
 export function formatReceivedStatus(status?: number) {
   switch (status) {
-    case 1:
+    case 1: {
       return '手动到账';
-    case 2:
+    }
+    case 2: {
       return '自动到账';
-    case 3:
+    }
+    case 3: {
       return '到账异常';
-    case 4:
+    }
+    case 4: {
       return '异常已处理';
-    default:
+    }
+    default: {
       return '未通知';
+    }
   }
 }
 
@@ -83,12 +96,15 @@ export function getReceivedStatusColor(
   switch (status) {
     case 1:
     case 2:
-    case 4:
+    case 4: {
       return 'success';
-    case 3:
+    }
+    case 3: {
       return 'error';
-    default:
+    }
+    default: {
       return 'default';
+    }
   }
 }
 

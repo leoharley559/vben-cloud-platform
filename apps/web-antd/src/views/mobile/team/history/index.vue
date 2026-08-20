@@ -2,11 +2,10 @@
 import { onMounted, ref } from 'vue';
 
 import { Card, Spin, Table } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchTeamQueryListApi } from '#/api/promotion/team-query';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 import MobileMvpTip from '../../components/mobile-mvp-tip.vue';
@@ -54,8 +53,8 @@ onMounted(loadData);
   <Spin :spinning="loading">
     <MobileMvpTip />
     <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" />
-        </div>
+      <QueryDatetimeRangePicker v-model="dateRange" />
+    </div>
     <Card size="small">
       <Table
         :columns="columns"

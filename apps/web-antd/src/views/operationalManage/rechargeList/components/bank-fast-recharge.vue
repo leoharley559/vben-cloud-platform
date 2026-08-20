@@ -7,15 +7,16 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchEasyRechargeListApi,
   rejectEasyRechargeApi,
@@ -24,9 +25,8 @@ import EasyRechargeActionModal from '#/components/easy-recharge/easy-recharge-ac
 import EasyRechargeVoucherCell from '#/components/easy-recharge/easy-recharge-voucher-cell.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -41,12 +41,12 @@ defineOptions({ name: 'BankFastRechargeList' });
 const { checkPermission } = useCloudPermission();
 const { memberTypeOptions, packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(10269));
-const canConfirm = computed(() => checkPermission(10270));
+const canViewTable = computed(() => checkPermission(10_269));
+const canConfirm = computed(() => checkPermission(10_270));
 /** 对齐旧站 bankCardRecharge：复议 10271 + Status===3；拒绝 10272 + Status===1 */
-const canReview = computed(() => checkPermission(10271));
-const canReject = computed(() => checkPermission(10272));
-const canExport = computed(() => checkPermission(12159));
+const canReview = computed(() => checkPermission(10_271));
+const canReject = computed(() => checkPermission(10_272));
+const canExport = computed(() => checkPermission(12_159));
 
 const defaultRange = getYesterdayRangeSeconds();
 const totalStats = ref({
@@ -58,7 +58,7 @@ const totalStats = ref({
 const exportLoading = ref(false);
 const actionOpen = ref(false);
 const actionMode = ref<'confirm' | 'review'>('confirm');
-const actionRow = ref<PlayerEasyRechargeItem | null>(null);
+const actionRow = ref<null | PlayerEasyRechargeItem>(null);
 
 const filterOrderId = ref('');
 const filterLoginAccount = ref('');
@@ -194,8 +194,7 @@ const gridOptions: VxeTableGridOptions<PlayerEasyRechargeItem> = {
         const sortOrder = sort?.order;
         let sortParam = '';
         if (sortField && sortOrder) {
-          sortParam =
-            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
+          sortParam = sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
 
         const result = await fetchEasyRechargeListApi({
@@ -270,10 +269,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const items = result?.Items || [];
-    if (!items.length) {
+    if (items.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -319,80 +318,84 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
 
-      <Space.Compact>
-        <span class="query-field-addon">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          :options="
-            packageOptions
-              .filter((item) => item.PackageId !== '')
-              .map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-          "
-          placeholder="请选择产品"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="
+              packageOptions
+                .filter((item) => item.PackageId !== '')
+                .map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+            "
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
 
-      <Space.Compact>
-        <span class="query-field-addon">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          :options="EASY_RECHARGE_STATUS_OPTIONS"
-          placeholder="请选择状态"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            :options="EASY_RECHARGE_STATUS_OPTIONS"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
 
-      <Space.Compact>
-        <span class="query-field-addon">数据类型</span>
-        <Select
-          v-model:value="filterDataSearchType"
-          :options="memberTypeOptions"
-          placeholder="请选择数据类型"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="filterDataSearchType"
+            :options="memberTypeOptions"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
 
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-          导出 Excel
-        </Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+            <Button
+              v-if="canExport"
+              :loading="exportLoading"
+              @click="handleExport"
+            >
+              导出 Excel
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <div class="mb-4 grid gap-3 md:grid-cols-4">
       <div class="rounded border p-3 text-sm">

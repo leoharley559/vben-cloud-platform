@@ -1,5 +1,3 @@
-import { requestClient } from '#/api/request';
-import type { CloudListResult } from '#/types/operation-manage';
 import type {
   AgencyListItem,
   AgencyListQuery,
@@ -8,6 +6,9 @@ import type {
   NetcashListQuery,
   NetcashListResult,
 } from '#/types/netcash';
+import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -18,14 +19,15 @@ import { trimSpace } from '#/utils/string';
  * @see views/netcash/agency/components/agency-list.vue
  */
 export async function fetchAgencyListApi(query: AgencyListQuery) {
-  const result = await requestClient.get<CloudListResult<AgencyListItem> | null>(
-    '/backend/agentnetcash/list',
-    {
-      params: trimSpace(query),
-    },
-  );
+  const result =
+    await requestClient.get<CloudListResult<AgencyListItem> | null>(
+      '/backend/agentnetcash/list',
+      {
+        params: trimSpace(query),
+      },
+    );
   return {
-    ...(result || {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
     Pagination: result?.Pagination || {},
     Total: result?.Total || {},
@@ -61,13 +63,16 @@ export function switchAgencyStatusApi(data: {
  * @returns 注册申请 Items 及 Pagination；空 Items 时返回 `[]`
  * @see views/netcash/agency/components/register-list.vue
  */
-export async function fetchAgencyRegisterListApi(query: AgencyRegisterListQuery) {
-  const result = await requestClient.get<CloudListResult<AgencyRegisterItem> | null>(
-    '/backend/agentnetcashregister/list',
-    { params: trimSpace(query) },
-  );
+export async function fetchAgencyRegisterListApi(
+  query: AgencyRegisterListQuery,
+) {
+  const result =
+    await requestClient.get<CloudListResult<AgencyRegisterItem> | null>(
+      '/backend/agentnetcashregister/list',
+      { params: trimSpace(query) },
+    );
   return {
-    ...(result || {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
     Pagination: result?.Pagination || {},
   };
@@ -105,7 +110,9 @@ export function switchAgencyAutoAuditApi(data: { Enable: number | string }) {
  * @returns 国家配置 Items 及 Pagination；空 Items 时返回 `[]`
  * @see views/netcash/agency/components/areamasking-panel.vue
  */
-export async function fetchCountriesConfigListApi(query: Record<string, unknown>) {
+export async function fetchCountriesConfigListApi(
+  query: Record<string, unknown>,
+) {
   const result = await requestClient.get<NetcashListResult | null>(
     '/backend/countriesconfig/list',
     {
@@ -113,7 +120,7 @@ export async function fetchCountriesConfigListApi(query: Record<string, unknown>
     },
   );
   return {
-    ...(result || {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
     Pagination: result?.Pagination || {},
   };
@@ -158,7 +165,7 @@ export async function fetchDeveloperNamesListApi(query: NetcashListQuery) {
     },
   );
   return {
-    ...(result || {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
     Pagination: result?.Pagination || {},
   };
@@ -206,7 +213,9 @@ export function deleteDeveloperNameApi(data: { Id: number | string }) {
  * @returns 代理账号 Items 及 Pagination；空 Items 时返回 `[]`
  * @see views/netcash/agency/components/agency-form-modal.vue
  */
-export async function fetchAgencyPrincipalListApi(query: Record<string, unknown>) {
+export async function fetchAgencyPrincipalListApi(
+  query: Record<string, unknown>,
+) {
   const result = await requestClient.get<NetcashListResult | null>(
     '/backend/agentnetcash/list',
     {
@@ -214,7 +223,7 @@ export async function fetchAgencyPrincipalListApi(query: Record<string, unknown>
     },
   );
   return {
-    ...(result || {}),
+    ...result,
     Items: Array.isArray(result?.Items) ? result.Items : [],
     Pagination: result?.Pagination || {},
   };

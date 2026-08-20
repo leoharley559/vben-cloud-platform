@@ -20,11 +20,11 @@ const AGENCY_ADMIN_ID_KEYS = [
 
 /** 从行数据解析可用于跳转的代理 AdminId */
 export function resolveAgencyAdminId(
-  row: Record<string, unknown> | null | undefined,
+  row: null | Record<string, unknown> | undefined,
   ...preferredKeys: string[]
 ) {
   if (!row) return undefined;
-  const keys = preferredKeys.length ? preferredKeys : [...AGENCY_ADMIN_ID_KEYS];
+  const keys = preferredKeys.length > 0 ? preferredKeys : [...AGENCY_ADMIN_ID_KEYS];
   for (const key of keys) {
     const value = row[key];
     if (

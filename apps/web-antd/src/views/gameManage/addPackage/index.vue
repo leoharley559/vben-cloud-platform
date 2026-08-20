@@ -10,7 +10,6 @@ import type {
   PackageResourceItem,
 } from '#/types/package-config';
 import type { GameInfo } from '#/utils/game-config';
-import { formatVenueName } from '#/utils/game-config';
 
 import {
   computed,
@@ -72,6 +71,7 @@ import { useGameConfig } from '#/composables/use-game-config';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { useAuthStore } from '#/store/auth';
 import { createRequestHash } from '#/utils/crypto';
+import { formatVenueName } from '#/utils/game-config';
 import { createPackagePreviewUrl } from '#/utils/package-preview';
 
 defineOptions({ name: 'AddPackage' });
@@ -376,7 +376,9 @@ const previewUrl = computed(() => {
     {
       ...payload,
       MusicData: rawDetail.value?.MusicData,
-      SkinColor: hasColorId(form.appColorValue) ? form.appColorValue : undefined,
+      SkinColor: hasColorId(form.appColorValue)
+        ? form.appColorValue
+        : undefined,
       SkinColorPc: hasColorId(form.pcColorValue)
         ? form.pcColorValue
         : undefined,
@@ -1232,10 +1234,10 @@ onBeforeUnmount(() =>
                       :preview="false"
                       :src="resolveUrl(item.PictureIp || item.SmallPictureIp)"
                     />
-                    <span
-                      >皮肤
-                      {{ item.PictureStyle ?? item.PictureName ?? item.Id }}</span
-                    >
+                    <span>皮肤
+                      {{
+                        item.PictureStyle ?? item.PictureName ?? item.Id
+                      }}</span>
                   </Radio>
                 </Radio.Group>
               </div>
@@ -1287,10 +1289,10 @@ onBeforeUnmount(() =>
                       :preview="false"
                       :src="resolveUrl(item.PictureIp || item.SmallPictureIp)"
                     />
-                    <span
-                      >皮肤
-                      {{ item.PictureStyle ?? item.PictureName ?? item.Id }}</span
-                    >
+                    <span>皮肤
+                      {{
+                        item.PictureStyle ?? item.PictureName ?? item.Id
+                      }}</span>
                   </Radio>
                 </Radio.Group>
               </div>
@@ -1432,11 +1434,9 @@ onBeforeUnmount(() =>
                   <List :data-source="categoryOptions" size="small">
                     <template #renderItem="{ item, index }">
                       <List.Item>
-                        <span
-                          >{{ item.name }}（{{
+                        <span>{{ item.name }}（{{
                             gameCategoryCount(item.id)
-                          }}）</span
-                        >
+                          }}）</span>
                         <Space>
                           <Button
                             :disabled="index === 0"
@@ -1588,15 +1588,12 @@ onBeforeUnmount(() =>
                       </List.Item>
                     </template>
                   </List>
-                  <strong v-if="selectedNoLobbyGames.length > 0"
-                    >无大厅提交顺序</strong
-                  >
+                  <strong v-if="selectedNoLobbyGames.length > 0">无大厅提交顺序</strong>
                   <List :data-source="selectedNoLobbyGames" size="small">
                     <template #renderItem="{ item, index }">
                       <List.Item>
                         <Space>
-                          <Tag>{{ selectedGames.length + index + 1 }}</Tag
-                          >{{ item.name }}
+                          <Tag>{{ selectedGames.length + index + 1 }}</Tag>{{ item.name }}
                         </Space>
                         <Space>
                           <Button
@@ -1813,8 +1810,8 @@ onBeforeUnmount(() =>
 
 <style scoped>
 .wizard-steps {
-  margin: 4px auto 0;
   max-width: 1100px;
+  margin: 4px auto 0;
 }
 
 .wizard-content {
@@ -1823,35 +1820,35 @@ onBeforeUnmount(() =>
 }
 
 .wizard-actions {
-  align-items: center;
-  border-top: 1px solid hsl(var(--border));
   display: flex;
   gap: 8px;
+  align-items: center;
   justify-content: flex-end;
   padding-top: 16px;
+  border-top: 1px solid hsl(var(--border));
 }
 
 .section-heading,
 .panel-title {
-  align-items: center;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
 }
 
 .choice-card,
 .theme-card {
+  display: flex;
+  gap: 12px;
   align-items: center;
+  width: 100%;
+  padding: 18px;
+  text-align: left;
+  cursor: pointer;
   background: hsl(var(--background));
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  gap: 12px;
-  padding: 18px;
-  text-align: left;
   transition: 0.2s ease;
-  width: 100%;
 }
 
 .choice-card:hover,
@@ -1867,31 +1864,31 @@ onBeforeUnmount(() =>
 }
 
 .choice-number {
-  align-items: center;
-  background: hsl(var(--primary));
-  border-radius: 50%;
-  color: hsl(var(--primary-foreground));
   display: flex;
-  font-size: 18px;
-  height: 40px;
+  align-items: center;
   justify-content: center;
   width: 40px;
+  height: 40px;
+  font-size: 18px;
+  color: hsl(var(--primary-foreground));
+  background: hsl(var(--primary));
+  border-radius: 50%;
 }
 
 .choice-card small,
 .theme-card small {
-  color: hsl(var(--muted-foreground));
   display: block;
   margin-top: 4px;
+  color: hsl(var(--muted-foreground));
 }
 
 .theme-layout {
   display: grid;
-  gap: 16px;
   grid-template-columns: minmax(150px, 0.7fr) minmax(240px, 1.2fr) minmax(
       320px,
       2fr
     );
+  gap: 16px;
   min-height: 520px;
 }
 
@@ -1902,10 +1899,10 @@ onBeforeUnmount(() =>
 }
 
 .theme-detail-grid {
-  align-content: start;
   display: grid;
-  gap: 10px;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  align-content: start;
 }
 
 .swatch-row {
@@ -1914,25 +1911,25 @@ onBeforeUnmount(() =>
 }
 
 .color-swatch {
-  border: 1px solid rgb(0 0 0 / 8%);
-  border-radius: 50%;
+  width: 32px;
   height: 32px;
   margin-left: -5px;
-  width: 32px;
+  border: 1px solid rgb(0 0 0 / 8%);
+  border-radius: 50%;
 }
 
 .theme-preview {
+  width: 100%;
+  height: 520px;
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
-  height: 520px;
-  width: 100%;
 }
 
 .resource-grid :deep(.ant-radio-group),
 .icon-grid :deep(.ant-radio-group) {
   display: grid;
-  gap: 12px;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
   width: 100%;
 }
 
@@ -1942,18 +1939,18 @@ onBeforeUnmount(() =>
 
 .resource-option,
 .icon-option {
+  padding: 10px;
+  margin-inline-start: 0;
   border: 1px solid hsl(var(--border));
   border-radius: 6px;
-  margin-inline-start: 0;
-  padding: 10px;
 }
 
 .resource-option :deep(.ant-radio + span),
 .icon-option :deep(.ant-radio + span) {
-  align-items: center;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
   width: calc(100% - 18px);
 }
 
@@ -1962,9 +1959,9 @@ onBeforeUnmount(() =>
 }
 
 .resource-option :deep(img) {
+  width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: contain;
-  width: 100%;
 }
 
 .compact-form {
@@ -1972,9 +1969,9 @@ onBeforeUnmount(() =>
 }
 
 .panel-box {
+  padding: 14px;
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
-  padding: 14px;
 }
 
 .game-checkbox {
@@ -1982,17 +1979,17 @@ onBeforeUnmount(() =>
 }
 
 .preview-frame {
+  height: 520px;
+  overflow: hidden;
   background: hsl(var(--accent));
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
-  height: 520px;
-  overflow: hidden;
 }
 
 .preview-frame iframe {
-  border: 0;
-  height: 100%;
   width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 @media (max-width: 768px) {
@@ -2001,9 +1998,9 @@ onBeforeUnmount(() =>
   }
 
   .section-heading {
-    align-items: flex-start;
     flex-direction: column;
     gap: 12px;
+    align-items: flex-start;
   }
 
   .theme-layout {

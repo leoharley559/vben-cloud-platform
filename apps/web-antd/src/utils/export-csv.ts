@@ -1,9 +1,9 @@
 export interface CsvColumn<T> {
   header: string;
-  value: (row: T, index: number) => string | number;
+  value: (row: T, index: number) => number | string;
 }
 
-function escapeCsvCell(value: string | number) {
+function escapeCsvCell(value: number | string) {
   const text = String(value ?? '');
   if (/[",\n\r]/.test(text)) {
     return `"${text.replaceAll('"', '""')}"`;

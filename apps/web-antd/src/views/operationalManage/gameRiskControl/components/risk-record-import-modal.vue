@@ -6,10 +6,10 @@ import {
   Checkbox,
   Form,
   Input,
+  message,
   Modal,
   Table,
   Upload,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -71,8 +71,8 @@ const previewColumns = [
 ];
 
 function resolveOperator() {
-  const info = adminInfo.value as Record<string, unknown> | null;
-  const admin = info?.Admin as { Username?: string } | undefined;
+  const info = adminInfo.value as null | Record<string, unknown>;
+  const admin = info?.Admin as undefined | { Username?: string };
   return admin?.Username || String(info?.AdminName || info?.Account || '');
 }
 
@@ -115,7 +115,7 @@ async function handleFile(file: File) {
   try {
     const text = await file.text();
     const values = parseRiskImportText(text, columnHints.value);
-    if (!values.length) {
+    if (values.length === 0) {
       message.warning('上传文件为空或格式不正确');
       return false;
     }
@@ -146,7 +146,7 @@ async function loadPreview(values: string[]) {
         ? await fetchIpRiskPlayersApi(payload)
         : await fetchDeviceRiskPlayersApi(payload);
     const items = result?.Items || [];
-    previewRows.value = items.length
+    previewRows.value = items.length > 0
       ? items
       : values.map((value) => ({ RiskValue: value }));
     message.success(
@@ -158,7 +158,7 @@ async function loadPreview(values: string[]) {
 }
 
 async function handleOk() {
-  if (!importedValues.value.length && !previewRows.value.length) {
+  if (importedValues.value.length === 0 && previewRows.value.length === 0) {
     message.warning('请先上传导入文件');
     return;
   }

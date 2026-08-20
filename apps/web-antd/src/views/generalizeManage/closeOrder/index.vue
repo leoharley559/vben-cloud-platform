@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { CloseOrderItem } from '#/types/promotion';
 
@@ -18,15 +20,15 @@ import {
   Tag,
 } from 'ant-design-vue';
 import BigNumber from 'bignumber.js';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchCloseOrderListApi,
   startCloseOrderApi,
 } from '#/api/promotion/close-order';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   CLOSE_ORDER_STATUS_COLOR,
@@ -471,9 +473,7 @@ onMounted(() => {
             >
               结束订单
             </Button>
-            <span
-              v-if="Number(row.Status) === 3 || Number(row.Status) === 4"
-            >
+            <span v-if="Number(row.Status) === 3 || Number(row.Status) === 4">
               {{ row.UpdateFinishAdminName || '-' }}
             </span>
           </Space>
@@ -490,4 +490,3 @@ onMounted(() => {
   </Page>
   <Result v-else status="403" sub-title="无分销结算报表查看权限" title="403" />
 </template>
-

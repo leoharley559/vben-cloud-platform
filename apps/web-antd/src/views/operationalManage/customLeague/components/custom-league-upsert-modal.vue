@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { LeagueLangEntry } from './custom-league-shared';
+
 import { computed, reactive, ref, watch } from 'vue';
 
 import { preferences } from '@vben/preferences';
@@ -25,19 +27,7 @@ import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import VoucherImageField from '#/views/operationalManage/voucher/components/voucher-image-field.vue';
 
-import {
-  buildMatchSource,
-  csvToNumberArray,
-  ensureLeagueLangMap,
-  getSportsBySrc,
-  type LeagueLangEntry,
-  parseLangText,
-  resolveDefaultLangGroupId,
-  resolveLangGroupIds,
-  resolveLeagueOptionLabel,
-  resolveLeagueOptionValue,
-  toDateTimeString,
-} from './custom-league-shared';
+import { buildMatchSource, csvToNumberArray, ensureLeagueLangMap, getSportsBySrc, parseLangText, resolveDefaultLangGroupId, resolveLangGroupIds, resolveLeagueOptionLabel, resolveLeagueOptionValue, toDateTimeString } from './custom-league-shared';
 
 defineOptions({ name: 'CustomLeagueUpsertModal' });
 

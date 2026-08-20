@@ -308,9 +308,9 @@ defineExpose({ buildPatch, hydrate });
 .line-heading,
 .vip-range {
   display: flex;
+  gap: 8px;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
 }
 
 .line-heading {

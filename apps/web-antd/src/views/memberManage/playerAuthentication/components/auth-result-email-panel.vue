@@ -10,10 +10,10 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Switch,
   Tabs,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -125,7 +125,7 @@ async function loadSetting() {
   }
 }
 
-async function handleSwitchChange(checked: boolean | string | number) {
+async function handleSwitchChange(checked: boolean | number | string) {
   const next = Boolean(checked);
   Modal.confirm({
     content: `确认${next ? '开启' : '关闭'}身份验证结果通知？`,
@@ -155,7 +155,7 @@ async function handleSave() {
 }
 
 watch(langGroups, () => {
-  if (!Object.keys(langTextMap.value).length) {
+  if (Object.keys(langTextMap.value).length === 0) {
     initLangTextMap();
   }
 });

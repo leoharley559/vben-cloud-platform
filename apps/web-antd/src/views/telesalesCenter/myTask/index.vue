@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -10,9 +12,7 @@ import {
   fetchMyTaskListApi,
 } from '#/api/telesalesCenter/task';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import { myTaskDetailColumns, myTaskListColumns } from '../shared/columns';
 
@@ -21,8 +21,8 @@ defineOptions({ name: 'TelesalesMyTask' });
 const { checkPermission } = useCloudPermission();
 const activeTab = ref('list');
 
-const canViewList = computed(() => checkPermission(11509));
-const canViewDetail = computed(() => checkPermission(11518));
+const canViewList = computed(() => checkPermission(11_509));
+const canViewDetail = computed(() => checkPermission(11_518));
 const canViewPage = computed(() => canViewList.value || canViewDetail.value);
 
 const tabs = computed(() => {

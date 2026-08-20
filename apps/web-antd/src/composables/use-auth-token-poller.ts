@@ -1,11 +1,11 @@
 import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { getAuthToken } from '#/utils/auth-token';
 import {
   ensureAuthToken,
   shouldUseFallbackAuthToken,
 } from '#/utils/ensure-auth-token';
-import { getAuthToken } from '#/utils/auth-token';
 
 const AUTH_POLL_INTERVAL_MS = 290 * 1000;
 

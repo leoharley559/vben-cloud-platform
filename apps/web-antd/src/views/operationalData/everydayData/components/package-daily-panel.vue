@@ -1,4 +1,10 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
+import type { IosAppStoreItem } from '#/api/operationalData/everyday-data';
+import type { DailyReportRow } from '#/utils/everyday-data-calc';
+import type { CsvColumn } from '#/utils/export-csv';
+
 import { computed, onMounted, ref, watch } from 'vue';
 
 import {
@@ -10,34 +16,25 @@ import {
   Space,
   Spin,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
+import { fetchIosAppStoreDataApi, fetchIosAppStoreListApi, fetchIosAppStoreTodayExportApi } from '#/api/operationalData/everyday-data';
 import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import {
-  fetchIosAppStoreDataApi,
-  fetchIosAppStoreListApi,
-  fetchIosAppStoreTodayExportApi,
-  type IosAppStoreItem,
-} from '#/api/operationalData/everyday-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
-import {
-  calcDailyReportRow,
-  calcDailyReportRows,
-  type DailyReportRow,
-} from '#/utils/everyday-data-calc';
+import { calcDailyReportRow, calcDailyReportRows } from '#/utils/everyday-data-calc';
 import {
   defaultDailyReportRange,
   defaultMonthlyReportRange,
   toDateStrings,
 } from '#/utils/everyday-data-date';
-import { exportRowsToCsv, type CsvColumn } from '#/utils/export-csv';
 import {
   buildPackageStyleExportColumns,
   joinMultiValue,
   normalizeSearchValue,
 } from '#/utils/everyday-report-format';
+import { exportRowsToCsv } from '#/utils/export-csv';
 
 import DailyReportTable from './daily-report-table.vue';
 
@@ -217,8 +214,8 @@ onMounted(() => {
 <template>
   <div class="flex flex-col">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-          <Space.Compact>
+      <div class="ops-query-filters">
+        <Space.Compact>
           <Select
             class="query-auto-select"
             :popup-match-select-width="false"
@@ -228,16 +225,13 @@ onMounted(() => {
               { label: '账号精准', value: 1 },
             ]"
           />
-          <AccountSelect
-            v-if="adminSearchType === 0"
-            v-model="adminSearch"
-          />
+          <AccountSelect v-if="adminSearchType === 0" v-model="adminSearch" />
           <Input
             v-else
             v-model:value="adminSearch as string"
             allow-clear
             placeholder="请输入账号"
-            />
+          />
         </Space.Compact>
 
         <Space.Compact>
@@ -260,43 +254,43 @@ onMounted(() => {
             v-model:value="channelSearch as string"
             allow-clear
             placeholder="请输入渠道"
-            />
+          />
         </Space.Compact>
 
         <Space.Compact>
-            <span class="query-field-addon">产品</span>
-            <Select
-              v-model:value="packageId"
-              :options="
-                packageOptions.map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-              "
-              allow-clear
-              placeholder="请选择产品"
-            />
-          </Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="packageId"
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            allow-clear
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
 
         <Space.Compact>
-            <span class="query-field-addon">上架包</span>
-            <Select
-              v-model:value="appUrl"
-              :options="appUrlOptions"
-              allow-clear
-              mode="multiple"
-              placeholder="请选择上架包"
-            />
-          </Space.Compact>
+          <span class="query-field-addon">上架包</span>
+          <Select
+            v-model:value="appUrl"
+            :options="appUrlOptions"
+            allow-clear
+            mode="multiple"
+            placeholder="请选择上架包"
+          />
+        </Space.Compact>
 
         <Space.Compact>
-            <span class="query-field-addon">数据类型</span>
-            <Select
-              v-model:value="dataSearchType"
-              :options="memberTypeOptions"
-              placeholder="请选择数据类型"
-            />
-          </Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="dataSearchType"
+            :options="memberTypeOptions"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
 
         <Space.Compact>
           <span class="query-field-addon">报表类型</span>
@@ -320,13 +314,13 @@ onMounted(() => {
             />
           </Space.Compact>
         </div>
-        
+
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Card v-if="canRealtime" size="small" title="实时数据">
       <Spin :spinning="loading">

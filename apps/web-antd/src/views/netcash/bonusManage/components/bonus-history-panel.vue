@@ -208,7 +208,9 @@ function resetHistory() {
 async function exportHistory() {
   exportLoading.value = true;
   try {
-    const result = await fetchBonusHistoryListApi(historyQuery(undefined, true));
+    const result = await fetchBonusHistoryListApi(
+      historyQuery(undefined, true),
+    );
     const rows = result.Items || [];
     if (rows.length === 0) {
       message.warning('暂无数据可导出');
@@ -219,7 +221,9 @@ async function exportHistory() {
         statusText(row.Approve),
         String(row.OrderId || ''),
         String(row.Username || ''),
-        Number(row.WalletType) === 1 ? '佣金钱包' : String(row.WalletType || ''),
+        Number(row.WalletType) === 1
+          ? '佣金钱包'
+          : String(row.WalletType || ''),
         Number(row.BonusType) === 1 ? '代理红利' : String(row.BonusType || ''),
         formatNetcashDateTime(row.CreateTime),
         String(row.ApplyName || ''),

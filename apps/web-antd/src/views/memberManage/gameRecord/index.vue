@@ -12,7 +12,7 @@ import GameRecordListPanel from './components/game-record-list-panel.vue';
 defineOptions({ name: 'GameRecordManage' });
 
 const { checkPermission } = useCloudPermission();
-const canViewPage = computed(() => checkPermission(12205));
+const canViewPage = computed(() => checkPermission(12_205));
 </script>
 
 <template>

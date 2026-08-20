@@ -16,6 +16,7 @@ import {
   Table,
 } from 'ant-design-vue';
 
+import { getProjectConfigApi } from '#/api/core/project';
 import {
   createSportsTutorialApi,
   deleteSportsTutorialApi,
@@ -23,7 +24,6 @@ import {
   sortSportsTutorialApi,
   updateSportsTutorialApi,
 } from '#/api/gameManage/system-setting';
-import { getProjectConfigApi } from '#/api/core/project';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { getServiceImageUrl } from '#/utils/media';
 
@@ -73,7 +73,9 @@ function parseLangText(value: unknown) {
   if (!value) return [] as TutorialLang[];
   try {
     const parsed = typeof value === 'string' ? JSON.parse(value) : value;
-    return (Array.isArray(parsed) ? parsed : Object.values(parsed || {})) as TutorialLang[];
+    return (
+      Array.isArray(parsed) ? parsed : Object.values(parsed || {})
+    ) as TutorialLang[];
   } catch {
     return [];
   }
@@ -83,8 +85,7 @@ function rowLang(row: TutorialRow) {
   const list = parseLangText(row.LangText);
   return (
     list.find((item) => Number(item.LangGroupId) === currentLangId.value) ||
-    list[0] ||
-    {
+    list[0] || {
       AppImageUrl: '',
       Content: '',
       LangGroupId: currentLangId.value,
@@ -103,12 +104,17 @@ async function loadData() {
     const result =
       data == null
         ? { Items: [] as TutorialRow[], Pagination: { MaxCount: 0 } }
-        : Array.isArray(data)
-          ? { Items: data as TutorialRow[], Pagination: { MaxCount: data.length } }
+        : (Array.isArray(data)
+          ? {
+              Items: data as TutorialRow[],
+              Pagination: { MaxCount: data.length },
+            }
           : {
-              Items: Array.isArray(data.Items) ? (data.Items as TutorialRow[]) : [],
+              Items: Array.isArray(data.Items)
+                ? (data.Items as TutorialRow[])
+                : [],
               Pagination: data.Pagination || { MaxCount: 0 },
-            };
+            });
     rows.value = result.Items;
     total.value = Number(result.Pagination?.MaxCount || rows.value.length);
   } finally {
@@ -141,10 +147,7 @@ function openForm(row?: TutorialRow) {
 async function saveTutorial() {
   if (
     langForms.value.some(
-      (item) =>
-        !item.AppImageUrl ||
-        !item.PcImageUrl ||
-        !item.Content.trim(),
+      (item) => !item.AppImageUrl || !item.PcImageUrl || !item.Content.trim(),
     )
   ) {
     message.warning('请完整填写所有语言组的 APP 图片、PC 图片和内容');
@@ -157,7 +160,9 @@ async function saveTutorial() {
       ConfigType: 1,
       LangText: JSON.stringify(langForms.value),
     };
-    await (editing.value ? updateSportsTutorialApi(payload) : createSportsTutorialApi(payload));
+    await (editing.value
+      ? updateSportsTutorialApi(payload)
+      : createSportsTutorialApi(payload));
     visible.value = false;
     message.success('保存成功');
     await loadData();
@@ -250,7 +255,11 @@ onMounted(loadData);
           {{ rowLang(record).Content || '-' }}
         </span>
         <Space v-else-if="column.key === 'action'">
-          <Button :disabled="index === 0" size="small" @click="moveRow(index, -1)">
+          <Button
+            :disabled="index === 0"
+            size="small"
+            @click="moveRow(index, -1)"
+          >
             上移
           </Button>
           <Button
@@ -301,10 +310,7 @@ onMounted(loadData);
           />
         </Form.Item>
         <Form.Item label="PC 图片" required>
-          <SystemImageField
-            v-model="item.PcImageUrl"
-            hint="建议尺寸 940×250"
-          />
+          <SystemImageField v-model="item.PcImageUrl" hint="建议尺寸 940×250" />
         </Form.Item>
         <Form.Item label="内容" required>
           <Input.TextArea

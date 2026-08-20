@@ -260,10 +260,7 @@ export interface PromotionMaterialPayload {
   createTheme?: '1' | '2';
 }
 
-export type NetcashMutationResult =
-  | null
-  | Record<string, unknown>
-  | undefined;
+export type NetcashMutationResult = null | Record<string, unknown> | undefined;
 
 export interface RecordQueryBaseQuery {
   AdminAccount?: string;

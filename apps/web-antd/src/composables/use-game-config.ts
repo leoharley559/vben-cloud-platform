@@ -113,10 +113,7 @@ function resolvePlatformGameTypeAll(data: unknown): Record<string, string> {
 
   let raw: unknown;
   for (const source of nestedCandidates) {
-    raw =
-      source.platformGameTypeAll ??
-      source.PlatformGameTypeAll ??
-      raw;
+    raw = source.platformGameTypeAll ?? source.PlatformGameTypeAll ?? raw;
     if (raw) break;
   }
 
@@ -170,12 +167,7 @@ function buildVenueNameMapFromGroups(config: ParsedGameConfig) {
     for (const item of group.gametypes || []) {
       const name = String(item.gamename ?? '').trim();
       if (!name) continue;
-      for (const raw of [
-        item.gamecode,
-        item.gameid,
-        item.apiId,
-        item.ApiFee,
-      ]) {
+      for (const raw of [item.gamecode, item.gameid, item.apiId, item.ApiFee]) {
         if (raw !== undefined && raw !== null && raw !== '') {
           const key = String(raw);
           map[key] = preferVenueName(map[key], name);

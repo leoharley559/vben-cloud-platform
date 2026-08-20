@@ -1,4 +1,3 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   PlayerBetDateStatItem,
@@ -7,6 +6,8 @@ import type {
   PlayerBetSummary,
   PlayerBetVenueStatItem,
 } from '#/types/player-detail';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -21,11 +22,11 @@ function normalizeBetQuery(query: PlayerBetListQuery) {
   const params = trimSpace({ ...query }) as Record<string, unknown>;
   const gameIds = params.GameIds;
   if (Array.isArray(gameIds)) {
-    params.GameIds = gameIds.length ? gameIds.join(',') : '';
+    params.GameIds = gameIds.length > 0 ? gameIds.join(',') : '';
   }
   const vipLevel = params.VipLevel;
   if (Array.isArray(vipLevel)) {
-    params.VipLevel = vipLevel.length ? vipLevel.join(',') : '';
+    params.VipLevel = vipLevel.length > 0 ? vipLevel.join(',') : '';
   }
   return params;
 }

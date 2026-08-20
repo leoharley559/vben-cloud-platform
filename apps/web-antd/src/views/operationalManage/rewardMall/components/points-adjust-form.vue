@@ -7,28 +7,28 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Result,
   Select,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 
-import {
-  batchCreateRewardPointAdjustApi,
-  createRewardPointAdjustApi,
-} from '#/api/operationManage/reward-mall';
 import {
   fetchPlayerBasicInfoApi,
   queryPlayerByAccountApi,
   queryPlayerByExcelApi,
 } from '#/api/operationManage/player';
+import {
+  batchCreateRewardPointAdjustApi,
+  createRewardPointAdjustApi,
+} from '#/api/operationManage/reward-mall';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { exportRowsToCsv } from '#/utils/export-csv';
-import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 
 defineOptions({ name: 'PointsAdjustFormPanel' });
 
@@ -50,7 +50,7 @@ interface FailItem {
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canView = computed(() => checkPermission(13335));
+const canView = computed(() => checkPermission(13_335));
 
 const saveType = ref<'batch' | 'single'>('single');
 const submitting = ref(false);
@@ -70,12 +70,12 @@ const batchText = ref('');
 const batchFileInput = ref<HTMLInputElement | null>(null);
 const batchRows = ref<BatchRow[]>([]);
 const batchResultOpen = ref(false);
-const batchResult = ref<{
+const batchResult = ref<null | {
   Count: number;
   FailCount: number;
   FailItems: FailItem[];
   SuccessCount: number;
-} | null>(null);
+}>(null);
 
 const handleTypeOptions = [
   { label: '上分', value: 1 },
@@ -151,13 +151,13 @@ function onBatchFileChange(event: Event) {
     return;
   }
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.addEventListener('load', () => {
     const text = String(reader.result || '');
     const lines = text
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean);
-    if (!lines.length) {
+    if (lines.length === 0) {
       message.warning('文件为空');
       return;
     }
@@ -167,7 +167,7 @@ function onBatchFileChange(event: Event) {
       : lines;
     batchText.value = body.join('\n');
     message.success(`已读取 ${body.length} 行，请预览匹配`);
-  };
+  });
   reader.readAsText(file);
   input.value = '';
 }
@@ -201,7 +201,7 @@ function parseBatchLines() {
     packages.push(pkg);
     amounts.push(amt);
   }
-  if (!accounts.length) {
+  if (accounts.length === 0) {
     message.warning('请先导入或粘贴批量数据');
     return null;
   }
@@ -232,10 +232,10 @@ async function previewBatch() {
         valid: pid !== 0,
       };
     });
-    if (!validBatchCount.value) {
-      message.warning('没有可调整的有效玩家');
-    } else {
+    if (validBatchCount.value) {
       message.success(`匹配到 ${validBatchCount.value} 名有效玩家`);
+    } else {
+      message.warning('没有可调整的有效玩家');
     }
   } finally {
     lookupLoading.value = false;
@@ -352,7 +352,7 @@ function handleSubmit() {
 
 function exportFailItems() {
   const rows = batchResult.value?.FailItems || [];
-  if (!rows.length) {
+  if (rows.length === 0) {
     message.warning('暂无失败数据可导出');
     return;
   }
@@ -460,7 +460,7 @@ function exportFailItems() {
             />
           </Form.Item>
           <Table
-            v-if="batchRows.length"
+            v-if="batchRows.length > 0"
             class="mb-4"
             size="small"
             :pagination="false"
@@ -517,7 +517,10 @@ function exportFailItems() {
         size="small"
         :pagination="false"
         :data-source="batchResult?.FailItems || []"
-        :row-key="(row: FailItem) => String(row.LoginAccount ?? row.PlayerId ?? JSON.stringify(row))"
+        :row-key="
+          (row: FailItem) =>
+            String(row.LoginAccount ?? row.PlayerId ?? JSON.stringify(row))
+        "
         :columns="[
           { title: '游戏账号', dataIndex: 'LoginAccount' },
           { title: '产品名称', dataIndex: 'PackageName' },

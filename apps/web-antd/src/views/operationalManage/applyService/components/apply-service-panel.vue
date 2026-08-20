@@ -15,6 +15,7 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchApplyServiceListApi,
   fetchEndReasonListApi,
@@ -24,9 +25,8 @@ import {
 } from '#/api/operationManage/apply-service';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import {
   APPLY_SERVICE_STATUS_MAP,
@@ -86,8 +86,7 @@ const canCheck = computed(
     checkPermission(10_079),
 );
 const canFilterQuestType = computed(
-  () =>
-    checkPermissionByKey('playerOrderQuestType') || checkPermission(10_079),
+  () => checkPermissionByKey('playerOrderQuestType') || checkPermission(10_079),
 );
 const canExport = computed(
   () => checkPermission(12_546) || checkPermission(12_547),
@@ -202,7 +201,7 @@ function normalizeListItems(items: ApplyRow[]) {
 /** 旧站 Status.toString()：全部 → ''；多选 → '1,2' */
 function buildStatusParam() {
   const values = filterStatus.value;
-  if (!values.length || values.includes('')) {
+  if (values.length === 0 || values.includes('')) {
     return '';
   }
   return values.join(',');
@@ -299,8 +298,7 @@ const gridOptions: VxeTableGridOptions<ApplyRow> = {
         let sortParam = '';
         if (sortField && sortOrder) {
           // 对齐旧站 sortChange：升序 field，降序 -field
-          sortParam =
-            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
+          sortParam = sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
         const result = await fetchApplyServiceListApi({
           ...query,
@@ -366,7 +364,12 @@ const detailContent = ref({ after: '', before: '', name: '' });
 const historyList = ref<ApplyRow[]>([]);
 const historyLoading = ref(false);
 const recordList = ref<
-  Array<{ RemarkStatusChange?: string; Record: number; Time?: string; User?: string }>
+  Array<{
+    Record: number;
+    RemarkStatusChange?: string;
+    Time?: string;
+    User?: string;
+  }>
 >([]);
 
 async function openCheck(row: ApplyRow) {
@@ -443,7 +446,7 @@ async function handleExport() {
       IsExp: true,
     });
     const rows = (result.Items || []) as unknown as ApplyRow[];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -502,9 +505,8 @@ async function loadFilterOptions() {
         EndTime: filterDateRange.value?.[1]?.unix() || '',
       }),
     ]);
-    const workItems = (workRes.Items || [])
-      .slice()
-      .sort((a, b) => Number(a.Sort ?? 0) - Number(b.Sort ?? 0)) as Array<
+    const workItems = [...(workRes.Items || [])]
+      .toSorted((a, b) => Number(a.Sort ?? 0) - Number(b.Sort ?? 0)) as Array<
       Record<string, unknown>
     >;
     workQuestOptions.value = [
@@ -544,129 +546,126 @@ onMounted(() => {
   <div>
     <!-- 查询区与旧站 playerOrderPage Filters 逐项对齐 -->
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单号"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @change="
-            filterLoginAccount = filterLoginAccount
-              .toLowerCase()
-              .replace(/\s/g, '')
-          "
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-
-      <Space.Compact>
-        <span class="query-field-addon">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          class="w-[250px]"
-          :options="packageSelectOptions"
-          placeholder="请选择产品"
-          show-search
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="
+              filterLoginAccount = filterLoginAccount
                 .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-        />
-      </Space.Compact>
+                .replace(/\s/g, '')
+            "
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterSupporterUsername"
-          allow-clear
-          placeholder="请输入申请人"
-        >
-          <template #addonBefore>申请人</template>
-        </Input>
-      </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            class="w-[250px]"
+            :options="packageSelectOptions"
+            placeholder="请选择产品"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+          />
+        </Space.Compact>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOperatorUsername"
-          allow-clear
-          placeholder="请输入审核人"
-        >
-          <template #addonBefore>审核人</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterSupporterUsername"
+            allow-clear
+            placeholder="请输入申请人"
+          >
+            <template #addonBefore>申请人</template>
+          </Input>
+        </div>
 
-      <div v-if="canFilterQuestType" class="flex items-center gap-1">
-        <span class="whitespace-nowrap text-sm text-gray-500">问题类型</span>
-        <Select
-          v-model:value="filterWorkQuestionType"
-          allow-clear
-         
-          :options="workQuestOptions"
-          placeholder="请选择"
-          show-search
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-        />
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOperatorUsername"
+            allow-clear
+            placeholder="请输入审核人"
+          >
+            <template #addonBefore>审核人</template>
+          </Input>
+        </div>
 
-      <div class="flex items-center gap-1">
-        <span class="whitespace-nowrap text-sm text-gray-500">结束理由</span>
-        <Select
-          v-model:value="filterEndReasonType"
-          allow-clear
-         
-          :options="endReasonOptions"
-          placeholder="请选择"
-        />
-      </div>
+        <div v-if="canFilterQuestType" class="flex items-center gap-1">
+          <span class="whitespace-nowrap text-sm text-gray-500">问题类型</span>
+          <Select
+            v-model:value="filterWorkQuestionType"
+            allow-clear
+            :options="workQuestOptions"
+            placeholder="请选择"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+          />
+        </div>
 
-      <div class="flex items-center gap-1">
-        <span class="whitespace-nowrap text-sm text-gray-500">工单状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-         
-          :max-tag-count="1"
-          mode="multiple"
-          :options="statusOptions"
-          placeholder="请选择"
-          @change="onStatusChange"
-        />
-      </div>
+        <div class="flex items-center gap-1">
+          <span class="whitespace-nowrap text-sm text-gray-500">结束理由</span>
+          <Select
+            v-model:value="filterEndReasonType"
+            allow-clear
+            :options="endReasonOptions"
+            placeholder="请选择"
+          />
+        </div>
 
-      <div class="query-filter-wide">
+        <div class="flex items-center gap-1">
+          <span class="whitespace-nowrap text-sm text-gray-500">工单状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            :max-tag-count="1"
+            mode="multiple"
+            :options="statusOptions"
+            placeholder="请选择"
+            @change="onStatusChange"
+          />
+        </div>
+
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button
-        v-if="canExport"
-        :loading="exportLoading"
-        @click="handleExport"
-      >
-        导出 Excel
-      </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #status="{ row }">
@@ -753,10 +752,18 @@ onMounted(() => {
           <div>所属产品：{{ detailRow.PackageName || '-' }}</div>
           <div>问题类型：{{ resolveQuestTypeLabel(detailRow) }}</div>
           <div>新问题：{{ resolveNewQuest(detailRow) }}</div>
-          <div>申请人：{{ detailRow.SupporterName || detailRow.SupporterUsername || '-' }}</div>
+          <div>
+            申请人：{{
+              detailRow.SupporterName || detailRow.SupporterUsername || '-'
+            }}
+          </div>
           <div>审核人：{{ detailRow.OperatorUsername || '-' }}</div>
         </div>
-        <div v-if="detailContent.name || detailContent.before || detailContent.after">
+        <div
+          v-if="
+            detailContent.name || detailContent.before || detailContent.after
+          "
+        >
           <div class="mb-1 font-medium">工单内容</div>
           <div>字段：{{ detailContent.name || '-' }}</div>
           <div>修改前：{{ detailContent.before || '-' }}</div>
@@ -784,7 +791,7 @@ onMounted(() => {
         <div>
           <div class="mb-1 font-medium">历史工单</div>
           <div v-if="historyLoading">加载中…</div>
-          <div v-else-if="!historyList.length" class="text-gray-400">暂无</div>
+          <div v-else-if="historyList.length === 0" class="text-gray-400">暂无</div>
           <div v-else class="max-h-48 overflow-auto">
             <div
               v-for="item in historyList"
@@ -798,7 +805,9 @@ onMounted(() => {
                   String(item.Status ?? '-')
                 }}
               </span>
-              <span>{{ formatOperationDateTime(item.CreateTime as string) }}</span>
+              <span>{{
+                formatOperationDateTime(item.CreateTime as string)
+              }}</span>
             </div>
           </div>
         </div>

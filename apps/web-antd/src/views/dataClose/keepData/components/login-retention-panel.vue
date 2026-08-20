@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { TableColumnType } from 'ant-design-vue';
 
+import type { KeepDetailsParam, KeepRow } from '../utils';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -15,14 +17,7 @@ import { fetchKeepDataLoginRetentionListApi } from '#/api/dataClose/keep-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { exportRowsToXlsx } from '#/views/dataClose/shared/report-utils';
 
-import {
-  type KeepDetailsParam,
-  type KeepRow,
-  LOGIN_DAY_COLUMNS,
-  num,
-  pivotLoginRetention,
-  ratioText,
-} from '../utils';
+import { LOGIN_DAY_COLUMNS, num, pivotLoginRetention, ratioText } from '../utils';
 import DetailsPanel from './details-panel.vue';
 import KeepQueryBar from './keep-query-bar.vue';
 
@@ -121,9 +116,7 @@ onMounted(() => {
           <RadioButton :value="1">显示人数</RadioButton>
           <RadioButton :value="2">显示百分比</RadioButton>
         </RadioGroup>
-        <Button v-if="canExport" @click="handleExport">
-          导出 Excel
-        </Button>
+        <Button v-if="canExport" @click="handleExport"> 导出 Excel </Button>
       </div>
       <Table
         :columns="columns"
@@ -146,7 +139,9 @@ onMounted(() => {
             <span v-else>{{ record.SumReg }}</span>
           </template>
           <template
-            v-else-if="LOGIN_DAY_COLUMNS.some((item) => item.field === column.key)"
+            v-else-if="
+              LOGIN_DAY_COLUMNS.some((item) => item.field === column.key)
+            "
           >
             <a
               v-if="showType === 1"

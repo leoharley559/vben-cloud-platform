@@ -13,7 +13,7 @@ import { trimSpace } from '#/utils/string';
  */
 export async function fetchTeamQueryListApi(query: TeamQueryListQuery) {
   const data = await requestClient.get<
-    | (CloudListResult<TeamQueryItem> & { Items2?: TeamQueryItem[] | null })
+    | (CloudListResult<TeamQueryItem> & { Items2?: null | TeamQueryItem[] })
     | null
   >('/backend/accountteamsearch/list', { params: trimSpace(query) });
   // 空环境常返回 Items/Items2=null，且可能无 Pagination

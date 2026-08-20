@@ -36,9 +36,7 @@ function normalizeList(result?: DkListResult | null): DkListResult {
  * @returns 申请记录 Items 及 Pagination
  * @see views/netcash/dkCreditManage/index.vue
  */
-export async function getDkCreditLimitApplyRecordListApi(
-  query: DkListQuery,
-) {
+export async function getDkCreditLimitApplyRecordListApi(query: DkListQuery) {
   const result = await requestClient.get<DkListResult>(
     '/backend/agentcreditlimitapplyrecord/list',
     { params: trimSpace(query) },

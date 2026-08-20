@@ -10,35 +10,36 @@ import {
   Button,
   Input,
   InputNumber,
+  message,
   Modal,
   Popover,
   Select,
   Space,
   Table,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportGameRecordListApi,
   fetchGameRecordListApi,
   fetchGameRecordSettleLogApi,
 } from '#/api/memberManage/game-record';
 import { fetchIosAppStoreListApi } from '#/api/operationalData/everyday-data';
-import ChannelSelect from '#/components/global/channel-select.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import {
   BET_STATUS_OPTIONS,
   BET_TIME_TYPE_OPTIONS,
@@ -54,9 +55,8 @@ import {
   getLast7CalendarDaysRangeSeconds,
   getYesterdayToTodayRangeSeconds,
 } from '#/utils/date-range';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatGameName, formatVenueName } from '#/utils/game-config';
+import { formatVenueName } from '#/utils/game-config';
 import {
   formatPlayerStatus,
   PLAYER_STATUS_OPTIONS,
@@ -99,8 +99,8 @@ const { ensureGameConfig, gameConfig } = useGameConfig();
 const { packageOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
-const canExport = computed(() => checkPermission(12206));
-const canOpenPlayer = computed(() => checkPermission(12207));
+const canExport = computed(() => checkPermission(12_206));
+const canOpenPlayer = computed(() => checkPermission(12_207));
 
 /** 全局：昨天→今天；玩家详情：近 7 自然日含今天（对齐旧站 getBeforeDateTimestamp(7)～今天） */
 const defaultRange = isPlayerScope.value
@@ -114,7 +114,7 @@ const totalCount = ref(0);
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const bulkOpen = ref(false);
 const thirdOpen = ref(false);
-const thirdRow = ref<PlayerBetRecordItem | null>(null);
+const thirdRow = ref<null | PlayerBetRecordItem>(null);
 const tableRows = ref<PlayerBetRecordItem[]>([]);
 
 const settleLogOpenId = ref('');
@@ -136,13 +136,13 @@ const filterSubGameId = ref<number | string | undefined>();
 const filterLoginAccount = ref(
   isPlayerScope.value ? String(props.loginAccount || '') : '',
 );
-const filterVenueTypes = ref<Array<string | number>>([]);
+const filterVenueTypes = ref<Array<number | string>>([]);
 const filterUsername = ref('');
 const filterTransactionId = ref('');
 const filterStatus = ref<string>();
 const filterRoundId = ref('');
-const filterBeginBetGold = ref<number | null>(null);
-const filterEndBetGold = ref<number | null>(null);
+const filterBeginBetGold = ref<null | number>(null);
+const filterEndBetGold = ref<null | number>(null);
 const filterIsBetTrade = ref(0);
 const filterSettleCount = ref(0);
 const filterInviteSite = ref<string[]>([]);
@@ -212,9 +212,9 @@ const venueTypeOptions = computed(() =>
 const subGameOptions = computed(() =>
   Object.entries(gameConfig.value.games).map(([id, game]) => {
     const parentName =
-      game.ParentId != null
-        ? gameConfig.value.games[String(game.ParentId)]?.gameName
-        : '';
+      game.ParentId == null
+        ? ''
+        : gameConfig.value.games[String(game.ParentId)]?.gameName;
     return {
       label: parentName
         ? `${game.gameName}(${parentName})`
@@ -318,7 +318,7 @@ function getQueryParams(extra?: {
   let gameIds: Array<number | string> | number | string = [
     ...filterGameIds.value,
   ];
-  if (filterVenueTypes.value.length && !filterGameIds.value.length) {
+  if (filterVenueTypes.value.length > 0 && filterGameIds.value.length === 0) {
     gameIds = -1;
   }
 
@@ -431,15 +431,18 @@ const gridOptions: VxeTableGridOptions<PlayerBetRecordItem> = {
       minWidth: 90,
       title: 'VIP等级',
     },
-    { field: 'Username', minWidth: 110, slots: { default: 'username' }, title: '代理账号' },
+    {
+      field: 'Username',
+      minWidth: 110,
+      slots: { default: 'username' },
+      title: '代理账号',
+    },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     {
       field: 'VendorCode',
       formatter: ({ cellValue, row }) =>
         String(
-          cellValue ||
-            formatVenueName(row.GameId, gameConfig.value) ||
-            '-',
+          cellValue || formatVenueName(row.GameId, gameConfig.value) || '-',
         ),
       minWidth: 120,
       title: '场馆名称',
@@ -552,9 +555,9 @@ function handleVenuesTempChange(values: string[]) {
   filterGameIds.value = [...new Set(ids)];
 }
 
-function handleVenueTypeChange(values: Array<string | number>) {
+function handleVenueTypeChange(values: Array<number | string>) {
   filterVenueTypes.value = values;
-  if (!values.length) {
+  if (values.length === 0) {
     return;
   }
   const next: string[] = [];
@@ -666,16 +669,16 @@ async function openSettleLog(row: PlayerBetRecordItem) {
 function settleLogDate(row: Record<string, unknown>) {
   const type = Number(row.Type);
   if (type === 1) {
-    return formatDateTime(row.TransactionTime as string | number);
+    return formatDateTime(row.TransactionTime as number | string);
   }
   if (type === 11) {
-    return formatDateTime(row.SettlementTime as string | number);
+    return formatDateTime(row.SettlementTime as number | string);
   }
-  return formatDateTime(row.CreateTime as string | number);
+  return formatDateTime(row.CreateTime as number | string);
 }
 
 async function handleCopy() {
-  if (!tableRows.value.length) {
+  if (tableRows.value.length === 0) {
     message.warning('暂无数据可复制');
     return;
   }
@@ -819,7 +822,10 @@ onMounted(async () => {
         <div v-if="!isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">渠道号</span>
-            <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
+            <ChannelSelect
+              v-model="filterChannelIds"
+              placeholder="请输入渠道号"
+            />
           </Space.Compact>
         </div>
         <div v-if="!isPlayerScope">
@@ -1190,10 +1196,6 @@ onMounted(async () => {
       :row="thirdRow"
       :games="gameConfig.games"
     />
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </div>
 </template>

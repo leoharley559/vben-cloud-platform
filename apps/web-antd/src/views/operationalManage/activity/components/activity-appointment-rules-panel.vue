@@ -21,7 +21,7 @@ interface SettingRow {
 }
 
 const { checkPermission } = useCloudPermission();
-const canView = checkPermission(11911);
+const canView = checkPermission(11_911);
 
 const loading = ref(false);
 const config = ref<Record<string, unknown>>({});
@@ -77,7 +77,7 @@ onMounted(() => {
 
       <div class="mb-4">
         <div class="mb-2 font-medium">开放时间</div>
-        <div v-if="!openTimes.length" class="text-sm text-gray-400">
+        <div v-if="openTimes.length === 0" class="text-sm text-gray-400">
           暂无配置
         </div>
         <ul v-else class="list-disc pl-5 text-sm">
@@ -89,7 +89,7 @@ onMounted(() => {
 
       <div>
         <div class="mb-2 font-medium">参数设置</div>
-        <div v-if="!settings.length" class="text-sm text-gray-400">
+        <div v-if="settings.length === 0" class="text-sm text-gray-400">
           暂无配置
         </div>
         <ul v-else class="list-disc pl-5 text-sm">

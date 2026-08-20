@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '../components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -12,20 +14,19 @@ import {
   fetchActivityVisitStatisticsApi,
   fetchLuckyDrawInfoListApi,
 } from '#/api/operationManage/activity-statistics';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 import OperationListPanel from '../components/operation-list-panel.vue';
-import type { OperationListConfig } from '../components/operation-list-panel.vue';
-import PlayerAccountLink from '#/components/global/player-account-link.vue';
 
 defineOptions({ name: 'ActivityAllStats' });
 
 const VISIT_ACTIVITY_TYPES = new Set([
-  10002, 10006, 10007, 10008, 10009, 10013, 10015,
+  10_002, 10_006, 10_007, 10_008, 10_009, 10_013, 10_015,
 ]);
-const ACTIVITY_FIRST_PAY = 10006;
-const LUCKY_DRAW = 10008;
+const ACTIVITY_FIRST_PAY = 10_006;
+const LUCKY_DRAW = 10_008;
 
 const route = useRoute();
 const { checkPermission } = useCloudPermission();
@@ -116,28 +117,28 @@ const tabs = computed(() => {
   const hasVisitTabs = VISIT_ACTIVITY_TYPES.has(type);
 
   return [
-    hasVisitTabs && checkPermission(11936)
+    hasVisitTabs && checkPermission(11_936)
       ? {
           config: visitDetailConfig.value,
           key: 'details',
           tab: '访问明细',
         }
       : null,
-    hasVisitTabs && checkPermission(11932)
+    hasVisitTabs && checkPermission(11_932)
       ? {
           config: visitStatisticsConfig.value,
           key: 'statistics',
           tab: '访问统计',
         }
       : null,
-    type === ACTIVITY_FIRST_PAY && checkPermission(13111)
+    type === ACTIVITY_FIRST_PAY && checkPermission(13_111)
       ? {
           config: firstPayConfig.value,
           key: 'firstPaySummary',
           tab: '活动详情',
         }
       : null,
-    type === LUCKY_DRAW && checkPermission(11995)
+    type === LUCKY_DRAW && checkPermission(11_995)
       ? {
           config: luckyDrawConfig.value,
           key: 'luckyDraw',

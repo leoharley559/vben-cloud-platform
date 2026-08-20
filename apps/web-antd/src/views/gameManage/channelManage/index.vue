@@ -14,7 +14,7 @@ defineOptions({ name: 'ChannelManage' });
 const { checkPermission } = useCloudPermission();
 
 const canViewPage = computed(
-  () => checkPermission(12302) || checkPermission(12303),
+  () => checkPermission(12_302) || checkPermission(12_303),
 );
 </script>
 

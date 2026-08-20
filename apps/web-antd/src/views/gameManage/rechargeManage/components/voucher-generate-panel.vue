@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 import { computed, reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import {
   Button,
   Card,
   Form,
   InputNumber,
+  message,
   Modal,
   Result,
-  message,
 } from 'ant-design-vue';
-import { useRouter } from 'vue-router';
 
 import { createRechargeVoucherApi } from '#/api/gameManage';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -20,7 +20,7 @@ defineOptions({ name: 'VoucherGeneratePanel' });
 
 const router = useRouter();
 const { checkPermission } = useCloudPermission();
-const canGenerate = computed(() => checkPermission(10081));
+const canGenerate = computed(() => checkPermission(10_081));
 
 const submitting = ref(false);
 const form = reactive({
@@ -33,7 +33,7 @@ async function handleSubmit() {
     message.warning('请输入兑换金额');
     return;
   }
-  if (form.ExchangeAmount > 100000) {
+  if (form.ExchangeAmount > 100_000) {
     message.warning('兑换金额不能超过 100000');
     return;
   }

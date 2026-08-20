@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { SecuritySettingItem } from '#/types/system-manage';
+
+import { requestClient } from '#/api/request';
 
 /**
  * 安全设置列表（安全管理页各 Tab 表格数据）。

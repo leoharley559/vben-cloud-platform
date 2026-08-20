@@ -2,32 +2,31 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, reactive, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 import {
   Button,
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Select,
   Space,
-  message,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
-import { useRouter } from 'vue-router';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { queryPlayerByAccountApi } from '#/api/operationManage/player';
 import {
   batchIssueVoucherApi,
   exportVoucherIssueRecordApi,
   fetchVoucherIssueRecordApi,
   issueVoucherApi,
 } from '#/api/operationManage/voucher';
-import { queryPlayerByAccountApi } from '#/api/operationManage/player';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
@@ -50,9 +49,9 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 
-const canSingle = computed(() => checkPermission(13445));
-const canBatch = computed(() => checkPermission(13446));
-const canExportIssue = computed(() => checkPermission(13448));
+const canSingle = computed(() => checkPermission(13_445));
+const canBatch = computed(() => checkPermission(13_446));
+const canExportIssue = computed(() => checkPermission(13_448));
 
 const payoutTabs = computed(() => {
   const tabs: Array<{ key: string; label: string }> = [];
@@ -107,8 +106,8 @@ async function searchSinglePlayer() {
       PackageId: singleForm.PackageId,
     });
     const first = result?.Items?.[0] as
-      | { LoginAccount?: string; PlayerId?: number | string }
-      | undefined;
+      | undefined
+      | { LoginAccount?: string; PlayerId?: number | string };
     if (!first?.PlayerId) {
       singleForm.PlayerId = '';
       singleForm.PlayerLabel = '';
@@ -171,7 +170,7 @@ async function submitBatch() {
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
-  if (lines.length < 1) {
+  if (lines.length === 0) {
     message.warning('请按行输入：玩家ID,数量');
     return;
   }
@@ -230,7 +229,11 @@ function buildIssueQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildIssueExportQuery() {
-  const { Page: _page, PageSize: _size, ...rest } = buildIssueQuery({
+  const {
+    Page: _page,
+    PageSize: _size,
+    ...rest
+  } = buildIssueQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -365,31 +368,30 @@ async function handleIssueExport(payload: Record<string, unknown>) {
     <div v-if="activeTab === 'single'" class="max-w-xl">
       <div class="mb-3 text-base font-medium">玩家信息</div>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <Space.Compact>
-          <span class="query-field-addon">产品包</span>
-          <Select
-            v-model:value="singleForm.PackageId"
+        <div class="ops-query-filters">
+          <Space.Compact>
+            <span class="query-field-addon">产品包</span>
+            <Select
+              v-model:value="singleForm.PackageId"
+              allow-clear
+              :field-names="{ label: 'PackageName', value: 'PackageId' }"
+              :options="packageOptions"
+              placeholder="请选择产品包"
+            />
+          </Space.Compact>
+          <Input
+            v-model:value="singleForm.LoginAccount"
             allow-clear
-           
-            :field-names="{ label: 'PackageName', value: 'PackageId' }"
-            :options="packageOptions"
-            placeholder="请选择产品包"
+            @press-enter="searchSinglePlayer"
+            placeholder="请输入玩家账号"
           />
-        </Space.Compact>
-        <Input
-          v-model:value="singleForm.LoginAccount"
-          allow-clear
-          @press-enter="searchSinglePlayer"
-          placeholder="请输入玩家账号"
-        />
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button :loading="singleSearching" @click="searchSinglePlayer">
-          查询玩家
-        </Button>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button :loading="singleSearching" @click="searchSinglePlayer">
+              查询玩家
+            </Button>
+          </div>
         </div>
-    </div>
-  </div>
+      </div>
       <div v-if="singleForm.PlayerLabel" class="mb-4 text-sm text-gray-600">
         已选：{{ singleForm.PlayerLabel }}
       </div>
@@ -457,8 +459,8 @@ async function handleIssueExport(payload: Record<string, unknown>) {
 
     <div v-else-if="activeTab === 'record'">
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-                <Input
+        <div class="ops-query-filters">
+          <Input
             v-model:value="filterLoginAccount"
             allow-clear
             placeholder="请输入游戏账号"
@@ -469,38 +471,39 @@ async function handleIssueExport(payload: Record<string, unknown>) {
             <span class="query-field-addon">VIP</span>
             <Select
               v-model:value="filterVipLevel"
-             
               :options="VIP_LEVEL_OPTIONS"
               placeholder="请选择VIP"
             />
           </Space.Compact>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterRegRange" label="注册时间" />
-        </div>
+            <QueryDatetimeRangePicker
+              v-model="filterRegRange"
+              label="注册时间"
+            />
+          </div>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterIssueRange" label="发放时间" />
+            <QueryDatetimeRangePicker
+              v-model="filterIssueRange"
+              label="发放时间"
+            />
+          </div>
+          <div class="query-filter-actions">
+            <Space>
+              <Button type="primary" @click="handleIssueSearch">查询</Button>
+              <Button @click="handleIssueReset">重置</Button>
+            </Space>
+            <Button
+              v-if="canExportIssue"
+              :loading="exportLoading"
+              @click="handleIssueExportClick"
+            >
+              导出 Excel
+            </Button>
+          </div>
         </div>
-        <div class="query-filter-actions">
-          <Space>
-            <Button type="primary" @click="handleIssueSearch">查询</Button>
-            <Button @click="handleIssueReset">重置</Button>
-          </Space>
-        <Button
-          v-if="canExportIssue"
-          :loading="exportLoading"
-          @click="handleIssueExportClick"
-        >
-          导出 Excel
-        </Button>
-        </div>
-    </div>
-  </div>
+      </div>
       <IssueGrid />
-      <PassPopup
-        ref="passPopupRef"
-        type="csv"
-        @confirm="handleIssueExport"
-      />
+      <PassPopup ref="passPopupRef" type="csv" @confirm="handleIssueExport" />
     </div>
   </div>
 </template>

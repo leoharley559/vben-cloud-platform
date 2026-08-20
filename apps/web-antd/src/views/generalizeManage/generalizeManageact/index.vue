@@ -121,8 +121,7 @@ const settleOptions = Object.entries(PROMOTER_SETTLE_TYPE_MAP)
 
 function parseFunctions(value: PromoterListItem['RoleDataField']) {
   try {
-    const parsed =
-      typeof value === 'string' ? JSON.parse(value) : value || {};
+    const parsed = typeof value === 'string' ? JSON.parse(value) : value || {};
     return String(parsed.HaveFunction || '')
       .split(',')
       .filter(Boolean);
@@ -131,10 +130,7 @@ function parseFunctions(value: PromoterListItem['RoleDataField']) {
   }
 }
 
-function calculateTotal(
-  row: PromoterListItem,
-  totals: PromoterTotalItem[],
-) {
+function calculateTotal(row: PromoterListItem, totals: PromoterTotalItem[]) {
   const item = totals.find(
     (totalItem) => String(totalItem.AdminId) === String(row.Id),
   );
@@ -273,8 +269,7 @@ async function openTeamDetail(id: number | string) {
   try {
     const detail = await fetchPromoterDetailApi(id);
     Object.keys(teamForm).forEach(
-      (key) =>
-        delete (teamForm as unknown as Record<string, unknown>)[key],
+      (key) => delete (teamForm as unknown as Record<string, unknown>)[key],
     );
     Object.assign(teamForm, detail, {
       ChildMaxCommissionRate: Number(detail.ChildMaxCommissionRate || 0) / 10,
@@ -347,14 +342,11 @@ async function saveTeam() {
     try {
       await updatePromoterTeamApi({
         AccountId: teamForm.Id,
-        ChildMaxCommissionRate:
-          Number(teamForm.ChildMaxCommissionRate) * 10,
-        ChildMinCommissionRate:
-          Number(teamForm.ChildMinCommissionRate) * 10,
+        ChildMaxCommissionRate: Number(teamForm.ChildMaxCommissionRate) * 10,
+        ChildMinCommissionRate: Number(teamForm.ChildMinCommissionRate) * 10,
         CommissionRate: Number(teamForm.TeamCommissionRate) * 10,
         PayPeriod: teamForm.TeamPayPeriod as number | string,
-        ProfitCommissionRate:
-          Number(teamForm.ProfitCommissionRate || 0) * 10,
+        ProfitCommissionRate: Number(teamForm.ProfitCommissionRate || 0) * 10,
         TeamType: Number(teamForm.TeamType),
       });
       teamVisible.value = false;
@@ -548,7 +540,12 @@ function buildColumns(): VxeTableGridOptions<PromoterListItem>['columns'] {
       showOverflow: 'tooltip',
       title: '账号用户名',
     },
-    { field: 'Name', minWidth: 140, showOverflow: 'tooltip', title: '账号名称' },
+    {
+      field: 'Name',
+      minWidth: 140,
+      showOverflow: 'tooltip',
+      title: '账号名称',
+    },
     {
       field: 'Commission',
       minWidth: 130,
@@ -627,7 +624,8 @@ function applyListParams(
   const sortField = sort?.field;
   const sortOrder = sort?.order;
   if (sortField && sortOrder) {
-    query.Sort = sortOrder === 'asc' ? String(sortField) : `-${String(sortField)}`;
+    query.Sort =
+      sortOrder === 'asc' ? String(sortField) : `-${String(sortField)}`;
   } else {
     query.Sort = '';
   }
@@ -709,36 +707,36 @@ onMounted(() => {
             <Button @click="reset">重置</Button>
           </div>
         </template>
-        <div class="mb-3 flex flex-wrap items-center justify-end gap-2"> 
-            <Button v-if="checkPermission(10_911)" @click="openCost">
-              分摊成本设置
-            </Button>
-            <Button v-if="checkPermission(11_917)" @click="openDomain">
-              设置推广后台域名
-            </Button>
-            <Button
-              v-if="
-                checkPermission(10_912) &&
-                ((Number(teamInfo.Id) > 0 && Number(teamInfo.AgentId) > 0) ||
-                  realAdminType === 1)
-              "
-              type="primary"
-              @click="createTeam"
-            >
-              创建下级代理
-            </Button>
-            <Button
-              v-if="
-                checkPermission(10_913) &&
-                Number(teamInfo.Id || 0) === 0 &&
-                Number(teamInfo.AgentId || 0) === 0
-              "
-              type="primary"
-              @click="createChannel"
-            >
-              创建渠道推广
-            </Button>
-          </div>
+        <div class="mb-3 flex flex-wrap items-center justify-end gap-2">
+          <Button v-if="checkPermission(10_911)" @click="openCost">
+            分摊成本设置
+          </Button>
+          <Button v-if="checkPermission(11_917)" @click="openDomain">
+            设置推广后台域名
+          </Button>
+          <Button
+            v-if="
+              checkPermission(10_912) &&
+              ((Number(teamInfo.Id) > 0 && Number(teamInfo.AgentId) > 0) ||
+                realAdminType === 1)
+            "
+            type="primary"
+            @click="createTeam"
+          >
+            创建下级代理
+          </Button>
+          <Button
+            v-if="
+              checkPermission(10_913) &&
+              Number(teamInfo.Id || 0) === 0 &&
+              Number(teamInfo.AgentId || 0) === 0
+            "
+            type="primary"
+            @click="createChannel"
+          >
+            创建渠道推广
+          </Button>
+        </div>
         <Grid>
           <template #status="{ row }">
             <Tag :color="row.Status === 1 ? 'success' : 'error'">
@@ -861,7 +859,7 @@ onMounted(() => {
           </template>
         </Grid>
       </OpsListPanel>
-    </Card> 
+    </Card>
 
     <Modal
       v-model:open="teamVisible"
@@ -914,9 +912,7 @@ onMounted(() => {
           </Form.Item>
           <Form.Item
             :label="
-              Number(teamForm.TeamType) === 1
-                ? '税收分成比例'
-                : '下级成本比例'
+              Number(teamForm.TeamType) === 1 ? '税收分成比例' : '下级成本比例'
             "
             required
           >

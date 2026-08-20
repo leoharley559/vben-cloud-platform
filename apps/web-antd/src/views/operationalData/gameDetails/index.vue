@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
+import type { BetAnalysisRow, BetMetric } from './components/bet-analysis-chart.vue';
+
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -15,24 +19,24 @@ import {
   Space,
   Table,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 import { fetchGameAnalysisReportApi } from '#/api/operationalData/game-details';
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { defaultReportBeginTime } from '#/utils/everyday-data-date';
-import { joinMultiValue, normalizeSearchValue } from '#/utils/everyday-report-format';
+import {
+  joinMultiValue,
+  normalizeSearchValue,
+} from '#/utils/everyday-report-format';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 
-import BetAnalysisChart, {
-  type BetAnalysisRow,
-  type BetMetric,
-} from './components/bet-analysis-chart.vue';
+import BetAnalysisChart from './components/bet-analysis-chart.vue';
 
 defineOptions({ name: 'OperationalGameDetails' });
 
@@ -67,10 +71,7 @@ const realAdminType = computed(() => {
     | undefined
     | { Admin?: { AdminType?: number }; realAdminType?: number };
   return Number(
-    admin?.realAdminType ??
-      admin?.Admin?.AdminType ??
-      parent?.AdminType ??
-      1,
+    admin?.realAdminType ?? admin?.Admin?.AdminType ?? parent?.AdminType ?? 1,
   );
 });
 
@@ -121,7 +122,10 @@ function calcProfitRatio(betGold: number, winGold: number) {
 }
 
 function buildQuery() {
-  const adminValue = normalizeSearchValue(adminIds.value, adminSearchType.value);
+  const adminValue = normalizeSearchValue(
+    adminIds.value,
+    adminSearchType.value,
+  );
   const channelValue = normalizeSearchValue(
     channelIds.value,
     channelSearchType.value,
@@ -181,7 +185,7 @@ function handleReset() {
 }
 
 async function handleExport() {
-  if (!list.value.length) {
+  if (list.value.length === 0) {
     message.warning('暂无数据可导出');
     return;
   }
@@ -220,7 +224,11 @@ async function handleExport() {
 const columns = [
   { dataIndex: 'ReportDay', key: 'ReportDay', title: '日期' },
   { key: 'BetType', title: '投注入口' },
-  { dataIndex: 'BetNumberOfPeople', key: 'BetNumberOfPeople', title: '投注人数' },
+  {
+    dataIndex: 'BetNumberOfPeople',
+    key: 'BetNumberOfPeople',
+    title: '投注人数',
+  },
   { dataIndex: 'BetCount', key: 'BetCount', title: '投注次数' },
   { key: 'BetGold', title: '投注金币' },
   { key: 'WinGold', title: '实际派送' },
@@ -272,7 +280,7 @@ onMounted(() => {
             style="width: 180px"
             allow-clear
             placeholder="请输入代理账号"
-            />
+          />
         </Space.Compact>
         <Space.Compact>
           <Select
@@ -296,7 +304,7 @@ onMounted(() => {
             style="width: 180px"
             allow-clear
             placeholder="请输入渠道"
-            />
+          />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">产品</span>

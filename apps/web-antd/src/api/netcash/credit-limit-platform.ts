@@ -52,10 +52,7 @@ export async function getPlatformCreditLimitApplyRecordListApi(
 ) {
   const result = await requestClient.get<
     NetcashListResult<PlatformCreditApplyRecord>
-  >(
-    '/backend/agentcreditlimitapplyrecord/list',
-    { params: trimSpace(query) },
-  );
+  >('/backend/agentcreditlimitapplyrecord/list', { params: trimSpace(query) });
   return normalizeList(result);
 }
 

@@ -11,6 +11,7 @@ import {
   Card,
   Form,
   Input,
+  message,
   Modal,
   Popconfirm,
   Progress,
@@ -19,10 +20,7 @@ import {
   Space,
   Switch,
   Tooltip,
-  message,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -31,6 +29,7 @@ import {
   downloadCsvCheckApi,
   fetchDownloadCsvListApi,
 } from '#/api/operationManage/download-csv';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
@@ -57,10 +56,10 @@ interface DownloadRow {
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
 const { checkPermission } = useCloudPermission();
 
-const canViewPage = computed(() => checkPermission(12041));
-const canDelete = computed(() => checkPermission(12042));
-const canAutoRefresh = computed(() => checkPermission(12043));
-const canDownload = computed(() => checkPermission(12044));
+const canViewPage = computed(() => checkPermission(12_041));
+const canDelete = computed(() => checkPermission(12_042));
+const canAutoRefresh = computed(() => checkPermission(12_043));
+const canDownload = computed(() => checkPermission(12_044));
 
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const downloadOpen = ref(false);
@@ -145,7 +144,7 @@ function isDeleteDisabled(row: DownloadRow) {
   if (!Number.isFinite(created) || created <= 0) {
     return false;
   }
-  return Math.ceil(Date.now() / 1000) - created < 86400;
+  return Math.ceil(Date.now() / 1000) - created < 86_400;
 }
 
 function finishTimeText(row: DownloadRow) {
@@ -319,7 +318,7 @@ function scheduleAutoRefresh() {
   }, 15 * 1000);
 }
 
-function handleAutoRefreshChange(checked: boolean | string | number) {
+function handleAutoRefreshChange(checked: boolean | number | string) {
   autoRefresh.value = Boolean(checked);
   // 对齐旧站提示：开启自动刷新后仅查当天
   if (autoRefresh.value) {
@@ -348,48 +347,45 @@ onUnmounted(() => {
   >
     <Card>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterId"
-            allow-clear
-            :maxlength="11"
-            @press-enter="handleSearch"
-            placeholder="请输入任务编号"
-          >
-            <template #addonBefore>任务编号</template>
-          </Input>
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterId"
+              allow-clear
+              :maxlength="11"
+              @press-enter="handleSearch"
+              placeholder="请输入任务编号"
+            >
+              <template #addonBefore>任务编号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterPath"
+              allow-clear
+              @press-enter="handleSearch"
+              placeholder="请输入文件名称"
+            >
+              <template #addonBefore>文件名称</template>
+            </Input>
+          </div>
+          <Select v-model:value="filterStatus" :options="statusOptions" />
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="resetFilters">重置</Button>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterPath"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入文件名称"
-          >
-            <template #addonBefore>文件名称</template>
-          </Input>
-        </div>
-        <Select
-          v-model:value="filterStatus"
-          :options="statusOptions"
-        />
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="resetFilters">重置</Button>
-        </div>
-    </div>
-    <div v-if="canAutoRefresh" class="flex items-center gap-2 mt-2">
+        <div v-if="canAutoRefresh" class="flex items-center gap-2 mt-2">
           <span class="text-sm text-gray-500">自动刷新</span>
           <Switch :checked="autoRefresh" @change="handleAutoRefreshChange" />
           <Tooltip title="开启后每 15 秒自动刷新；开启时日期仅能查询当天数据">
             <span class="cursor-help text-xs text-gray-400">说明</span>
           </Tooltip>
         </div>
-  </div>
+      </div>
 
       <Grid>
         <template #status="{ row }">

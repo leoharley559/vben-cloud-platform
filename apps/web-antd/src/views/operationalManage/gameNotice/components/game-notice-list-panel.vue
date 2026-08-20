@@ -7,23 +7,22 @@ import { useRouter } from 'vue-router';
 import {
   Button,
   Input,
+  message,
   Modal,
   Select,
   Space,
   Switch,
   Tag,
-  message,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteGameNoticeApi,
   fetchGameNoticeListApi,
   switchGameNoticeApi,
 } from '#/api/operationManage/game-notice';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -42,7 +41,7 @@ interface NoticeRow {
   IsOpen?: number;
   IsPush?: number;
   LangText?: Record<string, { Notice?: string; Title?: string }> | string;
-  Packages?: string | number;
+  Packages?: number | string;
   ShowIdx?: number;
   ShowStage?: number;
   /** 行内 Status：2=已关闭（与筛选 Status 语义不同） */
@@ -72,10 +71,10 @@ const { packageOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 const router = useRouter();
 
-const canViewTable = computed(() => checkPermission(10073));
-const canCreate = computed(() => checkPermission(10074));
-const canEdit = computed(() => checkPermission(10075));
-const canDelete = computed(() => checkPermission(10076));
+const canViewTable = computed(() => checkPermission(10_073));
+const canCreate = computed(() => checkPermission(10_074));
+const canEdit = computed(() => checkPermission(10_075));
+const canDelete = computed(() => checkPermission(10_076));
 
 /** 对齐旧站 currentLangGroupId：优先 Default，再取首个 */
 const currentLangGroupId = computed(() => {
@@ -88,7 +87,7 @@ const currentLangGroupId = computed(() => {
 
 const actionId = ref<number | string>();
 const formOpen = ref(false);
-const editId = ref<number | string | null>(null);
+const editId = ref<null | number | string>(null);
 
 /** 与旧站 listQuery 对齐 */
 const filterCreator = ref('');
@@ -122,7 +121,7 @@ function parseLangText(raw: NoticeRow['LangText']) {
   return raw;
 }
 
-function resolveLangField(row: NoticeRow, field: 'Title' | 'Notice'): string {
+function resolveLangField(row: NoticeRow, field: 'Notice' | 'Title'): string {
   const lang = parseLangText(row.LangText);
   const preferred = currentLangGroupId.value
     ? lang[currentLangGroupId.value]
@@ -142,7 +141,7 @@ function resolvePackages(packages: NoticeRow['Packages']) {
     .split(',')
     .map((id) => id.trim())
     .filter(Boolean);
-  if (!ids.length) {
+  if (ids.length === 0) {
     return '-';
   }
   return ids.map((id) => packageNameMap.value.get(id) || id).join(',') || '-';
@@ -169,8 +168,8 @@ function resolveRuntimeStatus(row: NoticeRow) {
 function stripHtml(html: string) {
   return (
     html
-      .replace(/<[^>]+>/g, '')
-      .replace(/&nbsp;/g, ' ')
+      .replaceAll(/<[^>]+>/g, '')
+      .replaceAll('&nbsp;', ' ')
       .trim() || '-'
   );
 }
@@ -286,8 +285,7 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
         let sortParam = '';
         if (sortField && sortOrder) {
           // 对齐旧站 sortChange：升序 field，降序 -field
-          sortParam =
-            sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
+          sortParam = sortOrder === 'asc' ? String(sortField) : `-${sortField}`;
         }
         const query: Record<string, unknown> = {
           Creator: filterCreator.value.trim(),
@@ -348,7 +346,7 @@ function openVisitStats(row: NoticeRow) {
 
 async function handleSwitch(
   row: NoticeRow,
-  checked: boolean | string | number,
+  checked: boolean | number | string,
 ) {
   const next = checked === true || checked === 1 ? 1 : 2;
   const prev = Number(row.IsOpen) === 1 ? 1 : 2;
@@ -398,48 +396,49 @@ function handleDelete(row: NoticeRow) {
   <div v-if="canViewTable || canCreate">
     <!-- 查询区与旧站 notice.vue Filters 对齐：发布者 / 状态 / 公告标题 / 日期 / 查询重置 / 新增 -->
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterCreator"
-          allow-clear
-          placeholder="请输入发布者"
-        >
-          <template #addonBefore>发布者</template>
-        </Input>
-      </div>
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterCreator"
+            allow-clear
+            placeholder="请输入发布者"
+          >
+            <template #addonBefore>发布者</template>
+          </Input>
+        </div>
 
-      <div class="flex items-center gap-1">
-        <span class="whitespace-nowrap text-sm text-gray-500">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-         
-          :options="NOTICE_FILTER_STATUS_OPTIONS"
-          placeholder="请选择"
-        />
-      </div>
+        <div class="flex items-center gap-1">
+          <span class="whitespace-nowrap text-sm text-gray-500">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            :options="NOTICE_FILTER_STATUS_OPTIONS"
+            placeholder="请选择"
+          />
+        </div>
 
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterTitle"
-          allow-clear
-          placeholder="请输入公告标题"
-        >
-          <template #addonBefore>公告标题</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterTitle"
+            allow-clear
+            placeholder="请输入公告标题"
+          >
+            <template #addonBefore>公告标题</template>
+          </Input>
+        </div>
 
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button v-if="canCreate" type="primary" @click="openCreate">新增</Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button v-if="canCreate" type="primary" @click="openCreate">
+新增
+</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid v-if="canViewTable">
       <template #status="{ row }">

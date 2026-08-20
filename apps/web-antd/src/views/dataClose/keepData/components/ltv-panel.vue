@@ -1,30 +1,17 @@
 <script lang="ts" setup>
 import type { TableColumnType } from 'ant-design-vue';
 
+import type { KeepDetailsParam, KeepRow } from '../utils';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import {
-  Button,
-  message,
-  Select,
-  Space,
-  Table,
-} from 'ant-design-vue';
+import { Button, message, Select, Space, Table } from 'ant-design-vue';
 
 import { fetchKeepDataLtvListApi } from '#/api/dataClose/keep-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { exportRowsToXlsx } from '#/views/dataClose/shared/report-utils';
 
-import {
-  calcLtv,
-  type KeepDetailsParam,
-  type KeepRow,
-  loadLtvVisibility,
-  moneyText,
-  num,
-  pivotLtvRows,
-  saveLtvVisibility,
-} from '../utils';
+import { calcLtv, loadLtvVisibility, moneyText, num, pivotLtvRows, saveLtvVisibility } from '../utils';
 import DetailsPanel from './details-panel.vue';
 import KeepQueryBar from './keep-query-bar.vue';
 
@@ -124,7 +111,9 @@ const columns = computed<TableColumnType<KeepRow>[]>(() => {
       dataIndex: 'Days30',
       key: 'Days30',
       title: '30日充值',
-      customHeaderCell: () => ({ style: { background: '#13c2c2', color: '#fff' } }),
+      customHeaderCell: () => ({
+        style: { background: '#13c2c2', color: '#fff' },
+      }),
     });
   }
   if (tabTitleBol.value[1]) {
@@ -133,7 +122,9 @@ const columns = computed<TableColumnType<KeepRow>[]>(() => {
       dataIndex: 'Days60',
       key: 'Days60',
       title: '60日充值',
-      customHeaderCell: () => ({ style: { background: '#1677ff', color: '#fff' } }),
+      customHeaderCell: () => ({
+        style: { background: '#1677ff', color: '#fff' },
+      }),
     });
   }
   if (tabTitleBol.value[2]) {
@@ -213,27 +204,25 @@ onMounted(() => {
     <div v-show="!showDetails">
       <KeepQueryBar ref="queryBarRef" @search="handleSearch" />
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="query-filter-wide">
-          <Space.Compact>
-          <span class="query-field-addon">显示更多数据</span>
-          <Select
-            v-model:value="moreData"
-            :options="moreOptions"
-            allow-clear
-            mode="multiple"
-            @change="onMoreChange"
-            placeholder="请选择显示更多数据"
-          />
-        </Space.Compact>
+        <div class="ops-query-filters">
+          <div class="query-filter-wide">
+            <Space.Compact>
+              <span class="query-field-addon">显示更多数据</span>
+              <Select
+                v-model:value="moreData"
+                :options="moreOptions"
+                allow-clear
+                mode="multiple"
+                @change="onMoreChange"
+                placeholder="请选择显示更多数据"
+              />
+            </Space.Compact>
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button v-if="canExport" @click="handleExport"> 导出 Excel </Button>
+          </div>
         </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button v-if="canExport" @click="handleExport">
-          导出 Excel
-        </Button>
-        </div>
-    </div>
-  </div>
+      </div>
       <Table
         :columns="columns"
         :data-source="tableData"

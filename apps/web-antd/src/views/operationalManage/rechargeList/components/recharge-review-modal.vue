@@ -8,22 +8,22 @@ import {
   Form,
   Input,
   InputNumber,
-  Modal,
   message,
+  Modal,
 } from 'ant-design-vue';
 import BigNumber from 'bignumber.js';
 
 import { manualReviewRechargeApi } from '#/api/operationManage/recharge';
 import PassPopup from '#/components/security/pass-popup.vue';
-import { RECHARGE_SECURITY_PAGE_ID } from '#/utils/recharge-actions';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { RECHARGE_SECURITY_PAGE_ID } from '#/utils/recharge-actions';
 
 defineOptions({ name: 'RechargeReviewModal' });
 
 const props = defineProps<{
   mode: 'manual' | 'second';
   operatorName?: string;
-  row: RechargeListItem | null;
+  row: null | RechargeListItem;
 }>();
 
 const emit = defineEmits<{

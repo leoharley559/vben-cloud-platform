@@ -18,14 +18,14 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchEvoSideBetListApi } from '#/api/memberManage/game-record';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -33,9 +33,9 @@ import {
   BET_STATUS_OPTIONS,
   BET_TIME_TYPE_OPTIONS,
   BET_YES_NO_OPTIONS,
-  MAX_BET_QUERY_RANGE_SECONDS,
   calcBetWinLoss,
   formatBetStatus,
+  MAX_BET_QUERY_RANGE_SECONDS,
 } from '#/utils/bet-detail';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -49,9 +49,9 @@ const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
 const { packageOptions, memberTypeOptions } = useOperationOptions();
 
-const canViewPage = computed(() => checkPermission(12205));
-const canExport = computed(() => checkPermission(12206));
-const canOpenPlayer = computed(() => checkPermission(12207));
+const canViewPage = computed(() => checkPermission(12_205));
+const canExport = computed(() => checkPermission(12_206));
+const canOpenPlayer = computed(() => checkPermission(12_207));
 
 const defaultBegin = dayjs().subtract(2, 'day').startOf('day');
 const defaultEnd = dayjs().subtract(1, 'day').endOf('day');
@@ -77,7 +77,10 @@ const filterIsBetTrade = ref(0);
 const filterSettleCount = ref(0);
 const filterSelectTimeType = ref(1);
 const filterDataSearchType = ref(0);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([defaultBegin, defaultEnd]);
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
+  defaultBegin,
+  defaultEnd,
+]);
 
 const subGameOptions = computed(() =>
   Object.entries(gameConfig.value.games).map(([gameId, game]) => ({
@@ -92,7 +95,9 @@ function formatDateTime(value?: number | string) {
   }
   const num = Number(value);
   const parsed = String(value).length > 10 ? dayjs(num) : dayjs.unix(num);
-  return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : String(value);
+  return parsed.isValid()
+    ? parsed.format('YYYY-MM-DD HH:mm:ss')
+    : String(value);
 }
 
 function getQueryParams(extra?: {
@@ -162,7 +167,8 @@ const gridOptions: VxeTableGridOptions<EvoSideBetListItem> = {
     { field: 'GameId', minWidth: 90, title: '场馆编号' },
     {
       field: 'SubGameId',
-      formatter: ({ cellValue }) => formatGameName(cellValue, gameConfig.value.games),
+      formatter: ({ cellValue }) =>
+        formatGameName(cellValue, gameConfig.value.games),
       minWidth: 140,
       title: '游戏名称',
     },
@@ -172,7 +178,9 @@ const gridOptions: VxeTableGridOptions<EvoSideBetListItem> = {
     {
       field: 'BetGold',
       formatter: ({ cellValue, row }) =>
-        formatAmountFromCent(Number(row.TotalBetGold) > 0 ? row.TotalBetGold : cellValue),
+        formatAmountFromCent(
+          Number(row.TotalBetGold) > 0 ? row.TotalBetGold : cellValue,
+        ),
       minWidth: 110,
       sortable: true,
       title: '下注金额',
@@ -245,7 +253,9 @@ const loading = computed(() => gridApi.grid?.loading ?? false);
 
 const betTotalText = computed(() =>
   formatAmountFromCent(
-    summary.value.SumTotalBetGold > 0 ? summary.value.SumTotalBetGold : summary.value.SumBetGold,
+    summary.value.SumTotalBetGold > 0
+      ? summary.value.SumTotalBetGold
+      : summary.value.SumBetGold,
   ),
 );
 
@@ -330,10 +340,10 @@ async function handleExport() {
     const result = await fetchEvoSideBetListApi({
       ...getQueryParams(),
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const rows = result?.Items || [];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -359,7 +369,9 @@ async function handleExport() {
         {
           header: '下注金额',
           value: (row) =>
-            formatAmountFromCent(Number(row.TotalBetGold) > 0 ? row.TotalBetGold : row.BetGold),
+            formatAmountFromCent(
+              Number(row.TotalBetGold) > 0 ? row.TotalBetGold : row.BetGold,
+            ),
         },
         {
           header: '返奖金额',
@@ -368,7 +380,9 @@ async function handleExport() {
         {
           header: '输赢情况',
           value: (row) =>
-            formatAmountFromCent(calcBetWinLoss(row.Status, row.WinGold, row.BetGold)),
+            formatAmountFromCent(
+              calcBetWinLoss(row.Status, row.WinGold, row.BetGold),
+            ),
         },
         { header: '状态', value: (row) => formatBetStatus(row.Status) },
         {
@@ -407,123 +421,158 @@ onMounted(async () => {
       <SummaryCards :items="summaryItems" />
 
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">产品</span>
-            <Select
-              v-model:value="filterPackageId"
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">产品</span>
+              <Select
+                v-model:value="filterPackageId"
+                allow-clear
+                :options="
+                  packageOptions.map((item) => ({
+                    label: item.PackageName,
+                    value: item.PackageId,
+                  }))
+                "
+                placeholder="请选择产品"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">渠道号</span>
+              <ChannelSelect
+                v-model="filterChannelIds"
+                placeholder="请输入渠道号"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">游戏名称</span>
+              <Select
+                v-model:value="filterSubGameId"
+                allow-clear
+                :options="subGameOptions"
+                placeholder="请选择游戏名称"
+                show-search
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterLoginAccount"
               allow-clear
-             
-              :options="
-                packageOptions.map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-              "
-              placeholder="请选择产品"
-            />
-          </Space.Compact>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">渠道号</span>
-            <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
-          </Space.Compact>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">游戏名称</span>
-            <Select
-              v-model:value="filterSubGameId"
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterUsername"
               allow-clear
-             
-              :options="subGameOptions"
-              placeholder="请选择游戏名称"
-              show-search
-            />
-          </Space.Compact>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input v-model:value="filterLoginAccount" allow-clear placeholder="请输入游戏账号" >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input v-model:value="filterUsername" allow-clear placeholder="请输入代理账号" >
-            <template #addonBefore>代理账号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input v-model:value="filterTransactionId" allow-clear placeholder="请输入注单号" >
-            <template #addonBefore>注单号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input v-model:value="filterRoundId" allow-clear placeholder="请输入牌局编号" >
-            <template #addonBefore>牌局编号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">状态</span>
-            <Select
-              v-model:value="filterStatus"
+              placeholder="请输入代理账号"
+            >
+              <template #addonBefore>代理账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterTransactionId"
               allow-clear
-             
-              :options="BET_STATUS_OPTIONS"
-              placeholder="请选择状态"
-            />
-          </Space.Compact>
+              placeholder="请输入注单号"
+            >
+              <template #addonBefore>注单号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterRoundId"
+              allow-clear
+              placeholder="请输入牌局编号"
+            >
+              <template #addonBefore>牌局编号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">状态</span>
+              <Select
+                v-model:value="filterStatus"
+                allow-clear
+                :options="BET_STATUS_OPTIONS"
+                placeholder="请选择状态"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">时间类型</span>
+              <Select
+                v-model:value="filterSelectTimeType"
+                :options="BET_TIME_TYPE_OPTIONS"
+                placeholder="请选择时间类型"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">是否投注</span>
+              <Select
+                v-model:value="filterIsBetTrade"
+                :options="BET_YES_NO_OPTIONS"
+                placeholder="请选择是否投注"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">结算次数</span>
+              <Select
+                v-model:value="filterSettleCount"
+                :options="BET_YES_NO_OPTIONS"
+                placeholder="请选择结算次数"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">数据类型</span>
+              <Select
+                v-model:value="filterDataSearchType"
+                :options="memberTypeOptions"
+                placeholder="请选择数据类型"
+              />
+            </Space.Compact>
+          </div>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
+          </div>
+          <div class="query-filter-actions">
+            <Space>
+              <Button :loading="loading" type="primary" @click="handleSearch">
+                查询
+              </Button>
+              <Button @click="handleReset">重置</Button>
+              <Button
+                v-if="canExport"
+                :loading="exportLoading"
+                @click="handleExportClick"
+              >
+                导出 Excel
+              </Button>
+            </Space>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">时间类型</span>
-            <Select
-              v-model:value="filterSelectTimeType"
-             
-              :options="BET_TIME_TYPE_OPTIONS"
-              placeholder="请选择时间类型"
-            />
-          </Space.Compact>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">是否投注</span>
-            <Select v-model:value="filterIsBetTrade" :options="BET_YES_NO_OPTIONS" placeholder="请选择是否投注" />
-          </Space.Compact>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">结算次数</span>
-            <Select v-model:value="filterSettleCount" :options="BET_YES_NO_OPTIONS" placeholder="请选择结算次数" />
-          </Space.Compact>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">数据类型</span>
-            <Select v-model:value="filterDataSearchType" :options="memberTypeOptions" placeholder="请选择数据类型" />
-          </Space.Compact>
-        </div>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
-        </div>
-        <div class="query-filter-actions">
-          <Space>
-          <Button :loading="loading" type="primary" @click="handleSearch"> 查询 </Button>
-          <Button @click="handleReset">重置</Button>
-          <Button v-if="canExport" :loading="exportLoading" @click="handleExportClick">
-            导出 Excel
-          </Button>
-        </Space>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <Grid>
         <template #loginAccount="{ row }">
           <PlayerAccountLink
-            v-if="canOpenPlayer && row.PlayerId && Number(row.PlayerId) !== 99999999"
+            v-if="
+              canOpenPlayer && row.PlayerId && Number(row.PlayerId) !== 99999999
+            "
             :login-account="row.LoginAccount"
             :permission-id="12207"
             :player-id="row.PlayerId"
@@ -534,7 +583,11 @@ onMounted(async () => {
           <PlayerStatusTag :status="row.PlayerStatus" />
         </template>
         <template #winLoss="{ row }">
-          {{ formatAmountFromCent(calcBetWinLoss(row.Status, row.WinGold, row.BetGold)) }}
+          {{
+            formatAmountFromCent(
+              calcBetWinLoss(row.Status, row.WinGold, row.BetGold),
+            )
+          }}
         </template>
         <template #status="{ row }">
           <Tag>{{ formatBetStatus(row.Status) }}</Tag>

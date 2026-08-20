@@ -97,7 +97,11 @@ function accountTypeName() {
       <Form.Item label="姓名">
         <Input :value="row?.BankRealName" disabled>
           <template #addonAfter>
-            <Button size="small" type="link" @click="copyValue(row?.BankRealName)">
+            <Button
+              size="small"
+              type="link"
+              @click="copyValue(row?.BankRealName)"
+            >
               复制
             </Button>
           </template>
@@ -106,7 +110,11 @@ function accountTypeName() {
       <Form.Item label="账号">
         <Input :value="row?.BankAccount" disabled>
           <template #addonAfter>
-            <Button size="small" type="link" @click="copyValue(row?.BankAccount)">
+            <Button
+              size="small"
+              type="link"
+              @click="copyValue(row?.BankAccount)"
+            >
               复制
             </Button>
           </template>
@@ -115,11 +123,7 @@ function accountTypeName() {
       <Form.Item label="打款金额">
         <Input :value="netMoney()" disabled>
           <template #addonAfter>
-            <Button
-              size="small"
-              type="link"
-              @click="copyValue(netMoney())"
-            >
+            <Button size="small" type="link" @click="copyValue(netMoney())">
               复制
             </Button>
           </template>

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { StatementRow } from '#/views/dataClose/shared/statement-helpers';
+
 import { computed, ref, watch } from 'vue';
 
 import { Modal, Table } from 'ant-design-vue';
@@ -6,13 +8,7 @@ import { Modal, Table } from 'ant-design-vue';
 import { fetchMonthStatementSonDetailApi } from '#/api/dataClose/month-statement';
 import { useReportOptions } from '#/composables/use-report-options';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import {
-  displayAmount,
-  fromCent,
-  monthDetailUnix,
-  type StatementRow,
-  venueName,
-} from '#/views/dataClose/shared/statement-helpers';
+import { displayAmount, fromCent, monthDetailUnix, venueName } from '#/views/dataClose/shared/statement-helpers';
 
 defineOptions({ name: 'MonthSonDetailModal' });
 

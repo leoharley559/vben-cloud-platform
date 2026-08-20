@@ -41,9 +41,7 @@ onMounted(() => {
     <Card>
       <Tabs v-model:active-key="activeTab" size="small" type="line">
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <GameReportPanel
-            v-if="activeTab === 'game' && item.key === 'game'"
-          />
+          <GameReportPanel v-if="activeTab === 'game' && item.key === 'game'" />
           <ClassifiedReportPanel
             v-else-if="activeTab === 'classified' && item.key === 'classified'"
           />

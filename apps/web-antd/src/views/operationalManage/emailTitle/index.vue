@@ -28,12 +28,12 @@ const tabs = computed(() =>
   [
     {
       key: 'detail',
-      permission: 11950,
+      permission: 11_950,
       tab: '明细',
     },
     {
       key: 'statistics',
-      permission: 11951,
+      permission: 11_951,
       tab: '访问统计',
     },
   ].filter((item) => checkPermission(item.permission)),
@@ -43,9 +43,9 @@ const tabs = computed(() =>
 const canViewPage = computed(() => tabs.value.length > 0);
 const activeTab = ref('detail');
 
-const canLoadDetail = computed(() => checkPermission(11952));
-const canExportDetail = computed(() => checkPermission(11954));
-const canLoadStatistics = computed(() => checkPermission(11955));
+const canLoadDetail = computed(() => checkPermission(11_952));
+const canExportDetail = computed(() => checkPermission(11_954));
+const canLoadStatistics = computed(() => checkPermission(11_955));
 
 onMounted(() => {
   activeTab.value = tabs.value[0]?.key || 'detail';

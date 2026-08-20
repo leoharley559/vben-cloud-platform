@@ -5,12 +5,11 @@ import type { WithdrawOrderStatItem } from '#/types/withdraw-extra';
 import { computed, onMounted, ref } from 'vue';
 
 import { Button, Result } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchWithdrawOrderStatApi } from '#/api/operationManage/withdraw-extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchWithdrawOrderStatApi } from '#/api/operationManage/withdraw-extra';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -172,17 +171,17 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
+            查询
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid />
   </div>

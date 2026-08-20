@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { CloudWsStatus } from '#/utils/ws';
+
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 import { useUserStore } from '@vben/stores';
@@ -7,22 +9,18 @@ import {
   Button,
   Card,
   Input,
+  message,
   Modal,
   Radio,
   Space,
   Table,
   Tabs,
   Tag,
-  message,
 } from 'ant-design-vue';
 
-import { getCloudToken } from '#/utils/auth-token';
-import {
-  CloudWebSocket,
-  getServiceManagerWsUrl,
-  type CloudWsStatus,
-} from '#/utils/ws';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import { getCloudToken } from '#/utils/auth-token';
+import { CloudWebSocket, getServiceManagerWsUrl } from '#/utils/ws';
 import { ServiceMessageType } from '#/utils/ws/service-message-type';
 
 defineOptions({ name: 'EnterLineMonitorPanel' });
@@ -208,7 +206,7 @@ function mapChatList(list: unknown[], targetId: string) {
         type,
       } satisfies ChatMessage;
     })
-    .sort((a, b) => Number(a.sendTime) - Number(b.sendTime) || a.ack - b.ack);
+    .toSorted((a, b) => Number(a.sendTime) - Number(b.sendTime) || a.ack - b.ack);
 }
 
 function clearHeart() {
@@ -400,7 +398,7 @@ function handleServiceList(msg: Record<string, unknown>) {
       };
     })
     .filter((item) => item.ClientId && !filter.has(item.ClientId));
-  if (!transferList.value.length) {
+  if (transferList.value.length === 0) {
     message.warning('当前无其他可转接客服');
   }
 }
@@ -844,7 +842,7 @@ onBeforeUnmount(() => {
           正在拉取聊天记录...
         </div>
         <div
-          v-else-if="chatMessages.length"
+          v-else-if="chatMessages.length > 0"
           class="mb-3 max-h-80 space-y-2 overflow-auto rounded border p-3"
         >
           <div
@@ -885,7 +883,7 @@ onBeforeUnmount(() => {
 
     <Card size="small" title="事件日志">
       <div
-        v-if="logs.length"
+        v-if="logs.length > 0"
         class="max-h-40 space-y-1 overflow-auto text-xs text-gray-600"
       >
         <div v-for="(item, index) in logs" :key="`${item.at}-${index}`">
@@ -910,7 +908,7 @@ onBeforeUnmount(() => {
       >
         正在加载客服列表...
       </div>
-      <div v-else-if="transferList.length" class="flex flex-wrap gap-2">
+      <div v-else-if="transferList.length > 0" class="flex flex-wrap gap-2">
         <Radio.Group v-model:value="transferTargetId">
           <Radio
             v-for="item in transferList"

@@ -22,19 +22,19 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportRelationQueryApi,
   fetchRelationQueryListApi,
 } from '#/api/operationManage/relation-query';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { RELATION_QUERY_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
@@ -46,7 +46,7 @@ const router = useRouter();
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewPage = computed(() => checkPermission(10023));
+const canViewPage = computed(() => checkPermission(10_023));
 
 /**
  * 对齐旧站 relationQuery：getBeforeDateStr(1)～getBeforeDateStr(1,false)
@@ -100,12 +100,12 @@ function formatDateTime(value?: number | string) {
 }
 
 function normalizeLoginAccount(value: string) {
-  return value.toLowerCase().replace(/\s/g, '');
+  return value.toLowerCase().replaceAll(/\s/g, '');
 }
 
 function getChannelParams() {
   if (channelSearchType.value === 0) {
-    const joined = filterChannelIds.value.length
+    const joined = filterChannelIds.value.length > 0
       ? filterChannelIds.value.join(',')
       : '';
     return {
@@ -238,7 +238,10 @@ function handleReset() {
   filterChannelExact.value = '';
   filterPackageId.value = '';
   const range = getTodayRangeSeconds();
-  filterDateRange.value = [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+  filterDateRange.value = [
+    dayjs.unix(range.BeginTime),
+    dayjs.unix(range.EndTime),
+  ];
   handleSearch();
 }
 
@@ -397,18 +400,21 @@ onMounted(() => {
             </Input>
           </div>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="登录时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Button :loading="loading" type="primary" @click="handleSearch">
-            查询
-          </Button>
-          <Button @click="handleReset">重置</Button>
-          <Button :loading="exportLoading" @click="handleExportClick">
-            导出 Excel
-          </Button>
-        </div>
-      </template>
+            <QueryDatetimeRangePicker
+              v-model="filterDateRange"
+              label="登录时间"
+            />
+          </div>
+          <div class="query-filter-actions">
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+            <Button :loading="exportLoading" @click="handleExportClick">
+              导出 Excel
+            </Button>
+          </div>
+        </template>
 
         <template #summary>
           <SummaryCards :items="summaryItems" />
@@ -425,11 +431,7 @@ onMounted(() => {
       </OpsListPanel>
     </Card>
 
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </Page>
 
   <Page v-else auto-content-height title="关联号查询">

@@ -3,7 +3,7 @@ import type { WithdrawWhiteItem } from '#/types/withdraw-extra';
 
 import { computed, ref, watch } from 'vue';
 
-import { Form, Input, Modal, Select, message } from 'ant-design-vue';
+import { Form, Input, message, Modal, Select } from 'ant-design-vue';
 
 import {
   fetchPlayerBasicInfoApi,
@@ -13,17 +13,17 @@ import {
   createWithdrawWhiteApi,
   updateWithdrawWhiteApi,
 } from '#/api/operationManage/withdraw-extra';
-import { useOperationOptions } from '#/composables/use-operation-options';
-import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { formatAmountFromCent } from '#/utils/format-amount';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
+import { formatAmountFromCent } from '#/utils/format-amount';
 
 defineOptions({ name: 'WithdrawWhiteFormModal' });
 
 const props = defineProps<{
   mode: 'create' | 'update';
   open: boolean;
-  row: WithdrawWhiteItem | null;
+  row: null | WithdrawWhiteItem;
 }>();
 
 const emit = defineEmits<{

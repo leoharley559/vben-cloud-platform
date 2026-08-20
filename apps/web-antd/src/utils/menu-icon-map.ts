@@ -282,7 +282,7 @@ export function resolveMenuIcon(name?: string, path?: string) {
   }
 
   const normalized = String(path || '').replace(/^\//, '');
-  const root = normalized.split('/').filter(Boolean)[0];
+  const root = normalized.split('/').find(Boolean);
   if (root && MENU_ICON_BY_PATH_PREFIX[root]) {
     return MENU_ICON_BY_PATH_PREFIX[root];
   }

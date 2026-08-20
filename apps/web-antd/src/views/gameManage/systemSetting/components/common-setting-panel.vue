@@ -12,11 +12,11 @@ import {
   Tabs,
 } from 'ant-design-vue';
 
+import { getProjectConfigApi } from '#/api/core/project';
 import {
   fetchPhoneBlockSettingApi,
   updatePhoneBlockSettingApi,
 } from '#/api/gameManage/system-setting';
-import { getProjectConfigApi } from '#/api/core/project';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 
 defineOptions({ name: 'CommonSettingPanel' });
@@ -43,9 +43,8 @@ const langGroups = computed(() =>
 );
 const activePrompt = computed(
   () =>
-    langPrompts.value.find(
-      (item) => item.LangGroupId === activeLangId.value,
-    ) || langPrompts.value[0],
+    langPrompts.value.find((item) => item.LangGroupId === activeLangId.value) ||
+    langPrompts.value[0],
 );
 const columns = [
   { key: 'index', title: '序号', width: 80 },
@@ -54,7 +53,12 @@ const columns = [
 ];
 
 function parseJson(value: unknown, fallback: unknown) {
-  if (value === undefined || value === null || value === '' || value === 'null') {
+  if (
+    value === undefined ||
+    value === null ||
+    value === '' ||
+    value === 'null'
+  ) {
     return fallback;
   }
   try {
@@ -219,11 +223,7 @@ onMounted(loadData);
       </Table>
     </Card>
 
-    <Modal
-      v-model:open="addVisible"
-      title="新增手机号段"
-      @ok="addPhone"
-    >
+    <Modal v-model:open="addVisible" title="新增手机号段" @ok="addPhone">
       <Form layout="vertical">
         <Form.Item label="手机号前三位" required>
           <Input

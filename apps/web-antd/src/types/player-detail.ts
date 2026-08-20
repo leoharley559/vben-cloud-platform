@@ -312,7 +312,7 @@ export interface PlayerGameDetailItem {
   AddGold?: number | string;
   ChannelName?: string;
   CreateTime?: number | string;
-  ExInfo?: string | Record<string, unknown>;
+  ExInfo?: Record<string, unknown> | string;
   GameId?: number | string;
   LogId?: string;
   LoginAccount?: string;
@@ -572,21 +572,21 @@ export interface PlayerDetailTabConfig {
 }
 
 export const PLAYER_DETAIL_TABS: PlayerDetailTabConfig[] = [
-  { key: 'profile', label: '玩家概况', permission: 10407 },
-  { key: 'wallet', label: '钱包', permission: 10408 },
-  { key: 'coin', label: '金币详情', permission: 10409 },
-  { key: 'bet', label: '注单详情', permission: 10411 },
-  { key: 'coinStats', label: '金币统计', permission: 10412 },
-  { key: 'login', label: '登录信息', permission: 10413 },
-  { key: 'rechargeWithdraw', label: '充提记录', permission: 10414 },
-  { key: 'venueTransfer', label: '场馆转账', permission: 12092 },
-  { key: 'adjust', label: '调整记录', permission: 12097 },
-  { key: 'bonus', label: '红利信息', permission: 10415 },
-  { key: 'rebate', label: '返水信息', permission: 11609 },
-  { key: 'streaming', label: '流水信息', permission: 12936 },
-  { key: 'points', label: '积分信息', permission: 13412 },
-  { key: 'relation', label: '关联号详情', permission: 10416 },
-  { key: 'problem', label: '问题纪录', permission: 11865 },
-  { key: 'risk', label: '风控分析', permission: 12377 },
-  { key: 'logs', label: '操作日志', permission: 13313 },
+  { key: 'profile', label: '玩家概况', permission: 10_407 },
+  { key: 'wallet', label: '钱包', permission: 10_408 },
+  { key: 'coin', label: '金币详情', permission: 10_409 },
+  { key: 'bet', label: '注单详情', permission: 10_411 },
+  { key: 'coinStats', label: '金币统计', permission: 10_412 },
+  { key: 'login', label: '登录信息', permission: 10_413 },
+  { key: 'rechargeWithdraw', label: '充提记录', permission: 10_414 },
+  { key: 'venueTransfer', label: '场馆转账', permission: 12_092 },
+  { key: 'adjust', label: '调整记录', permission: 12_097 },
+  { key: 'bonus', label: '红利信息', permission: 10_415 },
+  { key: 'rebate', label: '返水信息', permission: 11_609 },
+  { key: 'streaming', label: '流水信息', permission: 12_936 },
+  { key: 'points', label: '积分信息', permission: 13_412 },
+  { key: 'relation', label: '关联号详情', permission: 10_416 },
+  { key: 'problem', label: '问题纪录', permission: 11_865 },
+  { key: 'risk', label: '风控分析', permission: 12_377 },
+  { key: 'logs', label: '操作日志', permission: 13_313 },
 ];

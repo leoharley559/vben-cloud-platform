@@ -18,8 +18,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     {
       // Title 常为空，回退 Name（与旧站列表展示一致）
       field: 'Name',
-      formatter: ({ row }) =>
-        String(row.Title || row.Name || '-'),
+      formatter: ({ row }) => String(row.Title || row.Name || '-'),
       minWidth: 180,
       title: 'VIP标题',
     },
@@ -27,8 +26,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     {
       field: 'DescEnabled',
       // 旧站：DescEnabled===2 为展示
-      formatter: ({ cellValue }) =>
-        Number(cellValue) === 2 ? '展示' : '隐藏',
+      formatter: ({ cellValue }) => (Number(cellValue) === 2 ? '展示' : '隐藏'),
       minWidth: 90,
       title: '描述展示',
     },

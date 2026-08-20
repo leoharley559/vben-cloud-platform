@@ -284,9 +284,9 @@ export const venueColumns: OperationListConfig['columns'] = [
     formatter: (value) =>
       Number(value) === 1
         ? '开启'
-        : Number(value) === 2
+        : (Number(value) === 2
           ? '关闭'
-          : String(value ?? '-'),
+          : String(value ?? '-')),
     minWidth: 90,
     title: '状态',
   },

@@ -2,30 +2,30 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
-  Tag,
-  message,
   Space,
+  Tag,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
-import { useRouter } from 'vue-router';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportRewardExchangeRecordApi,
   fetchRewardExchangeRecordApi,
   fetchRewardProductTagListApi,
 } from '#/api/operationManage/reward-mall';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -34,13 +34,13 @@ import { formatOperationDateTime } from '#/utils/operation-status';
 import { REWARD_EXCHANGE_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import {
-  REWARD_PRODUCT_TYPE_FILTER_OPTIONS,
-  REWARD_VIP_FILTER_OPTIONS,
-  REWARD_WATER_REQUIRE_OPTIONS,
   formatRewardExchangeStatus,
   formatRewardIsWater,
   getRewardExchangeStatusColor,
   resolveLangField,
+  REWARD_PRODUCT_TYPE_FILTER_OPTIONS,
+  REWARD_VIP_FILTER_OPTIONS,
+  REWARD_WATER_REQUIRE_OPTIONS,
 } from './reward-mall-shared';
 
 defineOptions({ name: 'ExchangeRecordPanel' });
@@ -69,7 +69,7 @@ const router = useRouter();
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canView = computed(() => checkPermission(13331));
+const canView = computed(() => checkPermission(13_331));
 const canExport = computed(() =>
   checkPermission(REWARD_EXCHANGE_EXPORT_PAGE_ID),
 );
@@ -128,8 +128,7 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterExchangeRange.value || [];
   return {
     ChannelId: channelIdsParam(),
-    ExchangeTimeBegin: begin ? begin.unix()
-      : '',
+    ExchangeTimeBegin: begin ? begin.unix() : '',
     ExchangeTimeEnd: end ? end.unix() : '',
     IsWater: filterIsWater.value,
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
@@ -145,7 +144,11 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildExportQuery() {
-  const { Page: _page, PageSize: _size, ...rest } = buildQuery({
+  const {
+    Page: _page,
+    PageSize: _size,
+    ...rest
+  } = buildQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -329,113 +332,113 @@ onMounted(() => {
 <template>
   <div v-if="canView">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterProductName"
-          allow-clear
-          placeholder="请输入商品名称"
-        >
-          <template #addonBefore>商品名称</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">商品类型</span>
-        <Select
-          v-model:value="filterProductType"
-          allow-clear
-         
-          :options="REWARD_PRODUCT_TYPE_FILTER_OPTIONS"
-          placeholder="请选择商品类型"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterProductName"
+            allow-clear
+            placeholder="请输入商品名称"
+          >
+            <template #addonBefore>商品名称</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">商品类型</span>
+          <Select
+            v-model:value="filterProductType"
+            allow-clear
+            :options="REWARD_PRODUCT_TYPE_FILTER_OPTIONS"
+            placeholder="请选择商品类型"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterExchangeRange" />
         </div>
-      <Space.Compact>
-        <span class="query-field-addon">商品页签</span>
-        <Select
-          v-model:value="filterProductTag"
-          allow-clear
-         
-          :options="productTagOptions"
-          show-search
-          placeholder="请选择商品页签"
-        />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model:value="filterChannelIds" placeholder="请输入渠道号" />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          show-search
-          placeholder="请选择所属产品"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">VIP等级</span>
-        <Select
-          v-model:value="filterVipLevels"
-          allow-clear
-         
-          mode="multiple"
-          :max-tag-count="1"
-          :options="REWARD_VIP_FILTER_OPTIONS.filter((item) => item.value !== -1)"
-          placeholder="请选择VIP等级"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">流水要求</span>
-        <Select
-          v-model:value="filterIsWater"
-          allow-clear
-         
-          :options="REWARD_WATER_REQUIRE_OPTIONS"
-          placeholder="请选择流水要求"
-        />
-      </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">商品页签</span>
+          <Select
+            v-model:value="filterProductTag"
+            allow-clear
+            :options="productTagOptions"
+            show-search
+            placeholder="请选择商品页签"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model:value="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            show-search
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevels"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="
+              REWARD_VIP_FILTER_OPTIONS.filter((item) => item.value !== -1)
+            "
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">流水要求</span>
+          <Select
+            v-model:value="filterIsWater"
+            allow-clear
+            :options="REWARD_WATER_REQUIRE_OPTIONS"
+            placeholder="请选择流水要求"
+          />
+        </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
-      <Button
-        v-if="canExport"
-        :loading="exportLoading"
-        @click="handleExportClick"
-      >
-        导出 Excel
-      </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExportClick"
+          >
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">
@@ -456,11 +459,7 @@ onMounted(() => {
       </template>
     </Grid>
 
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </div>
 
   <Result

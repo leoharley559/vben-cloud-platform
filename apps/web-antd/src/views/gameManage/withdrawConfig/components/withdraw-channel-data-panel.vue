@@ -183,9 +183,9 @@ const handleTableChange: NonNullable<TableProps['onChange']> = (
   sort.value =
     sorter?.order === 'ascend'
       ? String(sorter.field || '')
-      : sorter?.order === 'descend'
+      : (sorter?.order === 'descend'
         ? `-${String(sorter.field || '')}`
-        : '';
+        : '');
   page.value = 1;
   void loadData();
 };
@@ -222,8 +222,8 @@ onMounted(() => {
         </Input>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" label="日期" />
-        </div>
+        <QueryDatetimeRangePicker v-model="dateRange" label="日期" />
+      </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">数据类型</span>
@@ -234,13 +234,13 @@ onMounted(() => {
           />
         </Space.Compact>
       </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" :loading="loading" @click="handleSearch">
-        查询
-      </Button>
-      <Button @click="handleReset">重置</Button>
-        </div>
-      </template>
+      <div class="query-filter-actions query-filter-actions-single">
+        <Button type="primary" :loading="loading" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
+      </div>
+    </template>
 
     <Spin :spinning="loading">
       <Table

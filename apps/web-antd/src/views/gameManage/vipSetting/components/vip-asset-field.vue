@@ -37,7 +37,9 @@ function beforeUpload(file: File) {
     return Upload.LIST_IGNORE;
   }
   const extension = `.${file.name.split('.').pop()?.toLowerCase()}`;
-  const allowed = props.accept.split(',').map((item) => item.trim().toLowerCase());
+  const allowed = props.accept
+    .split(',')
+    .map((item) => item.trim().toLowerCase());
   if (!allowed.includes(extension)) {
     message.warning(`仅支持 ${props.accept} 格式`);
     return Upload.LIST_IGNORE;
@@ -64,11 +66,7 @@ function handleChange(info: UploadChangeParam) {
 <template>
   <div class="asset-field">
     <div class="preview">
-      <img
-        v-if="modelValue && image"
-        :src="previewUrl"
-        alt="预览"
-      />
+      <img v-if="modelValue && image" :src="previewUrl" alt="预览" />
       <a
         v-else-if="modelValue"
         :href="previewUrl"
@@ -89,12 +87,7 @@ function handleChange(info: UploadChangeParam) {
       >
         <Button size="small">{{ modelValue ? '重新上传' : '上传文件' }}</Button>
       </Upload>
-      <Button
-        v-if="modelValue"
-        danger
-        size="small"
-        @click="modelValue = ''"
-      >
+      <Button v-if="modelValue" danger size="small" @click="modelValue = ''">
         删除
       </Button>
       <small>{{ hint }}</small>
@@ -105,8 +98,8 @@ function handleChange(info: UploadChangeParam) {
 <style scoped>
 .asset-field {
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
 }
 
 .preview {
@@ -132,8 +125,8 @@ function handleChange(info: UploadChangeParam) {
 .actions {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 5px;
+  align-items: flex-start;
 }
 
 .actions small {

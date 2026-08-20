@@ -12,7 +12,7 @@ import PlayerLevelPanel from './components/player-level-panel.vue';
 defineOptions({ name: 'PlayerLevel' });
 
 const { checkPermission } = useCloudPermission();
-const canViewPage = computed(() => checkPermission(12281));
+const canViewPage = computed(() => checkPermission(12_281));
 </script>
 
 <template>

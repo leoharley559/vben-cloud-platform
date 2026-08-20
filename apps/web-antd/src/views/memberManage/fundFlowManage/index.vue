@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { FundFlowListItem } from '#/types/fund-flow';
+import type { GoldLogTemplateItem } from '#/utils/fund-flow';
 
 import { computed, onMounted, ref } from 'vue';
 
@@ -17,24 +18,20 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchFundFlowListApi } from '#/api/memberManage/fund-flow';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { enrichFundFlowItems, formatFundFlowRemark } from '#/utils/fund-flow';
 import { formatGoldReason } from '#/utils/game-config';
-import {
-  enrichFundFlowItems,
-  formatFundFlowRemark,
-  type GoldLogTemplateItem,
-} from '#/utils/fund-flow';
 
 defineOptions({ name: 'FundFlowManage' });
 
@@ -48,15 +45,18 @@ const { ensureGameConfig, gameConfig } = useGameConfig();
 const { packageOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
-const canViewPage = computed(() => checkPermission(12208));
-const canOpenPlayer = computed(() => checkPermission(12209));
+const canViewPage = computed(() => checkPermission(12_208));
+const canOpenPlayer = computed(() => checkPermission(12_209));
 
 const defaultRange = getLast7CalendarDaysRangeSeconds();
 const summary = ref({ SumAddGold: 0 });
 const hasQueried = ref(false);
 
 const summaryItems = computed(() => [
-  { label: '账变总金额', value: formatAmountFromCent(summary.value.SumAddGold) },
+  {
+    label: '账变总金额',
+    value: formatAmountFromCent(summary.value.SumAddGold),
+  },
 ]);
 
 const filterLogId = ref('');
@@ -85,9 +85,9 @@ function onCalendarChange(
 ) {
   const first = dates?.[0];
   rangeSelecting = first
-    ? dayjs.isDayjs(first)
+    ? (dayjs.isDayjs(first)
       ? first
-      : dayjs(first)
+      : dayjs(first))
     : undefined;
 }
 
@@ -351,15 +351,19 @@ onMounted(async () => {
             </Space.Compact>
           </div>
           <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="时间范围" :disabled-date="disabledDate" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button :loading="loading" type="primary" @click="handleSearch">
-            查询
-          </Button>
-          <Button @click="handleReset">重置</Button>
-        </div>
-      </template>
+            <QueryDatetimeRangePicker
+              v-model="filterDateRange"
+              label="时间范围"
+              :disabled-date="disabledDate"
+            />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </div>
+        </template>
 
         <template #summary>
           <SummaryCards :items="summaryItems" />

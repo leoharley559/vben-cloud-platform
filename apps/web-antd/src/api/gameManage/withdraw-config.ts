@@ -55,7 +55,7 @@ export interface WithdrawRiskScheme {
  * @see views/gameManage/withdrawConfig
  */
 export function fetchWithdrawRiskRulesApi(Id: WithdrawRiskId) {
-  return requestClient.get<WithdrawRiskRule[] | null>(
+  return requestClient.get<null | WithdrawRiskRule[]>(
     '/backend/withdrawautoconfig/list',
     { params: { Id } },
   );
@@ -81,7 +81,7 @@ export function updateWithdrawRiskRuleApi(rule: WithdrawRiskRule) {
  * @see views/gameManage/withdrawConfig
  */
 export function fetchWithdrawRiskSchemesApi() {
-  return requestClient.get<WithdrawRiskScheme[] | null>(
+  return requestClient.get<null | WithdrawRiskScheme[]>(
     '/backend/withdrawautoconfig/listSchemeName',
   );
 }
@@ -134,4 +134,3 @@ export function deleteWithdrawRiskSchemeApi(id: WithdrawRiskId) {
 export function resetWithdrawRiskSchemeApi(id: WithdrawRiskId) {
   return requestClient.put(`/backend/withdrawautoconfig/default/${id}`);
 }
-

@@ -3,7 +3,7 @@ import type { UploadChangeParam } from 'ant-design-vue';
 
 import { computed, ref, watch } from 'vue';
 
-import { Button, Image, Modal, Tabs, Upload, message } from 'ant-design-vue';
+import { Button, Image, message, Modal, Tabs, Upload } from 'ant-design-vue';
 
 import {
   fetchSelfCheckEntryImageApi,
@@ -89,8 +89,8 @@ function closeModal() {
 
 function handleUploadChange(info: UploadChangeParam) {
   const response = info.file.response as
-    | { Code?: number | string; Data?: { url?: string }; Msg?: string }
-    | undefined;
+    | undefined
+    | { Code?: number | string; Data?: { url?: string }; Msg?: string };
   if (info.file.status === 'done') {
     if (String(response?.Code) === '200' && response?.Data?.url) {
       imageMap.value[String(activeLangGroupId.value)] = response.Data.url;

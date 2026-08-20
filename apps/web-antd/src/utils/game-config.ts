@@ -171,11 +171,7 @@ function lookupVenueDescriptionByCode(key: string, shortName = '') {
 }
 
 /** venue-config Description：本环境中文全称（VenueName 多为 TY/PG） */
-function lookupVenueDescription(
-  key: string,
-  shortName = '',
-  gameId = '',
-) {
+function lookupVenueDescription(key: string, shortName = '', gameId = '') {
   const byCode = lookupVenueDescriptionByCode(key, shortName);
   if (byCode) return byCode;
   const venues = venueConfig.venues || [];
@@ -198,7 +194,10 @@ function resolveVenueKey(key: string, cfg: ParsedGameConfig) {
   const upper = key.toUpperCase();
   for (const map of [cfg.platformGameType, cfg.platformGameTypeAll]) {
     for (const [id, name] of Object.entries(map || {})) {
-      if (isVenueAbbreviation(String(name)) && String(name).toUpperCase() === upper) {
+      if (
+        isVenueAbbreviation(String(name)) &&
+        String(name).toUpperCase() === upper
+      ) {
         return String(id);
       }
     }
@@ -216,7 +215,7 @@ function resolveVenueKey(key: string, cfg: ParsedGameConfig) {
  * games.gameName → platformGameType。
  */
 export function formatVenueName(
-  gameType?: number | string | null,
+  gameType?: null | number | string,
   config?: null | ParsedGameConfig,
 ) {
   if (gameType === undefined || gameType === null || gameType === '') {
@@ -258,11 +257,7 @@ export function formatVenueName(
   if (fromAll && !isVenueAbbreviation(fromAll)) return fromAll;
 
   // 2. venue-config Description（本环境中文全称）
-  const fromDesc = lookupVenueDescription(
-    key,
-    shortName || fromAll,
-    gameId,
-  );
+  const fromDesc = lookupVenueDescription(key, shortName || fromAll, gameId);
   if (fromDesc) return fromDesc;
 
   if (fromAll) return fromAll;
@@ -322,7 +317,14 @@ export function formatVenueName(
   }
 
   // 7. 简写兜底
-  return shortName || fromApiName || fromGames || fromPlatformList || groupHit?.gamename || key;
+  return (
+    shortName ||
+    fromApiName ||
+    fromGames ||
+    fromPlatformList ||
+    groupHit?.gamename ||
+    key
+  );
 }
 
 function findGroupVenue(key: string, config: ParsedGameConfig) {
@@ -426,7 +428,9 @@ export function findGameIdByApiFee(
   // 直接按 apiId 反查
   const byApi = findGameByApiFee(apiFeeKey, config);
   if (byApi) {
-    for (const [gameId, game] of Object.entries(config.platformGameList || {})) {
+    for (const [gameId, game] of Object.entries(
+      config.platformGameList || {},
+    )) {
       if (game === byApi) return gameId;
     }
     for (const [gameId, game] of Object.entries(config.games || {})) {
@@ -444,7 +448,9 @@ export function findGameIdByApiFee(
         return gameId;
       }
     }
-    for (const [gameId, game] of Object.entries(config.platformGameList || {})) {
+    for (const [gameId, game] of Object.entries(
+      config.platformGameList || {},
+    )) {
       if (game.gameName === name) {
         return gameId;
       }

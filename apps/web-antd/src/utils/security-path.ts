@@ -5,7 +5,7 @@ function translatePathSegment(
   segment: string | { key: string; params?: Record<string, string> },
 ) {
   if (typeof segment === 'string') {
-    if (/[\u4e00-\u9fff]/.test(segment)) {
+    if (/[\u4E00-\u9FFF]/.test(segment)) {
       return segment;
     }
     return translateMenuTitle(segment);
@@ -23,7 +23,7 @@ function translatePathSegment(
 
 export function getSecurityPathName(pageId: number | string) {
   const paths = SECURITY_PATHS.filter((item) => item.key === Number(pageId));
-  if (!paths.length) {
+  if (paths.length === 0) {
     return '';
   }
 

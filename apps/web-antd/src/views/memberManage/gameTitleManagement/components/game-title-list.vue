@@ -13,15 +13,16 @@ import {
   Dropdown,
   Input,
   Menu,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Switch,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   batchEditGameTitleApi,
   deleteGameTitleApi,
@@ -29,17 +30,16 @@ import {
   fetchGameTitleListApi,
   updateGameTitleSwitchApi,
 } from '#/api/memberManage/game-title';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getServiceImageUrl } from '#/utils/media';
 import {
   formatGameTitleActiveTime,
   formatGameTitleBudget,
   formatGameTitleDisplayDesc,
   formatGameTitleVip,
 } from '#/utils/game-title';
+import { getServiceImageUrl } from '#/utils/media';
 
 import GameTitleBatchEditModal from './game-title-batch-edit-modal.vue';
 import GameTitleFormModal from './game-title-form-modal.vue';
@@ -49,13 +49,13 @@ defineOptions({ name: 'GameTitleList' });
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(13137));
-const canAdd = computed(() => checkPermission(13138));
-const canEdit = computed(() => checkPermission(13139));
-const canDelete = computed(() => checkPermission(13140));
-const canSwitch = computed(() => checkPermission(13141));
-const canOpenOwner = computed(() => checkPermission(13142));
-const canBatch = computed(() => checkPermission(13150));
+const canViewTable = computed(() => checkPermission(13_137));
+const canAdd = computed(() => checkPermission(13_138));
+const canEdit = computed(() => checkPermission(13_139));
+const canDelete = computed(() => checkPermission(13_140));
+const canSwitch = computed(() => checkPermission(13_141));
+const canOpenOwner = computed(() => checkPermission(13_142));
+const canBatch = computed(() => checkPermission(13_150));
 
 const filterName = ref('');
 const filterCategoryId = ref<number | string>(0);
@@ -144,7 +144,7 @@ function getSelectedIds() {
 
 async function handleBatchSwitch(nextSwitch: 0 | 1) {
   const ids = getSelectedIds();
-  if (!ids.length) {
+  if (ids.length === 0) {
     message.warning('请先勾选称号');
     return;
   }
@@ -165,7 +165,7 @@ async function handleBatchSwitch(nextSwitch: 0 | 1) {
 
 function openBatchEdit(type: 'calTime' | 'vip') {
   const ids = getSelectedIds();
-  if (!ids.length) {
+  if (ids.length === 0) {
     message.warning('请先勾选称号');
     return;
   }
@@ -177,7 +177,7 @@ async function confirmBatchEdit(
   payload: Omit<GameTitleBatchEditPayload, 'BadgeIds'>,
 ) {
   const ids = getSelectedIds();
-  if (!ids.length) {
+  if (ids.length === 0) {
     message.warning('请先勾选称号');
     return;
   }
@@ -360,36 +360,36 @@ onMounted(async () => {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="获得时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Space wrap>
-        <Button type="primary" @click="handleSearch">查询</Button>
-        <Button v-if="canAdd" type="primary" @click="openCreate">
-          新增称号
-        </Button>
-        <Dropdown v-if="canBatch">
-          <Button>批量编辑</Button>
-          <template #overlay>
-            <Menu>
-              <Menu.Item key="open" @click="handleBatchSwitch(1)">
-                批量开启
-              </Menu.Item>
-              <Menu.Item key="close" @click="handleBatchSwitch(0)">
-                批量关闭
-              </Menu.Item>
-              <Menu.Item key="cal" @click="openBatchEdit('calTime')">
-                批量改计算时间
-              </Menu.Item>
-              <Menu.Item key="vip" @click="openBatchEdit('vip')">
-                批量改 VIP
-              </Menu.Item>
-            </Menu>
-          </template>
-        </Dropdown>
-      </Space>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="获得时间" />
+      </div>
+      <div class="query-filter-actions">
+        <Space wrap>
+          <Button type="primary" @click="handleSearch">查询</Button>
+          <Button v-if="canAdd" type="primary" @click="openCreate">
+            新增称号
+          </Button>
+          <Dropdown v-if="canBatch">
+            <Button>批量编辑</Button>
+            <template #overlay>
+              <Menu>
+                <Menu.Item key="open" @click="handleBatchSwitch(1)">
+                  批量开启
+                </Menu.Item>
+                <Menu.Item key="close" @click="handleBatchSwitch(0)">
+                  批量关闭
+                </Menu.Item>
+                <Menu.Item key="cal" @click="openBatchEdit('calTime')">
+                  批量改计算时间
+                </Menu.Item>
+                <Menu.Item key="vip" @click="openBatchEdit('vip')">
+                  批量改 VIP
+                </Menu.Item>
+              </Menu>
+            </template>
+          </Dropdown>
+        </Space>
+      </div>
+    </template>
 
     <Grid>
       <template #switch="{ row }">

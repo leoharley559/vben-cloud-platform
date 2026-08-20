@@ -3,12 +3,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import {
-  Alert,
-  Button,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Alert, Button, Select, Space } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchDepositPromoListApi } from '#/api/operationManage/activity';
@@ -70,22 +65,21 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       message="存款优惠完整规则编辑器（VIP 分层/首存周期等）尚未迁移，当前为方案列表只读。"
     />
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <Space.Compact>
-        <span class="query-field-addon">产品包</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="packageOptions"
-          placeholder="请选择产品包"
-        />
-      </Space.Compact>
+      <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
+      </div>
     </div>
-  </div>
     <Grid>
       <template #action>
         <Button disabled size="small" type="link">编辑规则</Button>

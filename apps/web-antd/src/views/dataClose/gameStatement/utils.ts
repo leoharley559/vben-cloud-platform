@@ -1,6 +1,8 @@
+import type { Dayjs } from 'dayjs';
+
 import type { GameTypeLangGroupItem } from '#/utils/game-config';
 
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 import { normalizeSearchValue } from '#/utils/everyday-report-format';
 import {
@@ -54,10 +56,7 @@ export function buildCommonQuery(input: {
   const { BeginTime, EndTime } = toUnixRange(input.dateRange);
   return {
     AdminGroupIds: arrayToCsvParam(input.adminGroupIds) || '',
-    AdminSearch: normalizeSearchValue(
-      input.adminSearch,
-      input.adminSearchType,
-    ),
+    AdminSearch: normalizeSearchValue(input.adminSearch, input.adminSearchType),
     AdminSearchType: input.adminSearchType,
     AppUrl: arrayToCsvParam(input.appUrl) || '',
     BeginTime,

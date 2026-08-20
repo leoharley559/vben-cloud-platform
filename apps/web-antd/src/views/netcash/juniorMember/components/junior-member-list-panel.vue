@@ -33,8 +33,8 @@ import {
   submitJuniorImportApi,
   validateJuniorImportApi,
 } from '#/api/netcash/junior-member';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
@@ -229,10 +229,14 @@ function displayCell(field: string, value: unknown, row?: Row) {
   if (dateFields.has(field)) return formatNetcashDateTime(value as number);
   if (field === 'ActiveStatus') return Number(value) === 1 ? '活跃' : '不活跃';
   if (field === 'DataFlag') return Number(value) === 0 ? '正式' : '测试';
-  if (field === 'VipLevel') return value === null || value === undefined ? '-' : `VIP${value}`;
-  if (field === 'Status') return statusMap[Number(value)] || String(value ?? '-');
+  if (field === 'VipLevel')
+    return value === null || value === undefined ? '-' : `VIP${value}`;
+  if (field === 'Status')
+    return statusMap[Number(value)] || String(value ?? '-');
   if (field === 'LoginAccount') return String(row?.LoginAccount ?? '-');
-  return value === null || value === undefined || value === '' ? '-' : String(value);
+  return value === null || value === undefined || value === ''
+    ? '-'
+    : String(value);
 }
 
 function totalValue(field: string) {
@@ -264,7 +268,11 @@ async function exportMembers() {
   exportLoading.value = true;
   try {
     const result = await fetchJuniorMemberListApi(
-      memberQuery({ IsExp: true, Page: 1, PageSize: Math.max(total.value + 1, 1) }),
+      memberQuery({
+        IsExp: true,
+        Page: 1,
+        PageSize: Math.max(total.value + 1, 1),
+      }),
     );
     if (!result.Items?.length) {
       message.info('暂无可导出数据');
@@ -280,7 +288,11 @@ async function exportMembers() {
           .filter((column) => column.dataIndex !== 'action')
           .map((column) => [
             String(column.title),
-            displayCell(String(column.dataIndex), normalized[String(column.dataIndex)], normalized),
+            displayCell(
+              String(column.dataIndex),
+              normalized[String(column.dataIndex)],
+              normalized,
+            ),
           ]),
       );
     });
@@ -322,7 +334,9 @@ async function loadChangeChannels() {
     DataSearchType: changeForm.DataFlag,
   });
   changeChannelOptions.value = list
-    .filter((item) => String(item.ChannelId) !== String(changeForm.FromChannelId))
+    .filter(
+      (item) => String(item.ChannelId) !== String(changeForm.FromChannelId),
+    )
     .map((item) => ({
       label: `${item.Name || '-'} (${item.ChannelName || item.ChannelId || '-'})`,
       value: item.ChannelId as number | string,
@@ -383,8 +397,16 @@ const importStats = computed(() => ({
 }));
 const importSummaryItems = computed(() => [
   { label: '导入总数', value: importStats.value.total },
-  { label: '有效', value: importStats.value.valid, valueClass: 'text-emerald-500' },
-  { label: '无效', value: importStats.value.invalid, valueClass: 'text-red-500' },
+  {
+    label: '有效',
+    value: importStats.value.valid,
+    valueClass: 'text-emerald-500',
+  },
+  {
+    label: '无效',
+    value: importStats.value.invalid,
+    valueClass: 'text-red-500',
+  },
 ]);
 const importColumns: Column[] = [
   { dataIndex: 'PlayerAccount', title: '游戏账号', width: 180 },
@@ -517,93 +539,97 @@ onMounted(async () => {
 <template>
   <template v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filters.LoginAccount"
-          allow-clear
-          @press-enter="searchMembers"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filters.Promoter"
-          allow-clear
-          @press-enter="searchMembers"
-          placeholder="请输入归属代理"
-        >
-          <template #addonBefore>归属代理</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">产品包</span>
-        <Select
-          v-model:value="filters.PackageId"
-          allow-clear
-          :options="packageOptions"
-          placeholder="请选择产品包"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">玩家状态</span>
-        <Select
-          v-model:value="filters.Status"
-          allow-clear
-          :options="Object.entries(statusMap).map(([value, label]) => ({ label, value: Number(value) }))"
-          placeholder="请选择玩家状态"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">活跃状态</span>
-        <Select
-          v-model:value="filters.ActiveStatus"
-          allow-clear
-          :options="[{ label: '不活跃', value: 0 }, { label: '活跃', value: 1 }]"
-          placeholder="请选择活跃状态"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">VIP等级</span>
-        <Select
-          v-model:value="filters.VipLevel"
-          allow-clear
-          :options="vipOptions"
-          placeholder="请选择VIP等级"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">佣金算法</span>
-        <Select
-          v-model:value="filters.AlgorithmTemplateId"
-          allow-clear
-          :options="algorithmOptions"
-          placeholder="请选择佣金算法"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.LoginAccount"
+            allow-clear
+            @press-enter="searchMembers"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filters.Promoter"
+            allow-clear
+            @press-enter="searchMembers"
+            placeholder="请输入归属代理"
+          >
+            <template #addonBefore>归属代理</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-model:value="filters.PackageId"
+            allow-clear
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">玩家状态</span>
+          <Select
+            v-model:value="filters.Status"
+            allow-clear
+            :options="
+              Object.entries(statusMap).map(([value, label]) => ({
+                label,
+                value: Number(value),
+              }))
+            "
+            placeholder="请选择玩家状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">活跃状态</span>
+          <Select
+            v-model:value="filters.ActiveStatus"
+            allow-clear
+            :options="[
+              { label: '不活跃', value: 0 },
+              { label: '活跃', value: 1 },
+            ]"
+            placeholder="请选择活跃状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filters.VipLevel"
+            allow-clear
+            :options="vipOptions"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">佣金算法</span>
+          <Select
+            v-model:value="filters.AlgorithmTemplateId"
+            allow-clear
+            :options="algorithmOptions"
+            placeholder="请选择佣金算法"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filters.RegTime" />
         </div>
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filters.FirstPayTime" />
         </div>
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filters.StatisticsTime" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="searchMembers">查询</Button>
-      <Button @click="resetFilters">重置</Button>
+          <Button @click="resetFilters">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
     <div class="mb-3 flex justify-end gap-2">
-      <Button
-        v-if="canBatchImport"
-        type="primary"
-        @click="importOpen = true"
-      >
+      <Button v-if="canBatchImport" type="primary" @click="importOpen = true">
         批量转代理
       </Button>
       <Button
@@ -628,11 +654,13 @@ onMounted(async () => {
       :scroll="{ x: 2300 }"
       size="small"
       bordered
-      @change="(pagination) => {
-        page = pagination.current || 1;
-        pageSize = pagination.pageSize || 20;
-        loadMembers();
-      }"
+      @change="
+        (pagination) => {
+          page = pagination.current || 1;
+          pageSize = pagination.pageSize || 20;
+          loadMembers();
+        }
+      "
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'ActiveStatus'">
@@ -660,7 +688,13 @@ onMounted(async () => {
           </Button>
         </template>
         <template v-else>
-          {{ displayCell(String(column.dataIndex), record[String(column.dataIndex)], record) }}
+          {{
+            displayCell(
+              String(column.dataIndex),
+              record[String(column.dataIndex)],
+              record,
+            )
+          }}
         </template>
       </template>
       <template #summary>

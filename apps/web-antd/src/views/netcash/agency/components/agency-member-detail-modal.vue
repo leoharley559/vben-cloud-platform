@@ -26,21 +26,41 @@ const exporting = ref(false);
 const rows = ref<Row[]>([]);
 const activeTotal = ref(0);
 const columns = [
-  { dataIndex: 'LoginAccount', key: 'LoginAccount', title: '游戏账号', width: 150 },
+  {
+    dataIndex: 'LoginAccount',
+    key: 'LoginAccount',
+    title: '游戏账号',
+    width: 150,
+  },
   { dataIndex: 'Status', key: 'Status', title: '状态', width: 90 },
-  { dataIndex: 'PackageName', key: 'PackageName', title: '所属产品', width: 130 },
+  {
+    dataIndex: 'PackageName',
+    key: 'PackageName',
+    title: '所属产品',
+    width: 130,
+  },
   { dataIndex: 'RealName', key: 'RealName', title: '真实姓名', width: 110 },
   { dataIndex: 'Email', key: 'Email', title: '邮箱', width: 170 },
   { dataIndex: 'PayMoney', key: 'PayMoney', title: '存款', width: 120 },
-  { dataIndex: 'WithDrawMoney', key: 'WithDrawMoney', title: '提款', width: 120 },
+  {
+    dataIndex: 'WithDrawMoney',
+    key: 'WithDrawMoney',
+    title: '提款',
+    width: 120,
+  },
   { dataIndex: 'BetGold', key: 'BetGold', title: '总流水', width: 120 },
   { dataIndex: 'WinLoss', key: 'WinLoss', title: '总输赢', width: 120 },
   { dataIndex: 'LastTime', key: 'LastTime', title: '最后登录时间', width: 170 },
   { dataIndex: 'LastIp', key: 'LastIp', title: '最后登录 IP', width: 140 },
   { dataIndex: 'CreateTime', key: 'CreateTime', title: '注册时间', width: 170 },
 ];
-const amountFields = new Set(['PayMoney', 'WithDrawMoney', 'BetGold', 'WinLoss']);
-const dateFields = new Set(['LastTime', 'CreateTime']);
+const amountFields = new Set([
+  'BetGold',
+  'PayMoney',
+  'WinLoss',
+  'WithDrawMoney',
+]);
+const dateFields = new Set(['CreateTime', 'LastTime']);
 const statusMap: Record<number, string> = {
   0: '正常',
   1: '良好',
@@ -86,7 +106,9 @@ async function load() {
 function display(field: string, value: unknown) {
   if (amountFields.has(field)) return formatAmountFromCent(Number(value || 0));
   if (dateFields.has(field)) return formatNetcashDateTime(value as number);
-  return value === null || value === undefined || value === '' ? '-' : String(value);
+  return value === null || value === undefined || value === ''
+    ? '-'
+    : String(value);
 }
 async function exportRows() {
   exporting.value = true;
@@ -102,9 +124,13 @@ async function exportRows() {
         ]),
       ),
     );
-    if (!data.length) return void message.warning('暂无可导出数据');
+    if (data.length === 0) return void message.warning('暂无可导出数据');
     const book = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(data), '会员明细');
+    XLSX.utils.book_append_sheet(
+      book,
+      XLSX.utils.json_to_sheet(data),
+      '会员明细',
+    );
     XLSX.writeFile(
       book,
       `${props.activeOnly ? '活跃人数' : '下级会员'}_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`,
@@ -151,7 +177,11 @@ watch(
         <template v-else-if="column.key === 'Status'">
           <Tag>{{ statusMap[Number(record.Status)] || record.Status }}</Tag>
         </template>
-        <template v-else>{{ text ?? display(String(column.key), record[column.key]) }}</template>
+        <template v-else>
+{{
+          text ?? display(String(column.key), record[column.key])
+        }}
+</template>
       </template>
     </Table>
   </Modal>

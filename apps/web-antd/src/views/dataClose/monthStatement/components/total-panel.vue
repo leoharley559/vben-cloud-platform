@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
 
+import type { StatementRow } from '#/views/dataClose/shared/statement-helpers';
+
 import { computed, onMounted, ref } from 'vue';
 
 import {
@@ -22,21 +24,11 @@ import { useReportOptions } from '#/composables/use-report-options';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import { arrayToCsvParam, toMonthRange } from '#/views/dataClose/shared/report-utils';
 import {
-  defaultMonthRange,
-  displayAmount,
-  displayCent,
-  ensureMonthSpan,
-  footerProfitFromTotal,
-  formatCrossLabel,
-  joinParam,
-  mapMonthMoneyRow,
-  parseServiceRate,
-  profitClass,
-  resolveTotalSum,
-  type StatementRow,
-} from '#/views/dataClose/shared/statement-helpers';
+  arrayToCsvParam,
+  toMonthRange,
+} from '#/views/dataClose/shared/report-utils';
+import { defaultMonthRange, displayAmount, displayCent, ensureMonthSpan, footerProfitFromTotal, formatCrossLabel, joinParam, mapMonthMoneyRow, parseServiceRate, profitClass, resolveTotalSum } from '#/views/dataClose/shared/statement-helpers';
 
 defineOptions({ name: 'MonthStatementTotalPanel' });
 
@@ -74,8 +66,18 @@ const summaryItems = computed(() => [
 ]);
 
 const columns = [
-  { align: 'center' as const, dataIndex: 'ReportMonth', key: 'ReportMonth', title: '时间' },
-  { align: 'center' as const, dataIndex: 'AgentName', key: 'AgentName', title: '场馆名称' },
+  {
+    align: 'center' as const,
+    dataIndex: 'ReportMonth',
+    key: 'ReportMonth',
+    title: '时间',
+  },
+  {
+    align: 'center' as const,
+    dataIndex: 'AgentName',
+    key: 'AgentName',
+    title: '场馆名称',
+  },
   {
     align: 'center' as const,
     dataIndex: 'SumSelfCountNum',
@@ -204,7 +206,11 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="channelIds" class="w-56" placeholder="请输入渠道号" />
+        <ChannelSelect
+          v-model="channelIds"
+          class="w-56"
+          placeholder="请输入渠道号"
+        />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">产品</span>
@@ -247,7 +253,9 @@ onMounted(() => {
         </Space.Compact>
       </div>
       <template #actions>
-        <Button type="primary" :loading="loading" @click="loadList">查询</Button>
+        <Button type="primary" :loading="loading" @click="loadList">
+查询
+</Button>
         <Button :disabled="loading" @click="reset">重置</Button>
         <Button v-if="canExport" :disabled="loading" @click="handleExport">
           导出 Excel

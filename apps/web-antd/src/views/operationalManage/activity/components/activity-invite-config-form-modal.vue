@@ -16,10 +16,10 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Select,
   Switch,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -28,13 +28,13 @@ import { useProjectConfig } from '#/composables/use-project-config';
 import VoucherImageField from '#/views/operationalManage/voucher/components/voucher-image-field.vue';
 
 import {
+  centToYuan,
+  createDefaultInviteConfigForm,
+  createDefaultInviteTiers,
   INVITE_DEPOSIT_TYPE_OPTIONS,
   INVITE_IS_ACTIVE_OPTIONS,
   INVITE_RISK_ACTION_OPTIONS,
   INVITE_RISK_DIMENSION_OPTIONS,
-  centToYuan,
-  createDefaultInviteConfigForm,
-  createDefaultInviteTiers,
   yuanToCent,
 } from './activity-invite-shared';
 
@@ -80,7 +80,7 @@ interface FormState {
   IncludeDepositTypes: string[];
   InviteeRewardYuan: number;
   InviterTiers: Array<{
-    MaxCount: number | null;
+    MaxCount: null | number;
     MinCount: number;
     RewardYuan: number;
   }>;
@@ -121,7 +121,7 @@ function buildFormState(record?: InviteFriendConfig | null): FormState {
     source.InviterTiers,
     createDefaultInviteTiers(),
   );
-  const tiers = (rawTiers.length ? rawTiers : createDefaultInviteTiers()).map(
+  const tiers = (rawTiers.length > 0 ? rawTiers : createDefaultInviteTiers()).map(
     (tier) => ({
       MaxCount: Number(tier.MaxCount) === 0 ? null : Number(tier.MaxCount),
       MinCount: Number(tier.MinCount) || 1,
@@ -135,10 +135,9 @@ function buildFormState(record?: InviteFriendConfig | null): FormState {
   return {
     Banner: String(source.Banner || ''),
     DepositThresholdYuan: centToYuan(source.DepositThreshold),
-    IncludeDepositTypes: parseJsonArray<string>(
-      source.IncludeDepositTypes,
-      ['success'],
-    ),
+    IncludeDepositTypes: parseJsonArray<string>(source.IncludeDepositTypes, [
+      'success',
+    ]),
     InviteeRewardYuan: centToYuan(source.InviteeReward),
     InviterTiers: tiers,
     IsActive: Number(source.IsActive) || 1,
@@ -190,9 +189,7 @@ function closeModal() {
 
 function addTier() {
   const last = form.InviterTiers[form.InviterTiers.length - 1];
-  const nextMin = last
-    ? Number(last.MaxCount || last.MinCount || 0) + 1
-    : 1;
+  const nextMin = last ? Number(last.MaxCount || last.MinCount || 0) + 1 : 1;
   if (last && (last.MaxCount === null || last.MaxCount === undefined)) {
     last.MaxCount = Math.max(nextMin - 1, last.MinCount);
   }
@@ -226,10 +223,8 @@ function removeRule(index: number) {
   form.RuleContent.splice(index, 1);
 }
 
-function validateTiers(
-  tiers: InviteFriendTier[],
-): string | undefined {
-  if (!tiers.length) return '请至少配置一档邀请人奖励';
+function validateTiers(tiers: InviteFriendTier[]): string | undefined {
+  if (tiers.length === 0) return '请至少配置一档邀请人奖励';
   if (tiers[0]?.MinCount !== 1) return '第一档邀请人数必须从 1 开始';
   for (let i = 0; i < tiers.length; i += 1) {
     const tier = tiers[i]!;
@@ -284,7 +279,7 @@ function buildPayload(): InviteFriendConfigPayload | undefined {
   const invalidPlaceholders = (shareUrl.match(/\{[^{}]+\}/g) || []).filter(
     (token) => token !== '{inviteCode}' && token !== '{playerId}',
   );
-  if (invalidPlaceholders.length) {
+  if (invalidPlaceholders.length > 0) {
     message.warning('分享链接只支持 {inviteCode}、{playerId} 占位符');
     return;
   }
@@ -311,7 +306,7 @@ function buildPayload(): InviteFriendConfigPayload | undefined {
     BeginTime: beginTime,
     DepositThreshold: yuanToCent(form.DepositThresholdYuan),
     EndTime: endTime,
-    IncludeDepositTypes: form.IncludeDepositTypes.length
+    IncludeDepositTypes: form.IncludeDepositTypes.length > 0
       ? [...form.IncludeDepositTypes]
       : ['success'],
     InviterTiers: tiers,
@@ -321,9 +316,9 @@ function buildPayload(): InviteFriendConfigPayload | undefined {
     Open: open,
     RiskAction: Number(form.RiskAction) || 1,
     RiskDimensions: [...form.RiskDimensions],
-    RuleContent: form.RuleContent.map((item) => String(item ?? '').trim()).filter(
-      Boolean,
-    ),
+    RuleContent: form.RuleContent.map((item) =>
+      String(item ?? '').trim(),
+    ).filter(Boolean),
     ShareImage: form.ShareImage || '',
     ShareUrlTemplate: shareUrl,
     Title: title,

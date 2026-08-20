@@ -55,9 +55,7 @@ export function fetchWithdrawUserInfoApi() {
 export async function fetchWithdrawAccountListApi() {
   const data = await requestClient.get<
     null | WithdrawAccountItem[] | { Items?: WithdrawAccountItem[] }
-  >(
-    '/backend/accountteambank/list',
-  );
+  >('/backend/accountteambank/list');
   return {
     Items: Array.isArray(data) ? data : data?.Items || [],
   };

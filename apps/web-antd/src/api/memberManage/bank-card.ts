@@ -1,11 +1,12 @@
-import { requestClient } from '#/api/request';
-import type { CloudListResult } from '#/types/operation-manage';
 import type {
   BankCardFormPayload,
   BankCardListItem,
   BankCardListQuery,
   ResolvePlayerByAccountPayload,
 } from '#/types/bank-card';
+import type { CloudListResult } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 function normalizeList<T>(result: CloudListResult<T> | null | undefined) {

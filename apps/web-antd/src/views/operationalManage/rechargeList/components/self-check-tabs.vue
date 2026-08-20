@@ -12,8 +12,8 @@ defineOptions({ name: 'SelfCheckTabs' });
 
 const { checkPermission } = useCloudPermission();
 
-const canSelfCheck = computed(() => checkPermission(12260));
-const canVisitRecord = computed(() => checkPermission(12265));
+const canSelfCheck = computed(() => checkPermission(12_260));
+const canVisitRecord = computed(() => checkPermission(12_265));
 
 const pageType = ref<1 | 2>(1);
 

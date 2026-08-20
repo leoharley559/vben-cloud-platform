@@ -5,29 +5,22 @@ import type { LoginLogListItem } from '#/types/member-logs';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import {
-  Button,
-  Input,
-  message,
-  Modal,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, Input, message, Modal, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportLoginLogListApi,
   fetchLoginLogListApi,
 } from '#/api/memberManage/member-logs';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
-import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatMemberType } from '#/utils/player-status';
 import { MEMBER_LOGIN_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
@@ -39,8 +32,8 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
-const canViewTable = computed(() => checkPermission(12221));
-const canExport = computed(() => checkPermission(12246));
+const canViewTable = computed(() => checkPermission(12_221));
+const canExport = computed(() => checkPermission(12_246));
 
 const defaultRange = getTodayRangeSeconds();
 const exportLoading = ref(false);
@@ -309,22 +302,22 @@ onMounted(() => {
         </Input>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="登录时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Button :loading="loading" type="primary" @click="handleSearch">
-        查询
-      </Button>
-      <Button @click="handleReset">重置</Button>
-      <Button
-        v-if="canExport"
-        :loading="exportLoading"
-        @click="handleExportClick"
-      >
-        导出 Excel
-      </Button>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="登录时间" />
+      </div>
+      <div class="query-filter-actions">
+        <Button :loading="loading" type="primary" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
+        <Button
+          v-if="canExport"
+          :loading="exportLoading"
+          @click="handleExportClick"
+        >
+          导出 Excel
+        </Button>
+      </div>
+    </template>
 
     <Grid>
       <template #loginAccount="{ row }">
@@ -334,10 +327,6 @@ onMounted(() => {
         />
       </template>
     </Grid>
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </OpsListPanel>
 </template>

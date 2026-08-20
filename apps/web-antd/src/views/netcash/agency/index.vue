@@ -16,10 +16,10 @@ defineOptions({ name: 'Agency' });
 
 const { checkPermission } = useCloudPermission();
 
-const canAgencyList = computed(() => checkPermission(10083));
-const canRegisterList = computed(() => checkPermission(10084));
-const canAreaMasking = computed(() => checkPermission(11571));
-const canDeveloperList = computed(() => checkPermission(12169));
+const canAgencyList = computed(() => checkPermission(10_083));
+const canRegisterList = computed(() => checkPermission(10_084));
+const canAreaMasking = computed(() => checkPermission(11_571));
+const canDeveloperList = computed(() => checkPermission(12_169));
 const canViewPage = computed(
   () =>
     canAgencyList.value ||

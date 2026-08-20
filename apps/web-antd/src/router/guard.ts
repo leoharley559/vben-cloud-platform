@@ -5,8 +5,8 @@ import { preferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
 import { startProgress, stopProgress } from '@vben/utils';
 
-import { coreRouteNames } from '#/router/routes';
 import { hasSessionRoles } from '#/router/generate-access-routes';
+import { coreRouteNames } from '#/router/routes';
 import { useAuthStore } from '#/store';
 
 /**

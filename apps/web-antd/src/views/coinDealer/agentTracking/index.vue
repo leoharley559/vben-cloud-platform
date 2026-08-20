@@ -10,7 +10,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 defineOptions({ name: 'CoinDealerAgentTracking' });
 
 const { checkPermission } = useCloudPermission();
-const canViewPage = computed(() => checkPermission(12370));
+const canViewPage = computed(() => checkPermission(12_370));
 </script>
 
 <template>

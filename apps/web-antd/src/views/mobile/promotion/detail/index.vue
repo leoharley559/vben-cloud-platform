@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { Card, Descriptions } from 'ant-design-vue';
 
+defineOptions({ name: 'MobilePromotionDetail' });
+
 defineProps<{
   channel: Record<string, unknown>;
 }>();
 
-defineOptions({ name: 'MobilePromotionDetail' });
 </script>
 
 <template>

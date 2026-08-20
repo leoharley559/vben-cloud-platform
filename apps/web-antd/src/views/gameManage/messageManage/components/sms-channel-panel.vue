@@ -122,10 +122,12 @@ async function replaceChannel(type: 'notice' | 'otp' | 'recall') {
     message.warning('请选择短信通道');
     return;
   }
-  await (type === 'notice' ? changeAnnouncementSmsChannelApi(value) : changeSmsChannelApi({
-      Id: value,
-      Type: type === 'otp' ? 1 : 2,
-    }));
+  await (type === 'notice'
+    ? changeAnnouncementSmsChannelApi(value)
+    : changeSmsChannelApi({
+        Id: value,
+        Type: type === 'otp' ? 1 : 2,
+      }));
   message.success('通道更换成功');
   await gridApi.reload();
 }
@@ -236,7 +238,10 @@ async function submitSecret() {
           <Input v-model:value="secretForm.AppKey" :maxlength="3000" />
         </Form.Item>
         <Form.Item label="商户密钥">
-          <Input.Password v-model:value="secretForm.AppSecret" :maxlength="3000" />
+          <Input.Password
+            v-model:value="secretForm.AppSecret"
+            :maxlength="3000"
+          />
         </Form.Item>
         <Form.Item label="商户 Code">
           <Input v-model:value="secretForm.AppCode" :maxlength="3000" />

@@ -1,18 +1,17 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import type { EchartsUIType } from '@vben/plugins/echarts';
+
+import type { PanelMetricKey } from '#/utils/dashboard';
 
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
-import { Button, DatePicker, Popover, Space } from 'ant-design-vue';
-import { type Dayjs } from 'dayjs';
 
-import {
-  CHART_COLORS,
-  normalizeReportDay,
-  PANEL_METRICS,
-  type PanelMetricKey,
-} from '#/utils/dashboard';
+import { Button, DatePicker, Popover, Space } from 'ant-design-vue';
+
+import { CHART_COLORS, normalizeReportDay, PANEL_METRICS } from '#/utils/dashboard';
 
 defineOptions({ name: 'DashboardTrendChart' });
 

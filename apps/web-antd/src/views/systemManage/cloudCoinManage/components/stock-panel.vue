@@ -6,8 +6,8 @@ import { computed, onMounted, ref } from 'vue';
 import { Button, Card } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchCloudCoinStockApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchCloudCoinStockApi } from '#/api/systemManage/extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
@@ -27,7 +27,7 @@ interface StockRow {
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(11429));
+const canViewTable = computed(() => checkPermission(11_429));
 const banner = ref({
   Buy: 0,
   Consume: 0,
@@ -206,7 +206,7 @@ onMounted(() => {
             <span
               class="mt-1 inline-block h-2.5 w-2.5 shrink-0 rounded-full"
               :style="{ background: card.accent }"
-            />
+            ></span>
           </div>
         </Card>
       </div>

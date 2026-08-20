@@ -6,8 +6,8 @@ import { computed, onMounted, watch } from 'vue';
 
 import { Card } from 'ant-design-vue';
 
-import { fetchPlayerGoldChangeListApi } from '#/api/operationManage/player';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchPlayerGoldChangeListApi } from '#/api/operationManage/player';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatGoldReason } from '#/utils/game-config';
 

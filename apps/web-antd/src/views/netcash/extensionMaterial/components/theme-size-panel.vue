@@ -272,9 +272,7 @@ onMounted(() => Promise.all([load(2), load(1)]));
           <Input
             v-model:value="form.Value"
             :maxlength="100"
-            :placeholder="
-              form.Type === 2 ? '请输入主题名称' : '例如 750*1334'
-            "
+            :placeholder="form.Type === 2 ? '请输入主题名称' : '例如 750*1334'"
             @press-enter="save"
           />
         </Form.Item>
@@ -290,7 +288,21 @@ onMounted(() => Promise.all([load(2), load(1)]));
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
-.config-card { min-width: 0; border-radius: 10px; }
-.pager { display: flex; justify-content: flex-end; margin-top: 14px; }
-@media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } }
+
+.config-card {
+  min-width: 0;
+  border-radius: 10px;
+}
+
+.pager {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+@media (max-width: 1000px) {
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

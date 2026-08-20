@@ -18,8 +18,8 @@ import {
 import dayjs from 'dayjs';
 
 import { fetchTeamDailyListApi } from '#/api/promotion/team-daily';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatTeamQueryMoney } from '#/utils/promotion';
@@ -64,9 +64,9 @@ function onCalendarChange(
 ) {
   const first = dates?.[0];
   rangeSelecting.value = first
-    ? dayjs.isDayjs(first)
+    ? (dayjs.isDayjs(first)
       ? first
-      : dayjs(first)
+      : dayjs(first))
     : undefined;
 }
 
@@ -78,9 +78,7 @@ const teamAccountOptions = computed(() => {
   }>;
   // 利润模式对齐旧站 team-zong：仅 TeamType===2；提现模式展示全部子团队账号
   return source
-    .filter((item) =>
-      isProfitMode.value ? Number(item.TeamType) === 2 : true,
-    )
+    .filter((item) => (isProfitMode.value ? Number(item.TeamType) === 2 : true))
     .map((item) => ({
       label: item.Username || String(item.Id),
       value: item.Id,
@@ -101,9 +99,7 @@ function income(
   const field = isProfitMode.value
     ? `${prefix}${scope === 'self' ? 'Self' : 'Next'}ProfitIncomeMoney`
     : `${prefix}${scope === 'self' ? 'Self' : 'Next'}IncomeMoney`;
-  return Number(
-    (data as unknown as Record<string, unknown>)[field] || 0,
-  );
+  return Number((data as unknown as Record<string, unknown>)[field] || 0);
 }
 
 function buildDailyMetrics(
@@ -254,27 +250,87 @@ function reset() {
 
 const columns = computed<TableColumnsType<TeamDailyHistoryItem>>(() => {
   const selfChildren: TableColumnsType<TeamDailyHistoryItem> = [
-    { dataIndex: 'SumSelfReg', key: 'SumSelfReg', title: '注册人数', width: 90 },
-    { dataIndex: 'SumSelfPayMergerMoney', key: 'SumSelfPayMergerMoney', title: '充值金额', width: 110 },
+    {
+      dataIndex: 'SumSelfReg',
+      key: 'SumSelfReg',
+      title: '注册人数',
+      width: 90,
+    },
+    {
+      dataIndex: 'SumSelfPayMergerMoney',
+      key: 'SumSelfPayMergerMoney',
+      title: '充值金额',
+      width: 110,
+    },
     ...(isProfitMode.value
-      ? [{ dataIndex: 'SumSelfWithdrawMoney', key: 'SumSelfWithdrawMoney', title: '提现金额', width: 110 }]
+      ? [
+          {
+            dataIndex: 'SumSelfWithdrawMoney',
+            key: 'SumSelfWithdrawMoney',
+            title: '提现金额',
+            width: 110,
+          },
+        ]
       : []),
-    { dataIndex: 'SumSelfBetGameMoney', key: 'SumSelfBetGameMoney', title: '流水金额', width: 110 },
-    { dataIndex: 'SumSelfGameTax', key: 'SumSelfGameTax', title: '税收', width: 100 },
+    {
+      dataIndex: 'SumSelfBetGameMoney',
+      key: 'SumSelfBetGameMoney',
+      title: '流水金额',
+      width: 110,
+    },
+    {
+      dataIndex: 'SumSelfGameTax',
+      key: 'SumSelfGameTax',
+      title: '税收',
+      width: 100,
+    },
     { key: 'selfIncome', title: '收入', width: 110 },
   ];
   const nextChildren: TableColumnsType<TeamDailyHistoryItem> = [
-    { dataIndex: 'SumNextReg', key: 'SumNextReg', title: '注册人数', width: 90 },
-    { dataIndex: 'SumNextPayMergerMoney', key: 'SumNextPayMergerMoney', title: '充值金额', width: 110 },
+    {
+      dataIndex: 'SumNextReg',
+      key: 'SumNextReg',
+      title: '注册人数',
+      width: 90,
+    },
+    {
+      dataIndex: 'SumNextPayMergerMoney',
+      key: 'SumNextPayMergerMoney',
+      title: '充值金额',
+      width: 110,
+    },
     ...(isProfitMode.value
-      ? [{ dataIndex: 'SumNextWithdrawMoney', key: 'SumNextWithdrawMoney', title: '提现金额', width: 110 }]
+      ? [
+          {
+            dataIndex: 'SumNextWithdrawMoney',
+            key: 'SumNextWithdrawMoney',
+            title: '提现金额',
+            width: 110,
+          },
+        ]
       : []),
-    { dataIndex: 'SumNextBetGameMoney', key: 'SumNextBetGameMoney', title: '流水金额', width: 110 },
-    { dataIndex: 'SumNextGameTax', key: 'SumNextGameTax', title: '税收', width: 100 },
+    {
+      dataIndex: 'SumNextBetGameMoney',
+      key: 'SumNextBetGameMoney',
+      title: '流水金额',
+      width: 110,
+    },
+    {
+      dataIndex: 'SumNextGameTax',
+      key: 'SumNextGameTax',
+      title: '税收',
+      width: 100,
+    },
     { key: 'nextIncome', title: '贡献收入', width: 120 },
   ];
   return [
-    { dataIndex: 'ReportDay', fixed: 'left', key: 'ReportDay', title: '日期', width: 120 },
+    {
+      dataIndex: 'ReportDay',
+      fixed: 'left',
+      key: 'ReportDay',
+      title: '日期',
+      width: 120,
+    },
     { children: selfChildren, key: 'self', title: '自营数据' },
     { children: nextChildren, key: 'next', title: '下级数据' },
     {
@@ -294,7 +350,7 @@ function cellValue(row: TeamDailyHistoryItem, key: string) {
   }
   const raw = (row as unknown as Record<string, unknown>)[key];
   return key.includes('Reg') || key === 'ReportDay'
-    ? raw ?? '-'
+    ? (raw ?? '-')
     : money(Number(raw || 0));
 }
 
@@ -347,8 +403,12 @@ onMounted(() => {
               />
             </Space.Compact>
             <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" :disabled-date="disabledDate" />
-        </div>
+              <QueryDatetimeRangePicker
+                v-model="filterDateRange"
+                precision="date"
+                :disabled-date="disabledDate"
+              />
+            </div>
             <Button type="primary" @click="loadData">查询</Button>
             <Button @click="reset">重置</Button>
           </div>

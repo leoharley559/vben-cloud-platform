@@ -1,4 +1,3 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   SendOrderManageItem,
@@ -8,6 +7,8 @@ import type {
   WithdrawWaterItem,
   WithdrawWhiteItem,
 } from '#/types/withdraw-extra';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -315,10 +316,10 @@ export function fetchWithdrawWaterStatusLogApi(id: number | string) {
 export function fetchWithdrawWaterFlowSettingListApi() {
   return requestClient.get<{
     Items?: Array<{
+      [key: string]: unknown;
       BalanceAmount?: number;
       Id?: number | string;
       NegativeProfitAmount?: number;
-      [key: string]: unknown;
     }>;
     Switch?: number;
   }>('/backend/playerwithdrawflow/flowList');

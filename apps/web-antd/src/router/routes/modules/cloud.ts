@@ -30,8 +30,7 @@ const routes: RouteRecordRaw[] = [
     },
     name: 'BackWaterAddConfig',
     path: '/gameManage/backWater/addConfig',
-    component: () =>
-      import('#/views/gameManage/backWater/addConfig/index.vue'),
+    component: () => import('#/views/gameManage/backWater/addConfig/index.vue'),
   },
   {
     meta: {
@@ -41,8 +40,7 @@ const routes: RouteRecordRaw[] = [
     },
     name: 'AddGeneralize',
     path: '/generalizeManage/addGeneralize',
-    component: () =>
-      import('#/views/generalizeManage/addGeneralize/index.vue'),
+    component: () => import('#/views/generalizeManage/addGeneralize/index.vue'),
   },
   {
     meta: {
@@ -52,8 +50,7 @@ const routes: RouteRecordRaw[] = [
     },
     name: 'AddPromote',
     path: '/generalizeManage/addPromote',
-    component: () =>
-      import('#/views/generalizeManage/addPromote/index.vue'),
+    component: () => import('#/views/generalizeManage/addPromote/index.vue'),
   },
 ];
 

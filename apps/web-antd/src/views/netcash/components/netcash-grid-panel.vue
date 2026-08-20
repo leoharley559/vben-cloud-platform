@@ -4,17 +4,12 @@ import type { NetcashListResult } from '#/types/netcash';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import {
-  Button,
-  Input,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -208,76 +203,74 @@ defineExpose({
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div v-if="enabledFilters.has('username')" class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterUsername"
-          allow-clear
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <div v-if="enabledFilters.has('agent')" class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterAgentAccount"
-          allow-clear
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <div v-if="enabledFilters.has('login')" class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div v-if="enabledFilters.has('team')" class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterTeamName"
-          allow-clear
-          placeholder="请输入团队名称"
-        >
-          <template #addonBefore>团队名称</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">产品包</span>
-        <Select
-          v-if="enabledFilters.has('package')"
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="packageOptions"
-          placeholder="请选择产品包"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">状态</span>
-        <Select
-          v-if="enabledFilters.has('status') && config.statusOptions?.length"
-          v-model:value="filterStatus"
-          allow-clear
-         
-          :options="config.statusOptions"
-          placeholder="请选择状态"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div v-if="enabledFilters.has('username')" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterUsername"
+            allow-clear
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <div v-if="enabledFilters.has('agent')" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAgentAccount"
+            allow-clear
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <div v-if="enabledFilters.has('login')" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div v-if="enabledFilters.has('team')" class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterTeamName"
+            allow-clear
+            placeholder="请输入团队名称"
+          >
+            <template #addonBefore>团队名称</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品包</span>
+          <Select
+            v-if="enabledFilters.has('package')"
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageOptions"
+            placeholder="请选择产品包"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-if="enabledFilters.has('status') && config.statusOptions?.length"
+            v-model:value="filterStatus"
+            allow-clear
+            :options="config.statusOptions"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker
-        v-if="showDateFilter"
-        v-model="filterDateRange"
-      />
+            v-if="showDateFilter"
+            v-model="filterDateRange"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 

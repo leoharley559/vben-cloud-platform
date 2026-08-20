@@ -6,16 +6,15 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
+  Modal,
   Select,
   Space,
   Switch,
-  message,
-  Modal,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteRewardProductApi,
   fetchRewardMallMainConfigApi,
@@ -24,7 +23,7 @@ import {
   switchRewardMallMainConfigApi,
   switchRewardProductSortApi,
 } from '#/api/operationManage/reward-mall';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import GoodsDetailsModal from './goods-details-modal.vue';
@@ -33,11 +32,11 @@ import GoodsTagManageModal from './goods-tag-manage-modal.vue';
 import GoodsTaskManageModal from './goods-task-manage-modal.vue';
 import GoodsUpsertModal from './goods-upsert-modal.vue';
 import {
-  PRODUCT_TYPE_OPTIONS,
-  SORT_SWITCH_TYPE,
   formatEffectiveTime,
+  PRODUCT_TYPE_OPTIONS,
   resolveProductDesc,
   resolveProductName,
+  SORT_SWITCH_TYPE,
 } from './reward-goods-shared';
 
 defineOptions({ name: 'GoodsActivePanel' });
@@ -224,7 +223,7 @@ function isRowActive(row: GoodsRow) {
   return Number(row.IsActive) === 1 || row.IsActive === true;
 }
 
-function handleToggleGlobal(checked: boolean | string | number) {
+function handleToggleGlobal(checked: boolean | number | string) {
   Modal.confirm({
     content: '确认切换积分商城全局开关？',
     onOk: async () => {
@@ -321,8 +320,8 @@ async function handleSort(
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="flex flex-col gap-1">
@@ -339,7 +338,6 @@ async function handleSort(
           <Select
             v-model:value="filterType"
             allow-clear
-           
             :options="PRODUCT_TYPE_OPTIONS"
             placeholder="请选择商品类型"
           />
@@ -349,31 +347,35 @@ async function handleSort(
           <Select
             v-model:value="filterTag"
             allow-clear
-           
             :options="tagOptions"
             placeholder="请选择商品页签"
           />
         </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
-        <Space wrap>
-        <span v-if="canConfig" class="inline-flex items-center gap-2 text-sm">
-          积分商城开关
-          <Switch
-            :checked="globalActive"
-            :loading="globalLoading"
-            @change="handleToggleGlobal"
-          />
-        </span>
-        <Button v-if="canConfig" @click="configOpen = true">全局设置</Button>
-        <Button @click="tagManageOpen = true">商品页签</Button>
-        <Button @click="taskManageOpen = true">积分任务</Button>
-        <Button type="primary" @click="openAdd">添加商品</Button>
-      </Space>
+          <Button @click="handleReset">重置</Button>
+          <Space wrap>
+            <span
+              v-if="canConfig"
+              class="inline-flex items-center gap-2 text-sm"
+            >
+              积分商城开关
+              <Switch
+                :checked="globalActive"
+                :loading="globalLoading"
+                @change="handleToggleGlobal"
+              />
+            </span>
+            <Button v-if="canConfig" @click="configOpen = true">
+全局设置
+</Button>
+            <Button @click="tagManageOpen = true">商品页签</Button>
+            <Button @click="taskManageOpen = true">积分任务</Button>
+            <Button type="primary" @click="openAdd">添加商品</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #activeSwitch="{ row }">

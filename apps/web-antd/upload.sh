@@ -1,27 +1,28 @@
 #!/bin/bash
 
-# 发布 web-antd 生产包到 https://ccccc-web.dk888.link/
+# 发布 web-antd 静态包
 # 用法:
-#   ./upload.sh                  # 自动找 dist.zip 或 dist/
-#   ./upload.sh dist.zip         # 指定 zip
-#   ./upload.sh -y               # 跳过确认（CI / 非交互）
-#   ./upload.sh -y --from-dist   # 强制用当前 dist 重新打包（忽略旧 dist.zip）
+#   ./upload.sh                      # 默认 prod
+#   ./upload.sh --env test           # 测试服（需先填 deploy/test.env）
+#   ./upload.sh dist.zip
+#   ./upload.sh -y                   # 跳过确认
+#   ./upload.sh -y --from-dist       # 强制用当前 dist 重新打包
 #   SSH_KEY=/path/to.pem ./upload.sh
 
 set -euo pipefail
 
-# ================= 配置区域 =================
-REMOTE_HOST="18.139.83.204"
-REMOTE_USER="root"
-REMOTE_DIR="/var/www/html/cloud"
-SITE_URL="https://ccccc-web.dk888.link"
-LOGIN_URL="${SITE_URL}/#/auth/login"
-SSH_KEY_NAME="big_shot_entertainment.pem"
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="${SCRIPT_DIR}/dist"
 DIST_ZIP="${SCRIPT_DIR}/dist.zip"
+SSH_KEY_NAME="big_shot_entertainment.pem"
 DEFAULT_SSH_KEY="${SCRIPT_DIR}/${SSH_KEY_NAME}"
+
+DEPLOY_ENV="prod"
+REMOTE_HOST=""
+REMOTE_USER=""
+REMOTE_DIR=""
+SITE_URL=""
+LOGIN_URL=""
 
 # ================= 样式定义 =================
 RED='\033[0;31m'
@@ -40,6 +41,32 @@ log_success() {
 log_error() {
     echo -e "${RED}[ERROR] $1${NC}"
     exit 1
+}
+
+normalize_env_name() {
+    case "$1" in
+        prod|production) echo "prod" ;;
+        test) echo "test" ;;
+        *)
+            log_error "未知环境: $1（仅支持 prod / test）"
+            ;;
+    esac
+}
+
+load_deploy_target() {
+    local env_name="$1"
+    local target_file="${SCRIPT_DIR}/deploy/${env_name}.env"
+    if [ ! -f "${target_file}" ]; then
+        log_error "未找到发布目标配置: ${target_file}"
+    fi
+    # shellcheck disable=SC1090
+    source "${target_file}"
+    LOGIN_URL="${SITE_URL}/#/auth/login"
+
+    if [ -z "${REMOTE_HOST:-}" ] || [ -z "${SITE_URL:-}" ] || [ -z "${REMOTE_DIR:-}" ]; then
+        log_error "环境 ${env_name} 的发布目标未配齐。
+请填写 ${target_file} 中的 REMOTE_HOST / REMOTE_DIR / SITE_URL 后再发布。"
+    fi
 }
 
 confirm() {
@@ -117,8 +144,14 @@ ASSUME_YES=false
 FROM_DIST=false
 LOCAL_FILE=""
 CLEANUP_REQUIRED=false
+EXPECT_ENV_VALUE=false
 
 for arg in "$@"; do
+    if [ "${EXPECT_ENV_VALUE}" = true ]; then
+        DEPLOY_ENV="$(normalize_env_name "$arg")"
+        EXPECT_ENV_VALUE=false
+        continue
+    fi
     case "$arg" in
         -y|--yes)
             ASSUME_YES=true
@@ -126,11 +159,17 @@ for arg in "$@"; do
         --from-dist)
             FROM_DIST=true
             ;;
+        --env)
+            EXPECT_ENV_VALUE=true
+            ;;
+        --env=*)
+            DEPLOY_ENV="$(normalize_env_name "${arg#--env=}")"
+            ;;
         -h|--help)
-            echo "用法: $0 [-y] [--from-dist] [zip 文件路径]"
-            echo "  不传路径时自动使用 ${DIST_ZIP} 或打包 ${DIST_DIR}"
+            echo "用法: $0 [-y] [--from-dist] [--env prod|test] [zip 文件路径]"
+            echo "  --env prod   生产（默认），配置见 deploy/prod.env"
+            echo "  --env test   测试，配置见 deploy/test.env"
             echo "  --from-dist  忽略已有 dist.zip，始终从 dist 重新打包"
-            echo "  发布目标: ${SITE_URL}  →  ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}"
             exit 0
             ;;
         -*)
@@ -141,6 +180,13 @@ for arg in "$@"; do
             ;;
     esac
 done
+
+if [ "${EXPECT_ENV_VALUE}" = true ]; then
+    log_error "--env 后面需要环境名: prod 或 test"
+fi
+
+load_deploy_target "${DEPLOY_ENV}"
+log_info "发布环境: ${DEPLOY_ENV} → ${SITE_URL}"
 
 INVOKE_CWD="$(pwd)"
 cd "${SCRIPT_DIR}"

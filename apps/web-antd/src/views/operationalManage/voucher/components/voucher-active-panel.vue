@@ -8,36 +8,35 @@ import {
   Dropdown,
   Input,
   Menu,
+  message,
   Modal,
   Select,
   Space,
   Switch,
-  message,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchVoucherGlobalConfigApi,
   fetchVoucherListApi,
   offshelfVoucherApi,
   switchVoucherGlobalConfigApi,
 } from '#/api/operationManage/voucher';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import VoucherDetailModal from './voucher-detail-modal.vue';
 import VoucherGlobalConfigModal from './voucher-global-config-modal.vue';
-import VoucherUpsertModal from './voucher-upsert-modal.vue';
 import {
-  VOUCHER_TYPE_OPTIONS,
   formatEffectiveTime,
   formatVoucherDateTime,
   formatVoucherType,
   resolveVoucherDesc,
   resolveVoucherName,
+  VOUCHER_TYPE_OPTIONS,
 } from './voucher-shared';
+import VoucherUpsertModal from './voucher-upsert-modal.vue';
 
 defineOptions({ name: 'VoucherActivePanel' });
 
@@ -61,16 +60,16 @@ interface VoucherRow {
 const { checkPermission } = useCloudPermission();
 
 const canViewTable = computed(() =>
-  props.isHistory ? checkPermission(13356) : checkPermission(13354),
+  props.isHistory ? checkPermission(13_356) : checkPermission(13_354),
 );
-const canConfig = computed(() => checkPermission(13353) && !props.isHistory);
-const canCreate = computed(() => checkPermission(13403) && !props.isHistory);
-const canEdit = computed(() => checkPermission(13404) && !props.isHistory);
-const canOffshelf = computed(() => checkPermission(13405) && !props.isHistory);
-const canClone = computed(() => checkPermission(13357) && props.isHistory);
+const canConfig = computed(() => checkPermission(13_353) && !props.isHistory);
+const canCreate = computed(() => checkPermission(13_403) && !props.isHistory);
+const canEdit = computed(() => checkPermission(13_404) && !props.isHistory);
+const canOffshelf = computed(() => checkPermission(13_405) && !props.isHistory);
+const canClone = computed(() => checkPermission(13_357) && props.isHistory);
 /** 当前票券详情 13351；历史票券详情 13352（对齐旧站） */
 const canViewDetail = computed(() =>
-  props.isHistory ? checkPermission(13352) : checkPermission(13351),
+  props.isHistory ? checkPermission(13_352) : checkPermission(13_351),
 );
 
 const globalActive = ref(false);
@@ -82,7 +81,7 @@ const upsertId = ref<number | string>();
 const upsertType = ref<number>(1);
 const actionId = ref<number | string>();
 const detailOpen = ref(false);
-const detailVoucher = ref<VoucherRow | null>(null);
+const detailVoucher = ref<null | VoucherRow>(null);
 
 const filterId = ref('');
 const filterName = ref('');
@@ -257,7 +256,7 @@ function isRowActive(row: VoucherRow) {
   return Number(row.IsActive) === 1 || row.IsActive === true;
 }
 
-async function handleToggleGlobal(checked: boolean | string | number) {
+async function handleToggleGlobal(checked: boolean | number | string) {
   Modal.confirm({
     content: '确认切换票券中心全局开关？',
     onOk: async () => {
@@ -268,13 +267,13 @@ async function handleToggleGlobal(checked: boolean | string | number) {
         message.success('切换成功');
         await loadGlobalConfig();
       } catch {
-        globalActive.value = !Boolean(checked);
+        globalActive.value = !checked;
       } finally {
         globalLoading.value = false;
       }
     },
     onCancel: () => {
-      globalActive.value = !Boolean(checked);
+      globalActive.value = !checked;
     },
     title: '票券中心开关',
   });
@@ -301,8 +300,8 @@ function handleOffshelf(row: VoucherRow) {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterId"
             allow-clear
@@ -316,7 +315,6 @@ function handleOffshelf(row: VoucherRow) {
           <Select
             v-model:value="filterType"
             allow-clear
-           
             :options="typeFilterOptions"
             placeholder="请选择票券类型"
           />
@@ -335,36 +333,41 @@ function handleOffshelf(row: VoucherRow) {
         </div>
         <div class="query-filter-actions">
           <Space>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-        </Space>
-        <Space v-if="!isHistory">
-        <span v-if="canConfig" class="inline-flex items-center gap-2 text-sm">
-          票券中心开关
-          <Switch
-            :checked="globalActive"
-            :loading="globalLoading"
-            @change="handleToggleGlobal"
-          />
-        </span>
-        <Button v-if="canConfig" @click="configOpen = true">全局设置</Button>
-        <Dropdown v-if="canCreate" :trigger="['click']">
-          <Button type="primary">新增票券</Button>
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
+          <Space v-if="!isHistory">
+            <span
+              v-if="canConfig"
+              class="inline-flex items-center gap-2 text-sm"
+            >
+              票券中心开关
+              <Switch
+                :checked="globalActive"
+                :loading="globalLoading"
+                @change="handleToggleGlobal"
+              />
+            </span>
+            <Button v-if="canConfig" @click="configOpen = true">
+              全局设置
+            </Button>
+            <Dropdown v-if="canCreate" :trigger="['click']">
+              <Button type="primary">新增票券</Button>
+              <template #overlay>
+                <Menu @click="({ key }) => openAdd(Number(key))">
+                  <Menu.Item
+                    v-for="item in addTypeOptions"
+                    :key="String(item.value)"
+                  >
+                    {{ item.label }}
+                  </Menu.Item>
+                </Menu>
+              </template>
+            </Dropdown>
+          </Space>
         </div>
-          <template #overlay>
-            <Menu @click="({ key }) => openAdd(Number(key))">
-              <Menu.Item
-                v-for="item in addTypeOptions"
-                :key="String(item.value)"
-              >
-                {{ item.label }}
-              </Menu.Item>
-            </Menu>
-          </template>
-        </Dropdown>
-      </Space>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #name="{ row }">

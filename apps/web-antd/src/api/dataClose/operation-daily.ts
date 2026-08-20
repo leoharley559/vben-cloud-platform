@@ -1,5 +1,5 @@
-import { requestClient } from '#/api/request';
 import { toListResult } from '#/api/dataClose/shared';
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 type Query = Record<string, unknown>;
@@ -112,9 +112,9 @@ export function fetchOperationPromotionAnalyzeApi(query: Query) {
 export function fetchDataReportListApi(query: Query) {
   return requestClient
     .get<{
-      Items?: Record<string, unknown>[] | null;
-      ItemsLimit?: Record<string, unknown> | null;
-      Pagination?: { MaxCount?: number } | null;
+      Items?: null | Record<string, unknown>[];
+      ItemsLimit?: null | Record<string, unknown>;
+      Pagination?: null | { MaxCount?: number };
     }>('/backend/operationdayreportscheduler/list', {
       params: trimSpace(query),
     })
@@ -145,7 +145,10 @@ export function fetchDataReportDetailApi(id: number | string) {
  * @see views/dataClose/operationDaily/components/data-report-panel.vue
  */
 export function createDataReportApi(data: Query) {
-  return requestClient.post('/backend/operationdayreportscheduler/create', data);
+  return requestClient.post(
+    '/backend/operationdayreportscheduler/create',
+    data,
+  );
 }
 
 /**
@@ -156,7 +159,10 @@ export function createDataReportApi(data: Query) {
  * @see views/dataClose/operationDaily/components/data-report-panel.vue
  */
 export function updateDataReportApi(data: Query) {
-  return requestClient.post('/backend/operationdayreportscheduler/update', data);
+  return requestClient.post(
+    '/backend/operationdayreportscheduler/update',
+    data,
+  );
 }
 
 /**
@@ -231,8 +237,8 @@ export function buyDataReportNumApi() {
 export function fetchWhatsAppRecipientListApi(query: Query) {
   return requestClient
     .get<{
-      Items?: Record<string, unknown>[] | null;
-      Pagination?: { MaxCount?: number } | null;
+      Items?: null | Record<string, unknown>[];
+      Pagination?: null | { MaxCount?: number };
     }>('/backend/operationdayreportscheduler/listwhatsapprecipient', {
       params: trimSpace(query),
     })

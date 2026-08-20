@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 
-import { Button, Modal, Space, Table, message } from 'ant-design-vue';
+import { Button, message, Modal, Space, Table } from 'ant-design-vue';
 
 import { fetchAdActivityJumpListApi } from '#/api/operationManage/game-notice';
 import {
@@ -11,17 +11,17 @@ import {
   switchRewardTaskSortApi,
   updateRewardTaskApi,
 } from '#/api/operationManage/reward-mall';
-import { getServiceImageUrl } from '#/utils/media';
-import { ACTIVITY_TYPE_OPTIONS } from '#/utils/bonus-reward';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import { ACTIVITY_TYPE_OPTIONS } from '#/utils/bonus-reward';
+import { getServiceImageUrl } from '#/utils/media';
 
 import GoodsTaskUpsertModal from './goods-task-upsert-modal.vue';
 import {
-  SORT_SWITCH_TYPE,
   assembleTaskPayload,
   breakupTaskDetail,
   parseLangTextMap,
   resolveLangGroupIds,
+  SORT_SWITCH_TYPE,
 } from './reward-goods-shared';
 
 defineOptions({ name: 'GoodsTaskManageModal' });
@@ -44,11 +44,11 @@ const activityTypeMap = ref<Record<string, number>>({});
 
 const upsertOpen = ref(false);
 const upsertMode = ref<'add' | 'edit'>('add');
-const upsertTask = ref<Record<string, unknown> | null>(null);
+const upsertTask = ref<null | Record<string, unknown>>(null);
 
 function extractLangTitle(raw: unknown, fallback: string) {
   const lang = parseLangTextMap(raw);
-  const first = Object.values(lang)[0] as { Title?: string } | undefined;
+  const first = Object.values(lang)[0] as undefined | { Title?: string };
   return first?.Title || fallback;
 }
 

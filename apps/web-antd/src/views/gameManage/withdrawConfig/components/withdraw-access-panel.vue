@@ -8,7 +8,6 @@ import { useRouter } from 'vue-router';
 import {
   Button,
   Card,
-  DatePicker,
   Empty,
   Input,
   message,
@@ -29,14 +28,13 @@ import {
   fetchWithdrawAccessStatisticsApi,
 } from '#/api/gameManage/withdraw-data';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import { VISIT_STATISTIC_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
-
 import {
   formatVisitDurationSeconds,
   formatVisitSource,
@@ -251,9 +249,9 @@ const changeDetailSort: NonNullable<TableProps['onChange']> = (
   detailSort.value =
     sorter?.order === 'ascend'
       ? String(sorter.field || '')
-      : sorter?.order === 'descend'
+      : (sorter?.order === 'descend'
         ? `-${String(sorter.field || '')}`
-        : '';
+        : '');
   detailPage.value = 1;
   void loadDetail();
 };
@@ -421,11 +419,11 @@ onMounted(() => {
               </Space.Compact>
             </div>
             <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="visitRange" label="访问时间" />
-        </div>
+              <QueryDatetimeRangePicker v-model="visitRange" label="访问时间" />
+            </div>
             <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="leaveRange" label="离开时间" />
-        </div>
+              <QueryDatetimeRangePicker v-model="leaveRange" label="离开时间" />
+            </div>
             <div class="flex flex-col gap-1">
               <Space.Compact>
                 <span class="query-field-addon">访问时长</span>
@@ -446,24 +444,24 @@ onMounted(() => {
                 />
               </Space.Compact>
             </div>
-        <div class="query-filter-actions">
-          <Button
-              type="primary"
-              :loading="detailLoading"
-              @click="searchDetail"
-            >
-              查询
-            </Button>
-            <Button @click="resetDetail">重置</Button>
-            <Button
-              v-if="canExport"
-              :loading="exportLoading"
-              @click="openExport"
-            >
-              导出 Excel
-            </Button>
-        </div>
-      </template>
+            <div class="query-filter-actions">
+              <Button
+                type="primary"
+                :loading="detailLoading"
+                @click="searchDetail"
+              >
+                查询
+              </Button>
+              <Button @click="resetDetail">重置</Button>
+              <Button
+                v-if="canExport"
+                :loading="exportLoading"
+                @click="openExport"
+              >
+                导出 Excel
+              </Button>
+            </div>
+          </template>
 
           <Spin :spinning="detailLoading">
             <Table
@@ -533,18 +531,22 @@ onMounted(() => {
               </Space.Compact>
             </div>
             <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button
-              type="primary"
-              :loading="statisticsLoading"
-              @click="loadStatistics"
-            >
-              查询
-            </Button>
-            <Button @click="resetStatistics">重置</Button>
-        </div></template>
+              <QueryDatetimeRangePicker
+                v-model="statisticsRange"
+                label="统计时间"
+              />
+            </div>
+            <div class="query-filter-actions query-filter-actions-single">
+              <Button
+                type="primary"
+                :loading="statisticsLoading"
+                @click="loadStatistics"
+              >
+                查询
+              </Button>
+              <Button @click="resetStatistics">重置</Button>
+            </div>
+</template>
 
           <Spin :spinning="statisticsLoading">
             <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
@@ -661,11 +663,7 @@ onMounted(() => {
       </Tabs.TabPane>
     </Tabs>
 
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="exportDetail"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="exportDetail" />
   </div>
   <Empty v-else description="无提现访问记录权限" />
 </template>

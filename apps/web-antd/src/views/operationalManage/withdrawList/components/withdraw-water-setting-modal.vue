@@ -7,11 +7,11 @@ import {
   Button,
   Form,
   InputNumber,
+  message,
   Modal,
   Space,
   Switch,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {

@@ -1,4 +1,9 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
+import type { ChannelDim, ChannelRow } from '#/utils/channel-data-calc';
+import type { CsvColumn } from '#/utils/export-csv';
+
 import { computed, onMounted, ref, watch } from 'vue';
 
 import {
@@ -12,7 +17,7 @@ import {
   Space,
   Spin,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 import {
   fetchChannelReportByChannelRawApi,
@@ -22,19 +27,14 @@ import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
-import {
-  calcChannelRow,
-  calcChannelRows,
-  type ChannelDim,
-  type ChannelRow,
-} from '#/utils/channel-data-calc';
+import { calcChannelRow, calcChannelRows } from '#/utils/channel-data-calc';
 import {
   defaultDailyReportRange,
   defaultMonthlyReportRange,
   toDateStrings,
 } from '#/utils/everyday-data-date';
 import { normalizeSearchValue } from '#/utils/everyday-report-format';
-import { exportRowsToCsv, type CsvColumn } from '#/utils/export-csv';
+import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 import ChannelReportTable from './channel-report-table.vue';
@@ -389,9 +389,8 @@ onMounted(() => {
 <template>
   <div class="flex flex-col">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              
-          <Space.Compact>
+      <div class="ops-query-filters">
+        <Space.Compact>
           <Select
             class="query-auto-select"
             :popup-match-select-width="false"
@@ -401,16 +400,13 @@ onMounted(() => {
               { label: '账号精准', value: 1 },
             ]"
           />
-          <AccountSelect
-            v-if="adminSearchType === 0"
-            v-model="adminSearch"
-          />
+          <AccountSelect v-if="adminSearchType === 0" v-model="adminSearch" />
           <Input
             v-else
             v-model:value="adminSearch as string"
             allow-clear
             placeholder="请输入账号"
-            />
+          />
         </Space.Compact>
 
         <Space.Compact>
@@ -433,23 +429,23 @@ onMounted(() => {
             v-model:value="channelSearch as string"
             allow-clear
             placeholder="请输入渠道"
-            />
+          />
         </Space.Compact>
 
         <Space.Compact>
-            <span class="query-field-addon">产品</span>
-            <Select
-              v-model:value="packageId"
-              :options="
-                packageOptions.map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-              "
-              allow-clear
-              placeholder="请选择产品"
-            />
-          </Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="packageId"
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            allow-clear
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
 
         <div v-if="dim === 'agent'">
           <Space.Compact>
@@ -467,13 +463,13 @@ onMounted(() => {
         </div>
 
         <Space.Compact>
-            <span class="query-field-addon">数据类型</span>
-            <Select
-              v-model:value="dataSearchType"
-              :options="memberTypeOptions"
-              placeholder="请选择数据类型"
-            />
-          </Space.Compact>
+          <span class="query-field-addon">数据类型</span>
+          <Select
+            v-model:value="dataSearchType"
+            :options="memberTypeOptions"
+            placeholder="请选择数据类型"
+          />
+        </Space.Compact>
 
         <template v-if="!isToday">
           <Space.Compact>
@@ -489,7 +485,7 @@ onMounted(() => {
             />
           </Space.Compact>
           <div class="query-filter-wide">
-          <Space.Compact>
+            <Space.Compact>
               <span class="query-field-addon">日期</span>
               <DatePicker.RangePicker
                 v-model:value="dateRange"
@@ -497,15 +493,14 @@ onMounted(() => {
                 :picker="pickerMode"
               />
             </Space.Compact>
-        </div>
-        
+          </div>
         </template>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
+          <Button @click="handleReset">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Card size="small">
       <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -521,11 +516,7 @@ onMounted(() => {
             渠道数据
           </Radio.Button>
         </Radio.Group>
-        <Button
-          v-if="canExport"
-          :loading="exportLoading"
-          @click="handleExport"
-        >
+        <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
           导出 Excel
         </Button>
       </div>

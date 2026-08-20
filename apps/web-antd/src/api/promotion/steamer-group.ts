@@ -1,9 +1,10 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   SteamerDirectGroupResult,
   SteamerGroupItem,
 } from '#/types/promotion';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -12,9 +13,10 @@ import { trimSpace } from '#/utils/string';
  * @see views/generalizeManage/addGeneralize/index.vue
  */
 export async function fetchSteamerGroupListApi() {
-  const data = await requestClient.get<CloudListResult<SteamerGroupItem> | null>(
-    '/backend/sportsteamerteam/list',
-  );
+  const data =
+    await requestClient.get<CloudListResult<SteamerGroupItem> | null>(
+      '/backend/sportsteamerteam/list',
+    );
   // 空环境偶发 Items=null，统一归一避免页面崩溃
   return {
     Items: Array.isArray(data?.Items) ? data.Items : [],
@@ -31,7 +33,7 @@ export async function fetchSteamerGroupListApi() {
 export async function fetchSteamerDirectGroupApi(query: {
   AdminId?: number | string;
 }) {
-  const data = await requestClient.get<SteamerDirectGroupResult | null>(
+  const data = await requestClient.get<null | SteamerDirectGroupResult>(
     '/backend/sportsteamerteam/getadminteams',
     { params: trimSpace(query) },
   );

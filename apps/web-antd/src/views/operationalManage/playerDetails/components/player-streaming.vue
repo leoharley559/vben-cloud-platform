@@ -7,32 +7,24 @@ import type {
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import {
-  Button,
-  Modal,
-  Result,
-  Select,
-  Space,
-  message,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { Button, message, Modal, Result, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchPlayerDrawWaterListApi,
   resetPlayerRolloverApi,
 } from '#/api/operationManage/player-detail-extra';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
-  STREAMING_BILL_TYPE_OPTIONS,
   formatStreamingBillSubType,
   formatStreamingBillType,
+  STREAMING_BILL_TYPE_OPTIONS,
 } from '#/utils/player-detail-maps';
 
 import StreamingAddTurnoverModal from './streaming-add-turnover-modal.vue';
@@ -47,9 +39,9 @@ const props = defineProps<{
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig } = useGameConfig();
 
-const canViewTable = computed(() => checkPermission(12940));
-const canExport = computed(() => checkPermission(12939));
-const canResetRollover = computed(() => checkPermission(13163));
+const canViewTable = computed(() => checkPermission(12_940));
+const canExport = computed(() => checkPermission(12_939));
+const canResetRollover = computed(() => checkPermission(13_163));
 
 const defaultRange = getTodayRangeSeconds();
 const waterDetail = ref<PlayerDrawWaterSummary>({});
@@ -245,10 +237,10 @@ async function handleExport() {
     const result = await fetchPlayerDrawWaterListApi({
       ...getQueryParams(),
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const items = result?.Items || [];
-    if (!items.length) {
+    if (items.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -293,7 +285,7 @@ async function handleExport() {
 }
 
 function handleResetRollover() {
-  if (!selectedOrderIds.value.length) {
+  if (selectedOrderIds.value.length === 0) {
     message.warning('请先选择要清空的流水订单');
     return;
   }
@@ -337,30 +329,30 @@ onMounted(async () => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Space.Compact>
-          <span class="query-field-addon">帐变项目</span>
-          <Select
-            v-model:value="filterBillType"
-            :options="STREAMING_BILL_TYPE_OPTIONS"
-            placeholder="请选择帐变项目"
-          />
-        </Space.Compact>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">帐变项目</span>
+            <Select
+              v-model:value="filterBillType"
+              :options="STREAMING_BILL_TYPE_OPTIONS"
+              placeholder="请选择帐变项目"
+            />
+          </Space.Compact>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="handleSearch">
+              查询
+            </Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <Space align="center">

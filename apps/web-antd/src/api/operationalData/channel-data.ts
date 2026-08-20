@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operational-data';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /** 代理渠道报表原始响应 */

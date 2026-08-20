@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import type { ChannelInfoOption } from '#/types/config';
-import type { Dayjs } from 'dayjs';
 import type { UploadChangeParam } from 'ant-design-vue';
+import type { Dayjs } from 'dayjs';
+
+import type { ChannelInfoOption } from '#/types/config';
 import type {
   GameTitleChannelRef,
   GameTitleGroupItem,
@@ -19,12 +20,12 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Select,
   Space,
   Upload,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -58,10 +59,10 @@ const submitting = ref(false);
 const validTimeRadio = ref(0);
 const activatedRadio = ref(0);
 const budgetRadio = ref(0);
-const validChannelMode = ref<'' | 1>('');
-const shieldChannelMode = ref<'' | 1>('');
-const validPackageMode = ref<'' | 1>('');
-const shieldPackageMode = ref<'' | 1>('');
+const validChannelMode = ref<1 | ''>('');
+const shieldChannelMode = ref<1 | ''>('');
+const validPackageMode = ref<1 | ''>('');
+const shieldPackageMode = ref<1 | ''>('');
 const validChannelIds = ref<Array<number | string>>([]);
 const shieldChannelIds = ref<Array<number | string>>([]);
 const validPackageIds = ref<Array<number | string>>([]);
@@ -281,10 +282,10 @@ function fillFromRow(row: GameTitleItem) {
     .map((item) => item.PackageId)
     .filter((id): id is number | string => id != null && id !== '');
 
-  validChannelMode.value = validChannelIds.value.length ? 1 : '';
-  shieldChannelMode.value = shieldChannelIds.value.length ? 1 : '';
-  validPackageMode.value = validPackageIds.value.length ? 1 : '';
-  shieldPackageMode.value = shieldPackageIds.value.length ? 1 : '';
+  validChannelMode.value = validChannelIds.value.length > 0 ? 1 : '';
+  shieldChannelMode.value = shieldChannelIds.value.length > 0 ? 1 : '';
+  validPackageMode.value = validPackageIds.value.length > 0 ? 1 : '';
+  shieldPackageMode.value = shieldPackageIds.value.length > 0 ? 1 : '';
 }
 
 watch(
@@ -319,8 +320,8 @@ function beforeUpload(file: File) {
 
 function handleUploadChange(info: UploadChangeParam) {
   const response = info.file.response as
-    | { Code?: number | string; Data?: { url?: string }; Msg?: string }
-    | undefined;
+    | undefined
+    | { Code?: number | string; Data?: { url?: string }; Msg?: string };
   if (info.file.status === 'done') {
     if (String(response?.Code) === '200' && response?.Data?.url) {
       form.Img = response.Data.url;
@@ -353,7 +354,7 @@ function onRuleTypeChange(rule: GameTitleRuleItem) {
 }
 
 function buildChannelJson(ids: Array<number | string>) {
-  if (!ids.length) {
+  if (ids.length === 0) {
     return '';
   }
   return JSON.stringify(
@@ -365,7 +366,7 @@ function buildChannelJson(ids: Array<number | string>) {
 }
 
 function buildPackageJson(ids: Array<number | string>) {
-  if (!ids.length) {
+  if (ids.length === 0) {
     return '';
   }
   const map = new Map<string, GameTitlePackageRef>();
@@ -390,7 +391,7 @@ function buildPayload(): GameTitlePayload | null {
     message.warning('请输入称号名称');
     return null;
   }
-  if (!/^[\u4e00-\u9fa5a-zA-Z0-9]+$/.test(form.Name.trim())) {
+  if (!/^[\u4E00-\u9FA5a-zA-Z0-9]+$/.test(form.Name.trim())) {
     message.warning('称号名称仅支持中英文与数字');
     return null;
   }
@@ -426,19 +427,19 @@ function buildPayload(): GameTitlePayload | null {
     message.warning('请选择条件计算时间');
     return null;
   }
-  if (validChannelMode.value === 1 && !validChannelIds.value.length) {
+  if (validChannelMode.value === 1 && validChannelIds.value.length === 0) {
     message.warning('请选择生效渠道');
     return null;
   }
-  if (shieldChannelMode.value === 1 && !shieldChannelIds.value.length) {
+  if (shieldChannelMode.value === 1 && shieldChannelIds.value.length === 0) {
     message.warning('请选择屏蔽渠道');
     return null;
   }
-  if (validPackageMode.value === 1 && !validPackageIds.value.length) {
+  if (validPackageMode.value === 1 && validPackageIds.value.length === 0) {
     message.warning('请选择生效包体');
     return null;
   }
-  if (shieldPackageMode.value === 1 && !shieldPackageIds.value.length) {
+  if (shieldPackageMode.value === 1 && shieldPackageIds.value.length === 0) {
     message.warning('请选择屏蔽包体');
     return null;
   }
@@ -579,9 +580,11 @@ async function handleSubmit() {
             accept="image/png"
             @change="handleUploadChange"
           >
-            <Button size="small">{{
+            <Button size="small">
+{{
               form.Img ? '重新上传' : '上传 PNG'
-            }}</Button>
+            }}
+</Button>
           </Upload>
           <Button v-if="form.Img" danger size="small" @click="form.Img = ''">
             删除

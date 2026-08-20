@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -12,9 +14,7 @@ import {
 } from '#/api/coinDealer';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { registerPermissionKeys } from '#/utils/permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import {
   coinDealerAnnouncementColumns,
@@ -22,11 +22,11 @@ import {
   coinDealerWelcomeColumns,
 } from '../shared/columns';
 
-registerPermissionKeys({
-  coinDealerMangePayment: [10454, 10602],
-});
-
 defineOptions({ name: 'CoinDealerCustomeSetting' });
+
+registerPermissionKeys({
+  coinDealerMangePayment: [10_454, 10_602],
+});
 
 const { checkPermission, checkPermissionByKey } = useCloudPermission();
 const activeTab = ref('horse');
@@ -35,7 +35,7 @@ const tabs = computed(() =>
   [
     {
       key: 'profile',
-      permission: 10594,
+      permission: 10_594,
       placeholder: true,
       tab: '个人信息',
     },
@@ -46,7 +46,7 @@ const tabs = computed(() =>
         filters: [],
       } satisfies OperationListConfig,
       key: 'horse',
-      permission: 10598,
+      permission: 10_598,
       tab: '跑马灯',
       tip: '新建/编辑跑马灯等待下一迭代迁移。',
     },
@@ -63,7 +63,7 @@ const tabs = computed(() =>
         filters: [],
       } satisfies OperationListConfig,
       key: 'welcome',
-      permission: 10616,
+      permission: 10_616,
       tab: '欢迎语',
     },
     {
@@ -73,7 +73,7 @@ const tabs = computed(() =>
         filters: [],
       } satisfies OperationListConfig,
       key: 'reply',
-      permission: 10618,
+      permission: 10_618,
       tab: '快捷回复',
     },
   ].filter((item) =>
@@ -86,9 +86,9 @@ const tabs = computed(() =>
 const canViewPage = computed(
   () =>
     tabs.value.length > 0 ||
-    checkPermission(10599) ||
-    checkPermission(11135) ||
-    checkPermission(10617),
+    checkPermission(10_599) ||
+    checkPermission(11_135) ||
+    checkPermission(10_617),
 );
 
 onMounted(() => {
@@ -105,7 +105,7 @@ onMounted(() => {
   >
     <Card>
       <Tabs
-        v-if="tabs.length"
+        v-if="tabs.length > 0"
         v-model:active-key="activeTab"
         type="line"
         size="small"

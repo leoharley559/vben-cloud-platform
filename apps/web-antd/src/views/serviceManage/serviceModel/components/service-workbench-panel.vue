@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { CloudWsStatus } from '#/utils/ws';
+
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 import { useUserStore } from '@vben/stores';
@@ -7,6 +9,7 @@ import {
   Button,
   Card,
   Input,
+  message,
   Modal,
   Radio,
   Select,
@@ -15,17 +18,12 @@ import {
   Table,
   Tabs,
   Tag,
-  message,
 } from 'ant-design-vue';
 
 import { fetchEndReasonSimpleListApi } from '#/api/serviceManage';
-import { getCloudToken } from '#/utils/auth-token';
-import {
-  CloudWebSocket,
-  getServiceWsUrl,
-  type CloudWsStatus,
-} from '#/utils/ws';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import { getCloudToken } from '#/utils/auth-token';
+import { CloudWebSocket, getServiceWsUrl } from '#/utils/ws';
 import { ServiceMessageType } from '#/utils/ws/service-message-type';
 
 defineOptions({ name: 'ServiceWorkbenchPanel' });
@@ -82,7 +80,7 @@ const wsReady = computed(() => Boolean(baseUrl));
 
 const status = ref<CloudWsStatus>('closed');
 const activeBucket = ref<BucketKey>('Online');
-const selectedPlayer = ref<ServicePlayer | null>(null);
+const selectedPlayer = ref<null | ServicePlayer>(null);
 const chatMessages = ref<ChatMessage[]>([]);
 const chatLoading = ref(false);
 const draftText = ref('');
@@ -207,7 +205,7 @@ function mapChatList(list: unknown[], targetId: string) {
         type,
       } satisfies ChatMessage;
     })
-    .sort((a, b) => Number(a.sendTime) - Number(b.sendTime) || a.ack - b.ack);
+    .toSorted((a, b) => Number(a.sendTime) - Number(b.sendTime) || a.ack - b.ack);
 }
 
 function clearHeart() {
@@ -312,7 +310,7 @@ function sendTextMessage() {
   pushLog(`发送：${content.slice(0, 40)}`);
 }
 
-function toggleBusy(checked: boolean | string | number) {
+function toggleBusy(checked: boolean | number | string) {
   const next = Boolean(checked);
   const ok = client?.send(
     JSON.stringify({
@@ -390,12 +388,12 @@ function openTransfer() {
       MessageType: ServiceMessageType.ALL_SERVICE_LIST,
     }),
   );
-  if (!ok) {
+  if (ok) {
+    pushLog('请求转单客服列表');
+  } else {
     transferLoading.value = false;
     transferOpen.value = false;
     message.warning('未连接，无法获取客服列表');
-  } else {
-    pushLog('请求转单客服列表');
   }
 }
 
@@ -721,9 +719,8 @@ async function loadEndReasons() {
       Sort?: number;
       Title?: string;
     }>;
-    endReasonOptions.value = items
-      .slice()
-      .sort((a, b) => Number(a.Sort || 0) - Number(b.Sort || 0))
+    endReasonOptions.value = [...items]
+      .toSorted((a, b) => Number(a.Sort || 0) - Number(b.Sort || 0))
       .map((item) => ({
         label: String(item.Title || item.Id || '-'),
         value: Number(item.Id),
@@ -910,7 +907,7 @@ onBeforeUnmount(() => {
           正在拉取聊天记录...
         </div>
         <div
-          v-else-if="chatMessages.length"
+          v-else-if="chatMessages.length > 0"
           class="mb-3 max-h-80 space-y-2 overflow-auto rounded border p-3"
         >
           <div
@@ -951,7 +948,7 @@ onBeforeUnmount(() => {
 
     <Card size="small" title="事件日志">
       <div
-        v-if="logs.length"
+        v-if="logs.length > 0"
         class="max-h-40 space-y-1 overflow-auto text-xs text-gray-600"
       >
         <div v-for="(item, index) in logs" :key="`${item.at}-${index}`">
@@ -976,7 +973,7 @@ onBeforeUnmount(() => {
       >
         正在加载客服列表...
       </div>
-      <div v-else-if="transferList.length" class="flex flex-wrap gap-2">
+      <div v-else-if="transferList.length > 0" class="flex flex-wrap gap-2">
         <Radio.Group v-model:value="transferTargetId">
           <Radio
             v-for="item in transferList"

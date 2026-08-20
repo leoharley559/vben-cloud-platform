@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '../components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -12,12 +14,11 @@ import {
   fetchActivityVisitStatisticsApi,
   fetchLuckyDrawInfoListApi,
 } from '#/api/operationManage/activity-statistics';
+import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 import OperationListPanel from '../components/operation-list-panel.vue';
-import type { OperationListConfig } from '../components/operation-list-panel.vue';
-import PlayerAccountLink from '#/components/global/player-account-link.vue';
 
 defineOptions({ name: 'ActivityStatistics' });
 
@@ -25,7 +26,12 @@ const { checkPermission } = useCloudPermission();
 const activeTab = ref('visit');
 
 const visitColumns: OperationListConfig['columns'] = [
-  { field: 'LoginAccount', minWidth: 120, slot: 'loginAccount', title: '游戏账号' },
+  {
+    field: 'LoginAccount',
+    minWidth: 120,
+    slot: 'loginAccount',
+    title: '游戏账号',
+  },
   { field: 'PackageName', minWidth: 120, title: '产品包' },
   {
     field: 'VisitTime',
@@ -52,7 +58,7 @@ const tabs = computed(() =>
         filters: ['login', 'package', 'date'],
       } satisfies OperationListConfig,
       key: 'visit',
-      permission: 11990,
+      permission: 11_990,
       tab: '访问明细',
     },
     {
@@ -62,7 +68,7 @@ const tabs = computed(() =>
         filters: ['date', 'package'],
       } satisfies OperationListConfig,
       key: 'visitStat',
-      permission: 11991,
+      permission: 11_991,
       tab: '访问统计',
     },
     {
@@ -72,7 +78,7 @@ const tabs = computed(() =>
         filters: ['date', 'package'],
       } satisfies OperationListConfig,
       key: 'summary',
-      permission: 11992,
+      permission: 11_992,
       tab: '活动汇总',
     },
     {
@@ -82,13 +88,18 @@ const tabs = computed(() =>
         filters: ['date', 'package'],
       } satisfies OperationListConfig,
       key: 'firstPay',
-      permission: 11993,
+      permission: 11_993,
       tab: '首存汇总',
     },
     {
       config: {
         columns: [
-          { field: 'LoginAccount', minWidth: 120, slot: 'loginAccount', title: '游戏账号' },
+          {
+            field: 'LoginAccount',
+            minWidth: 120,
+            slot: 'loginAccount',
+            title: '游戏账号',
+          },
           { field: 'PrizeName', minWidth: 120, title: '奖品' },
           {
             field: 'CreateTime',
@@ -101,7 +112,7 @@ const tabs = computed(() =>
         filters: ['login', 'date'],
       } satisfies OperationListConfig,
       key: 'lucky',
-      permission: 11994,
+      permission: 11_994,
       tab: '抽奖明细',
     },
   ].filter((item) => checkPermission(item.permission)),
@@ -110,9 +121,9 @@ const tabs = computed(() =>
 const canViewPage = computed(
   () =>
     tabs.value.length > 0 ||
-    checkPermission(11990) ||
-    checkPermission(12008) ||
-    checkPermission(11968),
+    checkPermission(11_990) ||
+    checkPermission(12_008) ||
+    checkPermission(11_968),
 );
 
 onMounted(() => {
@@ -132,7 +143,7 @@ onMounted(() => {
         各活动类型专项统计子页等待下一迭代迁移；可从活动列表进入详情统计。
       </div>
       <Tabs
-        v-if="tabs.length"
+        v-if="tabs.length > 0"
         v-model:active-key="activeTab"
         type="line"
         size="small"

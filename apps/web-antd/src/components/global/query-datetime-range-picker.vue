@@ -3,8 +3,8 @@ import type { Dayjs } from 'dayjs';
 
 import { computed, nextTick, ref, watch } from 'vue';
 
-import { Button, Input, Space, TimePicker } from 'ant-design-vue';
 import { onClickOutside } from '@vueuse/core';
+import { Button, Input, Space, TimePicker } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 defineOptions({ name: 'QueryDatetimeRangePicker' });
@@ -100,7 +100,8 @@ function toggleOpen() {
 const allPresets = [
   {
     label: '今日',
-    range: () => [dayjs().startOf('day'), dayjs().endOf('day')] as [Dayjs, Dayjs],
+    range: () =>
+      [dayjs().startOf('day'), dayjs().endOf('day')] as [Dayjs, Dayjs],
   },
   {
     label: '昨日',
@@ -143,18 +144,16 @@ function isRangeTooLong(begin: Dayjs, end: Dayjs) {
     return false;
   }
   const [from, to] = begin.isAfter(end, 'day') ? [end, begin] : [begin, end];
-  return to.startOf('day').diff(from.startOf('day'), 'day') > props.maxRangeDays;
+  return (
+    to.startOf('day').diff(from.startOf('day'), 'day') > props.maxRangeDays
+  );
 }
 
 function isDayDisabled(day: Dayjs) {
   if (props.disabledDate?.(day)) {
     return true;
   }
-  if (
-    !props.maxRangeDays ||
-    !draftStart.value ||
-    draftEnd.value
-  ) {
+  if (!props.maxRangeDays || !draftStart.value || draftEnd.value) {
     return false;
   }
   const min = draftStart.value.subtract(props.maxRangeDays, 'day');
@@ -237,7 +236,11 @@ function pickDay(day: Dayjs) {
     return;
   }
   if (!draftStart.value || draftEnd.value) {
-    draftStart.value = applyTime(day, draftStart.value || DEFAULT_START_TIME, DEFAULT_START_TIME);
+    draftStart.value = applyTime(
+      day,
+      draftStart.value || DEFAULT_START_TIME,
+      DEFAULT_START_TIME,
+    );
     draftEnd.value = undefined;
     hoverDay.value = undefined;
     syncDateTexts();
@@ -252,7 +255,11 @@ function pickDay(day: Dayjs) {
     );
     draftStart.value = applyTime(day, DEFAULT_START_TIME, DEFAULT_START_TIME);
   } else {
-    draftEnd.value = applyTime(day, draftEnd.value || DEFAULT_END_TIME, DEFAULT_END_TIME);
+    draftEnd.value = applyTime(
+      day,
+      draftEnd.value || DEFAULT_END_TIME,
+      DEFAULT_END_TIME,
+    );
   }
   hoverDay.value = undefined;
   syncDateTexts();
@@ -263,7 +270,11 @@ function parseDateInput(text: string, current?: Dayjs, fallbackTime?: string) {
   if (!parsed.isValid()) {
     return current;
   }
-  return applyTime(parsed, current || fallbackTime || DEFAULT_START_TIME, fallbackTime || DEFAULT_START_TIME);
+  return applyTime(
+    parsed,
+    current || fallbackTime || DEFAULT_START_TIME,
+    fallbackTime || DEFAULT_START_TIME,
+  );
 }
 
 function commitStartDate() {
@@ -429,7 +440,9 @@ function getPopupContainer(node: HTMLElement) {
                 <i></i>
               </header>
               <div class="week-row">
-                <span v-for="weekLabel in WEEKDAYS" :key="weekLabel">{{ weekLabel }}</span>
+                <span v-for="weekLabel in WEEKDAYS" :key="weekLabel">{{
+                  weekLabel
+                }}</span>
               </div>
               <div class="day-grid">
                 <button
@@ -455,7 +468,9 @@ function getPopupContainer(node: HTMLElement) {
                 <button type="button" @click="shiftYear(1)">»</button>
               </header>
               <div class="week-row">
-                <span v-for="weekLabel in WEEKDAYS" :key="`r-${weekLabel}`">{{ weekLabel }}</span>
+                <span v-for="weekLabel in WEEKDAYS" :key="`r-${weekLabel}`">{{
+                  weekLabel
+                }}</span>
               </div>
               <div class="day-grid">
                 <button
@@ -521,17 +536,17 @@ function getPopupContainer(node: HTMLElement) {
   min-width: 360px;
   height: var(--ant-control-height, 32px);
   padding: 0 11px;
-  color: hsl(var(--foreground) / 88%);
   font-size: 14px;
-  line-height: 1.5714285714285714;
+  line-height: 1.5714;
+  color: hsl(var(--foreground) / 88%);
   white-space: nowrap;
+  cursor: pointer;
   background-color: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   border-start-start-radius: 0;
-  border-end-start-radius: 0;
   border-start-end-radius: 8px;
+  border-end-start-radius: 0;
   border-end-end-radius: 8px;
-  cursor: pointer;
 }
 
 .query-datetime-range.is-date {
@@ -549,9 +564,9 @@ function getPopupContainer(node: HTMLElement) {
 }
 
 .query-datetime-range .range-part {
-  color: inherit;
   font-size: inherit;
   line-height: inherit;
+  color: inherit;
   white-space: nowrap;
 }
 
@@ -581,13 +596,13 @@ function getPopupContainer(node: HTMLElement) {
 
 .query-datetime-range-presets button {
   padding: 6px 16px;
-  color: hsl(var(--primary));
   font-size: 13px;
   line-height: 22px;
+  color: hsl(var(--primary));
   text-align: left;
+  cursor: pointer;
   background: transparent;
   border: 0;
-  cursor: pointer;
 }
 
 .query-datetime-range-presets button:hover {
@@ -603,8 +618,8 @@ function getPopupContainer(node: HTMLElement) {
   display: flex;
   gap: 6px;
   align-items: center;
-  margin-bottom: 8px;
   padding: 4px;
+  margin-bottom: 8px;
   border: 1px solid hsl(var(--border));
   border-radius: 6px;
 }
@@ -618,8 +633,8 @@ function getPopupContainer(node: HTMLElement) {
 }
 
 .query-datetime-range-inputs .range-arrow {
-  color: hsl(var(--foreground) / 45%);
   font-size: 16px;
+  color: hsl(var(--foreground) / 45%);
 }
 
 .query-datetime-range-calendars {
@@ -646,11 +661,11 @@ function getPopupContainer(node: HTMLElement) {
 
 .month-header button {
   width: 24px;
-  color: hsl(var(--foreground) / 65%);
   font-size: 14px;
+  color: hsl(var(--foreground) / 65%);
+  cursor: pointer;
   background: transparent;
   border: 0;
-  cursor: pointer;
 }
 
 .week-row,
@@ -675,15 +690,15 @@ function getPopupContainer(node: HTMLElement) {
 .day-cell {
   padding: 0;
   color: inherit;
+  cursor: pointer;
   background: transparent;
   border: 0;
-  cursor: pointer;
 }
 
 .day-cell.is-disabled {
   color: hsl(var(--foreground) / 25%);
-  cursor: not-allowed;
   pointer-events: none;
+  cursor: not-allowed;
 }
 
 .day-cell span {

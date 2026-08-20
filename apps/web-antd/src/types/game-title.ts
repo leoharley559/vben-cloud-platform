@@ -88,7 +88,7 @@ export interface GameTitlePayload {
   ValidChannels?: string;
   ValidDays?: number;
   ValidPackages?: string;
-  Vip?: number | null;
+  Vip?: null | number;
 }
 
 export interface GameTitleBatchEditPayload {

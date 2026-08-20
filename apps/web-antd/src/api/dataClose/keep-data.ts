@@ -1,5 +1,5 @@
-import { requestClient } from '#/api/request';
 import { toListResult, wrapMatrixAsList } from '#/api/dataClose/shared';
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 type Query = Record<string, unknown>;
@@ -13,9 +13,9 @@ type Query = Record<string, unknown>;
 function listGet(url: string, query: Query) {
   return requestClient
     .get<{
-      Items?: Record<string, unknown>[] | null;
-      ItemsOld?: Record<string, unknown>[] | null;
-      Pagination?: { MaxCount?: number } | null;
+      Items?: null | Record<string, unknown>[];
+      ItemsOld?: null | Record<string, unknown>[];
+      Pagination?: null | { MaxCount?: number };
     }>(url, { params: trimSpace(query) })
     .then(toListResult);
 }
@@ -28,8 +28,8 @@ function listGet(url: string, query: Query) {
  */
 function detailGet(url: string, query: Query) {
   return requestClient.get<{
-    Items?: Record<string, unknown>[] | null;
-    Pagination?: { MaxCount?: number } | null;
+    Items?: null | Record<string, unknown>[];
+    Pagination?: null | { MaxCount?: number };
   }>(url, { params: trimSpace(query) });
 }
 
@@ -55,9 +55,9 @@ export function fetchKeepDataExtantListApi(query: Query) {
  */
 export async function fetchKeepDataLoginRetentionListApi(query: Query) {
   const data = await requestClient.get<{
-    Items?: Record<string, unknown>[] | null;
-    ItemsOld?: Record<string, unknown>[] | null;
-    Pagination?: { MaxCount?: number } | null;
+    Items?: null | Record<string, unknown>[];
+    ItemsOld?: null | Record<string, unknown>[];
+    Pagination?: null | { MaxCount?: number };
   }>('/backend/operation/realtimedau', { params: trimSpace(query) });
   return toListResult({
     ...data,
@@ -94,8 +94,8 @@ export async function fetchKeepDataSectionRetentionListApi(query: Query) {
  */
 export async function fetchKeepDataLtvListApi(query: Query) {
   const data = await requestClient.get<{
-    Items?: Record<string, unknown>[] | null;
-    ItemsOld?: Record<string, unknown>[] | null;
+    Items?: null | Record<string, unknown>[];
+    ItemsOld?: null | Record<string, unknown>[];
   }>('/backend/operation/realtimeltv', { params: trimSpace(query) });
   return toListResult({
     ...data,

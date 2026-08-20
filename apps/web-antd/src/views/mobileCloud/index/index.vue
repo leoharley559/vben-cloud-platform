@@ -4,9 +4,9 @@ import { ref } from 'vue';
 import { MOBILE_CLOUD_TABS } from '#/types/mobile';
 
 import MobileShell from '../../mobile/components/mobile-shell.vue';
-import VerifyCodePanel from '../verifyCode/index.vue';
 import MemberPanel from '../member/index.vue';
 import UserPanel from '../user/index.vue';
+import VerifyCodePanel from '../verifyCode/index.vue';
 
 defineOptions({ name: 'MobileCloudIndex' });
 

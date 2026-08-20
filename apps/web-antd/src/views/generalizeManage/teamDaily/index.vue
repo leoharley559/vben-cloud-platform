@@ -54,10 +54,7 @@ onMounted(() => {
   resolveDefaultTab();
 });
 
-watch(
-  [teamType, canWithdrawTab, canProfitTab],
-  () => resolveDefaultTab(),
-);
+watch([teamType, canWithdrawTab, canProfitTab], () => resolveDefaultTab());
 </script>
 
 <template>

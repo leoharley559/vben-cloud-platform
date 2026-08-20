@@ -319,8 +319,12 @@ function exportBatchFailures() {
   <div>
     <div class="mb-3">
       <Radio.Group v-model:value="provideMode" button-style="solid">
-        <Radio.Button v-if="canSingleProvide" value="single">单笔发放</Radio.Button>
-        <Radio.Button v-if="canBatchProvide" value="batch">批量发放</Radio.Button>
+        <Radio.Button v-if="canSingleProvide" value="single">
+单笔发放
+</Radio.Button>
+        <Radio.Button v-if="canBatchProvide" value="batch">
+批量发放
+</Radio.Button>
       </Radio.Group>
     </div>
 
@@ -394,11 +398,7 @@ function exportBatchFailures() {
             placeholder="请选择红利类型"
           />
         </Form.Item>
-        <Form.Item
-          v-if="provideMode === 'single'"
-          label="申请金额"
-          required
-        >
+        <Form.Item v-if="provideMode === 'single'" label="申请金额" required>
           <InputNumber
             v-model:value="provideForm.Amount"
             :max="100000"
@@ -460,7 +460,10 @@ function exportBatchFailures() {
         ]"
         :data-source="batchPreview"
         :pagination="false"
-        :row-key="(row: BatchPreviewRow) => `${row.Username}-${row.AdminId ?? row.AmountYuan ?? ''}`"
+        :row-key="
+          (row: BatchPreviewRow) =>
+            `${row.Username}-${row.AdminId ?? row.AmountYuan ?? ''}`
+        "
         :scroll="{ y: 420 }"
         size="small"
       >
@@ -498,7 +501,10 @@ function exportBatchFailures() {
         ]"
         :data-source="batchResult?.FailItems || []"
         :pagination="false"
-        :row-key="(row: Record<string, unknown>) => `${row.Username}-${row.AdminId ?? row.Amount ?? ''}`"
+        :row-key="
+          (row: Record<string, unknown>) =>
+            `${row.Username}-${row.AdminId ?? row.Amount ?? ''}`
+        "
         size="small"
       >
         <template #bodyCell="{ column, record }">

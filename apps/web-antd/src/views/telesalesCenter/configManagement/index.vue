@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -12,9 +14,7 @@ import {
   fetchServiceProviderListApi,
 } from '#/api/telesalesCenter/config';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import {
   autoAssignConfigColumns,
@@ -28,10 +28,10 @@ defineOptions({ name: 'TelesalesConfigManagement' });
 const { checkPermission } = useCloudPermission();
 const activeTab = ref('call');
 
-const canViewCall = computed(() => checkPermission(11513));
-const canViewSeat = computed(() => checkPermission(11520));
-const canViewSales = computed(() => checkPermission(11521));
-const canViewProvider = computed(() => checkPermission(11522));
+const canViewCall = computed(() => checkPermission(11_513));
+const canViewSeat = computed(() => checkPermission(11_520));
+const canViewSales = computed(() => checkPermission(11_521));
+const canViewProvider = computed(() => checkPermission(11_522));
 const canViewPage = computed(
   () =>
     canViewCall.value ||

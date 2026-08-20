@@ -10,10 +10,10 @@ import {
   message,
   Modal,
   Select,
-  Space,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   addPlayerLevelApi,
   deletePlayerLevelApi,
@@ -22,7 +22,6 @@ import {
   fetchPlayerLevelSchemeOptionsApi,
 } from '#/api/operationManage/player-level';
 import { fetchWithdrawAutoSchemeListApi } from '#/api/operationManage/withdraw-extra';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -43,10 +42,10 @@ interface LevelRow {
 }
 
 const { checkPermission } = useCloudPermission();
-const canFilter = computed(() => checkPermission(12282));
-const canAdd = computed(() => checkPermission(12283));
-const canEdit = computed(() => checkPermission(12285));
-const canDelete = computed(() => checkPermission(12286));
+const canFilter = computed(() => checkPermission(12_282));
+const canAdd = computed(() => checkPermission(12_283));
+const canEdit = computed(() => checkPermission(12_285));
+const canDelete = computed(() => checkPermission(12_286));
 
 const filterLevelName = ref('');
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
@@ -62,7 +61,7 @@ const withdrawSchemeOptions = ref<Array<{ label: string; value: number }>>([]);
 const defaultWithdrawSchemeId = ref<number>();
 
 const membersOpen = ref(false);
-const membersLevelId = ref<number | string | null>(null);
+const membersLevelId = ref<null | number | string>(null);
 const membersLevelName = ref('');
 
 const form = reactive({
@@ -287,16 +286,16 @@ onMounted(() => {
         </Input>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Button type="primary" @click="handleSearch">查询</Button>
-      <Button @click="handleReset">重置</Button>
-      <Button v-if="canAdd" type="primary" ghost @click="openCreate">
-        新增层级
-      </Button>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
+      </div>
+      <div class="query-filter-actions">
+        <Button type="primary" @click="handleSearch">查询</Button>
+        <Button @click="handleReset">重置</Button>
+        <Button v-if="canAdd" type="primary" ghost @click="openCreate">
+          新增层级
+        </Button>
+      </div>
+    </template>
 
     <Grid>
       <template #levelName="{ row }">

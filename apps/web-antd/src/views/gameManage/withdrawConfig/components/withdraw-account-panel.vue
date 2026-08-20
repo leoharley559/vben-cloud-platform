@@ -10,19 +10,20 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Select,
   Space,
   Switch,
   Tag,
-  message,
 } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteWithdrawAccountApi,
-  fetchWithdrawAccountListApi,
   fetchWithdrawAccountDetailApi,
+  fetchWithdrawAccountListApi,
   fetchWithdrawAccountStatusApi,
   fetchWithdrawPayTypeConfigApi,
   fetchWithdrawPlayerLevelListApi,
@@ -35,7 +36,6 @@ import {
   updateWithdrawAccountRoundApi,
   updateWithdrawPayTypeConfigApi,
 } from '#/api/gameManage';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 
@@ -92,23 +92,23 @@ interface PayTypeRow {
 
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
-const canViewPayTypes = computed(() => checkPermission(11014));
-const canManagePayTypes = computed(() => checkPermission(11015));
-const canEditPayType = computed(() => checkPermission(11017));
-const canViewStrategy = computed(() => checkPermission(11018));
-const canViewAccounts = computed(() => checkPermission(11019));
-const canSwitch = computed(() => checkPermission(11020));
-const canCreate = computed(() => checkPermission(11026));
-const canEdit = computed(() => checkPermission(11021));
-const canDelete = computed(() => checkPermission(11022));
-const canShelfThird = computed(() => checkPermission(11023));
-const canEditChannel = computed(() => checkPermission(11024));
-const canEditRound = computed(() => checkPermission(11025));
-const canRefreshBalance = computed(() => checkPermission(12587));
+const canViewPayTypes = computed(() => checkPermission(11_014));
+const canManagePayTypes = computed(() => checkPermission(11_015));
+const canEditPayType = computed(() => checkPermission(11_017));
+const canViewStrategy = computed(() => checkPermission(11_018));
+const canViewAccounts = computed(() => checkPermission(11_019));
+const canSwitch = computed(() => checkPermission(11_020));
+const canCreate = computed(() => checkPermission(11_026));
+const canEdit = computed(() => checkPermission(11_021));
+const canDelete = computed(() => checkPermission(11_022));
+const canShelfThird = computed(() => checkPermission(11_023));
+const canEditChannel = computed(() => checkPermission(11_024));
+const canEditRound = computed(() => checkPermission(11_025));
+const canRefreshBalance = computed(() => checkPermission(12_587));
 
 const actionId = ref<number | string>();
 const formOpen = ref(false);
-const editId = ref<number | string | null>(null);
+const editId = ref<null | number | string>(null);
 const createHandleType = ref(1);
 const currentPayType = ref<number | string>('');
 const payTypes = ref<PayTypeRow[]>([]);
@@ -185,9 +185,9 @@ const bankOptions = computed(() =>
     value: String(item.BankCode || ''),
   })),
 );
-const perMultiOptions = [-1, 0, 10, 50, 100, 500, 1000, 5000, 10000].map(
+const perMultiOptions = [-1, 0, 10, 50, 100, 500, 1000, 5000, 10_000].map(
   (value) => ({
-    label: value === -1 ? '使用出款设置' : value === 0 ? '全部' : `${value} 倍`,
+    label: value === -1 ? '使用出款设置' : (value === 0 ? '全部' : `${value} 倍`),
     value,
   }),
 );
@@ -240,9 +240,9 @@ const gridOptions: VxeTableGridOptions<WithdrawAccountRow> = {
       formatter: ({ row }) =>
         Number(row.ThirdWithdrawId || 0) > 0
           ? '三方账户'
-          : Number(row.HandleType) === 1
+          : (Number(row.HandleType) === 1
             ? '签约账户'
-            : '普通账户',
+            : '普通账户'),
       minWidth: 100,
       title: '账号类型',
     },
@@ -348,7 +348,7 @@ function splitList(value: unknown) {
 
 async function refreshScriptStatuses() {
   const ids = loadedRows.value.map((row) => row.Id).filter(Boolean);
-  if (!ids.length || !canViewAccounts.value) return;
+  if (ids.length === 0 || !canViewAccounts.value) return;
   try {
     const statuses = await fetchWithdrawAccountStatusApi(ids.join(','));
     const statusMap = new Map(
@@ -366,7 +366,7 @@ async function refreshScriptStatuses() {
 
 function startStatusPolling() {
   if (statusTimer) clearInterval(statusTimer);
-  if (!loadedRows.value.length) return;
+  if (loadedRows.value.length === 0) return;
   statusTimer = setInterval(() => void refreshScriptStatuses(), 60_000);
 }
 
@@ -466,7 +466,7 @@ async function savePayType() {
     message.warning('手续费率须在 0 至 100 之间');
     return;
   }
-  if (!payTypeForm.DeviceList.length) {
+  if (payTypeForm.DeviceList.length === 0) {
     message.warning('请至少选择一个显示设备');
     return;
   }
@@ -494,15 +494,15 @@ async function savePayType() {
     message.warning('快捷出款金额必须位于提现金额区间内');
     return;
   }
-  if (!payTypeForm.PlayerLevelList.length) {
+  if (payTypeForm.PlayerLevelList.length === 0) {
     message.warning('请至少选择一个玩家层级');
     return;
   }
-  if (!payTypeForm.VipList.length) {
+  if (payTypeForm.VipList.length === 0) {
     message.warning('请至少选择一个开放 VIP');
     return;
   }
-  if (payTypeForm.PerMulti > 0 && !payTypeForm.PerMultiVipList.length) {
+  if (payTypeForm.PerMulti > 0 && payTypeForm.PerMultiVipList.length === 0) {
     message.warning('启用提现倍数时请至少选择一个 VIP');
     return;
   }
@@ -567,7 +567,7 @@ function handlePayTypeSwitch(row: PayTypeRow, checked: boolean) {
   });
 }
 
-async function updateRound(row: WithdrawAccountRow, value: number | null) {
+async function updateRound(row: WithdrawAccountRow, value: null | number) {
   await updateWithdrawAccountRoundApi({ Id: row.Id, Round: value || 1 });
   message.success('轮询权重已更新');
   await gridApi.reload();
@@ -829,8 +829,7 @@ function handleDelete(row: WithdrawAccountRow) {
         :key="item.Id"
         hoverable
         size="small"
-        :class="[
-          'cursor-pointer border transition-all',
+        class="cursor-pointer border transition-all" :class="[
           currentPayType === item.PayType
             ? '!border-primary shadow-sm'
             : 'border-transparent',
@@ -912,9 +911,9 @@ function handleDelete(row: WithdrawAccountRow) {
         >
           新增签约支付宝
         </Button>
-        <Button v-if="canViewAccounts" @click="gridApi.reload()"
-          >刷新列表</Button
-        >
+        <Button v-if="canViewAccounts" @click="gridApi.reload()">
+刷新列表
+</Button>
       </Space>
     </div>
     <Grid v-if="canViewStrategy && canViewAccounts">

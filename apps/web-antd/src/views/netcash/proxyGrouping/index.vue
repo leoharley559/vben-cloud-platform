@@ -2,10 +2,7 @@
 import type { TreeProps } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
 
-import type {
-  ProxyGroupingListItem,
-  ProxyGroupItem,
-} from '#/types/netcash';
+import type { ProxyGroupingListItem, ProxyGroupItem } from '#/types/netcash';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
@@ -24,8 +21,6 @@ import {
   Table,
   Tree,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import {
@@ -37,6 +32,7 @@ import {
   sortProxyGroupingApi,
   updateProxyGroupingApi,
 } from '#/api/netcash/proxy-grouping';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatNetcashDateTime } from '#/utils/netcash';
 
@@ -108,14 +104,12 @@ function disabledDate(current: Dayjs) {
   return current.isBefore(min, 'day') || current.isAfter(max, 'day');
 }
 
-function onCalendarChange(
-  dates: [Dayjs, Dayjs] | [string, string] | null,
-) {
+function onCalendarChange(dates: [Dayjs, Dayjs] | [string, string] | null) {
   const first = dates?.[0];
   rangeSelecting.value = first
-    ? dayjs.isDayjs(first)
+    ? (dayjs.isDayjs(first)
       ? first
-      : dayjs(first)
+      : dayjs(first))
     : undefined;
 }
 
@@ -346,8 +340,7 @@ async function submitGroupDialog() {
     } else {
       await addAgentGroupApi({
         GroupName: name,
-        ParentId:
-          groupDialogMode.value === 'root' ? 0 : selectedGroup.value.Id,
+        ParentId: groupDialogMode.value === 'root' ? 0 : selectedGroup.value.Id,
       });
       message.success('分组新增成功');
     }
@@ -557,10 +550,9 @@ async function exportExcel() {
     });
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, sheet, '分组成员');
-    const safeName = String(selectedGroup.value.GroupName || '未分组').replaceAll(
-      /[\\/:*?"<>|]/g,
-      '_',
-    );
+    const safeName = String(
+      selectedGroup.value.GroupName || '未分组',
+    ).replaceAll(/[\\/:*?"<>|]/g, '_');
     XLSX.writeFile(workbook, `${safeName}成员.xlsx`);
   } catch {
     message.error('导出失败');
@@ -637,43 +629,46 @@ onMounted(async () => {
 
       <Card class="member-card" :body-style="{ padding: '16px' }">
         <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-                <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="query.Username"
-              allow-clear
-              @press-enter="search"
-              placeholder="请输入代理账号"
-            >
-              <template #addonBefore>代理账号</template>
-            </Input>
+          <div class="ops-query-filters">
+            <div class="flex flex-col gap-1">
+              <Input
+                v-model:value="query.Username"
+                allow-clear
+                @press-enter="search"
+                placeholder="请输入代理账号"
+              >
+                <template #addonBefore>代理账号</template>
+              </Input>
+            </div>
+            <div class="flex flex-col gap-1">
+              <Input
+                v-model:value="query.DeveloperName"
+                allow-clear
+                @press-enter="search"
+                placeholder="请输入发展人编码"
+              >
+                <template #addonBefore>发展人编码</template>
+              </Input>
+            </div>
+            <div class="query-filter-wide">
+              <QueryDatetimeRangePicker
+                v-model="dateRange"
+                :disabled-date="disabledDate"
+              />
+            </div>
+            <div class="query-filter-actions">
+              <Button type="primary" @click="search">查询</Button>
+              <Button @click="resetSearch">重置</Button>
+              <Button
+                v-if="canExport"
+                :loading="exporting"
+                @click="exportExcel"
+              >
+                导出 Excel
+              </Button>
+            </div>
           </div>
-          <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="query.DeveloperName"
-              allow-clear
-              @press-enter="search"
-              placeholder="请输入发展人编码"
-            >
-              <template #addonBefore>发展人编码</template>
-            </Input>
-          </div>
-          <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" :disabled-date="disabledDate" />
         </div>
-        <div class="query-filter-actions">
-          <Button type="primary" @click="search">查询</Button>
-          <Button @click="resetSearch">重置</Button>
-          <Button
-            v-if="canExport"
-            :loading="exporting"
-            @click="exportExcel"
-          >
-            导出 Excel
-          </Button>
-        </div>
-    </div>
-  </div>
 
         <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
           <Space wrap>
@@ -808,11 +803,11 @@ onMounted(async () => {
 
 .tree-node-title {
   display: flex;
-  width: 100%;
-  min-width: 0;
+  gap: 4px;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
+  width: 100%;
+  min-width: 0;
 }
 
 .tree-node-title > span:first-child {
@@ -823,8 +818,8 @@ onMounted(async () => {
 
 .drag-tip {
   flex: none;
-  color: hsl(var(--muted-foreground));
   font-size: 12px;
+  color: hsl(var(--muted-foreground));
   cursor: grab;
 }
 

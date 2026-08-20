@@ -13,17 +13,16 @@ import {
   Space,
   Tag,
 } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchAiAssistantCategoryListApi,
   fetchAiAssistantContentViewListApi,
 } from '#/api/operationManage/ai-assistant';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useProjectConfig } from '#/composables/use-project-config';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useProjectConfig } from '#/composables/use-project-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 
 defineOptions({ name: 'PlayerVisitRecordPanel' });
@@ -35,7 +34,7 @@ const props = defineProps<{
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
-const canViewTable = computed(() => checkPermission(12739));
+const canViewTable = computed(() => checkPermission(12_739));
 
 const defaultRange = getTodayRangeSeconds();
 const categoryOptions = ref<Array<{ label: string; value: number | string }>>(
@@ -215,53 +214,53 @@ onMounted(async () => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterContentId"
-          allow-clear
-          placeholder="请输入问题编号"
-        >
-          <template #addonBefore>问题编号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">一级标题</span>
-        <Select
-          v-model:value="filterCategoryId"
-          allow-clear
-          :options="categoryOptions"
-          placeholder="请选择一级标题"
-        />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterTitle"
-          allow-clear
-          placeholder="请输入二级标题"
-        >
-          <template #addonBefore>二级标题</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterContent"
-          allow-clear
-          placeholder="请输入三级内容"
-        >
-          <template #addonBefore>三级内容</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterContentId"
+            allow-clear
+            placeholder="请输入问题编号"
+          >
+            <template #addonBefore>问题编号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">一级标题</span>
+          <Select
+            v-model:value="filterCategoryId"
+            allow-clear
+            :options="categoryOptions"
+            placeholder="请选择一级标题"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterTitle"
+            allow-clear
+            placeholder="请输入二级标题"
+          >
+            <template #addonBefore>二级标题</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterContent"
+            allow-clear
+            placeholder="请输入三级内容"
+          >
+            <template #addonBefore>三级内容</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
+            查询
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #content="{ row }">

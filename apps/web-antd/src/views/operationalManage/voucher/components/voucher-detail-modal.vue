@@ -13,11 +13,11 @@ defineOptions({ name: 'VoucherDetailModal' });
 
 const props = defineProps<{
   showPayout?: boolean;
-  voucher?: {
+  voucher?: null | {
     Id: number | string;
     LangText?: unknown;
     Type?: number;
-  } | null;
+  };
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
@@ -25,7 +25,7 @@ const open = defineModel<boolean>('open', { default: false });
 const { checkPermission } = useCloudPermission();
 
 const canPayout = computed(
-  () => Boolean(props.showPayout) && checkPermission(13444),
+  () => Boolean(props.showPayout) && checkPermission(13_444),
 );
 
 const activeTab = ref('record');

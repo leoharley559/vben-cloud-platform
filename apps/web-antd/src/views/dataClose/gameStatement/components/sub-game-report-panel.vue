@@ -6,22 +6,15 @@ import type { GameStatementRow } from '../utils';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import {
-  Button,
-  Input,
-  Modal,
-  Select,
-  Space,
-  Table,
-} from 'ant-design-vue';
+import { Button, Input, Modal, Select, Space, Table } from 'ant-design-vue';
 
 import {
   fetchSubGamePlayersApi,
   fetchSubGameReportListApi,
 } from '#/api/dataClose/game-statement';
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -58,9 +51,9 @@ const currentParam = ref<Record<string, unknown>>({});
 const currentSubGame = ref<number | string>('');
 const tableData = ref<GameStatementRow[]>([]);
 const total = ref<GameStatementRow>({});
-const subGameOptions = ref<
-  Array<{ label: string; value: number | string }>
->([]);
+const subGameOptions = ref<Array<{ label: string; value: number | string }>>(
+  [],
+);
 const playerDialogOpen = ref(false);
 const playerTable = ref<Record<string, unknown>[]>([]);
 
@@ -306,7 +299,7 @@ onMounted(async () => {
           style="width: 180px"
           allow-clear
           placeholder="请输入代理账号"
-          />
+        />
       </Space.Compact>
       <Space.Compact>
         <Select
@@ -330,7 +323,7 @@ onMounted(async () => {
           style="width: 180px"
           allow-clear
           placeholder="请输入渠道"
-          />
+        />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">产品</span>
@@ -399,10 +392,18 @@ onMounted(async () => {
         />
       </Space.Compact>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" precision="date" :disabled-date="(current) => disabledDateBeyond90(current, dateRange, 'end')" />
-        </div>
+        <QueryDatetimeRangePicker
+          v-model="dateRange"
+          precision="date"
+          :disabled-date="
+            (current) => disabledDateBeyond90(current, dateRange, 'end')
+          "
+        />
+      </div>
       <template #actions>
-        <Button type="primary" :loading="loading" @click="loadList">查询</Button>
+        <Button type="primary" :loading="loading" @click="loadList">
+查询
+</Button>
         <Button @click="handleReset">重置</Button>
       </template>
     </ReportQueryCard>
@@ -430,18 +431,10 @@ onMounted(async () => {
           </a>
         </template>
         <template v-else-if="column.key === 'GameType'">
-          {{
-            formatVenueName(
-              record.GameType as number | string,
-              gameConfig,
-            )
-          }}
+          {{ formatVenueName(record.GameType as number | string, gameConfig) }}
         </template>
         <template v-else-if="column.key === 'CountBetNum'">
-          <a
-            v-if="Number(record.CountBetNum) > 0"
-            @click="openPlayers(record)"
-          >
+          <a v-if="Number(record.CountBetNum) > 0" @click="openPlayers(record)">
             {{ record.CountBetNum }}
           </a>
           <span v-else>{{ record.CountBetNum }}</span>

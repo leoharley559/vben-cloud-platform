@@ -22,19 +22,22 @@ import dayjs from 'dayjs';
 
 import { fetchUserWinLossListApi } from '#/api/dataClose/player-report';
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useReportOptions } from '#/composables/use-report-options';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatVenueName } from '#/utils/game-config';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import { arrayToCsvParam, resolveReportRange } from '#/views/dataClose/shared/report-utils';
+import {
+  arrayToCsvParam,
+  resolveReportRange,
+} from '#/views/dataClose/shared/report-utils';
 
 defineOptions({ name: 'UserWinLoss' });
 
@@ -126,7 +129,7 @@ function disabledDate(current: Dayjs) {
 
 function normalizeLoginAccount() {
   // 对齐旧站 SearchTypeFour：去空格、转小写
-  filters.LoginAccount = filters.LoginAccount.replace(/\s/g, '').toLowerCase();
+  filters.LoginAccount = filters.LoginAccount.replaceAll(/\s/g, '').toLowerCase();
 }
 
 function validateLoginAccount() {
@@ -185,7 +188,7 @@ const summaryItems = computed(() => {
       title: '派送总计',
       value: formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold)),
     },
-    
+
     {
       title: '玩家盈亏总计',
       value: formatAmountFromCent(m.SumWinGold),
@@ -447,7 +450,11 @@ onMounted(async () => {
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">渠道号</span>
-          <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" placeholder="请输入渠道号" />
+          <ChannelSelect
+            v-model="filters.ChannelId"
+            style="min-width: 180px"
+            placeholder="请输入渠道号"
+          />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">产品</span>
@@ -483,10 +490,16 @@ onMounted(async () => {
           />
         </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.dateRange" precision="date" :disabled-date="disabledDate" />
+          <QueryDatetimeRangePicker
+            v-model="filters.dateRange"
+            precision="date"
+            :disabled-date="disabledDate"
+          />
         </div>
         <template #actions>
-          <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
+          <Button type="primary" :loading="loading" @click="handleSearch">
+            查询
+          </Button>
           <Button @click="handleReset">重置</Button>
           <Button
             v-if="canExport"
@@ -497,7 +510,9 @@ onMounted(async () => {
           </Button>
         </template>
         <template #extra>
-          <div class="text-xs text-gray-500">默认今天，最长 30 天；今天的数据将每小时更新一次</div>
+          <div class="text-xs text-gray-500">
+            默认今天，最长 30 天；今天的数据将每小时更新一次
+          </div>
         </template>
       </ReportQueryCard>
 

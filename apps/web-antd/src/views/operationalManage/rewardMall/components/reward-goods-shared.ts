@@ -104,21 +104,21 @@ export function generateUid() {
 /* ------------------------------------------------------------------ */
 
 export function resolveLangGroupIds(
-  projectConfig?: {
+  projectConfig?: null | {
     LangGroup?: Array<{ Default?: boolean; Id: number }>;
-  } | null,
+  },
 ): number[] {
   const groups = projectConfig?.LangGroup || [];
   const ids = groups
     .map((group) => Number(group.Id))
     .filter((id) => !Number.isNaN(id));
-  return ids.length ? ids : [1];
+  return ids.length > 0 ? ids : [1];
 }
 
 export function resolveDefaultLangGroupId(
-  projectConfig?: {
+  projectConfig?: null | {
     LangGroup?: Array<{ Default?: boolean; Id: number }>;
-  } | null,
+  },
 ): number {
   const groups = projectConfig?.LangGroup || [];
   const found = groups.find((group) => group.Default);
@@ -131,11 +131,11 @@ export function resolveDefaultLangGroupId(
 /** 为每个语言群组补齐一份默认值，已有的值优先保留 */
 export function ensureLangMap<T extends Record<string, unknown>>(
   langGroupIds: Array<number | string>,
-  existing: Record<string, unknown> | undefined | null,
+  existing: null | Record<string, unknown> | undefined,
   factory: () => T,
 ): Record<string, T> {
   const src = (existing || {}) as Record<string, Partial<T>>;
-  const ids = langGroupIds.length ? langGroupIds : [1];
+  const ids = langGroupIds.length > 0 ? langGroupIds : [1];
   return Object.fromEntries(
     ids.map((id) => [String(id), { ...factory(), ...src[String(id)] } as T]),
   );
@@ -184,13 +184,13 @@ export function parseLangTextMap(raw: unknown) {
 
 export function resolveProductName(raw: unknown) {
   const lang = parseLangTextMap(raw);
-  const first = Object.values(lang)[0] as { Name?: string } | undefined;
+  const first = Object.values(lang)[0] as undefined | { Name?: string };
   return first?.Name || '';
 }
 
 export function resolveProductDesc(raw: unknown) {
   const lang = parseLangTextMap(raw);
-  const first = Object.values(lang)[0] as { Description?: string } | undefined;
+  const first = Object.values(lang)[0] as undefined | { Description?: string };
   return first?.Description || '';
 }
 
@@ -206,21 +206,17 @@ export function parseGoodsLangText(
       throw new Error('empty LangText');
     }
     const parsed = typeof raw === 'string' ? JSON.parse(raw || '{}') : raw;
-    if (Array.isArray(parsed)) {
-      lt = Object.fromEntries(
+    lt = Array.isArray(parsed) ? Object.fromEntries(
         (parsed as Array<Record<string, unknown>>).map((item) => [
           String(item.LangGroupId ?? ''),
           item,
         ]),
-      );
-    } else {
-      lt = (parsed as Record<string, Record<string, unknown>>) || {};
-    }
+      ) : (parsed as Record<string, Record<string, unknown>>) || {};
   } catch {
     lt = {};
   }
 
-  const ids = langGroupIds.length ? langGroupIds : [1];
+  const ids = langGroupIds.length > 0 ? langGroupIds : [1];
   const missing: number[] = [];
   let lastValidId: number | undefined;
 
@@ -254,12 +250,12 @@ function isArrayIndexKey(key: string) {
   return /^\d+$/.test(key);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function getObjectPath<T = any>(
   obj: unknown,
   path: Array<number | string>,
 ): T | undefined {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   let cur: any = obj;
   for (const key of path) {
     if (cur === undefined || cur === null) {
@@ -275,7 +271,7 @@ export function setObjectPath(
   path: Array<number | string>,
   value: unknown,
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   let cur: any = obj;
   for (let i = 0; i < path.length - 1; i++) {
     const key = String(path[i]);
@@ -308,15 +304,15 @@ function isPrimitiveValue(value: unknown) {
 }
 
 /** 把散落在各层级的 LangText 收集到根节点的单一 LangText 对象中 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function consolidateGoodsLangText(
   root: Record<string, unknown>,
   langGroupIds: Array<number | string>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 ): Record<string, any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const clone: any = deepClone(root);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const outputLangText: Record<string, any> = {};
   walkConsolidate(clone, [], outputLangText, langGroupIds);
   clone.LangText = outputLangText;
@@ -324,10 +320,10 @@ export function consolidateGoodsLangText(
 }
 
 function walkConsolidate(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   node: any,
   pathArr: string[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   outputLangText: Record<string, any>,
   langGroupIds: Array<number | string>,
 ) {
@@ -374,9 +370,9 @@ export function breakupGoodsLangText(
   root: Record<string, unknown>,
   langText: Record<string, unknown>,
   langGroupIds: Array<number | string>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 ): Record<string, any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const clone: any = deepClone(root);
   delete clone.LangText;
   walkBreakup(langText, [], clone, langGroupIds);
@@ -386,7 +382,7 @@ export function breakupGoodsLangText(
 function walkBreakup(
   langText: Record<string, unknown>,
   pathArr: string[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   root: any,
   langGroupIds: Array<number | string>,
 ) {
@@ -489,7 +485,7 @@ export type ProductFormState = ReturnType<typeof createDefaultProductForm>;
 export function breakupProductDetail(
   raw: Record<string, unknown>,
   langGroupIds: number[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 ): Record<string, any> {
   let bonusConfig = parseJsonField(raw.BonusConfig, {});
   if (!bonusConfig || typeof bonusConfig !== 'object') {
@@ -586,7 +582,7 @@ export function createDefaultGoodsGlobalConfigForm(langGroupIds: number[]) {
 export function breakupGoodsGlobalConfig(
   raw: Record<string, unknown>,
   langGroupIds: number[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 ): Record<string, any> {
   const rewardsConfig = parseJsonField(raw.RewardsConfig, []);
   const mallsConfig = parseJsonField(raw.MallsConfig, []);

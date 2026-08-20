@@ -13,7 +13,7 @@ const props = defineProps<{
   action: 'approve' | 'reject';
   open: boolean;
   orderIds: string;
-  row: PlayerAuthListItem | null;
+  row: null | PlayerAuthListItem;
 }>();
 
 const emit = defineEmits<{

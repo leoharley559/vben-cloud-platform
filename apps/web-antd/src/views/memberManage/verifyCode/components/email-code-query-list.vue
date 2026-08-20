@@ -4,21 +4,21 @@ import type { EmailVerifyCodeListItem } from '#/types/email-verify-code';
 
 import { computed, ref } from 'vue';
 
-import { Button, Input, Result, Select, Space, message } from 'ant-design-vue';
+import { Button, Input, message, Result, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchEmailVerifyCodeListApi } from '#/api/memberManage/email-verify-code';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchEmailVerifyCodeListApi } from '#/api/memberManage/email-verify-code';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 
 defineOptions({ name: 'EmailCodeQueryList' });
 
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canView = computed(() => checkPermission(13011));
+const canView = computed(() => checkPermission(13_011));
 
 const filterLoginAccount = ref('');
 const filterEmailAccount = ref('');
@@ -173,15 +173,15 @@ function handleReset() {
           <template #addonBefore>邮箱</template>
         </Input>
       </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
-        </div>
-      </template>
+      <div class="query-filter-actions query-filter-actions-single">
+        <Space>
+          <Button :loading="loading" type="primary" @click="handleSearch">
+            查询
+          </Button>
+          <Button @click="handleReset">重置</Button>
+        </Space>
+      </div>
+    </template>
 
     <Grid />
   </OpsListPanel>

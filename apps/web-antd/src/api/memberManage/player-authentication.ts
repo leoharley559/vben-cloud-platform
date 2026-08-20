@@ -1,4 +1,3 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
 import type {
   PlayerAuthApprovePayload,
@@ -10,6 +9,8 @@ import type {
   PlayerAuthSettingItem,
   PlayerAuthSwitchPayload,
 } from '#/types/player-authentication';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 function normalizeList<T>(result: CloudListResult<T> | null | undefined) {

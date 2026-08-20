@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '../../operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -13,7 +15,6 @@ import {
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 import OperationListPanel from '../../operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '../../operationalManage/components/operation-list-panel.vue';
 import { endlessAgentColumns } from '../shared/columns';
 
 defineOptions({ name: 'EndlessAgent' });
@@ -30,7 +31,7 @@ const tabs = computed(() =>
         filters: ['date', 'package'],
       } satisfies OperationListConfig,
       key: 'multiple',
-      permission: 10718,
+      permission: 10_718,
       tab: '层级查询',
     },
     {
@@ -41,7 +42,7 @@ const tabs = computed(() =>
         filters: ['date', 'login'],
       } satisfies OperationListConfig,
       key: 'byUser',
-      permission: 10723,
+      permission: 10_723,
       tab: '按用户明细',
     },
     {
@@ -52,7 +53,7 @@ const tabs = computed(() =>
         filters: ['date', 'login'],
       } satisfies OperationListConfig,
       key: 'byTime',
-      permission: 10723,
+      permission: 10_723,
       tab: '按时间明细',
     },
   ].filter((item) => checkPermission(item.permission)),

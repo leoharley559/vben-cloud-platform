@@ -2,11 +2,10 @@
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { Button, Radio, Result, Spin, Table } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchSelfReviewStatisticsListApi } from '#/api/operationManage/recharge-extra';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 
@@ -103,17 +102,17 @@ const userTypeColumns = [
 
     <div v-else-if="pageType === 'stats' && canStats">
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+        <div class="ops-query-filters">
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button :loading="loading" type="primary" @click="loadStats">
+              查询
+            </Button>
+          </div>
         </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button :loading="loading" type="primary" @click="loadStats">
-          查询
-        </Button>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <div v-if="loadError" class="mb-4 text-sm text-red-500">
         {{ loadError }}

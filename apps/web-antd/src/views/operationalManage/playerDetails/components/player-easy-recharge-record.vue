@@ -7,11 +7,11 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { Button, Input, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchEasyRechargeListApi } from '#/api/operationManage/easy-recharge';
 import EasyRechargeVoucherCell from '#/components/easy-recharge/easy-recharge-voucher-cell.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -185,51 +185,51 @@ onMounted(() => props.playerId && gridApi.reload());
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          @press-enter="gridApi.reload()"
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          :options="EASY_RECHARGE_STATUS_OPTIONS"
-          placeholder="请选择状态"
-        />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            @press-enter="gridApi.reload()"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            :options="EASY_RECHARGE_STATUS_OPTIONS"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button :loading="loading" type="primary" @click="gridApi.reload()">
-          查询
-        </Button>
-        <Button
-          @click="
-            filterOrderId = '';
-            filterStatus = '';
-            filterDateRange = [
-              dayjs.unix(defaultRange.BeginTime),
-              dayjs.unix(defaultRange.EndTime),
-            ];
-            gridApi.reload();
-          "
-        >
-          重置
-        </Button>
-      </Space>
+            <Button :loading="loading" type="primary" @click="gridApi.reload()">
+              查询
+            </Button>
+            <Button
+              @click="
+                filterOrderId = '';
+                filterStatus = '';
+                filterDateRange = [
+                  dayjs.unix(defaultRange.BeginTime),
+                  dayjs.unix(defaultRange.EndTime),
+                ];
+                gridApi.reload();
+              "
+            >
+              重置
+            </Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 

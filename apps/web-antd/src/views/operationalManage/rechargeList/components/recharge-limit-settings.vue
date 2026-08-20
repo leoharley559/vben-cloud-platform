@@ -8,29 +8,29 @@ import {
   Button,
   Form,
   InputNumber,
+  message,
   Modal,
   Result,
   Space,
-  message,
 } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   createRechargeLimitConfigApi,
   deleteRechargeLimitConfigApi,
   fetchRechargeLimitConfigListApi,
   updateRechargeLimitConfigApi,
 } from '#/api/operationManage/recharge-extra';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 defineOptions({ name: 'RechargeLimitSettings' });
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(10265));
-const canCreate = computed(() => checkPermission(10266));
-const canEdit = computed(() => checkPermission(10267));
-const canDelete = computed(() => checkPermission(10268));
+const canViewTable = computed(() => checkPermission(10_265));
+const canCreate = computed(() => checkPermission(10_266));
+const canEdit = computed(() => checkPermission(10_267));
+const canDelete = computed(() => checkPermission(10_268));
 
 const modalOpen = ref(false);
 const modalMode = ref<'add' | 'edit'>('add');

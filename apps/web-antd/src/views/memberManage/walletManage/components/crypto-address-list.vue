@@ -4,23 +4,17 @@ import type { CryptoAddressListItem } from '#/types/crypto-address';
 
 import { computed, onMounted, ref } from 'vue';
 
-import {
-  Button,
-  Checkbox,
-  Input,
-  Space,
-  message,
-} from 'ant-design-vue';
+import { Button, Checkbox, Input, message, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteCryptoAddressApi,
   fetchCryptoAddressListApi,
 } from '#/api/memberManage/crypto-address';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatCryptoConfigType } from '#/types/crypto-address';
@@ -34,10 +28,10 @@ const CRYPTO_SECURITY_PAGE_ID = 18;
 
 const { checkPermission } = useCloudPermission();
 
-const canView = computed(() => checkPermission(11474));
-const canAdd = computed(() => checkPermission(11476));
-const canEdit = computed(() => checkPermission(11475));
-const canDelete = computed(() => checkPermission(11477));
+const canView = computed(() => checkPermission(11_474));
+const canAdd = computed(() => checkPermission(11_476));
+const canEdit = computed(() => checkPermission(11_475));
+const canDelete = computed(() => checkPermission(11_477));
 
 const filterLoginAccount = ref('');
 const filterDigitalAddress = ref('');
@@ -212,20 +206,20 @@ onMounted(() => {
         </Input>
       </div>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
-        </div>
-        <div class="query-filter-actions">
-          <Space>
-        <Button :loading="loading" type="primary" @click="handleSearch">
-          查询
-        </Button>
-        <Button @click="handleReset">重置</Button>
-        <Button v-if="canAdd" type="primary" @click="openCreate">
-          新增地址
-        </Button>
-      </Space>
-        </div>
-      </template>
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
+      </div>
+      <div class="query-filter-actions">
+        <Space>
+          <Button :loading="loading" type="primary" @click="handleSearch">
+            查询
+          </Button>
+          <Button @click="handleReset">重置</Button>
+          <Button v-if="canAdd" type="primary" @click="openCreate">
+            新增地址
+          </Button>
+        </Space>
+      </div>
+    </template>
 
     <Grid>
       <template #loginAccount="{ row }">

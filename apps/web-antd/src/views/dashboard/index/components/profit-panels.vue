@@ -2,7 +2,7 @@
 import { h, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { Button, Card, Table, message } from 'ant-design-vue';
+import { Button, Card, message, Table } from 'ant-design-vue';
 
 import {
   fetchGameProfitLossApi,

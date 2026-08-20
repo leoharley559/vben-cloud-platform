@@ -16,7 +16,7 @@ defineOptions({ name: 'SelfCheckDetailModal' });
 
 const props = defineProps<{
   open: boolean;
-  row: SelfCheckListItem | null;
+  row: null | SelfCheckListItem;
 }>();
 
 const emit = defineEmits<{
@@ -121,7 +121,7 @@ const columns = [
       <div>操作人：{{ row.ReviewName || '-' }}</div>
     </div>
 
-    <div v-if="imageUrls.length" class="mb-4">
+    <div v-if="imageUrls.length > 0" class="mb-4">
       <div class="mb-2 font-medium">充值凭证</div>
       <Image.PreviewGroup>
         <Image

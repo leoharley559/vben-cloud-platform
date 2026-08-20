@@ -7,6 +7,7 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Radio,
   Result,
@@ -14,10 +15,10 @@ import {
   Space,
   Table,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   batchDeliverGiftApi,
   batchRejectGiftDeliverApi,
@@ -28,30 +29,29 @@ import {
   remarkGiftApi,
 } from '#/api/operationManage/gift-manage';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { exportRowsToCsv } from '#/utils/export-csv';
-import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
 import { GIFT_DELIVER_STATUS_MAP } from '#/utils/operation-status';
+import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
 
 import {
   ACTIVITY_TYPE_LUCKY_DRAW,
-  GIFT_IS_MANUAL_OPTIONS,
-  GIFT_LUCKY_ACTIVITY_TYPE_OPTIONS,
-  GIFT_LUCKY_DELIVER_STATUS_OPTIONS,
-  GIFT_RISK_OPTIONS,
-  GIFT_TYPE_FILTER_OPTIONS,
-  LUCKY_DRAW_BONUS_CATEGORY_OPTIONS,
   formatActivityType,
   formatGiftDateTime,
   formatGiftDeliverStatus,
   formatGiftType,
   formatLuckyBonusCategory,
+  GIFT_IS_MANUAL_OPTIONS,
+  GIFT_LUCKY_ACTIVITY_TYPE_OPTIONS,
+  GIFT_LUCKY_DELIVER_STATUS_OPTIONS,
+  GIFT_RISK_OPTIONS,
+  GIFT_TYPE_FILTER_OPTIONS,
   giftListTotal,
   giftNameText,
+  LUCKY_DRAW_BONUS_CATEGORY_OPTIONS,
   parseGiftNames,
 } from './gift-shared';
 
@@ -96,13 +96,13 @@ interface UploadPreviewRow {
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(10188));
-const canExport = computed(() => checkPermission(10189));
-const canBatchDeliver = computed(() => checkPermission(10190));
-const canBatchReject = computed(() => checkPermission(10182));
-const canRemark = computed(() => checkPermission(10192));
-const canDeliver = computed(() => checkPermission(10195));
-const canRefuse = computed(() => checkPermission(10196));
+const canViewTable = computed(() => checkPermission(10_188));
+const canExport = computed(() => checkPermission(10_189));
+const canBatchDeliver = computed(() => checkPermission(10_190));
+const canBatchReject = computed(() => checkPermission(10_182));
+const canRemark = computed(() => checkPermission(10_192));
+const canDeliver = computed(() => checkPermission(10_195));
+const canRefuse = computed(() => checkPermission(10_196));
 
 const filterLoginAccount = ref('');
 const filterPackageName = ref('');
@@ -395,7 +395,7 @@ function parseBatchLines(text: string) {
 
 async function previewBatchUpload() {
   const orderIds = parseBatchLines(batchForm.OrderIdsText);
-  if (!orderIds.length) {
+  if (orderIds.length === 0) {
     message.warning('请输入订单号，每行一个或用逗号分隔');
     return;
   }
@@ -410,7 +410,7 @@ async function previewBatchUpload() {
     uploadSummary.Edit = Number(result.Edit || 0);
     uploadSummary.NoEdit = Number(result.NoEdit || 0);
     uploadSummary.OrderIdNoMatch = Number(result.OrderIdNoMatch || 0);
-    if (!uploadPreview.value.length) {
+    if (uploadPreview.value.length === 0) {
       message.warning('未匹配到可发货订单');
     }
   } finally {
@@ -458,7 +458,7 @@ async function submitBatchDeliver() {
 }
 
 function openBatchReject() {
-  if (!selectedRows.value.length) {
+  if (selectedRows.value.length === 0) {
     message.warning('请先勾选待发货记录');
     return;
   }
@@ -554,10 +554,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const rows = normalizeRows(result.Items || []);
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -614,118 +614,123 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPackageName"
-          allow-clear
-          placeholder="请输入产品名称"
-        >
-          <template #addonBefore>产品名称</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterActivityType"
-        :options="activityTypeOptions"
-      />
-      <Select
-        v-if="filterActivityType === ACTIVITY_TYPE_LUCKY_DRAW"
-        v-model:value="filterBonusCategory"
-        :options="LUCKY_DRAW_BONUS_CATEGORY_OPTIONS"
-      />
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterBonusTitle"
-          allow-clear
-          placeholder="请输入活动标题"
-        >
-          <template #addonBefore>活动标题</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterGiftName"
-          allow-clear
-          placeholder="请输入奖品名称"
-        >
-          <template #addonBefore>奖品名称</template>
-        </Input>
-      </div>
-      <Select
-        v-model:value="filterGiftType"
-        :options="GIFT_TYPE_FILTER_OPTIONS"
-      />
-      <Select
-        v-model:value="filterAuditStatus"
-        :options="GIFT_LUCKY_DELIVER_STATUS_OPTIONS"
-      />
-      <Select
-        v-model:value="filterPlayerStatus"
-        :options="playerStatusOptions"
-      />
-      <Select
-        v-model:value="filterRiskMessage"
-        :options="GIFT_RISK_OPTIONS"
-      />
-      <Select
-        v-model:value="filterIsManual"
-        :options="GIFT_IS_MANUAL_OPTIONS"
-      />
-      <Select
-        v-model:value="filterVipLevel"
-        :options="VIP_LEVEL_OPTIONS"
-      />
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPackageName"
+            allow-clear
+            placeholder="请输入产品名称"
+          >
+            <template #addonBefore>产品名称</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterActivityType"
+          :options="activityTypeOptions"
+        />
+        <Select
+          v-if="filterActivityType === ACTIVITY_TYPE_LUCKY_DRAW"
+          v-model:value="filterBonusCategory"
+          :options="LUCKY_DRAW_BONUS_CATEGORY_OPTIONS"
+        />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterBonusTitle"
+            allow-clear
+            placeholder="请输入活动标题"
+          >
+            <template #addonBefore>活动标题</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterGiftName"
+            allow-clear
+            placeholder="请输入奖品名称"
+          >
+            <template #addonBefore>奖品名称</template>
+          </Input>
+        </div>
+        <Select
+          v-model:value="filterGiftType"
+          :options="GIFT_TYPE_FILTER_OPTIONS"
+        />
+        <Select
+          v-model:value="filterAuditStatus"
+          :options="GIFT_LUCKY_DELIVER_STATUS_OPTIONS"
+        />
+        <Select
+          v-model:value="filterPlayerStatus"
+          :options="playerStatusOptions"
+        />
+        <Select
+          v-model:value="filterRiskMessage"
+          :options="GIFT_RISK_OPTIONS"
+        />
+        <Select
+          v-model:value="filterIsManual"
+          :options="GIFT_IS_MANUAL_OPTIONS"
+        />
+        <Select v-model:value="filterVipLevel" :options="VIP_LEVEL_OPTIONS" />
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterApplyDateRange" />
         </div>
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterApproveDateRange" />
         </div>
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDeliverDateRange" />
         </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterExpressOrderId"
-          allow-clear
-          placeholder="请输入快递单号"
-        >
-          <template #addonBefore>快递单号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单号"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-      </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterExpressOrderId"
+            allow-clear
+            placeholder="请输入快递单号"
+          >
+            <template #addonBefore>快递单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-        导出 Excel
-      </Button>
-      <Button v-if="canBatchDeliver" type="primary" @click="openBatchDeliver">
-        批量发货
-      </Button>
-      <Button v-if="canBatchReject" danger @click="openBatchReject">
-        批量拒绝
-      </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
+          <Button
+            v-if="canBatchDeliver"
+            type="primary"
+            @click="openBatchDeliver"
+          >
+            批量发货
+          </Button>
+          <Button v-if="canBatchReject" danger @click="openBatchReject">
+            批量拒绝
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">
@@ -836,13 +841,13 @@ onMounted(() => {
             校验订单
           </Button>
         </Space>
-        <div v-if="uploadPreview.length" class="mb-3 text-sm text-gray-600">
+        <div v-if="uploadPreview.length > 0" class="mb-3 text-sm text-gray-600">
           共 {{ uploadSummary.total }} 条，可修改 {{ uploadSummary.Edit }} 条，
           未变动 {{ uploadSummary.NoEdit }} 条，未识别
           {{ uploadSummary.OrderIdNoMatch }} 条
         </div>
         <Table
-          v-if="uploadPreview.length"
+          v-if="uploadPreview.length > 0"
           :columns="previewColumns"
           :data-source="uploadPreview"
           :pagination="false"

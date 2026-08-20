@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -7,9 +9,7 @@ import { Card, Result } from 'ant-design-vue';
 
 import { fetchCoinDealerSellPlayerListApi } from '#/api/coinDealer';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import { coinDealerSellPlayerColumns } from '../shared/columns';
 
@@ -27,7 +27,7 @@ const listConfig = computed(
 
 const canViewPage = computed(
   () =>
-    checkPermission(11127) || checkPermission(10548) || checkPermission(10549),
+    checkPermission(11_127) || checkPermission(10_548) || checkPermission(10_549),
 );
 </script>
 

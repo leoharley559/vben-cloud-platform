@@ -4,12 +4,11 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import { computed, onMounted, ref } from 'vue';
 
 import { Button, Result, Space } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
-import { fetchCloudCoinDailyListApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchCloudCoinDailyListApi } from '#/api/systemManage/extra';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 
@@ -28,7 +27,7 @@ interface DailyRow {
 }
 
 const { checkPermission } = useCloudPermission();
-const canViewTable = computed(() => checkPermission(11430));
+const canViewTable = computed(() => checkPermission(11_430));
 
 /** 对齐旧站：近 7 个自然日含今天 */
 const defaultRange = getLast7CalendarDaysRangeSeconds();
@@ -130,18 +129,22 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable" class="space-y-4">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="云币日报" precision="date" />
+      <div class="ops-query-filters">
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="云币日报"
+            precision="date"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
     <Grid />
   </div>
   <Result

@@ -112,8 +112,7 @@ async function saveBlack() {
   }
   try {
     const data = { Account: form.Account, Desc: form.Desc, Id: form.Id };
-    if (editing.value) await editDrawmoneyBlackApi(data);
-    else await addDrawmoneyBlackApi(data);
+    await (editing.value ? editDrawmoneyBlackApi(data) : addDrawmoneyBlackApi(data));
     formOpen.value = false;
     message.success('保存成功');
     blackGridApi.reload();
@@ -160,11 +159,7 @@ function removeBlack(row: Record<string, unknown>) {
       </div>
       <Button type="primary" @click="blackGridApi.reload()">查询</Button>
       <Button @click="resetAndReload">重置</Button>
-      <Button
-        v-if="checkPermission(10165)"
-        type="primary"
-        @click="editBlack()"
-      >
+      <Button v-if="checkPermission(10165)" type="primary" @click="editBlack()">
         新增黑名单
       </Button>
     </Space>

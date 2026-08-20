@@ -10,12 +10,12 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Result,
   Space,
   Table,
   Tag,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -31,7 +31,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 defineOptions({ name: 'EmailOutgoingAccountList' });
 
 const { checkPermission } = useCloudPermission();
-const canView = computed(() => checkPermission(13089));
+const canView = computed(() => checkPermission(13_089));
 
 const loading = ref(false);
 const saving = ref(false);

@@ -19,12 +19,14 @@ export async function fetchTeamDailyListApi(query: TeamDailyListQuery) {
   );
   // 空环境 HistoryItems 常为 null；Today/Banner 可能为全 0 对象
   return {
-    BannerItems: data?.BannerItems && typeof data.BannerItems === 'object'
-      ? data.BannerItems
-      : {},
+    BannerItems:
+      data?.BannerItems && typeof data.BannerItems === 'object'
+        ? data.BannerItems
+        : {},
     HistoryItems: Array.isArray(data?.HistoryItems) ? data.HistoryItems : [],
-    TodayItems: data?.TodayItems && typeof data.TodayItems === 'object'
-      ? data.TodayItems
-      : {},
+    TodayItems:
+      data?.TodayItems && typeof data.TodayItems === 'object'
+        ? data.TodayItems
+        : {},
   } satisfies TeamDailyResult;
 }

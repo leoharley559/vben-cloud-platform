@@ -140,7 +140,12 @@ const gridOptions: VxeTableGridOptions<SpillManageItem> = {
       minWidth: 160,
       title: '申请时间',
     },
-    { field: 'LoginAccount', minWidth: 120, slots: { default: 'loginAccount' }, title: '游戏账号' },
+    {
+      field: 'LoginAccount',
+      minWidth: 120,
+      slots: { default: 'loginAccount' },
+      title: '游戏账号',
+    },
     {
       field: 'RegisterTime',
       formatter: ({ cellValue }) => formatNetcashDateTime(cellValue),
@@ -163,7 +168,12 @@ const gridOptions: VxeTableGridOptions<SpillManageItem> = {
     { field: 'ApplyPlatform', minWidth: 110, title: '申请终端' },
     { field: 'Desc', minWidth: 160, title: '申请备注' },
     { field: 'AgreeDesc', minWidth: 160, title: '操作备注' },
-    { field: 'Image', minWidth: 180, slots: { default: 'images' }, title: '上传图片' },
+    {
+      field: 'Image',
+      minWidth: 180,
+      slots: { default: 'images' },
+      title: '上传图片',
+    },
     { field: 'ApproveName', minWidth: 100, title: '操作人' },
     {
       field: 'ApproveTime',
@@ -260,70 +270,73 @@ onMounted(() => {
   >
     <Card>
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterLoginAccount"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterLoginAccount"
+              allow-clear
+              @press-enter="search"
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterAccount"
+              allow-clear
+              @press-enter="search"
+              placeholder="请输入申请代理"
+            >
+              <template #addonBefore>申请代理</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">产品包</span>
+            <Select
+              v-model:value="filterPackageId"
+              allow-clear
+              :options="packageOptions"
+              placeholder="请选择产品包"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="filterStatus"
+              allow-clear
+              :options="[
+                { label: '全部', value: 0 },
+                { label: '申请中', value: 1 },
+                { label: '已通过', value: 2 },
+                { label: '已拒绝', value: 3 },
+              ]"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
+          <Space.Compact>
+            <span class="query-field-addon">VIP等级</span>
+            <Select
+              v-model:value="filterVipLevel"
+              :options="[
+                { label: '全部 VIP', value: -1 },
+                ...Array.from({ length: 11 }, (_, value) => ({
+                  label: `VIP${value}`,
+                  value,
+                })),
+              ]"
+              placeholder="请选择VIP等级"
+            />
+          </Space.Compact>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="search">查询</Button>
+            <Button @click="resetQuery">重置</Button>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterAccount"
-            allow-clear
-            @press-enter="search"
-            placeholder="请输入申请代理"
-          >
-            <template #addonBefore>申请代理</template>
-          </Input>
-        </div>
-        <Space.Compact>
-          <span class="query-field-addon">产品包</span>
-          <Select
-            v-model:value="filterPackageId"
-            allow-clear
-           
-            :options="packageOptions"
-            placeholder="请选择产品包"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select
-            v-model:value="filterStatus"
-            allow-clear
-           
-            :options="[
-              { label: '全部', value: 0 },
-              { label: '申请中', value: 1 },
-              { label: '已通过', value: 2 },
-              { label: '已拒绝', value: 3 },
-            ]"
-            placeholder="请选择状态"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">VIP等级</span>
-          <Select
-            v-model:value="filterVipLevel"
-           
-            :options="[{ label: '全部 VIP', value: -1 }, ...Array.from({ length: 11 }, (_, value) => ({ label: `VIP${value}`, value }))]"
-            placeholder="请选择VIP等级"
-          />
-        </Space.Compact>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
-        </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="search">查询</Button>
-        <Button @click="resetQuery">重置</Button>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <SummaryCards :items="summaryItems" />
 
@@ -377,7 +390,12 @@ onMounted(() => {
         此操作将{{ auditStatus === 2 ? '通过' : '拒绝' }}玩家
         {{ auditRow?.PlayerId || auditRow?.LoginAccount }} 的申请，是否继续？
       </p>
-      <Input.TextArea v-model:value="auditRemark" :maxlength="50" placeholder="操作备注（最多 50 字）" show-count />
+      <Input.TextArea
+        v-model:value="auditRemark"
+        :maxlength="50"
+        placeholder="操作备注（最多 50 字）"
+        show-count
+      />
     </Modal>
   </Page>
   <Result v-else status="403" sub-title="无溢出管理查看权限" title="403" />

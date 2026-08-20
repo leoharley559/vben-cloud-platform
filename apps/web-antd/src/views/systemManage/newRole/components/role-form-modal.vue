@@ -10,10 +10,10 @@ import {
   Drawer,
   Form,
   Input,
+  message,
   Modal,
   Spin,
   Tree,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -32,15 +32,15 @@ import { isValidRemark } from '#/views/systemManage/adminManage/utils/admin-form
 
 defineOptions({ name: 'RoleFormModal' });
 
+const emit = defineEmits<{
+  submit: [payload: { form: RoleFormModel; mode: 'create' | 'update' }];
+}>();
+
 interface RoleParamItem {
   Id: number;
   Name: string;
   Type?: number;
 }
-
-const emit = defineEmits<{
-  submit: [payload: { form: RoleFormModel; mode: 'create' | 'update' }];
-}>();
 
 const visible = ref(false);
 const loading = ref(false);
@@ -128,7 +128,7 @@ function closeParamDrawer() {
   paramTemp.value = { Id: 0, Params: [] };
 }
 
-function parseIdList(value?: string | number[] | Array<number | string>) {
+function parseIdList(value?: Array<number | string> | number[] | string) {
   if (Array.isArray(value)) {
     return value.map(Number).filter((item) => !Number.isNaN(item));
   }
@@ -217,8 +217,8 @@ async function handleOpenDesParams(node: RoleTreeNode, event?: Event) {
       RoleId: roleId,
       SubMenuId: node.Id,
     })) as {
-      ParamsList?: RoleParamItem[] | null;
-      RoleParams?: { Id?: number; Params?: string } | null;
+      ParamsList?: null | RoleParamItem[];
+      RoleParams?: null | { Id?: number; Params?: string };
     };
 
     paramList.value = data?.ParamsList ?? [];
@@ -363,7 +363,9 @@ defineExpose({
                     class="!px-1"
                     size="small"
                     type="link"
-                    @click.stop="handleOpenDesParams(node as RoleTreeNode, $event)"
+                    @click.stop="
+                      handleOpenDesParams(node as RoleTreeNode, $event)
+                    "
                   >
                     脱敏
                   </Button>
@@ -402,10 +404,7 @@ defineExpose({
                 {{ item.Name }}
               </Checkbox>
             </Checkbox.Group>
-            <div
-              v-if="type3Params.length === 0"
-              class="text-sm text-gray-400"
-            >
+            <div v-if="type3Params.length === 0" class="text-sm text-gray-400">
               暂无 Type=3 参数
             </div>
           </div>

@@ -24,13 +24,9 @@ export function calcDailyReportRow(el: DailyReportRow | null | undefined) {
     sumReg === 0 ? 0 : (sumFirstPayNum / sumReg) * 100
   ).toFixed(2);
   el.AverageFirstPayMoney =
-    sumFirstPayNum === 0
-      ? 0
-      : Math.round(sumFirstPayMoney / sumFirstPayNum);
+    sumFirstPayNum === 0 ? 0 : Math.round(sumFirstPayMoney / sumFirstPayNum);
   el.AverageTransBetMoney =
-    sumTransBetNum1 === 0
-      ? 0
-      : Math.round(sumTransBetMoney1 / sumTransBetNum1);
+    sumTransBetNum1 === 0 ? 0 : Math.round(sumTransBetMoney1 / sumTransBetNum1);
   el.DiffPayWithdrawMoney = sumPayMergerMoney - sumWithdrawMoney;
   el.PercentPayWithdraw = (
     sumPayMergerMoney === 0 ? 0 : (sumWithdrawMoney / sumPayMergerMoney) * 100

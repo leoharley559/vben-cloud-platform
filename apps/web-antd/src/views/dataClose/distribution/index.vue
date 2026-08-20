@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
+
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -10,9 +12,7 @@ import {
   fetchDistributionRegListApi,
 } from '#/api/dataClose/finance-report';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-
 import OperationListPanel from '#/views/operationalManage/components/operation-list-panel.vue';
-import type { OperationListConfig } from '#/views/operationalManage/components/operation-list-panel.vue';
 
 import { distributionColumns } from '../shared/columns';
 
@@ -42,7 +42,7 @@ const tabs = computed(() => [
   },
 ]);
 
-const canViewPage = computed(() => checkPermission(10530));
+const canViewPage = computed(() => checkPermission(10_530));
 const activeTab = ref('pay');
 
 onMounted(() => {

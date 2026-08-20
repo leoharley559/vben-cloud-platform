@@ -3,26 +3,19 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref, watch } from 'vue';
 
-import {
-  Button,
-  Input,
-  Modal,
-  Select,
-  Space,
-  message,
-} from 'ant-design-vue';
+import { Button, Input, message, Modal, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportRewardExchangeRecordApi,
   fetchRewardExchangeRecordApi,
 } from '#/api/operationManage/reward-mall';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import PassPopup from '#/components/security/pass-popup.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import PassPopup from '#/components/security/pass-popup.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { formatOperationDateTime } from '#/utils/operation-status';
@@ -33,7 +26,7 @@ import { resolveProductName } from './reward-goods-shared';
 defineOptions({ name: 'GoodsDetailsModal' });
 
 const props = defineProps<{
-  product?: { Id: number | string; LangText?: unknown } | null;
+  product?: null | { Id: number | string; LangText?: unknown };
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
@@ -85,7 +78,11 @@ function buildQuery(page: { currentPage: number; pageSize: number }) {
 }
 
 function buildExportQuery() {
-  const { Page: _page, PageSize: _size, ...rest } = buildQuery({
+  const {
+    Page: _page,
+    PageSize: _size,
+    ...rest
+  } = buildQuery({
     currentPage: 1,
     pageSize: 20,
   });
@@ -185,9 +182,12 @@ async function handleExport(payload: Record<string, unknown>) {
 <template>
   <Modal v-model:open="open" :footer="null" :title="title" width="92%">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterExchangeDateRange" label="兑换时间" />
+      <div class="ops-query-filters">
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterExchangeDateRange"
+            label="兑换时间"
+          />
         </div>
         <div class="flex flex-col gap-1">
           <Input
@@ -212,7 +212,6 @@ async function handleExport(payload: Record<string, unknown>) {
           <Select
             v-model:value="filterVipLevel"
             allow-clear
-           
             mode="multiple"
             :options="VIP_LEVEL_OPTIONS.filter((item) => item.value !== -1)"
             placeholder="请选择VIP等级"
@@ -220,36 +219,38 @@ async function handleExport(payload: Record<string, unknown>) {
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">渠道号</span>
-          <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
-           
             :field-names="{ label: 'PackageName', value: 'PackageId' }"
             :options="packageOptions"
             placeholder="请选择所属产品"
           />
         </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterRegDateRange" label="注册时间" />
+          <QueryDatetimeRangePicker
+            v-model="filterRegDateRange"
+            label="注册时间"
+          />
         </div>
         <div class="query-filter-actions">
           <Space>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-        </Space>
-        <Button
-        :loading="exportLoading"
-        @click="handleExportClick"
-      >
-        导出 Excel
-      </Button>
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
+          <Button :loading="exportLoading" @click="handleExportClick">
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #loginAccount="{ row }">
@@ -268,10 +269,6 @@ async function handleExport(payload: Record<string, unknown>) {
       </template>
     </Grid>
 
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </Modal>
 </template>

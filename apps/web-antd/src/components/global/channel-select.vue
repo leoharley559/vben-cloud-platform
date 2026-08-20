@@ -3,8 +3,8 @@ import type { ChannelInfoOption } from '#/types/config';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Select } from 'ant-design-vue';
 import { useDebounceFn } from '@vueuse/core';
+import { Select } from 'ant-design-vue';
 
 import { fetchChildChannelInfoApi } from '#/api/config/index';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
@@ -43,7 +43,7 @@ const selectOptions = computed(() =>
 
 function loadFromProjectConfig() {
   const list = cloudStore.projectConfig?.ChildChannelInfo;
-  if (Array.isArray(list) && list.length) {
+  if (Array.isArray(list) && list.length > 0) {
     channelList.value = list as ChannelInfoOption[];
   }
 }
@@ -65,7 +65,7 @@ const handleSearch = useDebounceFn(async (query: string) => {
 watch(
   () => cloudStore.projectConfig?.ChildChannelInfo,
   () => {
-    if (!channelList.value.length) {
+    if (channelList.value.length === 0) {
       loadFromProjectConfig();
     }
   },

@@ -17,11 +17,11 @@ defineOptions({ name: 'VerifyCodeManage' });
 
 const { checkPermission } = useCloudPermission();
 
-const canMobileCode = computed(() => checkPermission(10026));
-const canAreaCode = computed(() => checkPermission(11921));
-const canEmailCode = computed(() => checkPermission(13011));
-const canEmailChannel = computed(() => checkPermission(13089));
-const canOtpManage = computed(() => checkPermission(13204));
+const canMobileCode = computed(() => checkPermission(10_026));
+const canAreaCode = computed(() => checkPermission(11_921));
+const canEmailCode = computed(() => checkPermission(13_011));
+const canEmailChannel = computed(() => checkPermission(13_089));
+const canOtpManage = computed(() => checkPermission(13_204));
 
 const canViewAny = computed(
   () =>

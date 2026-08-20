@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+import type { AdvancedFilterRow } from './components/player-advanced-search-modal.vue';
+import type { BatchActType } from './components/player-batch-edit-modal.vue';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { PlayerListItem } from '#/types/operation-manage';
 
@@ -13,15 +16,16 @@ import {
   Dropdown,
   Input,
   Menu,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   exportPlayerListApi,
   fetchPlayerListApi,
@@ -29,13 +33,12 @@ import {
 } from '#/api/operationManage/player';
 import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -48,9 +51,7 @@ import {
 import { PLAYER_LIST_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import PlayerAdvancedSearchModal from './components/player-advanced-search-modal.vue';
-import type { AdvancedFilterRow } from './components/player-advanced-search-modal.vue';
 import PlayerBatchEditModal from './components/player-batch-edit-modal.vue';
-import type { BatchActType } from './components/player-batch-edit-modal.vue';
 import PlayerBulkAccountModal from './components/player-bulk-account-modal.vue';
 import PlayerKickModal from './components/player-kick-modal.vue';
 import PlayerLevelModal from './components/player-level-modal.vue';
@@ -115,34 +116,34 @@ const { checkPermission } = useCloudPermission();
 const { memberTypeOptions, packageOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
-const canViewPage = computed(() => checkPermission(10012));
-const canViewTable = computed(() => checkPermission(10014));
-const canRowAction = computed(() => checkPermission(10015));
-const canBatchEdit = computed(() => checkPermission(11460));
-const canExport = computed(() => checkPermission(10016));
-const canFilterStatus = computed(() => checkPermission(11380));
-const canFilterLoginAccount = computed(() => checkPermission(11381));
-const canFilterPhone = computed(() => checkPermission(11382));
-const canFilterEmail = computed(() => checkPermission(11383));
-const canFilterPromoter = computed(() => checkPermission(11384));
-const canFilterPlayerIds = computed(() => checkPermission(12157));
-const canFilterChannel = computed(() => checkPermission(11385));
-const canFilterPassword = computed(() => checkPermission(11916));
-const canFilterInviter = computed(() => checkPermission(11386));
-const canFilterRegIp = computed(() => checkPermission(11387));
-const canFilterLastIp = computed(() => checkPermission(11388));
-const canFilterDeviceId = computed(() => checkPermission(11389));
-const canFilterLastDevice = computed(() => checkPermission(11390));
-const canFilterRealName = computed(() => checkPermission(11391));
-const canFilterBank = computed(() => checkPermission(11393));
-const canFilterPackage = computed(() => checkPermission(11395));
-const canFilterVip = computed(() => checkPermission(11396));
-const canFilterPlayerLevel = computed(() => checkPermission(12296));
-const canFilterBindPhone = computed(() => checkPermission(11397));
-const canFilterTag = computed(() => checkPermission(12158));
-const canFilterFirstPay = computed(() => checkPermission(13205));
-const canFilterMemberType = computed(() => checkPermission(12296));
-const canFilterRegDate = computed(() => checkPermission(11399));
+const canViewPage = computed(() => checkPermission(10_012));
+const canViewTable = computed(() => checkPermission(10_014));
+const canRowAction = computed(() => checkPermission(10_015));
+const canBatchEdit = computed(() => checkPermission(11_460));
+const canExport = computed(() => checkPermission(10_016));
+const canFilterStatus = computed(() => checkPermission(11_380));
+const canFilterLoginAccount = computed(() => checkPermission(11_381));
+const canFilterPhone = computed(() => checkPermission(11_382));
+const canFilterEmail = computed(() => checkPermission(11_383));
+const canFilterPromoter = computed(() => checkPermission(11_384));
+const canFilterPlayerIds = computed(() => checkPermission(12_157));
+const canFilterChannel = computed(() => checkPermission(11_385));
+const canFilterPassword = computed(() => checkPermission(11_916));
+const canFilterInviter = computed(() => checkPermission(11_386));
+const canFilterRegIp = computed(() => checkPermission(11_387));
+const canFilterLastIp = computed(() => checkPermission(11_388));
+const canFilterDeviceId = computed(() => checkPermission(11_389));
+const canFilterLastDevice = computed(() => checkPermission(11_390));
+const canFilterRealName = computed(() => checkPermission(11_391));
+const canFilterBank = computed(() => checkPermission(11_393));
+const canFilterPackage = computed(() => checkPermission(11_395));
+const canFilterVip = computed(() => checkPermission(11_396));
+const canFilterPlayerLevel = computed(() => checkPermission(12_296));
+const canFilterBindPhone = computed(() => checkPermission(11_397));
+const canFilterTag = computed(() => checkPermission(12_158));
+const canFilterFirstPay = computed(() => checkPermission(13_205));
+const canFilterMemberType = computed(() => checkPermission(12_296));
+const canFilterRegDate = computed(() => checkPermission(11_399));
 
 const filterStatus = ref<number[]>([]);
 const filterLoginAccount = ref('');
@@ -174,7 +175,7 @@ const visibleColumns = ref<string[]>(
     try {
       const raw = localStorage.getItem(COLUMN_STORAGE_KEY);
       const parsed = raw ? (JSON.parse(raw) as string[]) : [];
-      return parsed.length ? parsed : [...DEFAULT_COLUMNS];
+      return parsed.length > 0 ? parsed : [...DEFAULT_COLUMNS];
     } catch {
       return [...DEFAULT_COLUMNS];
     }
@@ -195,7 +196,10 @@ const summaryItems = computed(() => [
     label: '场馆钱包总金额',
     value: formatAmountFromCent(totalData.value.SumWalletBalance),
   },
-  { label: '中心钱包总金额', value: formatAmountFromCent(totalData.value.SumGold) },
+  {
+    label: '中心钱包总金额',
+    value: formatAmountFromCent(totalData.value.SumGold),
+  },
 ]);
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const levelFilterOptions = ref<
@@ -208,19 +212,19 @@ const levelFilterOptions = ref<
 const batchOpen = ref(false);
 const batchActType = ref<BatchActType>(1);
 const remarkOpen = ref(false);
-const remarkPlayerId = ref<number | string | null>(null);
+const remarkPlayerId = ref<null | number | string>(null);
 const remarkLoginAccount = ref('');
 const advancedOpen = ref(false);
 const bulkOpen = ref(false);
 const kickOpen = ref(false);
-const kickPlayerId = ref<number | string | null>(null);
+const kickPlayerId = ref<null | number | string>(null);
 const kickLastBlockTime = ref(0);
 const tagOpen = ref(false);
-const tagPlayerId = ref<number | string | null>(null);
+const tagPlayerId = ref<null | number | string>(null);
 const tagIdCsv = ref('');
 const levelOpen = ref(false);
-const levelPlayerId = ref<number | string | null>(null);
-const levelPlayerLevelId = ref<number | string | null>(null);
+const levelPlayerId = ref<null | number | string>(null);
+const levelPlayerLevelId = ref<null | number | string>(null);
 
 const selectedPlayerIds = computed(() =>
   selectedRows.value
@@ -235,7 +239,7 @@ const vipOptions = computed(() => {
       VIPLevelMap?: Array<{ VipLevelId: number; VipLevelName: string }>;
     }
   )?.VIPLevelMap;
-  if (Array.isArray(map) && map.length) {
+  if (Array.isArray(map) && map.length > 0) {
     return map.map((item) => ({
       label: item.VipLevelName || `VIP${item.VipLevelId}`,
       value: item.VipLevelId,
@@ -464,12 +468,10 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
       }
       continue;
     }
-    if (!showColumn(storageKey) && !showColumn(key)) {
-      // Keep LoginAccount always visible for usability
-      if (def.field !== 'LoginAccount') {
+    if (!showColumn(storageKey) && !showColumn(key) && // Keep LoginAccount always visible for usability
+      def.field !== 'LoginAccount') {
         continue;
       }
-    }
     cols.push({
       field: def.field,
       formatter: def.formatter as never,
@@ -728,7 +730,7 @@ async function handleExport(payload: Record<string, unknown>) {
 async function handleCopy() {
   const rows =
     (gridApi.grid?.getTableData?.().fullData as PlayerListItem[]) || [];
-  if (!rows.length) {
+  if (rows.length === 0) {
     message.warning('暂无数据可复制');
     return;
   }
@@ -892,7 +894,10 @@ onMounted(async () => {
           <div v-if="canFilterChannel" class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">渠道</span>
-              <ChannelSelect v-model="filterChannelIds" placeholder="请输入渠道号" />
+              <ChannelSelect
+                v-model="filterChannelIds"
+                placeholder="请输入渠道号"
+              />
             </Space.Compact>
           </div>
           <div v-if="canFilterInviter" class="flex flex-col gap-1">
@@ -1029,11 +1034,17 @@ onMounted(async () => {
             </Input>
           </div>
           <div v-if="canFilterRegDate" class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="注册时间" />
-        </div>
+            <QueryDatetimeRangePicker
+              v-model="filterDateRange"
+              label="注册时间"
+            />
+          </div>
           <div v-if="canFilterFirstPay" class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterFirstPayRange" label="存款时间" />
-        </div>
+            <QueryDatetimeRangePicker
+              v-model="filterFirstPayRange"
+              label="存款时间"
+            />
+          </div>
           <div class="query-filter-wide">
             <Space.Compact>
               <span class="query-field-addon">显示列</span>
@@ -1047,40 +1058,44 @@ onMounted(async () => {
               />
             </Space.Compact>
           </div>
-        <div class="query-filter-actions">
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button @click="handleReset">重置</Button>
-          <Button type="default" @click="advancedOpen = true">高级搜索</Button>
-          <Button @click="handleCopy">复制</Button>
-          <Button
-            v-if="canExport"
-            :loading="exportLoading"
-            @click="handleExportClick"
-          >
-            导出 Excel
-          </Button>
-          <Dropdown v-if="canBatchEdit">
-            <Button>批量编辑</Button>
-            <template #overlay>
-              <Menu>
-                <Menu.Item key="1" @click="openBatch(1)"
-                  >批量修改标签状态</Menu.Item
-                >
-                <Menu.Item key="2" @click="openBatch(2)"
-                  >批量修改备注</Menu.Item
-                >
-                <Menu.Item key="3" @click="openBatch(3)"
-                  >批量重置次数</Menu.Item
-                >
-                <Menu.Item key="4" @click="openBatch(4)">批量上标签</Menu.Item>
-                <Menu.Item key="5" @click="openBatch(5)"
-                  >批量修改会员层级</Menu.Item
-                >
-              </Menu>
-            </template>
-          </Dropdown>
-        </div>
-      </template>
+          <div class="query-filter-actions">
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+            <Button type="default" @click="advancedOpen = true">
+高级搜索
+</Button>
+            <Button @click="handleCopy">复制</Button>
+            <Button
+              v-if="canExport"
+              :loading="exportLoading"
+              @click="handleExportClick"
+            >
+              导出 Excel
+            </Button>
+            <Dropdown v-if="canBatchEdit">
+              <Button>批量编辑</Button>
+              <template #overlay>
+                <Menu>
+                  <Menu.Item key="1" @click="openBatch(1)">
+批量修改标签状态
+</Menu.Item>
+                  <Menu.Item key="2" @click="openBatch(2)">
+批量修改备注
+</Menu.Item>
+                  <Menu.Item key="3" @click="openBatch(3)">
+批量重置次数
+</Menu.Item>
+                  <Menu.Item key="4" @click="openBatch(4)">
+批量上标签
+</Menu.Item>
+                  <Menu.Item key="5" @click="openBatch(5)">
+批量修改会员层级
+</Menu.Item>
+                </Menu>
+              </template>
+            </Dropdown>
+          </div>
+        </template>
 
         <template #summary>
           <SummaryCards :items="summaryItems" />
@@ -1104,9 +1119,9 @@ onMounted(async () => {
               <Button size="small" type="link">操作</Button>
               <template #overlay>
                 <Menu>
-                  <Menu.Item key="remark" @click="openRemark(row)"
-                    >备注</Menu.Item
-                  >
+                  <Menu.Item key="remark" @click="openRemark(row)">
+备注
+</Menu.Item>
                   <Menu.Item
                     key="good"
                     @click="switchStatus(row, Number(row.Status) === 1 ? 0 : 1)"
@@ -1201,11 +1216,7 @@ onMounted(async () => {
       :player-level-id="levelPlayerLevelId"
       @success="handleSearch"
     />
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleExport" />
   </Page>
 
   <Page v-else auto-content-height title="会员列表">

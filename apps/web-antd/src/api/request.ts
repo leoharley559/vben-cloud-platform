@@ -1,4 +1,8 @@
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+
 import type { RequestClientOptions } from '@vben/request';
+
+import type { CloudApiResponse } from '#/types/cloud-platform';
 
 import { useAppConfig } from '@vben/hooks';
 import { preferences } from '@vben/preferences';
@@ -6,10 +10,8 @@ import { RequestClient } from '@vben/request';
 import { useAccessStore } from '@vben/stores';
 
 import { message, Modal } from 'ant-design-vue';
-import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import qs from 'qs';
 
-import type { CloudApiResponse } from '#/types/cloud-platform';
 import {
   getAuthToken,
   getCloudToken,

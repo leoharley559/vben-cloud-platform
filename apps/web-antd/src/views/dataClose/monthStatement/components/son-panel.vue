@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
 
+import type { AgentNode, StatementRow } from '#/views/dataClose/shared/statement-helpers';
+
 import { computed, onMounted, ref } from 'vue';
 
 import {
@@ -25,22 +27,7 @@ import {
   toMonthRange,
 } from '#/views/dataClose/shared/report-utils';
 import StatementAgentTree from '#/views/dataClose/shared/statement-agent-tree.vue';
-import {
-  type AgentNode,
-  asNumber,
-  defaultSonMonthRange,
-  displayAmount,
-  displayCent,
-  ensureMonthSpan,
-  formatCrossLabel,
-  fromCent,
-  mapItemsAgents,
-  parseServiceRate,
-  profitClass,
-  resolveTotalSum,
-  type StatementRow,
-  venueName,
-} from '#/views/dataClose/shared/statement-helpers';
+import { asNumber, defaultSonMonthRange, displayAmount, displayCent, ensureMonthSpan, formatCrossLabel, fromCent, mapItemsAgents, parseServiceRate, profitClass, resolveTotalSum, venueName } from '#/views/dataClose/shared/statement-helpers';
 
 import SonDetailModal from './son-detail-modal.vue';
 
@@ -227,7 +214,8 @@ function onDrill(agent: AgentNode) {
 
 function onJump(agent: AgentNode, index: number) {
   adminPath.value = adminPath.value.slice(0, index + 1);
-  adminId.value = String(agent.Id) === String(rootAccount.value.Id) ? '' : agent.Id;
+  adminId.value =
+    String(agent.Id) === String(rootAccount.value.Id) ? '' : agent.Id;
   inquireId.value = agent.Id;
   void loadList();
 }
@@ -351,7 +339,9 @@ onMounted(() => {
         </Space.Compact>
       </div>
       <template #actions>
-        <Button type="primary" :loading="loading" @click="loadList">查询</Button>
+        <Button type="primary" :loading="loading" @click="loadList">
+查询
+</Button>
         <Button :disabled="loading" @click="reset">重置</Button>
         <Button v-if="canExport" :disabled="loading" @click="handleExport">
           导出 Excel
@@ -456,7 +446,9 @@ onMounted(() => {
             <Table.Summary.Cell :index="9">
               {{ displayCent(totalSum.SumMustGetTaxMoney) }}
             </Table.Summary.Cell>
-            <Table.Summary.Cell v-if="canDetail" :index="10">-</Table.Summary.Cell>
+            <Table.Summary.Cell v-if="canDetail" :index="10">
+-
+</Table.Summary.Cell>
           </Table.Summary.Row>
         </Table.Summary>
       </template>

@@ -1,9 +1,10 @@
-import { requestClient } from '#/api/request';
 import type {
   CloudListResult,
   WithdrawListItem,
   WithdrawListQuery,
 } from '#/types/operation-manage';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -19,7 +20,7 @@ function normalizeWithdrawQuery(query: WithdrawListQuery) {
 
   const channelIds = params.ChannelIds;
   if (Array.isArray(channelIds)) {
-    params.ChannelIds = channelIds.length ? channelIds.join(',') : '';
+    params.ChannelIds = channelIds.length > 0 ? channelIds.join(',') : '';
   }
 
   return params;
@@ -206,7 +207,7 @@ export function addWithdrawRemarkApi(data: {
  */
 export function fetchWithdrawRejectReasonsApi() {
   return requestClient.get<
-    CloudListResult<{ Key?: string; Value?: string; [key: string]: unknown }>
+    CloudListResult<{ [key: string]: unknown; Key?: string; Value?: string; }>
   >('/backend/playerwithdraw/rejectreason');
 }
 

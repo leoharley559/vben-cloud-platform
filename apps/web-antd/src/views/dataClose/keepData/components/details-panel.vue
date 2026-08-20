@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { TableColumnType } from 'ant-design-vue';
 
+import type { KeepDetailsParam, KeepRow } from '../utils';
+
 import { computed, h, onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -28,22 +30,20 @@ import {
   fetchKeepDataQujianDetailsApi,
   fetchKeepDataSectionDauDetailApi,
 } from '#/api/dataClose/keep-data';
-import PassPopup from '#/components/security/pass-popup.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import PassPopup from '#/components/security/pass-popup.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   KEEP_DATA_FIRST_REG_EXPORT_PAGE_ID,
   KEEP_DATA_ONETIME_EXPORT_PAGE_ID,
   KEEP_DATA_QUJIAN_EXPORT_PAGE_ID,
 } from '#/utils/security-page-ids';
-import { exportRowsToXlsx, formatReportDateTime } from '#/views/dataClose/shared/report-utils';
-
 import {
-  type KeepDetailsParam,
-  keepDetailsSubTitle,
-  keepDetailsTitle,
-  type KeepRow,
-} from '../utils';
+  exportRowsToXlsx,
+  formatReportDateTime,
+} from '#/views/dataClose/shared/report-utils';
+
+import { keepDetailsSubTitle, keepDetailsTitle } from '../utils';
 
 defineOptions({ name: 'KeepDetailsPanel' });
 
@@ -66,7 +66,8 @@ const lastExportQuery = ref<Record<string, unknown>>({});
 
 const securePageId = computed(() => {
   const { page: p, type } = props.param;
-  if (p === 'oneTime' && type === 'oneTime') return KEEP_DATA_ONETIME_EXPORT_PAGE_ID;
+  if (p === 'oneTime' && type === 'oneTime')
+    return KEEP_DATA_ONETIME_EXPORT_PAGE_ID;
   if ((type === 'reg' || type === 'new') && p !== 'qujian') {
     return KEEP_DATA_FIRST_REG_EXPORT_PAGE_ID;
   }
@@ -173,45 +174,45 @@ function buildQuery(isExp = false) {
   const { page: p, type } = props.param;
 
   switch (p) {
-  case 'login': {
-    if (type !== 'new') base.Days = type;
-  
-  break;
-  }
-  case 'ltv': {
-    if (type !== 'new') {
-      base.Days = props.param.days;
-      base.EndTime = base.BeginTime;
+    case 'login': {
+      if (type !== 'new') base.Days = type;
+
+      break;
     }
-  
-  break;
-  }
-  case 'oneTime': {
-    if (type !== 'reg') {
-      base.Days = props.param.days;
+    case 'ltv': {
+      if (type !== 'new') {
+        base.Days = props.param.days;
+        base.EndTime = base.BeginTime;
+      }
+
+      break;
+    }
+    case 'oneTime': {
+      if (type !== 'reg') {
+        base.Days = props.param.days;
+        base.EndTime = '';
+      }
+
+      break;
+    }
+    case 'qujian': {
+      const [begin, end] = String(props.param.date || '').split('~');
+      base.BeginTime = begin || '';
+      base.EndTime = end || '';
+      if (type !== 'new') base.Days = type;
+
+      break;
+    }
+    case 'retention': {
       base.EndTime = '';
+      if (type !== 'pay' && type !== 'reg' && type !== 'once') {
+        base.Days = type;
+        base.ReportType = props.param.reportType;
+      }
+
+      break;
     }
-  
-  break;
-  }
-  case 'qujian': {
-    const [begin, end] = String(props.param.date || '').split('~');
-    base.BeginTime = begin || '';
-    base.EndTime = end || '';
-    if (type !== 'new') base.Days = type;
-  
-  break;
-  }
-  case 'retention': {
-    base.EndTime = '';
-    if (type !== 'pay' && type !== 'reg' && type !== 'once') {
-      base.Days = type;
-      base.ReportType = props.param.reportType;
-    }
-  
-  break;
-  }
-  // No default
+    // No default
   }
   return base;
 }
@@ -222,36 +223,61 @@ async function fetchDetail(isExp = false) {
 
   let data: { Items?: KeepRow[] | null; Pagination?: { MaxCount?: number } };
 
-  if (p === 'login') {
+  switch (p) {
+  case 'login': {
     data =
       type === 'new'
         ? await fetchKeepDataFirstRegDetailsApi(query)
         : await fetchKeepDataLoginDauDetailApi(query);
-  } else if (p === 'oneTime') {
+  
+  break;
+  }
+  case 'oneTime': {
     data =
       type === 'reg'
         ? await fetchKeepDataFirstRegDetailsApi(query)
         : await fetchKeepDataOneTimeUserDetailApi(query);
-  } else if (p === 'qujian') {
+  
+  break;
+  }
+  case 'qujian': {
     data =
       type === 'new'
         ? await fetchKeepDataQujianDetailsApi(query)
         : await fetchKeepDataSectionDauDetailApi(query);
-  } else if (p === 'retention') {
-    if (type === 'once') {
+  
+  break;
+  }
+  case 'retention': {
+    switch (type) {
+    case 'once': {
       data = await fetchKeepDataOnceUserDetailApi(query);
-    } else if (type === 'pay') {
+    
+    break;
+    }
+    case 'pay': {
       data = await fetchKeepDataFirstPayDetailsApi(query);
-    } else if (type === 'reg') {
+    
+    break;
+    }
+    case 'reg': {
       data = await fetchKeepDataFirstRegDetailsApi(query);
-    } else {
+    
+    break;
+    }
+    default: {
       data = await fetchKeepDataDauDetailApi(query);
     }
-  } else {
+    }
+  
+  break;
+  }
+  default: {
     data =
       type === 'new'
         ? await fetchKeepDataFirstRegDetailsApi(query)
         : await fetchKeepDataLtvRechargeDetailApi(query);
+  }
   }
 
   return {
@@ -341,8 +367,7 @@ async function handleExcelExport() {
       return;
     }
     const isReg = props.param.type === 'reg' || props.param.type === 'new';
-    const isLtvTop =
-      props.param.page === 'ltv' && props.param.type === 'topUp';
+    const isLtvTop = props.param.page === 'ltv' && props.param.type === 'topUp';
     let headers: string[];
     let fields: string[];
     if (isReg) {
@@ -461,11 +486,7 @@ onMounted(() => {
       >
         导出 Excel
       </Button>
-      <Button
-        v-else
-        :loading="exportLoading"
-        @click="handleExcelExport"
-      >
+      <Button v-else :loading="exportLoading" @click="handleExcelExport">
         导出 Excel
       </Button>
     </div>
@@ -487,10 +508,6 @@ onMounted(() => {
         @change="loadList"
       />
     </div>
-    <PassPopup
-      ref="passPopupRef"
-      type="csv"
-      @confirm="handleSecureExport"
-    />
+    <PassPopup ref="passPopupRef" type="csv" @confirm="handleSecureExport" />
   </div>
 </template>

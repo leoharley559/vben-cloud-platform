@@ -92,9 +92,9 @@ async function loadData() {
     }
     rows.value = Array.isArray(data)
       ? (data as TemplateRow[])
-      : Array.isArray(data.Items)
+      : (Array.isArray(data.Items)
         ? (data.Items as TemplateRow[])
-        : [];
+        : []);
     total.value = Array.isArray(data)
       ? data.length
       : Number(data.Pagination?.MaxCount || rows.value.length);
@@ -157,8 +157,7 @@ function adminNames(value: unknown) {
     .filter(Boolean);
   return ids
     .map(
-      (id) =>
-        adminList.value.find((item) => String(item.Id) === id)?.Username,
+      (id) => adminList.value.find((item) => String(item.Id) === id)?.Username,
     )
     .filter(Boolean)
     .join(', ');
@@ -180,9 +179,7 @@ function categoryNames(value: unknown) {
 function buildVenueGames(categories: string[]) {
   const ids: string[] = [];
   const codes: Array<number | string> = [];
-  for (const [id, game] of Object.entries(
-    gameConfig.value.platformGameList,
-  )) {
+  for (const [id, game] of Object.entries(gameConfig.value.platformGameList)) {
     const classify = Array.isArray(game.ClientClassify)
       ? game.ClientClassify
       : String(game.ClientClassify || '')
@@ -194,8 +191,7 @@ function buildVenueGames(categories: string[]) {
       categories.some((value) =>
         classify.some(
           (item) =>
-            String(item) === String(value) ||
-            Number(item) === Number(value),
+            String(item) === String(value) || Number(item) === Number(value),
         ),
       )
     ) {
@@ -234,7 +230,9 @@ async function saveRow() {
   }
   saving.value = true;
   try {
-    await (editing.value ? updateSystemTemplateApi(payload) : createSystemTemplateApi(payload));
+    await (editing.value
+      ? updateSystemTemplateApi(payload)
+      : createSystemTemplateApi(payload));
     await getProjectConfigApi();
     visible.value = false;
     message.success('保存成功');
@@ -275,11 +273,7 @@ onMounted(async () => {
         <Radio.Button :value="1">代理模板</Radio.Button>
         <Radio.Button :value="2">场馆模板</Radio.Button>
       </Radio.Group>
-      <Button
-        v-if="checkPermission(10_005)"
-        type="primary"
-        @click="openForm()"
-      >
+      <Button v-if="checkPermission(10_005)" type="primary" @click="openForm()">
         新增
       </Button>
     </div>
@@ -312,11 +306,7 @@ onMounted(async () => {
         <span v-else-if="column.key === 'PlatformType'">
           {{ categoryNames(record.PlatformType) || '-' }}
         </span>
-        <Space
-          v-else-if="
-            column.key === 'action' && checkPermission(10_005)
-          "
-        >
+        <Space v-else-if="column.key === 'action' && checkPermission(10_005)">
           <Button size="small" type="primary" @click="openForm(record)">
             编辑
           </Button>

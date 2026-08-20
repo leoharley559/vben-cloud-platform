@@ -1,4 +1,9 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
+import type { DailyReportRespond } from '#/api/operationalData/everyday-data';
+import type { DailyReportRow } from '#/utils/everyday-data-calc';
+
 import { computed, onMounted, ref, watch } from 'vue';
 
 import {
@@ -13,31 +18,26 @@ import {
   Spin,
   Tooltip,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
-import type { DailyReportRespond } from '#/api/operationalData/everyday-data';
 import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
-import {
-  calcDailyReportRow,
-  calcDailyReportRows,
-  type DailyReportRow,
-} from '#/utils/everyday-data-calc';
+import { calcDailyReportRow, calcDailyReportRows } from '#/utils/everyday-data-calc';
 import {
   defaultDailyReportRange,
   defaultMonthlyReportRange,
   toDateStrings,
 } from '#/utils/everyday-data-date';
-import { exportRowsToCsv } from '#/utils/export-csv';
 import {
   buildDeviceExportColumns,
   buildVipExportColumns,
   joinMultiValue,
   normalizeSearchValue,
 } from '#/utils/everyday-report-format';
+import { exportRowsToCsv } from '#/utils/export-csv';
 
 import DailyReportTable from './daily-report-table.vue';
 
@@ -296,7 +296,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col ">
+  <div class="flex flex-col">
     <div class="mb-1">
       <div class="mb-3">
         <Radio.Group
@@ -310,53 +310,50 @@ onMounted(() => {
       </div>
 
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
+        <div class="ops-query-filters">
           <Space.Compact>
-          <Select
-            class="query-auto-select"
-            :popup-match-select-width="false"
-            v-model:value="adminSearchType"
-            :options="[
-              { label: '账号模糊', value: 0 },
-              { label: '账号精准', value: 1 },
-            ]"
-          />
-          <AccountSelect
-            v-if="adminSearchType === 0"
-            v-model="adminSearch"
-          />
-          <Input
-            v-else
-            v-model:value="adminSearch as string"
-            allow-clear
-            placeholder="请输入账号"
+            <Select
+              class="query-auto-select"
+              :popup-match-select-width="false"
+              v-model:value="adminSearchType"
+              :options="[
+                { label: '账号模糊', value: 0 },
+                { label: '账号精准', value: 1 },
+              ]"
             />
-        </Space.Compact>
-
-        <Space.Compact>
-          <Select
-            class="query-auto-select"
-            :popup-match-select-width="false"
-            v-model:value="channelSearchType"
-            :options="[
-              { label: '渠道模糊', value: 0 },
-              { label: '渠道精准', value: 1 },
-            ]"
-          />
-          <ChannelSelect
-            v-if="channelSearchType === 0"
-            v-model="channelSearch"
-            placeholder="请输入渠道号"
-          />
-          <Input
-            v-else
-            v-model:value="channelSearch as string"
-            allow-clear
-            placeholder="请输入渠道"
+            <AccountSelect v-if="adminSearchType === 0" v-model="adminSearch" />
+            <Input
+              v-else
+              v-model:value="adminSearch as string"
+              allow-clear
+              placeholder="请输入账号"
             />
-        </Space.Compact>
+          </Space.Compact>
 
-        <Space.Compact>
+          <Space.Compact>
+            <Select
+              class="query-auto-select"
+              :popup-match-select-width="false"
+              v-model:value="channelSearchType"
+              :options="[
+                { label: '渠道模糊', value: 0 },
+                { label: '渠道精准', value: 1 },
+              ]"
+            />
+            <ChannelSelect
+              v-if="channelSearchType === 0"
+              v-model="channelSearch"
+              placeholder="请输入渠道号"
+            />
+            <Input
+              v-else
+              v-model:value="channelSearch as string"
+              allow-clear
+              placeholder="请输入渠道"
+            />
+          </Space.Compact>
+
+          <Space.Compact>
             <span class="query-field-addon">产品</span>
             <Select
               v-model:value="packageId"
@@ -371,81 +368,81 @@ onMounted(() => {
             />
           </Space.Compact>
 
-        <div v-if="isDevice && isHistory">
-          <Space.Compact>
-            <span class="query-field-addon">设备类型</span>
+          <div v-if="isDevice && isHistory">
+            <Space.Compact>
+              <span class="query-field-addon">设备类型</span>
+              <Select
+                v-model:value="devicePlatform"
+                :options="devicePlatformOptions"
+                allow-clear
+                mode="multiple"
+                placeholder="请选择设备类型"
+              />
+            </Space.Compact>
+          </div>
+
+          <div v-if="!isDevice && isHistory">
+            <Space.Compact>
+              <span class="query-field-addon">VIP等级</span>
+              <Select
+                v-model:value="vipLevel"
+                :options="vipLevelOptions"
+                allow-clear
+                mode="multiple"
+                placeholder="请选择VIP等级"
+              />
+            </Space.Compact>
+          </div>
+
+          <div v-if="isDevice">
+            <Space.Compact>
+              <span class="query-field-addon">数据类型</span>
+              <Select
+                v-model:value="dataSearchType"
+                :options="memberTypeOptions"
+                placeholder="请选择数据类型"
+              />
+            </Space.Compact>
+          </div>
+
+          <Space.Compact v-if="isHistory">
+            <span class="query-field-addon">报表类型</span>
             <Select
-              v-model:value="devicePlatform"
-              :options="devicePlatformOptions"
-              allow-clear
-              mode="multiple"
-              placeholder="请选择设备类型"
+              v-model:value="reportType"
+              :options="[
+                { label: '日报', value: 1 },
+                { label: '月报', value: 2 },
+              ]"
+              placeholder="请选择报表类型"
             />
           </Space.Compact>
-        </div>
 
-        <div v-if="!isDevice && isHistory">
-          <Space.Compact>
-            <span class="query-field-addon">VIP等级</span>
-            <Select
-              v-model:value="vipLevel"
-              :options="vipLevelOptions"
-              allow-clear
-              mode="multiple"
-              placeholder="请选择VIP等级"
-            />
-          </Space.Compact>
-        </div>
+          <div v-if="isHistory">
+            <div class="query-filter-wide">
+              <Space.Compact>
+                <span class="query-field-addon">日期</span>
+                <DatePicker.RangePicker
+                  v-model:value="dateRange"
+                  :format="dateFormat"
+                  :picker="pickerMode"
+                />
+              </Space.Compact>
+            </div>
+          </div>
 
-        <div v-if="isDevice">
-          <Space.Compact>
-            <span class="query-field-addon">数据类型</span>
-            <Select
-              v-model:value="dataSearchType"
-              :options="memberTypeOptions"
-              placeholder="请选择数据类型"
-            />
-          </Space.Compact>
+          <div class="query-filter-actions">
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+            <Button
+              v-if="canExport"
+              :loading="exportLoading"
+              @click="handleExport"
+            >
+              导出 Excel
+            </Button>
+          </div>
         </div>
-
-        <Space.Compact v-if="isHistory">
-          <span class="query-field-addon">报表类型</span>
-          <Select
-            v-model:value="reportType"
-            :options="[
-              { label: '日报', value: 1 },
-              { label: '月报', value: 2 },
-            ]"
-            placeholder="请选择报表类型"
-          />
-        </Space.Compact>
-
-        <div v-if="isHistory">
-          <div class="query-filter-wide">
-          <Space.Compact>
-            <span class="query-field-addon">日期</span>
-            <DatePicker.RangePicker
-              v-model:value="dateRange"
-              :format="dateFormat"
-              :picker="pickerMode"
-            />
-          </Space.Compact>
-        </div>
-        </div>
-        
-        <div class="query-filter-actions">
-          <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
-        <Button
-          v-if="canExport"
-          :loading="exportLoading"
-          @click="handleExport"
-        >
-          导出 Excel
-        </Button>
-        </div>
-    </div>
-  </div>
+      </div>
     </div>
 
     <Card size="small">

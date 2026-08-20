@@ -48,16 +48,10 @@ onMounted(() => {
           <GoldGrantPanel v-if="activeTab === 'save'" />
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canRecord" key="record" tab="发放记录">
-          <GoldRecordPanel
-            v-if="activeTab === 'record'"
-            :handle-type="1"
-          />
+          <GoldRecordPanel v-if="activeTab === 'record'" :handle-type="1" />
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canTakeRecord" key="takeRecord" tab="扣减记录">
-          <GoldRecordPanel
-            v-if="activeTab === 'takeRecord'"
-            :handle-type="2"
-          />
+          <GoldRecordPanel v-if="activeTab === 'takeRecord'" :handle-type="2" />
         </Tabs.TabPane>
       </Tabs>
     </Card>

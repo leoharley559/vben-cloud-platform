@@ -56,7 +56,11 @@ const accountTypeMap: Record<number, string> = {
 };
 
 const permissionTabs = [
-  { key: '1', label: '代理代存菜单', note: '按代理类型开启代存菜单，并可限制指定代理账号。' },
+  {
+    key: '1',
+    label: '代理代存菜单',
+    note: '按代理类型开启代存菜单，并可限制指定代理账号。',
+  },
   {
     key: '2',
     label: '提款流水倍数',
@@ -85,8 +89,7 @@ async function loadSettings(type: number) {
       ...item,
       ...(type === 3
         ? {
-            DailyDepositAmount:
-              Number(item.DailyDepositAmount || 0) / 100,
+            DailyDepositAmount: Number(item.DailyDepositAmount || 0) / 100,
             MaxDepositAmount: Number(item.MaxDepositAmount || 0) / 100,
             MinDepositAmount: Number(item.MinDepositAmount || 0) / 100,
           }
@@ -101,7 +104,11 @@ function firstSetting(type: number) {
   return settings[type]?.[0] || {};
 }
 
-async function updateToggle(type: number, target: 'normal' | 'official', value: boolean) {
+async function updateToggle(
+  type: number,
+  target: 'normal' | 'official',
+  value: boolean,
+) {
   await updateAgentPermissionsApi({
     Hash: createRequestHash(),
     IsActive: value ? 1 : 0,
@@ -172,7 +179,8 @@ function restrictionConfig(type: number): CreditPanelConfig {
             },
             {
               field: 'DailyDepositAmount',
-              formatter: (value: unknown) => formatAmountFromCent(Number(value)),
+              formatter: (value: unknown) =>
+                formatAmountFromCent(Number(value)),
               title: '每日代存额度',
             },
           ]
@@ -184,7 +192,9 @@ function restrictionConfig(type: number): CreditPanelConfig {
       },
       { field: 'CreateAccount', title: '添加人' },
     ],
-    exportFileName: canExport.value ? `${permissionTabs[type - 1]?.label}账号限制` : undefined,
+    exportFileName: canExport.value
+      ? `${permissionTabs[type - 1]?.label}账号限制`
+      : undefined,
     fetchApi: (query) => getAgentRestrictionListApi(query as never),
     filters: [
       { field: 'AgentAccount', label: '代理账号' },
@@ -241,7 +251,8 @@ async function submitAdd() {
   }
   if (
     addForm.LimitType === 3 &&
-    Number(addForm.MinDepositAmount || 0) > Number(addForm.MaxDepositAmount || 0)
+    Number(addForm.MinDepositAmount || 0) >
+      Number(addForm.MaxDepositAmount || 0)
   ) {
     message.warning('最小代存金额不能大于最大代存金额');
     return;
@@ -249,8 +260,7 @@ async function submitAdd() {
   addSubmitting.value = true;
   try {
     await addAgentRestrictionApi({
-      AgentAccounts: addForm.AgentAccounts
-        .replaceAll('，', ',')
+      AgentAccounts: addForm.AgentAccounts.replaceAll('，', ',')
         .split(',')
         .map((item) => item.trim())
         .filter(Boolean)
@@ -280,7 +290,10 @@ async function submitAdd() {
 }
 
 async function removeRows(type: number, rows: Record<string, unknown>[]) {
-  const ids = rows.map((row) => row.Id).filter(Boolean).join(',');
+  const ids = rows
+    .map((row) => row.Id)
+    .filter(Boolean)
+    .join(',');
   if (!ids) return;
   await removeAgentRestrictionApi({
     Hash: createRequestHash(),
@@ -311,7 +324,9 @@ onMounted(() => {
             <span>
               官方代理：
               <Switch
-                :checked="Number(firstSetting(Number(tab.key)).ActiveOfficial) === 1"
+                :checked="
+                  Number(firstSetting(Number(tab.key)).ActiveOfficial) === 1
+                "
                 :disabled="!canEdit"
                 @change="
                   (value) =>
@@ -322,7 +337,9 @@ onMounted(() => {
             <span>
               普通代理：
               <Switch
-                :checked="Number(firstSetting(Number(tab.key)).ActiveNormal) === 1"
+                :checked="
+                  Number(firstSetting(Number(tab.key)).ActiveNormal) === 1
+                "
                 :disabled="!canEdit"
                 @change="
                   (value) =>
@@ -337,9 +354,13 @@ onMounted(() => {
                 :disabled="!canEdit"
                 :min="1"
                 :precision="0"
-                @change="(value) => (firstSetting(2).WithdrawWaterMultiply = value)"
+                @change="
+                  (value) => (firstSetting(2).WithdrawWaterMultiply = value)
+                "
               />
-              <Button v-if="canEdit" type="primary" @click="updateWater">保存</Button>
+              <Button v-if="canEdit" type="primary" @click="updateWater">
+保存
+</Button>
             </Space>
           </Space>
         </template>
@@ -351,7 +372,11 @@ onMounted(() => {
             { key: 'range', title: '单笔代存范围（元）' },
             { key: 'daily', title: '每日代存额度（元）' },
             { key: 'status', title: '状态' },
-            { dataIndex: 'UpdateAccount', key: 'UpdateAccount', title: '操作人' },
+            {
+              dataIndex: 'UpdateAccount',
+              key: 'UpdateAccount',
+              title: '操作人',
+            },
             { key: 'UpdateTime', title: '操作时间' },
             { key: 'actions', title: '操作' },
           ]"
@@ -435,7 +460,11 @@ onMounted(() => {
           :config="restrictionConfig(Number(tab.key))"
         >
           <template #toolbar>
-            <Button v-if="canAdd" type="primary" @click="openAdd(Number(tab.key))">
+            <Button
+              v-if="canAdd"
+              type="primary"
+              @click="openAdd(Number(tab.key))"
+            >
               添加
             </Button>
             <Popconfirm

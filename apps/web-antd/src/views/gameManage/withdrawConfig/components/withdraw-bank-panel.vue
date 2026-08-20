@@ -5,21 +5,21 @@ import { computed, ref } from 'vue';
 
 import {
   Button,
+  message,
   Modal,
   Result,
   Space,
   Switch,
   Tag,
-  message,
 } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { getProjectConfigApi } from '#/api';
 import {
   batchUpdateWithdrawBankApi,
   fetchWithdrawBankListApi,
   updateWithdrawBankSwitchApi,
 } from '#/api/gameManage';
-import { getProjectConfigApi } from '#/api';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 defineOptions({ name: 'WithdrawBankPanel' });
@@ -33,10 +33,10 @@ interface BankRow {
 }
 
 const { checkPermission } = useCloudPermission();
-const canViewTable = computed(() => checkPermission(10985));
-const canSwitch = computed(() => checkPermission(10986));
-const canBatchOpen = computed(() => checkPermission(13210));
-const canBatchClose = computed(() => checkPermission(13338));
+const canViewTable = computed(() => checkPermission(10_985));
+const canSwitch = computed(() => checkPermission(10_986));
+const canBatchOpen = computed(() => checkPermission(13_210));
+const canBatchClose = computed(() => checkPermission(13_338));
 
 const actionId = ref<number | string>();
 const selectedRows = ref<BankRow[]>([]);

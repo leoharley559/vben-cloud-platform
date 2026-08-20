@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { DateRange, Row } from './shared';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -11,18 +13,10 @@ import {
 } from 'ant-design-vue';
 
 import { fetchDebtListApi } from '#/api/netcash/credit-limit';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 
-import {
-  accountTypeMap,
-  accountTypeOptions,
-  amount,
-  date,
-  type DateRange,
-  rangeParams,
-  type Row,
-} from './shared';
+import { accountTypeMap, accountTypeOptions, amount, date, rangeParams } from './shared';
 
 const loading = ref(false);
 const rows = ref<Row[]>([]);
@@ -53,8 +47,16 @@ const columns = [
   { dataIndex: 'TransferType', key: 'TransferType', title: '还款类型' },
   { dataIndex: 'CreateTime', key: 'CreateTime', title: '还款时间', width: 180 },
   { dataIndex: 'AdjustAmount', key: 'AdjustAmount', title: '还款金额（元）' },
-  { dataIndex: 'AdjustAmountBef', key: 'AdjustAmountBef', title: '还款前欠款（元）' },
-  { dataIndex: 'AdjustAmountAft', key: 'AdjustAmountAft', title: '还款后欠款（元）' },
+  {
+    dataIndex: 'AdjustAmountBef',
+    key: 'AdjustAmountBef',
+    title: '还款前欠款（元）',
+  },
+  {
+    dataIndex: 'AdjustAmountAft',
+    key: 'AdjustAmountAft',
+    title: '还款后欠款（元）',
+  },
   { dataIndex: 'ReviewNote', key: 'ReviewNote', title: '备注' },
 ];
 
@@ -107,45 +109,98 @@ onMounted(load);
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="query.AgentAccounts"
-          allow-clear
-          @press-enter="search"
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">代理类型</span>
-        <Select v-model:value="query.Type" :options="accountTypeOptions" placeholder="请选择代理类型" />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">还款类型</span>
-        <Select v-model:value="query.TransferType" :options="debtTypeOptions" placeholder="请选择还款类型" />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.AgentAccounts"
+            allow-clear
+            @press-enter="search"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">代理类型</span>
+          <Select
+            v-model:value="query.Type"
+            :options="accountTypeOptions"
+            placeholder="请选择代理类型"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">还款类型</span>
+          <Select
+            v-model:value="query.TransferType"
+            :options="debtTypeOptions"
+            placeholder="请选择还款类型"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="timeRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="search">查询</Button>
-      <Button @click="reset">重置</Button>
+          <Button @click="reset">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
     <SummaryCards :items="summaryItems" />
-    <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1400 }" size="small">
+    <Table
+      bordered
+      :columns="columns"
+      :data-source="rows"
+      :loading="loading"
+      :pagination="false"
+      row-key="Id"
+      :scroll="{ x: 1400 }"
+      size="small"
+    >
       <template #bodyCell="{ column, record, index }">
-        <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>
-        <template v-else-if="column.key === 'AccountType'">{{ accountTypeMap[Number(record.AccountType)] || '-' }}</template>
-        <template v-else-if="column.key === 'TransferType'">{{ debtTypeMap[Number(record.TransferType)] || '-' }}</template>
-        <template v-else-if="column.key === 'CreateTime'">{{ date(record.CreateTime) }}</template>
-        <template v-else-if="column.key === 'AdjustAmount'">{{ amount(Math.abs(Number(record.AdjustAmount))) }}</template>
-        <template v-else-if="column.key === 'AdjustAmountBef' || column.key === 'AdjustAmountAft'">{{ amount(record[column.key]) }}</template>
+        <template v-if="column.key === 'seq'">
+{{
+          (query.Page - 1) * query.PageSize + index + 1
+        }}
+</template>
+        <template v-else-if="column.key === 'AccountType'">
+{{
+          accountTypeMap[Number(record.AccountType)] || '-'
+        }}
+</template>
+        <template v-else-if="column.key === 'TransferType'">
+{{
+          debtTypeMap[Number(record.TransferType)] || '-'
+        }}
+</template>
+        <template v-else-if="column.key === 'CreateTime'">
+{{
+          date(record.CreateTime)
+        }}
+</template>
+        <template v-else-if="column.key === 'AdjustAmount'">
+{{
+          amount(Math.abs(Number(record.AdjustAmount)))
+        }}
+</template>
+        <template
+          v-else-if="
+            column.key === 'AdjustAmountBef' || column.key === 'AdjustAmountAft'
+          "
+          >
+{{ amount(record[column.key]) }}
+</template>
       </template>
     </Table>
-    <Pagination v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize" :page-size-options="['10', '20', '50', '100']" :total="total" class="mt-4 text-right" show-size-changer @change="load" @show-size-change="load" />
+    <Pagination
+      v-if="total"
+      v-model:current="query.Page"
+      v-model:page-size="query.PageSize"
+      :page-size-options="['10', '20', '50', '100']"
+      :total="total"
+      class="mt-4 text-right"
+      show-size-changer
+      @change="load"
+      @show-size-change="load"
+    />
   </div>
 </template>

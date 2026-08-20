@@ -19,17 +19,17 @@ const tabs = computed(() =>
   [
     {
       key: 'stock',
-      permission: 11426,
+      permission: 11_426,
       tab: '库存',
     },
     {
       key: 'daily',
-      permission: 11427,
+      permission: 11_427,
       tab: '云币日报',
     },
     {
       key: 'detail',
-      permission: 11428,
+      permission: 11_428,
       tab: '消耗明细',
     },
   ].filter((item) => checkPermission(item.permission)),

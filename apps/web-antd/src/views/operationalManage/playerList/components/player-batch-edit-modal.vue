@@ -5,10 +5,10 @@ import {
   Checkbox,
   Form,
   Input,
+  message,
   Modal,
   Radio,
   Select,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -20,8 +20,6 @@ import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
 
 defineOptions({ name: 'PlayerBatchEditModal' });
 
-export type BatchActType = 1 | 2 | 3 | 4 | 5;
-
 const props = defineProps<{
   actType: BatchActType;
   open: boolean;
@@ -32,6 +30,8 @@ const emit = defineEmits<{
   success: [];
   'update:open': [value: boolean];
 }>();
+
+export type BatchActType = 1 | 2 | 3 | 4 | 5;
 
 const submitting = ref(false);
 const status = ref(0);
@@ -119,16 +119,23 @@ async function handleSubmit() {
     ActType: props.actType,
     PlayerIds: props.playerIds,
   };
-  if (props.actType === 1) {
+  switch (props.actType) {
+  case 1: {
     payload.Status = status.value;
-  } else if (props.actType === 2) {
+  
+  break;
+  }
+  case 2: {
     if (!remark.value.trim()) {
       message.warning('请填写备注');
       return;
     }
     payload.Remark = remark.value.trim();
-  } else if (props.actType === 4) {
-    if (!checkedTagIds.value.length) {
+  
+  break;
+  }
+  case 4: {
+    if (checkedTagIds.value.length === 0) {
       message.warning('请选择标签');
       return;
     }
@@ -140,8 +147,15 @@ async function handleSubmit() {
     });
     payload.TagId = checkedTagIds.value.join(',');
     payload.TagName = names.join(',');
-  } else if (props.actType === 5) {
+  
+  break;
+  }
+  case 5: {
     payload.PlayerLevelId = playerLevelId.value;
+  
+  break;
+  }
+  // No default
   }
 
   submitting.value = true;

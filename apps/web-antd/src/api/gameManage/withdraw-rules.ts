@@ -3,7 +3,7 @@ import { requestClient } from '#/api/request';
 /** 提现配置模块分页列表响应 */
 export interface PageResult<T = Record<string, unknown>> {
   Items: T[];
-  Pagination: { MaxCount?: number; [key: string]: unknown };
+  Pagination: { [key: string]: unknown; MaxCount?: number; };
   [key: string]: unknown;
 }
 
@@ -469,4 +469,3 @@ export function fetchWithdrawEstimatedTimeApi() {
 export function updateWithdrawEstimatedTimeApi(data: Record<string, unknown>) {
   return requestClient.put('/backend/withdrawestimatedtimeconfig', data);
 }
-

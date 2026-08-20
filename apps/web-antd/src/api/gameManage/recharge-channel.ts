@@ -680,4 +680,3 @@ export function fetchVipDealerOrderModeApi() {
 export function updateVipDealerOrderModeApi(data: VipDealerOrderModePayload) {
   return requestClient.post('/backend/customersupporterglobalconfig', data);
 }
-

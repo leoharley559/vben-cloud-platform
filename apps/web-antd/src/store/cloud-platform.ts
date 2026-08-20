@@ -1,12 +1,13 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-
 import type {
   CloudNavItem,
   CloudProjectConfig,
   CloudRole,
   CloudUserData,
 } from '#/types/cloud-platform';
+
+import { ref } from 'vue';
+
+import { defineStore } from 'pinia';
 
 export const useCloudPlatformStore = defineStore('cloud-platform', () => {
   const navMenus = ref<CloudNavItem[]>([]);

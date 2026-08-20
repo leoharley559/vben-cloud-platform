@@ -1,16 +1,17 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import { computed, reactive, ref, watch } from 'vue';
 
 import {
   DatePicker,
   Form,
   Input,
+  message,
   Modal,
   Select,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
 
 import {
   createGameEmailApi,
@@ -28,7 +29,7 @@ const props = withDefaults(
   defineProps<{
     open: boolean;
     readonly?: boolean;
-    rowId?: number | string | null;
+    rowId?: null | number | string;
   }>(),
   { readonly: false },
 );
@@ -102,8 +103,8 @@ function normalizePlayerList(value: string) {
 
 function isRichTextEmpty(html: string) {
   const text = html
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/gi, ' ')
+    .replaceAll(/<[^>]+>/g, '')
+    .replaceAll(/&nbsp;/gi, ' ')
     .trim();
   return !text;
 }
@@ -223,7 +224,7 @@ async function handleSubmit() {
     message.warning('请填写邮件内容');
     return;
   }
-  if (!normalizePlayerList(form.PlayerList) && !form.PackageIds.length) {
+  if (!normalizePlayerList(form.PlayerList) && form.PackageIds.length === 0) {
     message.warning('请填写收件账号或选择产品包');
     return;
   }

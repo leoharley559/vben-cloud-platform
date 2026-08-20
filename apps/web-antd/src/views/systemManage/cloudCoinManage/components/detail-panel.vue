@@ -3,17 +3,13 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, onMounted, ref } from 'vue';
 
-import {
-  Button,
-  Result,
-  Space,
-} from 'ant-design-vue';
+import { Button, Result, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchCloudCoinDetailListApi } from '#/api/systemManage/extra';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import SummaryCards from '#/components/global/summary-cards.vue';
+import { fetchCloudCoinDetailListApi } from '#/api/systemManage/extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
 import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
@@ -30,7 +26,7 @@ interface DetailRow {
 }
 
 const { checkPermission } = useCloudPermission();
-const canViewTable = computed(() => checkPermission(11431));
+const canViewTable = computed(() => checkPermission(11_431));
 
 const totalCloudCoin = ref(0);
 /** 对齐旧站：近 7 个自然日含今天 */
@@ -44,24 +40,33 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 function typeFilter(consumeType?: number, handleType?: number) {
   if (handleType === 1) {
     switch (consumeType) {
-      case 1:
+      case 1: {
         return '创建子代';
-      case 2:
+      }
+      case 2: {
         return '客服席位';
-      case 3:
+      }
+      case 3: {
         return '域名';
-      case 4:
+      }
+      case 4: {
         return '超级签';
-      case 5:
+      }
+      case 5: {
         return '短信';
-      case 6:
+      }
+      case 6: {
         return '追回';
-      case 7:
+      }
+      case 7: {
         return '手机实名';
-      case 8:
+      }
+      case 8: {
         return '报表次数';
-      default:
+      }
+      default: {
         return '未知';
+      }
     }
   }
   if (handleType === 2) {
@@ -75,9 +80,7 @@ function resolveTotalCloudCoin(
 ) {
   const total = result.Total || {};
   const more = (result.MoreItems || {}) as Record<string, unknown>;
-  const fromTotal = Number(
-    (total as Record<string, unknown>).Total ?? 0,
-  );
+  const fromTotal = Number((total as Record<string, unknown>).Total ?? 0);
   if (fromTotal) {
     return fromTotal;
   }
@@ -179,18 +182,18 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable" class="space-y-4">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>
-        <Button type="primary" @click="handleSearch">查询</Button>
-        <Button @click="handleReset">重置</Button>
-      </Space>
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
+          </Space>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 

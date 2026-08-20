@@ -8,11 +8,11 @@ import {
   Checkbox,
   Form,
   Input,
+  message,
   Modal,
   Select,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -30,23 +30,23 @@ import { createRequestHash } from '#/utils/crypto';
 
 defineOptions({ name: 'PlayerBankCardList' });
 
-/** 银行卡增删改安全校验 PageId（与旧站 GoogleCode page-id=8 一致） */
-const BANK_CARD_SECURITY_PAGE_ID = 8;
-
 const props = defineProps<{
   loginAccount?: string;
   packageName?: string;
   playerId: number | string;
 }>();
 
+/** 银行卡增删改安全校验 PageId（与旧站 GoogleCode page-id=8 一致） */
+const BANK_CARD_SECURITY_PAGE_ID = 8;
+
 const { checkPermission } = useCloudPermission();
 const { projectConfig } = useProjectConfig();
 
-const canSection = computed(() => checkPermission(11180));
-const canView = computed(() => checkPermission(11298));
-const canCreate = computed(() => checkPermission(11299));
-const canEdit = computed(() => checkPermission(11405));
-const canDelete = computed(() => checkPermission(11300));
+const canSection = computed(() => checkPermission(11_180));
+const canView = computed(() => checkPermission(11_298));
+const canCreate = computed(() => checkPermission(11_299));
+const canEdit = computed(() => checkPermission(11_405));
+const canDelete = computed(() => checkPermission(11_300));
 
 const loading = ref(false);
 const saving = ref(false);

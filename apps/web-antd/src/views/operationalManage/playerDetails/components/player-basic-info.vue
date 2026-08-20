@@ -42,12 +42,12 @@ import {
   uploadPlayerIdCardImagesApi,
 } from '#/api/operationManage/player';
 import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
+import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
 import { formatMemberType } from '#/utils/player-status';
-import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 
 import PlayerAlipayList from './player-alipay-list.vue';
 import PlayerBankCardList from './player-bank-card-list.vue';
@@ -303,9 +303,9 @@ async function loadCardInfo() {
 function normalizeSiteOptions(raw: unknown) {
   const list = Array.isArray(raw)
     ? raw
-    : Array.isArray((raw as null | { Items?: unknown[] })?.Items)
+    : (Array.isArray((raw as null | { Items?: unknown[] })?.Items)
       ? ((raw as { Items: unknown[] }).Items as unknown[])
-      : [];
+      : []);
   return list
     .map((item) => {
       if (typeof item === 'string') {
@@ -389,9 +389,9 @@ function openSocial(type: SocialType) {
   const field =
     type === 'telegram'
       ? 'BindWechat'
-      : type === 'facebook'
+      : (type === 'facebook'
         ? 'BindFacebook'
-        : 'BindQQ';
+        : 'BindQQ');
   socialForm.value = String(
     (props.info as null | Record<string, unknown>)?.[field] || '',
   );
@@ -846,7 +846,12 @@ onMounted(() => {
       >
         解绑手机
       </Button>
-      <Button v-if="canEditViber" ghost type="primary" @click="openSocial('viber')">
+      <Button
+        v-if="canEditViber"
+        ghost
+        type="primary"
+        @click="openSocial('viber')"
+      >
         绑定 Viber
       </Button>
       <Button

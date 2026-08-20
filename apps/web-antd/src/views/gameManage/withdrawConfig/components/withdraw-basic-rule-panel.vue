@@ -8,19 +8,19 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Select,
   Space,
   Spin,
   Switch,
-  message,
 } from 'ant-design-vue';
 
 import {
   fetchWithdrawGameConfigApi,
   fetchWithdrawTipConfigApi,
   updateWithdrawGameConfigApi,
-  updateWithdrawTipConfigApi,
   updateWithdrawTimesApi,
+  updateWithdrawTipConfigApi,
 } from '#/api/gameManage/withdraw-rules';
 
 import WithdrawCustomTipsPanel from './withdraw-custom-tips-panel.vue';
@@ -78,8 +78,8 @@ async function load() {
 async function saveParam(
   field:
     | 'MaxWithdrawInTimeCount'
-    | 'MinWithdrawAmount'
     | 'MinReservedAmount'
+    | 'MinWithdrawAmount'
     | 'PerWithdrawMultiple',
 ) {
   const value = paramForm[field];

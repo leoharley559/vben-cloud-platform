@@ -1,8 +1,9 @@
 import { computed } from 'vue';
+
 import { storeToRefs } from 'pinia';
 
-import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { useGameConfig } from '#/composables/use-game-config';
+import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { formatVenueName } from '#/utils/game-config';
 import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
 
@@ -33,8 +34,10 @@ export function useReportOptions() {
   );
 
   const devicePlatformOptions = computed<ReportOption[]>(() => {
-    const map = (projectConfig.value?.DevicePlatformMap ||
-      {}) as Record<string, string>;
+    const map = (projectConfig.value?.DevicePlatformMap || {}) as Record<
+      string,
+      string
+    >;
     return Object.entries(map).map(([value, label]) => ({
       label,
       value: Number.isNaN(Number(value)) ? value : Number(value),

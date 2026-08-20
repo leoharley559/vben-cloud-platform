@@ -4,13 +4,13 @@ import type { ImageUploadOptions } from '@vben/plugins/tiptap';
 import { computed } from 'vue';
 
 import { VbenTiptap } from '@vben/plugins/tiptap';
-import { message } from 'ant-design-vue';
-
 import { useAccessStore } from '@vben/stores';
 
-import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
+import { message } from 'ant-design-vue';
+
 import { getAuthToken, getCloudToken } from '#/utils/auth-token';
 import { ensureAuthToken } from '#/utils/ensure-auth-token';
+import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
 
 defineOptions({ name: 'RichTextEditor' });
 
@@ -62,8 +62,8 @@ const imageUpload = computed<ImageUploadOptions>(() => ({
     const data = (await response.json()) as {
       Code?: number | string;
       Data?: { url?: string };
-      Msg?: string;
       message?: string;
+      Msg?: string;
       respond?: { url?: string };
       status?: number;
     };

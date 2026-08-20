@@ -24,37 +24,37 @@ const tabs = computed(() =>
   [
     {
       key: 'account',
-      permission: 10978,
+      permission: 10_978,
       tab: '提现配置',
     },
     {
       key: 'risk',
-      permission: 10979,
+      permission: 10_979,
       tab: '兑换风控规则',
     },
     {
       key: 'third',
-      permission: 10980,
+      permission: 10_980,
       tab: '三方代付',
     },
     {
       key: 'bank',
-      permission: 10981,
+      permission: 10_981,
       tab: '出款银行设置',
     },
     {
       key: 'data',
-      permission: 10982,
+      permission: 10_982,
       tab: '通道数据',
     },
     {
       key: 'rule',
-      permission: 10983,
+      permission: 10_983,
       tab: '通用规则配置',
     },
     {
       key: 'access',
-      permission: 11961,
+      permission: 11_961,
       tab: '提现访问记录',
     },
   ].filter((item) => checkPermission(item.permission)),

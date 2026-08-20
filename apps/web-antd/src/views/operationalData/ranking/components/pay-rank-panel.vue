@@ -1,13 +1,15 @@
 <script lang="ts" setup>
+import type { CsvColumn } from '#/utils/export-csv';
+import type { RankPlayerRow } from '#/utils/ranking';
+
 import { computed, nextTick, onMounted, ref } from 'vue';
 
 import { Col, message, Row, Spin } from 'ant-design-vue';
 
 import { fetchPayWithdrawRankApi } from '#/api/operationalData/payranking';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { exportRowsToCsv, type CsvColumn } from '#/utils/export-csv';
+import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import type { RankPlayerRow } from '#/utils/ranking';
 
 import PlayerRankTable from './player-rank-table.vue';
 import RankingFilterBar from './ranking-filter-bar.vue';
@@ -46,7 +48,7 @@ function handleReset(query: Record<string, unknown>) {
 }
 
 function handleExport() {
-  if (payItems.value.length < 1 && outItems.value.length < 1) {
+  if (payItems.value.length === 0 && outItems.value.length === 0) {
     message.warning('暂无数据可导出');
     return;
   }

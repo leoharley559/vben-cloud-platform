@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import { reactive, ref } from 'vue';
 
 import {
@@ -12,7 +14,7 @@ import {
   RadioGroup,
   Tooltip,
 } from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 import { fixDayReportDataApi } from '#/api/dataClose/game-statement';
 
@@ -72,9 +74,7 @@ function handleClose() {
     <Tooltip title="重新跑日报/月报数据（修复异常日期）">
       <span class="cursor-help text-gray-400">ⓘ</span>
     </Tooltip>
-    <Button type="primary" @click="visible = true">
-      修复日报
-    </Button>
+    <Button type="primary" @click="visible = true"> 修复日报 </Button>
     <Modal
       v-model:open="visible"
       title="修复日报"

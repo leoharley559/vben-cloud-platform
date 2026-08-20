@@ -319,13 +319,14 @@ async function reloadFirstPage() {
   await gridApi.query();
 }
 
-async function loadHierarchy(adminId: '' | ChannelId = selectedPromoterId.value) {
+async function loadHierarchy(
+  adminId: '' | ChannelId = selectedPromoterId.value,
+) {
   if (!can('hierarchy')) return undefined;
   hierarchyLoading.value = true;
   try {
     // 对齐旧站：链路只有根节点时 AdminId 传空
-    const requestAdminId =
-      parents.value.length <= 1 && !adminId ? '' : adminId;
+    const requestAdminId = parents.value.length <= 1 && !adminId ? '' : adminId;
     const result = await fetchChannelHierarchyApi({
       AdminId: requestAdminId,
       AdminType: 7,
@@ -401,7 +402,7 @@ function resolveSearchedPromoter(
   const candidates: Array<ChannelAdminOption | ChannelRow> = [
     ...result.ItemsSon,
     ...(result.ItemsAdmin ? [result.ItemsAdmin] : []),
-    [...(result.Parents || [])].reverse(),
+    [...(result.Parents || [])].toReversed(),
   ];
   return (
     candidates.find((item) => promoterMatches(item, username, name)) ??
@@ -483,11 +484,7 @@ async function selectPromoter(
     const existsIndex = parents.value.findIndex(
       (item) => String(item.Id) === String(node.Id),
     );
-    if (existsIndex >= 0) {
-      parents.value = parents.value.slice(0, existsIndex + 1);
-    } else {
-      parents.value = [...parents.value, node];
-    }
+    parents.value = existsIndex === -1 ? [...parents.value, node] : parents.value.slice(0, existsIndex + 1);
   } else {
     // 点击链路节点：对齐旧站 fnClickTiltle，截断到该级
     parents.value = parents.value.slice(0, index + 1);
@@ -741,7 +738,9 @@ onBeforeUnmount(() => {
         <b>代理层级</b>
         <span v-if="hierarchyLoading" class="text-xs text-gray-400">加载中…</span>
       </div>
-      <div class="mb-3 flex flex-wrap items-center gap-1 rounded bg-slate-50 px-3 py-2 text-sm">
+      <div
+        class="mb-3 flex flex-wrap items-center gap-1 rounded bg-slate-50 px-3 py-2 text-sm"
+      >
         <template v-if="parents.length > 0">
           <template v-for="(item, index) in parents" :key="String(item.Id)">
             <span v-if="index > 0" class="text-gray-400">/</span>
@@ -821,7 +820,11 @@ onBeforeUnmount(() => {
           type="link"
           @click="editInvitation(row)"
         >
-          {{ !row.InvitationCode || row.InvitationCode === '0' ? '设置' : row.InvitationCode }}
+          {{
+            !row.InvitationCode || row.InvitationCode === '0'
+              ? '设置'
+              : row.InvitationCode
+          }}
         </Button>
         <span v-else>{{ row.InvitationCode || '-' }}</span>
       </template>
@@ -951,7 +954,7 @@ onBeforeUnmount(() => {
 
 <style>
 .vxe-body--row.money-channel-disabled-row > .vxe-body--column {
-  background: hsl(var(--destructive) / 14%) !important;
   color: #a8071a;
+  background: hsl(var(--destructive) / 14%) !important;
 }
 </style>

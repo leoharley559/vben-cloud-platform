@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { FormInstance } from 'ant-design-vue';
 
+import type { BackWaterVipConfig } from '#/views/gameManage/backWater/components/back-water-game-config-editor.vue';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -28,9 +30,7 @@ import {
   formatPercentFromStorage,
   formatPercentToStorage,
 } from '#/utils/game-config';
-import BackWaterGameConfigEditor, {
-  type BackWaterVipConfig,
-} from '#/views/gameManage/backWater/components/back-water-game-config-editor.vue';
+import BackWaterGameConfigEditor from '#/views/gameManage/backWater/components/back-water-game-config-editor.vue';
 
 defineOptions({ name: 'AddConfig' });
 
@@ -83,7 +83,7 @@ const vipLevel = computed(() =>
   String(route.query.vipLevel ?? savedContext.vipLevel ?? ''),
 );
 const editorKey = ref(0);
-const editorRef = ref<{ buildConfig?: () => BackWaterVipConfig } | null>(null);
+const editorRef = ref<null | { buildConfig?: () => BackWaterVipConfig }>(null);
 const formRef = ref<FormInstance>();
 const loading = ref(false);
 const saving = ref(false);
@@ -95,11 +95,7 @@ const hasRow = computed(() => resolvedIndex.value >= 0);
 
 function isNonNegativeInteger(value: unknown, max?: number) {
   const num = Number(value);
-  return (
-    Number.isInteger(num) &&
-    num >= 0 &&
-    (max === undefined || num <= max)
-  );
+  return Number.isInteger(num) && num >= 0 && (max === undefined || num <= max);
 }
 
 function isPercent(value: unknown) {
@@ -178,7 +174,9 @@ async function loadDetail() {
       message.error('未找到可用的返水方案');
       return;
     }
-    const result = (await fetchBackWaterSchemeApi(schemeId.value)) as SchemeDetail;
+    const result = (await fetchBackWaterSchemeApi(
+      schemeId.value,
+    )) as SchemeDetail;
     scheme.value = result;
     rows.value = parseConfig(result.Config);
     let nextIndex =
@@ -280,11 +278,7 @@ onMounted(loadDetail);
     sub-title="无返水配置查看权限"
     title="403"
   />
-  <Page
-    v-else
-    auto-content-height
-    :title="pageTitle"
-  >
+  <Page v-else auto-content-height :title="pageTitle">
     <Spin :spinning="loading">
       <Card size="small" title="基础配置">
         <Form

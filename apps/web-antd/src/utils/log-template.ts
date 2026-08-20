@@ -60,8 +60,8 @@ function interpolateTemplate(
 ) {
   let result = template;
   for (const [key, value] of Object.entries(params)) {
-    result = result.replace(
-      new RegExp(`\\{${key}\\}`, 'g'),
+    result = result.replaceAll(
+      new RegExp(String.raw`\{${key}\}`, 'g'),
       value === undefined || value === null ? '' : String(value),
     );
   }
@@ -138,20 +138,17 @@ function conditionFilter(con: unknown) {
   const regTime = parsed.RegTime || [];
   const vip = parsed.VipV2 || [];
   if (
-    (!regTime.length && !vip.length) ||
-    (regTime[0] === 0 &&
-      regTime[1] === 0 &&
-      vip[0] === 0 &&
-      vip[1] === 0)
+    (regTime.length === 0 && vip.length === 0) ||
+    (regTime[0] === 0 && regTime[1] === 0 && vip[0] === 0 && vip[1] === 0)
   ) {
     return '全部';
   }
 
   let text = '';
-  if (regTime.length && (regTime[0] !== 0 || regTime[1] !== 0)) {
+  if (regTime.length > 0 && (regTime[0] !== 0 || regTime[1] !== 0)) {
     text += `注册时间${regTime[0]}--${regTime[1]}小时,`;
   }
-  if (vip.length && (vip[0] !== 0 || vip[1] !== 0)) {
+  if (vip.length > 0 && (vip[0] !== 0 || vip[1] !== 0)) {
     text += `等级${vip[0]}--${vip[1]}`;
   }
   return text;
@@ -273,8 +270,7 @@ export function transformLogParams(
       break;
     }
     case 48: {
-      params.DomainType =
-        Number(params.DomainType) === 1 ? '封盘' : '落地';
+      params.DomainType = Number(params.DomainType) === 1 ? '封盘' : '落地';
       break;
     }
     case 52: {
@@ -285,19 +281,16 @@ export function transformLogParams(
     }
     case 57: {
       params.InUsed = startEnd(params.InUsed);
-      params.DomainType =
-        Number(params.DomainType) === 1 ? '封盘' : '落地';
+      params.DomainType = Number(params.DomainType) === 1 ? '封盘' : '落地';
       break;
     }
     case 58: {
-      params.DomainType =
-        Number(params.DomainType) === 1 ? '封盘' : '落地';
+      params.DomainType = Number(params.DomainType) === 1 ? '封盘' : '落地';
       break;
     }
     case 61:
     case 64: {
-      params.OnShelf =
-        Number(params.OnShelf) === 1 ? '上架' : '下架';
+      params.OnShelf = Number(params.OnShelf) === 1 ? '上架' : '下架';
       break;
     }
     case 62: {
@@ -305,8 +298,7 @@ export function transformLogParams(
       break;
     }
     case 63: {
-      params.AllowInput =
-        Number(params.AllowInput) === 1 ? '[是]' : '[否]';
+      params.AllowInput = Number(params.AllowInput) === 1 ? '[是]' : '[否]';
       break;
     }
     case 68:
@@ -455,8 +447,7 @@ export function transformLogParams(
       break;
     }
     case 137: {
-      params.AllowInput =
-        Number(params.AllowInput) === 1 ? '[是]' : '[否]';
+      params.AllowInput = Number(params.AllowInput) === 1 ? '[是]' : '[否]';
       params.Conditions = conditionFilter(params.Conditions);
       break;
     }

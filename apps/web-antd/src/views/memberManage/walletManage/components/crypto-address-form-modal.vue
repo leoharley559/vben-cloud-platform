@@ -3,7 +3,7 @@ import type { CryptoAddressListItem } from '#/types/crypto-address';
 
 import { computed, ref, watch } from 'vue';
 
-import { Form, Input, Modal, Select, message } from 'ant-design-vue';
+import { Form, Input, message, Modal, Select } from 'ant-design-vue';
 
 import {
   createCryptoAddressApi,
@@ -17,9 +17,6 @@ import { createRequestHash } from '#/utils/crypto';
 
 defineOptions({ name: 'CryptoAddressFormModal' });
 
-/** 与旧站 GoogleCode page-id=18 一致 */
-const CRYPTO_SECURITY_PAGE_ID = 18;
-
 const props = defineProps<{
   mode: 'create' | 'edit';
   open: boolean;
@@ -30,6 +27,9 @@ const emit = defineEmits<{
   success: [];
   'update:open': [value: boolean];
 }>();
+
+/** 与旧站 GoogleCode page-id=18 一致 */
+const CRYPTO_SECURITY_PAGE_ID = 18;
 
 const { packageOptions } = useOperationOptions();
 
@@ -103,9 +103,9 @@ async function resolvePlayer() {
 }
 
 function validateAddress(address: string, configType: number) {
-  const value = address.replace(/\s/g, '');
+  const value = address.replaceAll(/\s/g, '');
   if (configType === 1) {
-    return /^T/.test(value);
+    return value.startsWith('T');
   }
   if (configType === 2) {
     return /^0x/i.test(value);
@@ -126,7 +126,7 @@ async function requestSubmit() {
     message.warning('请填写完整信息');
     return;
   }
-  const cleaned = digitalAddress.value.replace(/\s/g, '');
+  const cleaned = digitalAddress.value.replaceAll(/\s/g, '');
   if (!validateAddress(cleaned, digitalConfigType.value)) {
     message.warning('虚拟币地址格式与所选协议不匹配');
     return;
@@ -145,7 +145,7 @@ async function handleSubmit(extra: Record<string, unknown> = {}) {
   submitting.value = true;
   try {
     const payload = {
-      DigitalAddress: digitalAddress.value.replace(/\s/g, ''),
+      DigitalAddress: digitalAddress.value.replaceAll(/\s/g, ''),
       DigitalAlias: digitalAlias.value,
       DigitalConfigType: digitalConfigType.value,
       DigitalType: digitalType.value,

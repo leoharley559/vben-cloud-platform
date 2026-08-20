@@ -1,20 +1,16 @@
 <script lang="ts" setup>
 import type { Dayjs } from 'dayjs';
 
+import type { StatementRow } from '#/views/dataClose/shared/statement-helpers';
+
 import { computed, onMounted, ref } from 'vue';
 
-import {
-  Button,
-  message,
-  Select,
-  Space,
-  Table,
-} from 'ant-design-vue';
+import { Button, message, Select, Space, Table } from 'ant-design-vue';
 
 import { fetchDayStatementListApi } from '#/api/dataClose/day-statement';
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
@@ -25,17 +21,7 @@ import {
   resolveReportRange,
   toUnixRange,
 } from '#/views/dataClose/shared/report-utils';
-import {
-  displayAmount,
-  displayCent,
-  ensureDaySpan,
-  footerProfitFromTotal,
-  joinParam,
-  mapDayMoneyRow,
-  profitClass,
-  resolveTotalSum,
-  type StatementRow,
-} from '#/views/dataClose/shared/statement-helpers';
+import { displayAmount, displayCent, ensureDaySpan, footerProfitFromTotal, joinParam, mapDayMoneyRow, profitClass, resolveTotalSum } from '#/views/dataClose/shared/statement-helpers';
 
 defineOptions({ name: 'DayStatementSelfPanel' });
 
@@ -70,8 +56,18 @@ const summaryItems = computed(() => [
 ]);
 
 const columns = [
-  { align: 'center' as const, dataIndex: 'ReportDay', key: 'ReportDay', title: '时间' },
-  { align: 'center' as const, dataIndex: 'AgentName', key: 'AgentName', title: '场馆名称' },
+  {
+    align: 'center' as const,
+    dataIndex: 'ReportDay',
+    key: 'ReportDay',
+    title: '时间',
+  },
+  {
+    align: 'center' as const,
+    dataIndex: 'AgentName',
+    key: 'AgentName',
+    title: '场馆名称',
+  },
   {
     align: 'center' as const,
     dataIndex: 'SelfCountNum',
@@ -176,7 +172,11 @@ onMounted(() => {
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model="channelIds" class="w-56" placeholder="请输入渠道号" />
+        <ChannelSelect
+          v-model="channelIds"
+          class="w-56"
+          placeholder="请输入渠道号"
+        />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">上架包</span>
@@ -203,19 +203,23 @@ onMounted(() => {
         />
       </Space.Compact>
       <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" label="时间范围" precision="date" />
-        </div>
+        <QueryDatetimeRangePicker
+          v-model="dateRange"
+          label="时间范围"
+          precision="date"
+        />
+      </div>
       <template #actions>
-        <Button type="primary" :loading="loading" @click="loadList">查询</Button>
+        <Button type="primary" :loading="loading" @click="loadList">
+查询
+</Button>
         <Button :disabled="loading" @click="reset">重置</Button>
         <Button v-if="canExport" :disabled="loading" @click="handleExport">
           导出 Excel
         </Button>
       </template>
       <template #extra>
-        <div class="text-xs text-muted-foreground">
-          默认昨天，最长 30 天
-        </div>
+        <div class="text-xs text-muted-foreground">默认昨天，最长 30 天</div>
       </template>
     </ReportQueryCard>
 

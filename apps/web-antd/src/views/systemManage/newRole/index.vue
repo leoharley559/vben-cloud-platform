@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { ListSearchParams } from '#/components/global/list-search-bar.vue';
 import type { RoleFormModel, RoleListItem } from '#/types/system-manage';
 
 import { computed, onMounted, reactive, ref } from 'vue';
@@ -7,8 +8,17 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
 
-import { Card, Dropdown, Menu, message, Modal, Result, Tag } from 'ant-design-vue';
+import {
+  Card,
+  Dropdown,
+  Menu,
+  message,
+  Modal,
+  Result,
+  Tag,
+} from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getProjectConfigApi, getUserInfoApi } from '#/api';
 import {
   createRoleApi,
@@ -16,9 +26,7 @@ import {
   fetchRoleListApi,
   updateRoleApi,
 } from '#/api/systemManage/new-role';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import ListSearchBar from '#/components/global/list-search-bar.vue';
-import type { ListSearchParams } from '#/components/global/list-search-bar.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { isSystemBuiltinRole } from '#/utils/role-permission-tree';
 
@@ -31,7 +39,9 @@ const userStore = useUserStore();
 const roleFormModalRef = ref<InstanceType<typeof RoleFormModal>>();
 const searchLoading = ref(false);
 
-const canViewList = computed(() => checkPermission(10_005) || checkPermission(10_006));
+const canViewList = computed(
+  () => checkPermission(10_005) || checkPermission(10_006),
+);
 const canViewTable = computed(() => checkPermission(10_005));
 const canAdd = computed(() => checkPermission(10_006));
 const canEdit = computed(() => checkPermission(10_007));
@@ -127,7 +137,10 @@ function handleResetSearch() {
 }
 
 async function refreshSessionAfterRoleChange() {
-  const [userInfo] = await Promise.all([getUserInfoApi(), getProjectConfigApi()]);
+  const [userInfo] = await Promise.all([
+    getUserInfoApi(),
+    getProjectConfigApi(),
+  ]);
   userStore.setUserInfo(userInfo);
 }
 
@@ -171,7 +184,10 @@ function handleDelete(row: RoleListItem) {
   });
 }
 
-async function handleFormSubmit(payload: { form: RoleFormModel; mode: 'create' | 'update' }) {
+async function handleFormSubmit(payload: {
+  form: RoleFormModel;
+  mode: 'create' | 'update';
+}) {
   const data = {
     ...payload.form,
     Description: payload.form.Description || '',
@@ -203,7 +219,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <Page v-if="canViewList" auto-content-height description="系统管理 · 角色管理" title="角色管理">
+  <Page
+    v-if="canViewList"
+    auto-content-height
+    description="系统管理 · 角色管理"
+    title="角色管理"
+  >
     <Card>
       <div v-if="canViewTable" class="bg-card rounded-md p-4">
         <ListSearchBar
@@ -259,6 +280,10 @@ onMounted(() => {
   </Page>
 
   <Page v-else auto-content-height title="角色管理">
-    <Result status="403" sub-title="需要权限 10005 或 10006 才能访问此页面" title="无权限" />
+    <Result
+      status="403"
+      sub-title="需要权限 10005 或 10006 才能访问此页面"
+      title="无权限"
+    />
   </Page>
 </template>

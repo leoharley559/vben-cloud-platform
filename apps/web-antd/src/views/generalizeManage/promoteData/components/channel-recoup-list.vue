@@ -62,7 +62,9 @@ function currentWeek(): [dayjs.Dayjs, dayjs.Dayjs] {
 
 /** 对齐旧站 getWeekNumber（ISO 周） */
 function getWeekNumber(date: Date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const d = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  );
   d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
   return Math.ceil(((d.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7);
@@ -79,10 +81,7 @@ const datePickerMode = computed<'date' | 'month' | 'week'>(() =>
 function resetDateByReportType() {
   if (filterReportType.value === 2) {
     // 对齐旧站 getBeforeDateStr(30/1) → [today-29, today]
-    filterDateRange.value = [
-      dayjs().subtract(29, 'day'),
-      dayjs(),
-    ];
+    filterDateRange.value = [dayjs().subtract(29, 'day'), dayjs()];
     currentDateNum.value = Date.now();
   } else if (filterReportType.value === 3) {
     filterDateRange.value = currentWeek();
@@ -206,9 +205,7 @@ function isPastPeriod(row: RecoupRow, index: number, dayReportIndex = 1) {
   }
   const period = Number(row._periodIndex || 0);
   const year = Number(row._periodYear || 0);
-  return (
-    period + index < currentDateNum.value || year < currentYear.value
-  );
+  return period + index < currentDateNum.value || year < currentYear.value;
 }
 
 function dynamicValue(row: RecoupRow, index: number) {
@@ -240,9 +237,27 @@ const dynamicLabels = computed(() =>
 );
 
 const columns = computed<TableColumnsType<RecoupRow>>(() => [
-  { dataIndex: 'RegisterPeriod', fixed: 'left', key: 'date', title: '日期', width: 130 },
-  { dataIndex: 'RegNum', fixed: 'left', key: 'RegNum', title: '注册人数', width: 100 },
-  { dataIndex: 'FirstPayNum', fixed: 'left', key: 'FirstPayNum', title: '首存人数', width: 100 },
+  {
+    dataIndex: 'RegisterPeriod',
+    fixed: 'left',
+    key: 'date',
+    title: '日期',
+    width: 130,
+  },
+  {
+    dataIndex: 'RegNum',
+    fixed: 'left',
+    key: 'RegNum',
+    title: '注册人数',
+    width: 100,
+  },
+  {
+    dataIndex: 'FirstPayNum',
+    fixed: 'left',
+    key: 'FirstPayNum',
+    title: '首存人数',
+    width: 100,
+  },
   ...dynamicLabels.value.map((label, index) => ({
     key: `period-${index}`,
     title: periodLabel(label),
@@ -374,11 +389,7 @@ onMounted(() => {
           ]"
         />
       </Space>
-      <Button
-        v-if="canExport"
-        :loading="exportLoading"
-        @click="handleExport"
-      >
+      <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
         导出 Excel
       </Button>
     </div>

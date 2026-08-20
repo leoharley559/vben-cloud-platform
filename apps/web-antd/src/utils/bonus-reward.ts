@@ -46,15 +46,15 @@ export const WATER_TYPE_FILTER_OPTIONS = [
 
 export const ACTIVITY_TYPE_OPTIONS = [
   { label: '全部', value: -1 },
-  { label: '主题抽奖', value: 10008 },
-  { label: '新手任务', value: 10009 },
-  { label: '每日任务', value: 10013 },
-  { label: '通用活动', value: 10015 },
-  { label: '直播红包', value: 20001 },
-  { label: '签到', value: 10020 },
-  { label: '积分商城', value: 10021 },
-  { label: '注册转盘', value: 10022 },
-  { label: '首存转盘', value: 10016 },
+  { label: '主题抽奖', value: 10_008 },
+  { label: '新手任务', value: 10_009 },
+  { label: '每日任务', value: 10_013 },
+  { label: '通用活动', value: 10_015 },
+  { label: '直播红包', value: 20_001 },
+  { label: '签到', value: 10_020 },
+  { label: '积分商城', value: 10_021 },
+  { label: '注册转盘', value: 10_022 },
+  { label: '首存转盘', value: 10_016 },
 ];
 
 export const PAGE_TYPE_OPTIONS = [
@@ -149,12 +149,15 @@ export function formatBonusStatus(status?: number | string) {
 
 export function getBonusStatusColor(status?: number | string) {
   switch (Number(status)) {
-    case 2:
+    case 2: {
       return '#52c41a';
-    case 4:
+    }
+    case 4: {
       return '#ff4d4f';
-    default:
+    }
+    default: {
       return '#8c8c8c';
+    }
   }
 }
 

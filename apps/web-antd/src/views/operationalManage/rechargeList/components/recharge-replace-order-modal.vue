@@ -3,7 +3,7 @@ import type { RechargeListItem } from '#/types/operation-manage';
 
 import { reactive, ref, watch } from 'vue';
 
-import { Form, Input, InputNumber, Modal, message } from 'ant-design-vue';
+import { Form, Input, message, Modal } from 'ant-design-vue';
 
 import {
   fetchRechargeDetailApi,
@@ -25,7 +25,7 @@ const emit = defineEmits<{
 
 const loading = ref(false);
 const saving = ref(false);
-const detail = ref<Record<string, unknown> | null>(null);
+const detail = ref<null | Record<string, unknown>>(null);
 const form = reactive({
   Remark: '',
 });

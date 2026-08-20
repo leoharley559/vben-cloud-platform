@@ -29,10 +29,10 @@ import {
   updatePlayerAnalyzeStatusApi,
 } from '#/api/dataClose/player-report';
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
@@ -141,7 +141,7 @@ function disabledDate(current: Dayjs) {
 
 function normalizeLoginAccount() {
   // 对齐旧站 keyup：去空格、转小写
-  filters.LoginAccount = filters.LoginAccount.replace(/\s/g, '').toLowerCase();
+  filters.LoginAccount = filters.LoginAccount.replaceAll(/\s/g, '').toLowerCase();
 }
 
 function validateLoginAccount() {
@@ -252,7 +252,8 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     {
       align: 'center',
-      customRender: ({ record }) => calcChargeExchangeRatio(record.Recharged, record.WithdrawGold),
+      customRender: ({ record }) =>
+        calcChargeExchangeRatio(record.Recharged, record.WithdrawGold),
       dataIndex: 'RechargedRatio',
       key: 'RechargedRatio',
       sorter: true,
@@ -305,7 +306,8 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     {
       align: 'center',
-      customRender: ({ record }) => formatReportDateTime(record.LastOfflineTime),
+      customRender: ({ record }) =>
+        formatReportDateTime(record.LastOfflineTime),
       key: 'LastOfflineTime',
       title: '最后登录',
       width: 160,
@@ -390,7 +392,8 @@ function handlePageChange(current: number, pageSize: number) {
 async function switchStatus(row: Row, status: number) {
   const name = String(row.PlayerName || row.LoginAccount || row.PlayerId);
   const label =
-    STATUS_ACTIONS.find((item) => item.value === status)?.label || formatPlayerStatus(status);
+    STATUS_ACTIONS.find((item) => item.value === status)?.label ||
+    formatPlayerStatus(status);
   const ok = await new Promise<boolean>((resolve) => {
     Modal.confirm({
       content:
@@ -481,7 +484,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <Page v-if="canView" auto-content-height description="数据闭环 · 玩家分析" title="玩家分析">
+  <Page
+    v-if="canView"
+    auto-content-height
+    description="数据闭环 · 玩家分析"
+    title="玩家分析"
+  >
     <Card>
       <ReportQueryCard title="查询条件">
         <div class="flex flex-col gap-1">
@@ -511,7 +519,11 @@ onMounted(() => {
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">渠道号</span>
-          <ChannelSelect v-model="filters.ChannelId" style="min-width: 180px" placeholder="请输入渠道号" />
+          <ChannelSelect
+            v-model="filters.ChannelId"
+            style="min-width: 180px"
+            placeholder="请输入渠道号"
+          />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">产品</span>
@@ -535,10 +547,16 @@ onMounted(() => {
           />
         </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.dateRange" precision="date" :disabled-date="disabledDate" />
+          <QueryDatetimeRangePicker
+            v-model="filters.dateRange"
+            precision="date"
+            :disabled-date="disabledDate"
+          />
         </div>
         <template #actions>
-          <Button type="primary" :loading="loading" @click="handleSearch"> 查询 </Button>
+          <Button type="primary" :loading="loading" @click="handleSearch">
+            查询
+          </Button>
           <Button @click="handleReset">重置</Button>
           <Button
             v-if="canExport"

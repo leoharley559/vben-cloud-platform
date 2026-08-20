@@ -1,6 +1,7 @@
 import type { RouteRecordStringComponent } from '@vben/types';
 
 import type { CloudNavItem, CloudProjectConfig } from '#/types/cloud-platform';
+
 import { translateMenuTitle } from '#/utils/menu-i18n';
 import { resolveMenuIcon } from '#/utils/menu-icon-map';
 
@@ -97,12 +98,12 @@ function shouldAppendMenu(
     case 'cloneChannel': {
       return !!isOneTui;
     }
-    case 'everydayData': {
-      return hasAnyHaveFunction(roleDataField, ['1', '2']);
-    }
     case 'dropDeploy':
     case 'gameManage': {
       return !isOneTui;
+    }
+    case 'everydayData': {
+      return hasAnyHaveFunction(roleDataField, ['1', '2']);
     }
     case 'playerControl':
     case 'stockManage': {
@@ -135,11 +136,11 @@ function resolveComponentPath(routerPath: string) {
   }
   // 日报菜单路由对齐公司日报页
   if (/(^|\/)dayReport(\/|$)/.test(routerPath)) {
-    return routerPath.replace(/dayReport/g, 'everydayData');
+    return routerPath.replaceAll('dayReport', 'everydayData');
   }
   // macOS 大小写不敏感；统一到已存在的小写目录
   if (/(^|\/)serviceRecord(\/|$)/.test(routerPath)) {
-    return routerPath.replace(/serviceRecord/g, 'servicerecord');
+    return routerPath.replaceAll('serviceRecord', 'servicerecord');
   }
 
   return routerPath.startsWith('/') ? routerPath : `/${routerPath}`;
@@ -194,11 +195,11 @@ function buildRouteTree(
     const routeNode: BuiltRouteNode = {
       children: [],
       // 对齐旧站 permission.js：hidden = IsShow == '1'（宽松比较）
-      // eslint-disable-next-line eqeqeq -- 对齐旧站 IsShow / KeepAlive 宽松比较
+       
       hidden: child.IsShow == '1',
       icon: resolveMenuIcon(child.Name, child.Router),
       id: child.Id,
-      // eslint-disable-next-line eqeqeq -- 对齐旧站 KeepAlive 宽松比较
+       
       keepAlive: child.KeepAlive == '1',
       name: child.Name,
       parentId: child.ParentId,
@@ -223,7 +224,8 @@ function toVbenRoute(
       icon: resolveMenuIcon(node.name, node.path),
       keepAlive: node.keepAlive,
       // 详情页 query（时间、姓名）不参与 tab key，避免同代理反复开页触发 DOM 冲突
-      ...(path.includes('agencyAccountDetails') || path.includes('playerDetails')
+      ...(path.includes('agencyAccountDetails') ||
+      path.includes('playerDetails')
         ? { fullPathKey: false }
         : {}),
       originalPath: path,
@@ -277,7 +279,7 @@ export function convertNavToVbenRoutes(
 ): RouteRecordStringComponent[] {
   const parentMap = buildParentMap(navItems);
   const topLevelRoutes = buildRouteTree(-1, parentMap, projectConfig).filter(
-    (item) => item.children.length !== 0,
+    (item) => item.children.length > 0,
   );
 
   return topLevelRoutes.map((route) => toVbenRoute(route, true));

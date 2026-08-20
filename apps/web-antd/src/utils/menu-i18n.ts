@@ -17,7 +17,7 @@ export function translateMenuTitle(key?: string) {
   }
 
   // 已是中文则原样返回
-  if (/[\u4e00-\u9fff]/.test(key)) {
+  if (/[\u4E00-\u9FFF]/.test(key)) {
     return key;
   }
 

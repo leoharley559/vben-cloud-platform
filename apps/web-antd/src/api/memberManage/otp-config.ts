@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { OtpConfigItem, OtpConfigPayload } from '#/types/otp-config';
+
+import { requestClient } from '#/api/request';
 
 /**
  * 获取 OTP 短信通道配置（验证码管理 · OTP 管理 Tab）。

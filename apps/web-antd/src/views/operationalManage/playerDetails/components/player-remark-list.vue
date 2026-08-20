@@ -5,10 +5,10 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -23,6 +23,10 @@ import { createRequestHash } from '#/utils/crypto';
 
 defineOptions({ name: 'PlayerRemarkList' });
 
+const props = defineProps<{
+  playerId: number | string;
+}>();
+
 interface RemarkItem {
   CreateTime?: number | string;
   Id?: number | string;
@@ -32,16 +36,12 @@ interface RemarkItem {
   [key: string]: unknown;
 }
 
-const props = defineProps<{
-  playerId: number | string;
-}>();
-
 const { checkPermission } = useCloudPermission();
-const canSection = computed(() => checkPermission(11182));
-const canView = computed(() => checkPermission(11304));
-const canCreate = computed(() => checkPermission(11305));
-const canEdit = computed(() => checkPermission(11306));
-const canDelete = computed(() => checkPermission(12397));
+const canSection = computed(() => checkPermission(11_182));
+const canView = computed(() => checkPermission(11_304));
+const canCreate = computed(() => checkPermission(11_305));
+const canEdit = computed(() => checkPermission(11_306));
+const canDelete = computed(() => checkPermission(12_397));
 
 const loading = ref(false);
 const saving = ref(false);

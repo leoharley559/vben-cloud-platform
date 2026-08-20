@@ -1,7 +1,7 @@
 import type { Dayjs } from 'dayjs';
 
-import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
+import dayjs from 'dayjs';
 
 import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 
@@ -24,25 +24,19 @@ export function resolveReportRange(
   const today = dayjs().startOf('day');
   const yesterday = today.subtract(1, 'day');
   switch (preset) {
-    case 'today':
-    case 'todayWholeDay': {
-      // 对齐旧站 getBeforeDateTimestamp(1,false)～getBeforeDateTimestamp()：今天全日
-      return [today, today.endOf('day')];
-    }
-    case 'yesterday':
-    case 'yesterdayWholeDay': {
-      return [yesterday, yesterday.endOf('day')];
+    case 'currentMonth': {
+      // 当月 1 日 00:00 → 当前时刻
+      return [dayjs().startOf('month'), dayjs()];
     }
     case 'dayBeforeYesterday': {
       const day = today.subtract(2, 'day');
       return [day, day.endOf('day')];
     }
+    case 'last7ToToday': {
+      return [today.subtract(6, 'day'), today.endOf('day')];
+    }
     case 'previousDayToToday': {
       return [yesterday, today.endOf('day')];
-    }
-    case 'currentMonth': {
-      // 当月 1 日 00:00 → 当前时刻
-      return [dayjs().startOf('month'), dayjs()];
     }
     case 'statTodayToNow': {
       // 对齐旧站玩家统计：今天 00:00 → 当前时刻
@@ -52,8 +46,14 @@ export function resolveReportRange(
       // 历史别名：实际为「昨天全日」，新代码请用 statTodayToNow
       return [yesterday, today.subtract(1, 'second')];
     }
-    case 'last7ToToday': {
-      return [today.subtract(6, 'day'), today.endOf('day')];
+    case 'today':
+    case 'todayWholeDay': {
+      // 对齐旧站 getBeforeDateTimestamp(1,false)～getBeforeDateTimestamp()：今天全日
+      return [today, today.endOf('day')];
+    }
+    case 'yesterday':
+    case 'yesterdayWholeDay': {
+      return [yesterday, yesterday.endOf('day')];
     }
     default: {
       return [today.subtract(6, 'day'), yesterday.endOf('day')];

@@ -1,15 +1,11 @@
 <script lang="ts" setup>
+import type { PanelMetricKey } from '#/utils/dashboard';
+
 import { computed } from 'vue';
 
 import { Card, Tooltip } from 'ant-design-vue';
 
-import {
-  VISIBLE_PANEL_KEYS,
-  centsToYuan,
-  formatComparePercent,
-  toNumber,
-  type PanelMetricKey,
-} from '#/utils/dashboard';
+import { centsToYuan, formatComparePercent, toNumber, VISIBLE_PANEL_KEYS } from '#/utils/dashboard';
 
 defineOptions({ name: 'DashboardPanelMetrics' });
 
@@ -165,7 +161,7 @@ const cards = computed<MetricCard[]>(() => {
           <span
             class="mt-1 inline-block h-2.5 w-2.5 rounded-full"
             :style="{ background: card.accent }"
-          />
+          ></span>
         </div>
       </Card>
     </div>

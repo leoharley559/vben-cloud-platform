@@ -1,9 +1,5 @@
 <script lang="ts" setup>
 import type { CryptoAddressListItem } from '#/types/crypto-address';
-import {
-  CRYPTO_CONFIG_TYPE_OPTIONS,
-  formatCryptoConfigType,
-} from '#/types/crypto-address';
 
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
@@ -12,12 +8,12 @@ import {
   Checkbox,
   Form,
   Input,
+  message,
   Modal,
   Radio,
   Select,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -28,12 +24,13 @@ import {
 } from '#/api/memberManage/crypto-address';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import {
+  CRYPTO_CONFIG_TYPE_OPTIONS,
+  formatCryptoConfigType,
+} from '#/types/crypto-address';
 import { createRequestHash } from '#/utils/crypto';
 
 defineOptions({ name: 'PlayerVirtualAddressList' });
-
-/** 虚拟币地址安全校验 PageId（SECURITY_PATHS key 18） */
-const CRYPTO_SECURITY_PAGE_ID = 18;
 
 const props = defineProps<{
   loginAccount?: string;
@@ -41,13 +38,16 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
+/** 虚拟币地址安全校验 PageId（SECURITY_PATHS key 18） */
+const CRYPTO_SECURITY_PAGE_ID = 18;
+
 const { checkPermission } = useCloudPermission();
 
-const canSection = computed(() => checkPermission(11181));
-const canView = computed(() => checkPermission(11301));
-const canCreate = computed(() => checkPermission(11299));
-const canEdit = computed(() => checkPermission(11302));
-const canDelete = computed(() => checkPermission(11303));
+const canSection = computed(() => checkPermission(11_181));
+const canView = computed(() => checkPermission(11_301));
+const canCreate = computed(() => checkPermission(11_299));
+const canEdit = computed(() => checkPermission(11_302));
+const canDelete = computed(() => checkPermission(11_303));
 
 const loading = ref(false);
 const saving = ref(false);
@@ -90,14 +90,14 @@ const columns = [
 ];
 
 function validateAddress(address: string, configType: number) {
-  const value = address.replace(/\s/g, '');
-  if (configType === 1 && !/^T/.test(value)) {
+  const value = address.replaceAll(/\s/g, '');
+  if (configType === 1 && !value.startsWith('T')) {
     return 'TRC20 地址需以 T 开头';
   }
-  if (configType === 2 && !/^0x/.test(value)) {
+  if (configType === 2 && !value.startsWith('0x')) {
     return 'ERC20 地址需以 0x 开头';
   }
-  if (configType === 3 && !/^0x/.test(value)) {
+  if (configType === 3 && !value.startsWith('0x')) {
     return '其他协议地址需以 0x 开头';
   }
   return '';
@@ -160,7 +160,7 @@ function requestSave() {
 async function doSave(extra: Record<string, unknown> = {}) {
   saving.value = true;
   try {
-    const address = form.DigitalAddress.replace(/\s/g, '');
+    const address = form.DigitalAddress.replaceAll(/\s/g, '');
     const payload = {
       DigitalAddress: address,
       DigitalAlias: form.DigitalAlias.trim(),

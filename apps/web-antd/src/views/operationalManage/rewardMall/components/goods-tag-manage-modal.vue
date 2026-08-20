@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 
-import { Button, Modal, Space, Table, message } from 'ant-design-vue';
+import { Button, message, Modal, Space, Table } from 'ant-design-vue';
 
 import {
   createRewardProductTagApi,
@@ -15,11 +15,11 @@ import { useCloudPlatformStore } from '#/store/cloud-platform';
 import GoodsTagOrderModal from './goods-tag-order-modal.vue';
 import GoodsTagUpsertModal from './goods-tag-upsert-modal.vue';
 import {
-  SORT_SWITCH_TYPE,
   assembleTagPayload,
   breakupTagDetail,
   resolveLangGroupIds,
   resolveTagName,
+  SORT_SWITCH_TYPE,
 } from './reward-goods-shared';
 
 defineOptions({ name: 'GoodsTagManageModal' });
@@ -42,7 +42,7 @@ const tags = ref<TagRow[]>([]);
 
 const upsertOpen = ref(false);
 const upsertMode = ref<'add' | 'edit'>('add');
-const upsertTag = ref<Record<string, unknown> | null>(null);
+const upsertTag = ref<null | Record<string, unknown>>(null);
 
 const orderOpen = ref(false);
 const orderTagId = ref<number | string>();

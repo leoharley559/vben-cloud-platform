@@ -104,7 +104,7 @@ const venueOptions = computed(() =>
 
     <template v-if="pickMode === 1">
       <Select
-        v-if="categoryOptions.length"
+        v-if="categoryOptions.length > 0"
         v-model:value="categoriesArray"
         :disabled="disabled"
         mode="multiple"
@@ -123,7 +123,7 @@ const venueOptions = computed(() =>
 
     <template v-if="pickMode === 2">
       <Select
-        v-if="venueOptions.length"
+        v-if="venueOptions.length > 0"
         v-model:value="venuesArray"
         allow-clear
         :disabled="disabled"

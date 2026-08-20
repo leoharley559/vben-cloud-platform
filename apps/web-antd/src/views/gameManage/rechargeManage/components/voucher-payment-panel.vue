@@ -869,9 +869,9 @@ onMounted(() => {
               >
                 {{ template.ModelName || template.Id }}
               </Tag>
-              <Button size="small" @click="openTemplateCreate"
-                >收藏当前选择</Button
-              >
+              <Button size="small" @click="openTemplateCreate">
+收藏当前选择
+</Button>
             </div>
           </Form.Item>
 

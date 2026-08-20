@@ -17,11 +17,11 @@ defineOptions({ name: 'WalletManage' });
 const { checkPermission } = useCloudPermission();
 
 const canCard = computed(
-  () => checkPermission(12949) || checkPermission(11469),
+  () => checkPermission(12_949) || checkPermission(11_469),
 );
-const canEWallet = computed(() => checkPermission(12945));
-const canCrypto = computed(() => checkPermission(11474));
-const canMultiBind = computed(() => checkPermission(12702));
+const canEWallet = computed(() => checkPermission(12_945));
+const canCrypto = computed(() => checkPermission(11_474));
+const canMultiBind = computed(() => checkPermission(12_702));
 
 const canViewAny = computed(
   () =>

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { DateRange, Row } from './shared';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -11,18 +13,10 @@ import {
 } from 'ant-design-vue';
 
 import { getNetCashLogListApi } from '#/api/netcash/credit-limit';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 
-import {
-  accountTypeMap,
-  accountTypeOptions,
-  amount,
-  date,
-  type DateRange,
-  rangeParams,
-  type Row,
-} from './shared';
+import { accountTypeMap, accountTypeOptions, amount, date, rangeParams } from './shared';
 
 const loading = ref(false);
 const rows = ref<Row[]>([]);
@@ -46,8 +40,16 @@ const columns = [
   { dataIndex: 'AccountType', key: 'AccountType', title: '代理类型' },
   { dataIndex: 'UpdateTime', key: 'UpdateTime', title: '账变时间', width: 180 },
   { dataIndex: 'AdjustAmount', key: 'AdjustAmount', title: '变更金额（元）' },
-  { dataIndex: 'AdjustAmountBef', key: 'AdjustAmountBef', title: '变更前额度（元）' },
-  { dataIndex: 'AdjustAmountAft', key: 'AdjustAmountAft', title: '变更后额度（元）' },
+  {
+    dataIndex: 'AdjustAmountBef',
+    key: 'AdjustAmountBef',
+    title: '变更前额度（元）',
+  },
+  {
+    dataIndex: 'AdjustAmountAft',
+    key: 'AdjustAmountAft',
+    title: '变更后额度（元）',
+  },
   { dataIndex: 'ReviewNote', key: 'ReviewNote', title: '备注' },
 ];
 
@@ -111,39 +113,88 @@ onMounted(load);
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="query.AgentAccount"
-          allow-clear
-          @press-enter="search"
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">代理类型</span>
-        <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="请选择代理类型" />
-      </Space.Compact>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="query.AgentAccount"
+            allow-clear
+            @press-enter="search"
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">代理类型</span>
+          <Select
+            v-model:value="query.AccountType"
+            :options="accountTypeOptions"
+            placeholder="请选择代理类型"
+          />
+        </Space.Compact>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="transferRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="search">查询</Button>
-      <Button @click="reset">重置</Button>
+          <Button @click="reset">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
     <SummaryCards :items="summaryItems" />
-    <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="false" row-key="Id" :scroll="{ x: 1250 }" size="small">
+    <Table
+      bordered
+      :columns="columns"
+      :data-source="rows"
+      :loading="loading"
+      :pagination="false"
+      row-key="Id"
+      :scroll="{ x: 1250 }"
+      size="small"
+    >
       <template #bodyCell="{ column, record, index }">
-        <template v-if="column.key === 'seq'">{{ (query.Page - 1) * query.PageSize + index + 1 }}</template>
-        <template v-else-if="column.key === 'AccountType'">{{ accountTypeMap[Number(record.AccountType)] || '-' }}</template>
-        <template v-else-if="column.key === 'UpdateTime'">{{ date(record.UpdateTime) }}</template>
-        <template v-else-if="['AdjustAmount', 'AdjustAmountBef', 'AdjustAmountAft'].includes(String(column.key))"><span :class="column.key === 'AdjustAmount' && Number(record.AdjustAmount) < 0 ? 'text-red-500' : ''">{{ amount(record[String(column.key)]) }}</span></template>
+        <template v-if="column.key === 'seq'">
+{{
+          (query.Page - 1) * query.PageSize + index + 1
+        }}
+</template>
+        <template v-else-if="column.key === 'AccountType'">
+{{
+          accountTypeMap[Number(record.AccountType)] || '-'
+        }}
+</template>
+        <template v-else-if="column.key === 'UpdateTime'">
+{{
+          date(record.UpdateTime)
+        }}
+</template>
+        <template
+          v-else-if="
+            ['AdjustAmount', 'AdjustAmountBef', 'AdjustAmountAft'].includes(
+              String(column.key),
+            )
+          "
+          >
+<span
+            :class="
+              column.key === 'AdjustAmount' && Number(record.AdjustAmount) < 0
+                ? 'text-red-500'
+                : ''
+            "
+            >{{ amount(record[String(column.key)]) }}</span>
+</template>
       </template>
     </Table>
-    <Pagination v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize" :page-size-options="['10', '20', '50', '100']" :total="total" class="mt-4 text-right" show-size-changer @change="load" @show-size-change="load" />
+    <Pagination
+      v-if="total"
+      v-model:current="query.Page"
+      v-model:page-size="query.PageSize"
+      :page-size-options="['10', '20', '50', '100']"
+      :total="total"
+      class="mt-4 text-right"
+      show-size-changer
+      @change="load"
+      @show-size-change="load"
+    />
   </div>
 </template>

@@ -1,6 +1,7 @@
+import type { CloudProjectConfig } from '#/types/cloud-platform';
+
 import { requestClient } from '#/api/request';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
-import type { CloudProjectConfig } from '#/types/cloud-platform';
 
 /**
  * 获取项目全局配置（充值类型、开关项等），并写入 cloudStore

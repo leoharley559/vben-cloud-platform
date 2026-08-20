@@ -1,8 +1,5 @@
 <script lang="ts" setup>
-import type {
-  HelpCenterItem,
-  HelpCenterLangTextItem,
-} from '#/types/netcash';
+import type { HelpCenterItem, HelpCenterLangTextItem } from '#/types/netcash';
 
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 
@@ -92,8 +89,7 @@ function parseLangText(
     if (Array.isArray(parsed)) return parsed as HelpCenterLangTextItem[];
     return Object.entries(parsed || {}).map(([langGroupId, item]) => ({
       ...(item as HelpCenterLangTextItem),
-      LangGroupId:
-        (item as HelpCenterLangTextItem).LangGroupId ?? langGroupId,
+      LangGroupId: (item as HelpCenterLangTextItem).LangGroupId ?? langGroupId,
     }));
   } catch {
     return [];
@@ -283,7 +279,8 @@ onMounted(() => {
 });
 
 watch(activeLangGroupId, async (value, oldValue) => {
-  if (!canViewPage.value || oldValue === undefined || value === oldValue) return;
+  if (!canViewPage.value || oldValue === undefined || value === oldValue)
+    return;
   await nextTick();
   await loadList(true);
 });
@@ -300,10 +297,7 @@ watch(activeLangGroupId, async (value, oldValue) => {
       <div>
         <strong>内容语言组</strong>
         <span v-if="langGroups.length > 0" class="lang-switch">
-          <Radio.Group
-            v-model:value="activeLangGroupId"
-            button-style="solid"
-          >
+          <Radio.Group v-model:value="activeLangGroupId" button-style="solid">
             <Radio.Button
               v-for="group in langGroups"
               :key="group.Id"
@@ -459,44 +453,128 @@ watch(activeLangGroupId, async (value, oldValue) => {
 .help-toolbar {
   display: flex;
   flex-wrap: wrap;
+  gap: 10px;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
   padding: 14px 16px;
   background: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   border-radius: 10px;
 }
-.lang-switch { margin-left: 14px; }
-.muted { font-size: 12px; color: hsl(var(--muted-foreground)); }
-.help-note { margin-top: 12px; }
-.help-card { margin-top: 12px; border-radius: 10px; }
-.help-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 590px; }
-.category-panel { padding-right: 14px; border-right: 1px solid hsl(var(--border)); }
-.create-button { margin-bottom: 12px; }
-.category-list { max-height: 535px; overflow: auto; }
+
+.lang-switch {
+  margin-left: 14px;
+}
+
+.muted {
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+
+.help-note {
+  margin-top: 12px;
+}
+
+.help-card {
+  margin-top: 12px;
+  border-radius: 10px;
+}
+
+.help-layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  min-height: 590px;
+}
+
+.category-panel {
+  padding-right: 14px;
+  border-right: 1px solid hsl(var(--border));
+}
+
+.create-button {
+  margin-bottom: 12px;
+}
+
+.category-list {
+  max-height: 535px;
+  overflow: auto;
+}
+
 .category-item {
   display: flex;
+  gap: 8px;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
   width: 100%;
   padding: 11px 10px;
   text-align: left;
   border-bottom: 1px solid hsl(var(--border));
   border-radius: 6px;
 }
-.category-item small { flex: none; color: hsl(var(--muted-foreground)); }
-.category-item:hover { background: hsl(var(--muted) / 45%); }
-.category-item.active { color: hsl(var(--primary)); background: hsl(var(--primary) / 10%); font-weight: 600; }
-.editor-panel { min-width: 0; padding-left: 16px; }
-.editor-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid hsl(var(--border)); }
-.category-name { display: grid; grid-template-columns: auto minmax(180px, 280px); align-items: center; gap: 10px; }
-.modal-scroll { max-height: 72vh; padding-right: 8px; overflow: auto; }
+
+.category-item small {
+  flex: none;
+  color: hsl(var(--muted-foreground));
+}
+
+.category-item:hover {
+  background: hsl(var(--muted) / 45%);
+}
+
+.category-item.active {
+  font-weight: 600;
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 10%);
+}
+
+.editor-panel {
+  min-width: 0;
+  padding-left: 16px;
+}
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.category-name {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 280px);
+  gap: 10px;
+  align-items: center;
+}
+
+.modal-scroll {
+  max-height: 72vh;
+  padding-right: 8px;
+  overflow: auto;
+}
+
 @media (max-width: 900px) {
-  .help-layout { grid-template-columns: 1fr; }
-  .category-panel { padding-right: 0; padding-bottom: 14px; border-right: 0; border-bottom: 1px solid hsl(var(--border)); }
-  .category-list { max-height: 240px; }
-  .editor-panel { padding-top: 14px; padding-left: 0; }
+  .help-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .category-panel {
+    padding-right: 0;
+    padding-bottom: 14px;
+    border-right: 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .category-list {
+    max-height: 240px;
+  }
+
+  .editor-panel {
+    padding-top: 14px;
+    padding-left: 0;
+  }
 }
 </style>

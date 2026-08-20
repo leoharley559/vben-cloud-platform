@@ -1,10 +1,13 @@
 <script lang="ts" setup>
+import type { GoodsGuideItem } from './reward-goods-shared';
+
 import { computed, reactive, ref, watch } from 'vue';
 
 import {
   Button,
   Checkbox,
   Form,
+  message,
   Modal,
   Radio,
   Select,
@@ -13,7 +16,6 @@ import {
   Switch,
   Table,
   Tabs,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -22,19 +24,11 @@ import {
 } from '#/api/operationManage/reward-mall';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
-import { getServiceImageUrl } from '#/utils/media';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import { getServiceImageUrl } from '#/utils/media';
 
 import GoodsRuleModal from './goods-rule-modal.vue';
-import {
-  REDIRECT_TYPE_OPTIONS,
-  type GoodsGuideItem,
-  assembleGoodsGlobalConfigPayload,
-  breakupGoodsGlobalConfig,
-  createDefaultGoodsGlobalConfigForm,
-  resolveDefaultLangGroupId,
-  resolveLangGroupIds,
-} from './reward-goods-shared';
+import { assembleGoodsGlobalConfigPayload, breakupGoodsGlobalConfig, createDefaultGoodsGlobalConfigForm, REDIRECT_TYPE_OPTIONS, resolveDefaultLangGroupId, resolveLangGroupIds } from './reward-goods-shared';
 
 defineOptions({ name: 'GoodsGlobalConfigModal' });
 
@@ -58,7 +52,7 @@ const form = reactive(createDefaultGoodsGlobalConfigForm(langGroupIds.value));
 const deviceOptions = computed(() => {
   const map = cloudStore.projectConfig?.DevicePlatformAll || {};
   const entries = Object.entries(map);
-  if (!entries.length) {
+  if (entries.length === 0) {
     return [
       { label: 'PC', value: '1' },
       { label: 'H5', value: '2' },
@@ -215,7 +209,7 @@ const ruleColumns = [
 ];
 
 async function handleSubmit() {
-  if (!displayDevicesArray.value.length) {
+  if (displayDevicesArray.value.length === 0) {
     message.warning('请至少选择一个展示设备');
     return;
   }
@@ -250,10 +244,18 @@ async function handleSubmit() {
             />
           </Form.Item>
           <Form.Item label="生效渠道">
-            <ChannelSelect v-model="validChannels" style="width: 100%" placeholder="请输入渠道号" />
+            <ChannelSelect
+              v-model="validChannels"
+              style="width: 100%"
+              placeholder="请输入渠道号"
+            />
           </Form.Item>
           <Form.Item label="屏蔽渠道">
-            <ChannelSelect v-model="invalidChannels" style="width: 100%" placeholder="请输入渠道号" />
+            <ChannelSelect
+              v-model="invalidChannels"
+              style="width: 100%"
+              placeholder="请输入渠道号"
+            />
           </Form.Item>
           <Form.Item label="生效包体">
             <Select

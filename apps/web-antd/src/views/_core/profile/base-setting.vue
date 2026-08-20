@@ -40,7 +40,9 @@ const loginTypeText = computed(() => {
   return '图形验证码';
 });
 const multiDeviceText = computed(() =>
-  Number(props.info.IsAllowOtherDeviceLogin) === 1 ? '允许多设备' : '不允许多设备',
+  Number(props.info.IsAllowOtherDeviceLogin) === 1
+    ? '允许多设备'
+    : '不允许多设备',
 );
 
 function formatDateTime(value?: number | string) {

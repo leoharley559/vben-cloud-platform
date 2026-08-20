@@ -76,7 +76,7 @@ watch(
 </script>
 
 <template>
-  <div v-if="tabs.length">
+  <div v-if="tabs.length > 0">
     <Card class="mb-4" size="small">
       <Space wrap>
         <Button

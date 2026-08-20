@@ -1,13 +1,14 @@
 <script lang="ts" setup>
 import { Button, Card, Descriptions } from 'ant-design-vue';
 
+defineOptions({ name: 'MobileQueryPlayerInfo' });
+
 defineProps<{
   player?: Record<string, unknown>;
 }>();
 
 const emit = defineEmits<{ back: [] }>();
 
-defineOptions({ name: 'MobileQueryPlayerInfo' });
 </script>
 
 <template>

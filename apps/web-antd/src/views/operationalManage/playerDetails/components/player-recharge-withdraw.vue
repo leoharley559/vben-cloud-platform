@@ -18,8 +18,8 @@ const props = defineProps<{
 
 const { checkPermission } = useCloudPermission();
 
-const canCreditRecord = computed(() => checkPermission(11827));
-const canEasyRecharge = computed(() => checkPermission(12104));
+const canCreditRecord = computed(() => checkPermission(11_827));
+const canEasyRecharge = computed(() => checkPermission(12_104));
 
 const activeType = ref<'credit' | 'easyrecharge' | 'recharge' | 'withdraw'>(
   'recharge',

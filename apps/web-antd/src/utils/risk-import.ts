@@ -9,7 +9,7 @@ export function parseRiskImportText(
     .map((line) => line.trim())
     .filter(Boolean);
 
-  if (!lines.length) {
+  if (lines.length === 0) {
     return [];
   }
 
@@ -50,7 +50,7 @@ export function parseBankCardRiskImportText(
     .map((line) => line.trim())
     .filter(Boolean);
 
-  if (!lines.length) {
+  if (lines.length === 0) {
     return { error: '上传文件为空', rows: [] };
   }
 
@@ -87,7 +87,7 @@ export function parseBankCardRiskImportText(
     });
   }
 
-  if (!rows.length) {
+  if (rows.length === 0) {
     return { error: '上传文件为空', rows: [] };
   }
   if (rows.length > 1000) {
@@ -101,8 +101,7 @@ function splitCsvLine(line: string) {
   const result: string[] = [];
   let current = '';
   let inQuotes = false;
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
+  for (const char of line) {
     if (char === '"') {
       inQuotes = !inQuotes;
       continue;

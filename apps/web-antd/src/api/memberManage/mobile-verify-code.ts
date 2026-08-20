@@ -1,5 +1,3 @@
-import { requestClient } from '#/api/request';
-import type { CloudListResult } from '#/types/operation-manage';
 import type {
   MobileVerifyCodeListItem,
   MobileVerifyCodeListQuery,
@@ -7,12 +5,15 @@ import type {
   MobileVerifyWhitelistListQuery,
   MobileVerifyWhitelistPayload,
 } from '#/types/mobile-verify-code';
+import type { CloudListResult } from '#/types/operation-manage';
 import type {
   PhoneAreaCodeListItem,
   PhoneAreaCodeListQuery,
   PhoneAreaCodeSortPayload,
   PhoneAreaCodeSwitchPayload,
 } from '#/types/phone-area-code';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 function normalizeList<T>(result: CloudListResult<T> | null | undefined) {

@@ -9,15 +9,16 @@ import {
   Checkbox,
   Form,
   InputNumber,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Switch,
   Tag,
-  message,
 } from 'ant-design-vue';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   createSendOrderManageApi,
   deleteSendOrderManageApi,
@@ -30,7 +31,6 @@ import {
   updateSendOrderSwitchApi,
 } from '#/api/operationManage/withdraw-extra';
 import { fetchAdminListApi } from '#/api/systemManage/admin';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
@@ -40,12 +40,12 @@ type RuleOption = { abbr: string; name: string };
 
 const { checkPermission } = useCloudPermission();
 
-const canViewTable = computed(() => checkPermission(10371));
-const canCreate = computed(() => checkPermission(10372));
-const canEdit = computed(() => checkPermission(10373));
-const canDelete = computed(() => checkPermission(10374));
-const canSwitch = computed(() => checkPermission(10375));
-const canRowSwitch = computed(() => checkPermission(10376));
+const canViewTable = computed(() => checkPermission(10_371));
+const canCreate = computed(() => checkPermission(10_372));
+const canEdit = computed(() => checkPermission(10_373));
+const canDelete = computed(() => checkPermission(10_374));
+const canSwitch = computed(() => checkPermission(10_375));
+const canRowSwitch = computed(() => checkPermission(10_376));
 
 const autoSwitch = ref(false);
 const switchLoading = ref(false);
@@ -69,7 +69,7 @@ function formatConfigLabel(value?: string | string[]) {
     : String(value || '')
         .split(',')
         .filter(Boolean);
-  if (!names.length) {
+  if (names.length === 0) {
     return '-';
   }
   return names
@@ -93,7 +93,7 @@ watch(formConfigLabels, () => {
   syncCheckAllState();
 });
 
-function handleCheckAll(checked: boolean | string | number) {
+function handleCheckAll(checked: boolean | number | string) {
   const enabled = !!checked;
   formConfigLabels.value = enabled
     ? ruleOptions.value.map((item) => item.name)

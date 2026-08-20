@@ -11,25 +11,26 @@ export interface DataCloseQuery extends Record<string, unknown> {
   PageSize?: number;
 }
 
-export interface ReportListResult<T extends ReportRow = ReportRow>
-  extends CloudListResult<T> {
+export interface ReportListResult<
+  T extends ReportRow = ReportRow,
+> extends CloudListResult<T> {
   ItemsMoney?: T[];
   ItemsOld?: T[];
   MoreItems?: ReportRow;
-  Total?: ReportRow | number;
+  Total?: number | ReportRow;
   [key: string]: unknown;
 }
 
 export function toListResult(
-  data?: {
-    Items?: ReportRow[] | null;
-    ItemsMoney?: ReportRow[] | null;
-    ItemsOld?: ReportRow[] | null;
-    MoreItems?: ReportRow | null;
-    Pagination?: { MaxCount?: number } | null;
-    Total?: ReportRow | number | null;
+  data?: null | {
     [key: string]: unknown;
-  } | null,
+    Items?: null | ReportRow[];
+    ItemsMoney?: null | ReportRow[];
+    ItemsOld?: null | ReportRow[];
+    MoreItems?: null | ReportRow;
+    Pagination?: null | { MaxCount?: number };
+    Total?: null | number | ReportRow;
+  },
   items?: ReportRow[],
 ): ReportListResult {
   if (!data || typeof data !== 'object') {
@@ -68,9 +69,9 @@ export function toListResult(
     Total:
       data.Total && typeof data.Total === 'object'
         ? data.Total
-        : typeof data.Total === 'number'
+        : (typeof data.Total === 'number'
           ? { MaxCount: data.Total }
-          : {},
+          : {}),
   };
 }
 
@@ -78,7 +79,7 @@ export function toListResult(
  * 区间留存等接口：`Items` 可能是「单对象矩阵」而非数组。
  * 对齐旧站 `tableData.push(data.Items)`：把矩阵对象包成一行。
  */
-export function wrapMatrixAsList(payload: ReportRow | null | undefined) {
+export function wrapMatrixAsList(payload: null | ReportRow | undefined) {
   if (!payload || typeof payload !== 'object') {
     return toListResult({ Items: [] });
   }

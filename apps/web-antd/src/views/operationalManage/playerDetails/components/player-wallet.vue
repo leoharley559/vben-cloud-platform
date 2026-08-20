@@ -8,12 +8,12 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Select,
   Space,
   Table,
   Tag,
-  message,
 } from 'ant-design-vue';
 
 import { createAccountAdjustApi } from '#/api/operationManage/account-adjust';
@@ -24,12 +24,12 @@ import {
   updateWalletUnlockWaterApi,
   walletZeroApi,
 } from '#/api/operationManage/player';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { createRequestHash } from '#/utils/crypto';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatVenueName } from '#/utils/game-config';
-import SummaryCards from '#/components/global/summary-cards.vue';
 
 defineOptions({ name: 'PlayerWalletPanel' });
 
@@ -39,12 +39,12 @@ const props = defineProps<{
 
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
-const canViewTable = computed(() => checkPermission(10437));
-const canEditUnlock = computed(() => checkPermission(10440));
-const canRecoverOne = computed(() => checkPermission(10439));
-const canRecoverAll = computed(() => checkPermission(10434));
-const canZero = computed(() => checkPermission(10438));
-const canAdjust = computed(() => checkPermission(10435));
+const canViewTable = computed(() => checkPermission(10_437));
+const canEditUnlock = computed(() => checkPermission(10_440));
+const canRecoverOne = computed(() => checkPermission(10_439));
+const canRecoverAll = computed(() => checkPermission(10_434));
+const canZero = computed(() => checkPermission(10_438));
+const canAdjust = computed(() => checkPermission(10_435));
 
 const loading = ref(false);
 const saving = ref(false);

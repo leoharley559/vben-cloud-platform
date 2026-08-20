@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+import type { CsvColumn } from '#/utils/export-csv';
+import type { RankGameRow } from '#/utils/ranking';
+
 import { computed, nextTick, onMounted, ref } from 'vue';
 
 import { Col, message, Row, Spin } from 'ant-design-vue';
@@ -7,9 +10,8 @@ import { fetchGameProfitLossRankApi } from '#/api/operationalData/ranking';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatGameId } from '#/utils/dashboard';
-import { exportRowsToCsv, type CsvColumn } from '#/utils/export-csv';
+import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import type { RankGameRow } from '#/utils/ranking';
 
 import GameRankTable from './game-rank-table.vue';
 import RankingFilterBar from './ranking-filter-bar.vue';
@@ -53,7 +55,7 @@ function handleReset(query: Record<string, unknown>) {
 }
 
 function handleExport() {
-  if (winItems.value.length < 1 && loseItems.value.length < 1) {
+  if (winItems.value.length === 0 && loseItems.value.length === 0) {
     message.warning('暂无数据可导出');
     return;
   }

@@ -5,8 +5,8 @@ import { Button, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 
 defineOptions({ name: 'PromoteDataSearch' });
 
@@ -67,9 +67,9 @@ function onCalendarChange(
 ) {
   const first = dates?.[0];
   rangeSelecting.value = first
-    ? dayjs.isDayjs(first)
+    ? (dayjs.isDayjs(first)
       ? first
-      : dayjs(first)
+      : dayjs(first))
     : undefined;
 }
 

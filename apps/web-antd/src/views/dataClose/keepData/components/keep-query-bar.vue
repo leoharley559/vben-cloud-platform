@@ -3,17 +3,12 @@ import type { Dayjs } from 'dayjs';
 
 import { computed, reactive } from 'vue';
 
-import {
-  Button,
-  message,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, message, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import AccountSelect from '#/components/global/account-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
@@ -126,7 +121,11 @@ defineExpose({ buildQuery, handleSearch });
     </Space.Compact>
     <Space.Compact>
       <span class="query-field-addon">渠道号</span>
-      <ChannelSelect v-model="filters.ChannelIds" class="min-w-[200px]" placeholder="请输入渠道号" />
+      <ChannelSelect
+        v-model="filters.ChannelIds"
+        class="min-w-[200px]"
+        placeholder="请输入渠道号"
+      />
     </Space.Compact>
     <Space.Compact>
       <span class="query-field-addon">产品</span>
@@ -152,8 +151,14 @@ defineExpose({ buildQuery, handleSearch });
       />
     </Space.Compact>
     <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.dateRange" precision="date" :disabled-date="(current) => disabledKeepDate(current, pickingDate.value)" />
-        </div>
+      <QueryDatetimeRangePicker
+        v-model="filters.dateRange"
+        precision="date"
+        :disabled-date="
+          (current) => disabledKeepDate(current, pickingDate.value)
+        "
+      />
+    </div>
     <template #actions>
       <Button type="primary" @click="handleSearch">查询</Button>
       <Button @click="handleReset">重置</Button>

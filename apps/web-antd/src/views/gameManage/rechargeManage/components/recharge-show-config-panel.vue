@@ -7,6 +7,7 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Result,
   Select,
@@ -14,7 +15,6 @@ import {
   Spin,
   Switch,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -111,12 +111,10 @@ async function saveField(field: 'AutoSkipTime' | 'DialogSwitch' | 'Tips') {
   if (!canEditBlockage.value) {
     return;
   }
-  if (field === 'AutoSkipTime') {
-    if (form.AutoSkipTime === undefined || form.AutoSkipTime < 0) {
+  if (field === 'AutoSkipTime' && (form.AutoSkipTime === undefined || form.AutoSkipTime < 0)) {
       message.warning('请输入有效的自动跳转时间');
       return;
     }
-  }
   savingField.value = field;
   try {
     const payload = {
@@ -124,9 +122,9 @@ async function saveField(field: 'AutoSkipTime' | 'DialogSwitch' | 'Tips') {
       [field]:
         field === 'DialogSwitch'
           ? Number(form.DialogSwitch)
-          : field === 'AutoSkipTime'
+          : (field === 'AutoSkipTime'
             ? Number(form.AutoSkipTime)
-            : form.Tips,
+            : form.Tips),
     };
     await updateRechargeFailTipConfigApi(payload);
     snapshot.value = { ...payload };

@@ -8,10 +8,10 @@ import {
   Button,
   Descriptions,
   Input,
+  message,
   Modal,
   Select,
   Table,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -32,7 +32,7 @@ const loginAccount = ref('');
 const packageName = ref('');
 const searching = ref(false);
 const generating = ref(false);
-const playerInfo = ref<PlayerBasicInfo | null>(null);
+const playerInfo = ref<null | PlayerBasicInfo>(null);
 const generatedList = ref<MobileVerifyCodeListItem[]>([]);
 
 const productNameOptions = computed(() =>
@@ -174,7 +174,7 @@ async function handleGenerate() {
     </div>
 
     <Table
-      v-if="generatedList.length"
+      v-if="generatedList.length > 0"
       :columns="[
         { dataIndex: 'CreateTime', key: 'time', title: '申请时间' },
         { dataIndex: 'PhoneNum', key: 'phone', title: '手机号' },

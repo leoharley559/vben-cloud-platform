@@ -16,16 +16,16 @@ import {
 } from 'ant-design-vue';
 
 import {
+  queryPlayerByAccountApi,
+  queryPlayerByExcelApi,
+} from '#/api/operationManage/player';
+import {
   batchCreatePlayerGoldHandleApi,
   createPlayerGoldHandleApi,
   getPlayerGoldRedTitleApi,
 } from '#/api/operationManage/player-gold-handle';
-import {
-  queryPlayerByAccountApi,
-  queryPlayerByExcelApi,
-} from '#/api/operationManage/player';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { createRequestHash } from '#/utils/crypto';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatMemberType } from '#/utils/player-status';
@@ -44,11 +44,11 @@ interface BatchRow {
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canSingle = computed(() => checkPermission(10088));
-const canBatch = computed(() => checkPermission(10089));
+const canSingle = computed(() => checkPermission(10_088));
+const canBatch = computed(() => checkPermission(10_089));
 const canView = computed(() => canSingle.value || canBatch.value);
 
-const grantMode = ref<'single' | 'batch'>(canSingle.value ? 'single' : 'batch');
+const grantMode = ref<'batch' | 'single'>(canSingle.value ? 'single' : 'batch');
 
 const querying = ref(false);
 const submitting = ref(false);
@@ -83,12 +83,12 @@ const batchText = ref('');
 const batchFileInput = ref<HTMLInputElement | null>(null);
 const batchRows = ref<BatchRow[]>([]);
 const batchResultOpen = ref(false);
-const batchResult = ref<{
+const batchResult = ref<null | {
   Count?: number;
   FailCount?: number;
   FailItems?: Array<{ Amount?: number; LoginAccount?: string; Msg?: string }>;
   SuccessCount?: number;
-} | null>(null);
+}>(null);
 
 const redTitles = ref<string[]>([]);
 
@@ -134,7 +134,7 @@ async function loadRedTitles() {
     const items = Array.isArray(data)
       ? data
       : (data as { Items?: unknown[] })?.Items || [];
-    redTitles.value = items.map((item) => String(item)).filter(Boolean);
+    redTitles.value = items.map(String).filter(Boolean);
     if (form.RedType === 2 && redTitles.value[0]) {
       form.Title = redTitles.value[0];
     }
@@ -146,7 +146,7 @@ async function loadRedTitles() {
 function onRedTypeChange() {
   if (form.RedType === 2) {
     form.Title = redTitles.value[0] || '';
-    if (!redTitles.value.length) {
+    if (redTitles.value.length === 0) {
       void loadRedTitles();
     }
   } else {
@@ -172,13 +172,13 @@ function onBatchFileChange(event: Event) {
     return;
   }
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.addEventListener('load', () => {
     const text = String(reader.result || '');
     const lines = text
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean);
-    if (!lines.length) {
+    if (lines.length === 0) {
       message.warning('文件为空');
       return;
     }
@@ -187,7 +187,7 @@ function onBatchFileChange(event: Event) {
     const body = /游戏账号|gameAcc|账号/i.test(first) ? lines.slice(1) : lines;
     batchText.value = body.join('\n');
     message.success(`已读取 ${body.length} 行，请预览匹配`);
-  };
+  });
   reader.readAsText(file);
   input.value = '';
 }
@@ -233,7 +233,7 @@ function buildWaterPayload() {
 }
 
 async function queryPlayer() {
-  const account = queryForm.LoginAccount.toLowerCase().replace(/\s/g, '');
+  const account = queryForm.LoginAccount.toLowerCase().replaceAll(/\s/g, '');
   queryForm.LoginAccount = account;
   if (!account || !queryForm.PackageName) {
     message.warning('请填写游戏账号与产品包');
@@ -382,7 +382,7 @@ function parseBatchLines() {
     packages.push(pkg);
     amounts.push(amount);
   }
-  if (!accounts.length) {
+  if (accounts.length === 0) {
     message.warning('请先粘贴批量数据');
     return null;
   }
@@ -417,10 +417,10 @@ async function previewBatch() {
         valid: Number(playerId) !== 0 && dataFlag !== 1,
       };
     });
-    if (!validBatchCount.value) {
-      message.warning('没有可发放的有效玩家');
-    } else {
+    if (validBatchCount.value) {
       message.success(`匹配到 ${validBatchCount.value} 名有效玩家`);
+    } else {
+      message.warning('没有可发放的有效玩家');
     }
     void loadRedTitles();
   } finally {
@@ -580,11 +580,7 @@ void loadRedTitles();
             }}
           </Descriptions.Item>
           <Descriptions.Item label="账户余额">
-            {{
-              playerReady
-                ? formatAmountFromCent(playerInfo.Gold)
-                : '-'
-            }}
+            {{ playerReady ? formatAmountFromCent(playerInfo.Gold) : '-' }}
           </Descriptions.Item>
         </Descriptions>
       </template>
@@ -613,7 +609,7 @@ void loadRedTitles();
           placeholder="示例：&#10;player01,乐赢网,100&#10;player02,乐赢网,50"
         />
         <Table
-          v-if="batchRows.length"
+          v-if="batchRows.length > 0"
           class="mt-3"
           size="small"
           :pagination="false"

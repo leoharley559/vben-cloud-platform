@@ -43,7 +43,9 @@ export async function getNetCashAccountListApi(query: NetcashListQuery) {
  * @returns 申请记录 Items 及 Pagination
  * @see views/netcash/creditLimitManage/components/adjust-records.vue
  */
-export async function getCreditLimitApplyRecordListApi(query: NetcashListQuery) {
+export async function getCreditLimitApplyRecordListApi(
+  query: NetcashListQuery,
+) {
   const result = await requestClient.get<NetcashListResult>(
     '/backend/agentcreditlimitapplyrecord/list',
     {

@@ -7,15 +7,16 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   fetchUsdtRechargeListApi,
   rejectUsdtRechargeApi,
@@ -23,9 +24,8 @@ import {
 import EasyRechargeVoucherCell from '#/components/easy-recharge/easy-recharge-voucher-cell.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -41,15 +41,15 @@ defineOptions({ name: 'UsdtFastRechargeList' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(12337));
-const canConfirm = computed(() => checkPermission(12381));
-const canReject = computed(() => checkPermission(12382));
-const canReview = computed(() => checkPermission(12380));
+const canViewTable = computed(() => checkPermission(12_337));
+const canConfirm = computed(() => checkPermission(12_381));
+const canReject = computed(() => checkPermission(12_382));
+const canReview = computed(() => checkPermission(12_380));
 
 const defaultRange = getYesterdayRangeSeconds();
 const actionOpen = ref(false);
 const actionMode = ref<'confirm' | 'review'>('confirm');
-const actionRow = ref<PlayerEasyRechargeItem | null>(null);
+const actionRow = ref<null | PlayerEasyRechargeItem>(null);
 
 const filterOrderId = ref('');
 const filterLoginAccount = ref('');
@@ -211,86 +211,86 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          :options="
-            packageOptions
-              .filter((item) => item.PackageId !== '')
-              .map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-          "
-          placeholder="请选择产品"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">状态</span>
-        <Select
-          v-model:value="filterStatus"
-          allow-clear
-          :options="EASY_RECHARGE_STATUS_OPTIONS"
-          placeholder="请选择状态"
-        />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterRequestAddress"
-          allow-clear
-          placeholder="请输入申请地址"
-        >
-          <template #addonBefore>申请地址</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterChannelAddress"
-          allow-clear
-          placeholder="请输入收款地址"
-        >
-          <template #addonBefore>收款地址</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterCheckerName"
-          allow-clear
-          placeholder="请输入审核人员"
-        >
-          <template #addonBefore>审核人员</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="
+              packageOptions
+                .filter((item) => item.PackageId !== '')
+                .map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+            "
+            placeholder="请选择产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            allow-clear
+            :options="EASY_RECHARGE_STATUS_OPTIONS"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterRequestAddress"
+            allow-clear
+            placeholder="请输入申请地址"
+          >
+            <template #addonBefore>申请地址</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterChannelAddress"
+            allow-clear
+            placeholder="请输入收款地址"
+          >
+            <template #addonBefore>收款地址</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterCheckerName"
+            allow-clear
+            placeholder="请输入审核人员"
+          >
+            <template #addonBefore>审核人员</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
+            查询
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Grid>
       <template #status="{ row }">

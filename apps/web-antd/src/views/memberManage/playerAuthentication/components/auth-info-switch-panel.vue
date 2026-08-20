@@ -6,7 +6,7 @@ import type {
 
 import { onMounted, ref } from 'vue';
 
-import { Modal, Switch, Table, message } from 'ant-design-vue';
+import { message, Modal, Switch, Table } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import {
@@ -70,7 +70,7 @@ async function loadSetting() {
 
 async function handleSwitchChange(
   row: PlayerAuthVerificationInfoItem,
-  checked: boolean | string | number,
+  checked: boolean | number | string,
 ) {
   if (!row.VerificationInfo) {
     return;

@@ -1,7 +1,15 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
-import { Button, Card, Col, Radio, Row, Select, Space, Table } from 'ant-design-vue';
+import {
+  Button,
+  Card,
+  Col,
+  Radio,
+  Row,
+  Select,
+  Table,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
 
@@ -38,10 +46,22 @@ const canIp = computed(() =>
 const dateOptions = [
   { label: '全部', value: dayjs('1949-10-01').startOf('day').unix() },
   { label: '今天', value: dayjs().startOf('day').unix() },
-  { label: '近 1 个月', value: dayjs().subtract(30, 'day').startOf('day').unix() },
-  { label: '近 3 个月', value: dayjs().subtract(90, 'day').startOf('day').unix() },
-  { label: '近半年', value: dayjs().subtract(180, 'day').startOf('day').unix() },
-  { label: '近 1 年', value: dayjs().subtract(365, 'day').startOf('day').unix() },
+  {
+    label: '近 1 个月',
+    value: dayjs().subtract(30, 'day').startOf('day').unix(),
+  },
+  {
+    label: '近 3 个月',
+    value: dayjs().subtract(90, 'day').startOf('day').unix(),
+  },
+  {
+    label: '近半年',
+    value: dayjs().subtract(180, 'day').startOf('day').unix(),
+  },
+  {
+    label: '近 1 年',
+    value: dayjs().subtract(365, 'day').startOf('day').unix(),
+  },
 ];
 
 const summaryColumns = {
@@ -76,9 +96,7 @@ const detailColumns = {
 };
 
 function columns(type: RelationType) {
-  return mode.value === 'summary'
-    ? summaryColumns[type]
-    : detailColumns[type];
+  return mode.value === 'summary' ? summaryColumns[type] : detailColumns[type];
 }
 
 function visible(type: RelationType) {
@@ -167,26 +185,26 @@ onMounted(loadAll);
 <template>
   <div class="space-y-4">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <Select
-        v-model:value="createTime"
-        :options="dateOptions"
-      />
+      <div class="ops-query-filters">
+        <Select v-model:value="createTime" :options="dateOptions" />
         <div class="query-filter-actions">
           <Button type="primary" @click="loadAll">查询</Button>
-      <Button @click="reset">重置</Button>
-      <Radio.Group v-model:value="mode" button-style="solid">
-        <Radio.Button value="summary">统计</Radio.Button>
-        <Radio.Button value="detail">详细数据</Radio.Button>
-      </Radio.Group>
-      <Button @click="exportCurrent">导出当前数据</Button>
+          <Button @click="reset">重置</Button>
+          <Radio.Group v-model:value="mode" button-style="solid">
+            <Radio.Button value="summary">统计</Radio.Button>
+            <Radio.Button value="detail">详细数据</Radio.Button>
+          </Radio.Group>
+          <Button @click="exportCurrent">导出当前数据</Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <Row :gutter="[12, 12]">
       <Col v-if="canDevice" :lg="12" :xs="24">
-        <Card size="small" :title="`设备关联号${mode === 'summary' ? '统计' : '明细'}`">
+        <Card
+          size="small"
+          :title="`设备关联号${mode === 'summary' ? '统计' : '明细'}`"
+        >
           <Table
             bordered
             :columns="columns('device')"
@@ -204,11 +222,13 @@ onMounted(loadAll);
                 :admin-id="resolveAgencyAdminId(record)"
                 :username="record.UserName"
               />
-              <template v-else-if="['Recharged', 'SumRecharge'].includes(String(column.key))">
+              <template
+                v-else-if="
+                  ['Recharged', 'SumRecharge'].includes(String(column.key))
+                "
+              >
                 {{
-                  formatAmountFromCent(
-                    Number(record[String(column.key)] || 0),
-                  )
+                  formatAmountFromCent(Number(record[String(column.key)] || 0))
                 }}
               </template>
             </template>
@@ -216,7 +236,10 @@ onMounted(loadAll);
         </Card>
       </Col>
       <Col v-if="canIp" :lg="12" :xs="24">
-        <Card size="small" :title="`IP 关联号${mode === 'summary' ? '统计' : '明细'}`">
+        <Card
+          size="small"
+          :title="`IP 关联号${mode === 'summary' ? '统计' : '明细'}`"
+        >
           <Table
             bordered
             :columns="columns('ip')"
@@ -234,11 +257,13 @@ onMounted(loadAll);
                 :admin-id="resolveAgencyAdminId(record)"
                 :username="record.UserName"
               />
-              <template v-else-if="['Recharged', 'SumRecharge'].includes(String(column.key))">
+              <template
+                v-else-if="
+                  ['Recharged', 'SumRecharge'].includes(String(column.key))
+                "
+              >
                 {{
-                  formatAmountFromCent(
-                    Number(record[String(column.key)] || 0),
-                  )
+                  formatAmountFromCent(Number(record[String(column.key)] || 0))
                 }}
               </template>
             </template>

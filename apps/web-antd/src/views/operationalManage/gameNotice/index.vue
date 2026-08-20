@@ -14,8 +14,8 @@ defineOptions({ name: 'GameNotice' });
 
 const { checkPermission } = useCloudPermission();
 
-const canViewNotice = computed(() => checkPermission(10071));
-const canViewEmail = computed(() => checkPermission(10072));
+const canViewNotice = computed(() => checkPermission(10_071));
+const canViewEmail = computed(() => checkPermission(10_072));
 const canViewPage = computed(() => canViewNotice.value || canViewEmail.value);
 
 const activeTab = ref('notice');

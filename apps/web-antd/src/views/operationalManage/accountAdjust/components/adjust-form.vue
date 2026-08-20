@@ -7,13 +7,13 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Result,
   Select,
   Space,
   Table,
-  message,
 } from 'ant-design-vue';
 
 import {
@@ -53,9 +53,9 @@ interface FailItem {
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewPage = computed(() => checkPermission(10094));
-const canSingle = computed(() => checkPermission(10108));
-const canBatch = computed(() => checkPermission(10109));
+const canViewPage = computed(() => checkPermission(10_094));
+const canSingle = computed(() => checkPermission(10_108));
+const canBatch = computed(() => checkPermission(10_109));
 
 const saveType = ref<'batch' | 'single'>(canSingle.value ? 'single' : 'batch');
 const submitting = ref(false);
@@ -81,12 +81,12 @@ const batchText = ref('');
 const batchFileInput = ref<HTMLInputElement | null>(null);
 const batchRows = ref<BatchRow[]>([]);
 const batchResultOpen = ref(false);
-const batchResult = ref<{
+const batchResult = ref<null | {
   Count: number;
   FailCount: number;
   FailItems: FailItem[];
   SuccessCount: number;
-} | null>(null);
+}>(null);
 
 const handleTypeOptions = [
   { label: '上分', value: 1 },
@@ -206,13 +206,13 @@ function onBatchFileChange(event: Event) {
     return;
   }
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.addEventListener('load', () => {
     const text = String(reader.result || '');
     const lines = text
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean);
-    if (!lines.length) {
+    if (lines.length === 0) {
       message.warning('文件为空');
       return;
     }
@@ -222,7 +222,7 @@ function onBatchFileChange(event: Event) {
       : lines;
     batchText.value = body.join('\n');
     message.success(`已读取 ${body.length} 行，请预览匹配`);
-  };
+  });
   reader.readAsText(file);
   input.value = '';
 }
@@ -250,7 +250,7 @@ function parseBatchLines() {
     packages.push(pkg);
     amounts.push(amt);
   }
-  if (!accounts.length) {
+  if (accounts.length === 0) {
     message.warning('请先导入或粘贴批量数据');
     return null;
   }
@@ -281,10 +281,10 @@ async function previewBatch() {
         valid: pid !== 0,
       };
     });
-    if (!validBatchCount.value) {
-      message.warning('没有可调整的有效玩家');
-    } else {
+    if (validBatchCount.value) {
       message.success(`匹配到 ${validBatchCount.value} 名有效玩家`);
+    } else {
+      message.warning('没有可调整的有效玩家');
     }
   } finally {
     lookupLoading.value = false;
@@ -458,18 +458,14 @@ function handleSubmit() {
         : `确认提交批量账户调整？有效 ${validBatchCount.value} 人`,
     title: '确认提交',
     onOk: async () => {
-      if (saveType.value === 'single') {
-        await submitSingle();
-      } else {
-        await submitBatch();
-      }
+      await (saveType.value === 'single' ? submitSingle() : submitBatch());
     },
   });
 }
 
 function exportFailItems() {
   const rows = batchResult.value?.FailItems || [];
-  if (!rows.length) {
+  if (rows.length === 0) {
     message.warning('暂无失败数据可导出');
     return;
   }
@@ -539,7 +535,11 @@ function exportFailItems() {
           </Descriptions.Item>
           <Descriptions.Item label="玩家状态">
             <PlayerStatusTag
-              v-if="playerStatus !== '' && playerStatus !== null && playerStatus !== undefined"
+              v-if="
+                playerStatus !== '' &&
+                playerStatus !== null &&
+                playerStatus !== undefined
+              "
               :status="playerStatus"
             />
             <span v-else>-</span>
@@ -592,7 +592,7 @@ function exportFailItems() {
           placeholder="示例：&#10;player01,乐赢网,100&#10;player02,乐赢网,50"
         />
         <Table
-          v-if="batchRows.length"
+          v-if="batchRows.length > 0"
           class="mt-3"
           size="small"
           :pagination="false"
@@ -715,7 +715,10 @@ function exportFailItems() {
         size="small"
         :pagination="false"
         :data-source="batchResult?.FailItems || []"
-        :row-key="(row) => String(row.LoginAccount ?? row.PlayerId ?? JSON.stringify(row))"
+        :row-key="
+          (row) =>
+            String(row.LoginAccount ?? row.PlayerId ?? JSON.stringify(row))
+        "
         :columns="[
           { title: '游戏账号', dataIndex: 'LoginAccount' },
           { title: '产品名称', dataIndex: 'PackageName' },

@@ -3,36 +3,29 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  InputNumber,
-  Select,
-  Space,
-} from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { Button, Input, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchInviteFriendRewardsApi } from '#/api/operationManage/invite-friend-activity';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
-import { buildUnixRangeQuery } from './activity-shared';
 import {
-  INVITE_REWARD_ROLE_OPTIONS,
-  INVITE_REWARD_STATUS_OPTIONS,
   formatInviteRewardRole,
   formatInviteRewardStatus,
+  INVITE_REWARD_ROLE_OPTIONS,
+  INVITE_REWARD_STATUS_OPTIONS,
 } from './activity-invite-shared';
+import { buildUnixRangeQuery } from './activity-shared';
 
 defineOptions({ name: 'ActivityInviteRewardsPanel' });
 
-const filterPlayerId = ref<number | null>(null);
+const filterPlayerId = ref<null | number>(null);
 const filterAccount = ref('');
-const filterInviterId = ref<number | null>(null);
-const filterInviteeId = ref<number | null>(null);
+const filterInviterId = ref<null | number>(null);
+const filterInviteeId = ref<null | number>(null);
 const filterRole = ref<string>();
 const filterRewardStatus = ref<number>();
 const filterBusinessOrderId = ref('');
@@ -140,71 +133,69 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <!-- <InputNumber
+      <div class="ops-query-filters">
+        <!-- <InputNumber
         v-model:value="filterPlayerId"
         :controls="false"
         :min="1"
         :precision="0"
         placeholder="获奖玩家ID"
       /> -->
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterAccount"
-          allow-clear
-          placeholder="请输入发放账号"
-        >
-          <template #addonBefore>发放账号</template>
-        </Input>
-      </div>
-      <!-- <InputNumber
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAccount"
+            allow-clear
+            placeholder="请输入发放账号"
+          >
+            <template #addonBefore>发放账号</template>
+          </Input>
+        </div>
+        <!-- <InputNumber
         v-model:value="filterInviterId"
         :controls="false"
         :min="1"
         :precision="0"
         placeholder="邀请人ID"
       /> -->
-      <!-- <InputNumber
+        <!-- <InputNumber
         v-model:value="filterInviteeId"
         :controls="false"
         :min="1"
         :precision="0"
         placeholder="被邀请人ID"
       /> -->
-      <Space.Compact>
-        <span class="query-field-addon">奖励角色</span>
-        <Select
-          v-model:value="filterRole"
-          allow-clear
-         
-          :options="INVITE_REWARD_ROLE_OPTIONS"
-          placeholder="请选择奖励角色"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">发奖状态</span>
-        <Select
-          v-model:value="filterRewardStatus"
-          allow-clear
-         
-          :options="INVITE_REWARD_STATUS_OPTIONS"
-          placeholder="请选择发奖状态"
-        />
-      </Space.Compact>
-      <!-- <Input
+        <Space.Compact>
+          <span class="query-field-addon">奖励角色</span>
+          <Select
+            v-model:value="filterRole"
+            allow-clear
+            :options="INVITE_REWARD_ROLE_OPTIONS"
+            placeholder="请选择奖励角色"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">发奖状态</span>
+          <Select
+            v-model:value="filterRewardStatus"
+            allow-clear
+            :options="INVITE_REWARD_STATUS_OPTIONS"
+            placeholder="请选择发奖状态"
+          />
+        </Space.Compact>
+        <!-- <Input
         v-model:value="filterBusinessOrderId"
         allow-clear
         placeholder="业务单号"
       /> -->
-      <div class="query-filter-wide">
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="createTimeRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="resetFilters">重置</Button>
+          <Button @click="resetFilters">重置</Button>
         </div>
+      </div>
     </div>
-  </div>
     <div class="mb-2 text-xs text-gray-400">
       筛选时间提交为 Unix 秒；发奖状态 / 角色枚举与对接文档一致。
     </div>

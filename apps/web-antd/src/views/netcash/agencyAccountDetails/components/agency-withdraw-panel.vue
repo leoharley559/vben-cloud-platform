@@ -1,23 +1,18 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
-import {
-  Button,
-  Input,
-  Result,
-  Select,
-  Space,
-  Table,
-} from 'ant-design-vue';
-import dayjs, { type Dayjs } from 'dayjs';
+import { Button, Input, Result, Select, Space, Table } from 'ant-design-vue';
+import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
 
 import {
   fetchAgentNetcashDetailApi,
   fetchWithdrawAgentListApi,
 } from '#/api/netcash/agency-account-details';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
@@ -58,14 +53,24 @@ const payTypeMap: Record<number, string> = {
 const columns = [
   { dataIndex: 'Status', key: 'Status', title: '状态', width: 110 },
   { dataIndex: 'CreateTime', key: 'CreateTime', title: '申请时间', width: 170 },
-  { dataIndex: 'ApplyAmount', key: 'ApplyAmount', title: '申请金额', width: 120 },
+  {
+    dataIndex: 'ApplyAmount',
+    key: 'ApplyAmount',
+    title: '申请金额',
+    width: 120,
+  },
   { dataIndex: 'PayType', key: 'PayType', title: '出款类型', width: 120 },
   { dataIndex: 'PayName', key: 'PayName', title: '银行/渠道', width: 140 },
   { dataIndex: 'PayAccount', key: 'PayAccount', title: '收款账号', width: 180 },
   { dataIndex: 'PayRealName', key: 'PayRealName', title: '收款人', width: 120 },
   { dataIndex: 'OrderId', key: 'OrderId', title: '订单号', width: 190 },
   { dataIndex: 'Desc', key: 'Desc', title: '出款备注', width: 180 },
-  { dataIndex: 'CloseAccount', key: 'CloseAccount', title: '处理人', width: 120 },
+  {
+    dataIndex: 'CloseAccount',
+    key: 'CloseAccount',
+    title: '处理人',
+    width: 120,
+  },
 ];
 
 function statusText(row: DataRow) {
@@ -162,7 +167,11 @@ async function exportAll() {
     }));
     if (data.length === 0) return;
     const book = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(data), '提款记录');
+    XLSX.utils.book_append_sheet(
+      book,
+      XLSX.utils.json_to_sheet(data),
+      '提款记录',
+    );
     XLSX.writeFile(
       book,
       `代理提款记录_${props.adminId}_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`,
@@ -176,10 +185,13 @@ const summaryItems = computed(() => [
   { label: '总提款', value: formatAmountFromCent(totalAmount.value) },
 ]);
 
-watch(() => props.adminId, () => {
-  applicant.value = '';
-  void load();
-});
+watch(
+  () => props.adminId,
+  () => {
+    applicant.value = '';
+    void load();
+  },
+);
 onMounted(load);
 </script>
 
@@ -187,45 +199,60 @@ onMounted(load);
   <div v-if="canView" class="space-y-3">
     <div class="mb-3">
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="orderId"
-            allow-clear
-            placeholder="请输入订单号"
-          >
-            <template #addonBefore>订单号</template>
-          </Input>
+        <div class="ops-query-filters">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="orderId"
+              allow-clear
+              placeholder="请输入订单号"
+            >
+              <template #addonBefore>订单号</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="status"
+              allow-clear
+              mode="multiple"
+              :options="statusOptions"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker v-model="dateRange" />
+          </div>
+          <div class="query-filter-actions">
+            <Button type="primary" @click="load">查询</Button>
+            <Button @click="reset">重置</Button>
+            <Button :loading="exporting" @click="exportAll">导出全部</Button>
+          </div>
         </div>
-        <Space.Compact>
-          <span class="query-field-addon">状态</span>
-          <Select v-model:value="status" allow-clear mode="multiple" :options="statusOptions"
-            placeholder="请选择状态" />
-        </Space.Compact>
-        <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="dateRange" />
-        </div>
-        <div class="query-filter-actions">
-          <Button type="primary" @click="load">查询</Button>
-        <Button @click="reset">重置</Button>
-        <Button :loading="exporting" @click="exportAll">导出全部</Button>
-        </div>
-    </div>
-  </div>
+      </div>
     </div>
     <SummaryCards :items="summaryItems" />
-    <Table bordered :columns="columns" :data-source="rows" :loading="loading" :pagination="{
-      current: pager.current,
-      pageSize: pager.pageSize,
-      total: pager.total,
-      showSizeChanger: true,
-    }" :row-key="(row) => String(row.Id ?? row.OrderId ?? '')" :scroll="{ x: 1450 }" size="small" @change="
+    <Table
+      bordered
+      :columns="columns"
+      :data-source="rows"
+      :loading="loading"
+      :pagination="{
+        current: pager.current,
+        pageSize: pager.pageSize,
+        total: pager.total,
+        showSizeChanger: true,
+      }"
+      :row-key="(row) => String(row.Id ?? row.OrderId ?? '')"
+      :scroll="{ x: 1450 }"
+      size="small"
+      @change="
         (page) => {
           pager.current = page.current || 1;
           pager.pageSize = page.pageSize || 20;
           load();
         }
-      ">
+      "
+    >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'Status'">
           {{ statusText(record) }}

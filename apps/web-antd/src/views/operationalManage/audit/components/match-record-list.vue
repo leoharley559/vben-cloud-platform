@@ -8,15 +8,16 @@ import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Result,
   Select,
   Space,
   Tag,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   approveActivityMatchBonusApi,
   fetchActivityMatchBonusListApi,
@@ -24,11 +25,10 @@ import {
   updateActivityMatchBonusRemarkApi,
 } from '#/api/operationManage/activity-match-bonus';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useOperationOptions } from '#/composables/use-operation-options';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
@@ -37,8 +37,8 @@ import {
   getMatchAuditStatusColor,
 } from '#/utils/platform-transfer';
 import {
-  PLAYER_STATUS_OPTIONS,
   formatPlayerStatus,
+  PLAYER_STATUS_OPTIONS,
 } from '#/utils/player-status';
 
 defineOptions({ name: 'MatchRecordList' });
@@ -46,11 +46,11 @@ defineOptions({ name: 'MatchRecordList' });
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canViewTable = computed(() => checkPermission(11659));
-const canBatchApprove = computed(() => checkPermission(11660));
-const canBatchReject = computed(() => checkPermission(11661));
-const canExport = computed(() => checkPermission(11941));
-const canEditRemark = computed(() => checkPermission(11662));
+const canViewTable = computed(() => checkPermission(11_659));
+const canBatchApprove = computed(() => checkPermission(11_660));
+const canBatchReject = computed(() => checkPermission(11_661));
+const canExport = computed(() => checkPermission(11_941));
+const canEditRemark = computed(() => checkPermission(11_662));
 
 const defaultRange = getYesterdayRangeSeconds();
 const selectedRows = ref<ActivityMatchBonusItem[]>([]);
@@ -131,8 +131,7 @@ function getQueryParams() {
     PageTitle: filterPageTitle.value.trim(),
     PlayerStatus: filterPlayerStatus.value ?? '',
     ReviewNote: filterReviewNote.value,
-    StartApplyTime: begin ? begin.unix()
-      : '',
+    StartApplyTime: begin ? begin.unix() : '',
     VipLevel: filterVipLevel.value,
   };
 }
@@ -409,10 +408,10 @@ async function handleExport() {
       ...getQueryParams(),
       IsExp: true,
       Page: 1,
-      PageSize: 10000,
+      PageSize: 10_000,
     });
     const rows = result?.Items || [];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -479,108 +478,106 @@ onMounted(() => {
 <template>
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @change="normalizeLoginAccount"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">产品名称</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-          :options="packageSelectOptions"
-          show-search
-          :filter-option="
-            (input, option) =>
-              String(option?.label ?? '')
-                .toLowerCase()
-                .includes(input.toLowerCase())
-          "
-          placeholder="请选择产品名称"
-        />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterBonusTitle"
-          allow-clear
-          placeholder="请输入活动标题"
-        >
-          <template #addonBefore>活动标题</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPageTitle"
-          allow-clear
-          placeholder="请输入活动分页"
-        >
-          <template #addonBefore>活动分页</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单号"
-        >
-          <template #addonBefore>订单号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterApplyNote"
-          allow-clear
-          placeholder="请输入申请信息"
-        >
-          <template #addonBefore>申请信息</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">审核状态</span>
-        <Select
-          v-model:value="filterAuditStatus"
-          allow-clear
-          :options="auditStatusOptions"
-          placeholder="请选择审核状态"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">玩家状态</span>
-        <Select
-          v-model:value="filterPlayerStatus"
-          allow-clear
-          :options="PLAYER_STATUS_OPTIONS"
-          placeholder="请选择玩家状态"
-        />
-      </Space.Compact>
-      <Select
-        v-model:value="filterVipLevel"
-        :options="VIP_LEVEL_OPTIONS"
-      />
-      <Select
-        v-model:value="filterReviewNote"
-        :options="reviewNoteOptions"
-      />
-      <div class="query-filter-wide">
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="normalizeLoginAccount"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">产品名称</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择产品名称"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterBonusTitle"
+            allow-clear
+            placeholder="请输入活动标题"
+          >
+            <template #addonBefore>活动标题</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterPageTitle"
+            allow-clear
+            placeholder="请输入活动分页"
+          >
+            <template #addonBefore>活动分页</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单号"
+          >
+            <template #addonBefore>订单号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterApplyNote"
+            allow-clear
+            placeholder="请输入申请信息"
+          >
+            <template #addonBefore>申请信息</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">审核状态</span>
+          <Select
+            v-model:value="filterAuditStatus"
+            allow-clear
+            :options="auditStatusOptions"
+            placeholder="请选择审核状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">玩家状态</span>
+          <Select
+            v-model:value="filterPlayerStatus"
+            allow-clear
+            :options="PLAYER_STATUS_OPTIONS"
+            placeholder="请选择玩家状态"
+          />
+        </Space.Compact>
+        <Select v-model:value="filterVipLevel" :options="VIP_LEVEL_OPTIONS" />
+        <Select v-model:value="filterReviewNote" :options="reviewNoteOptions" />
+        <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
-      <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-        导出 Excel
-      </Button>
+            查询
+          </Button>
+          <Button
+            v-if="canExport"
+            :loading="exportLoading"
+            @click="handleExport"
+          >
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <div
       v-if="canBatchApprove || canBatchReject"

@@ -1,17 +1,18 @@
-import { requestClient } from '#/api/request';
 import type { CloudListResult } from '#/types/operation-manage';
-import { trimSpace } from '#/utils/string';
+
+import { requestClient } from '#/api/request';
 import { registerPermissionKeys } from '#/utils/permission';
+import { trimSpace } from '#/utils/string';
 
 registerPermissionKeys({
-  betRuleConfig: [13051],
-  landingPageList: [11602],
-  liveChatroomTab: [11533],
-  liveEventCurrent: [13026],
-  pkManage: [13070],
-  pushManage: [11589],
-  scheduleList: [11532],
-  streamerHostManage: [11535],
+  betRuleConfig: [13_051],
+  landingPageList: [11_602],
+  liveChatroomTab: [11_533],
+  liveEventCurrent: [13_026],
+  pkManage: [13_070],
+  pushManage: [11_589],
+  scheduleList: [11_532],
+  streamerHostManage: [11_535],
 });
 
 /**

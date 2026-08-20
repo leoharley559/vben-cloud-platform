@@ -131,9 +131,7 @@ async function openEdit(row: WithdrawAccountItem) {
   try {
     const detail = await fetchWithdrawAccountDetailApi(row.Id);
     formId.value = detail.Id ?? row.Id;
-    formAccountType.value = Number(
-      detail.AccountType ?? row.AccountType ?? 1,
-    );
+    formAccountType.value = Number(detail.AccountType ?? row.AccountType ?? 1);
     formRealName.value = detail.RealName || '';
     formAccount.value = detail.Account || '';
     formBankName.value = detail.BankName || '';

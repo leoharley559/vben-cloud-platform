@@ -83,7 +83,7 @@ export const ADJUST_DATA_SEARCH_TYPE_OPTIONS = [
 
 /** 多选/含「全部」字符串的筛选项 → 逗号去重字符串（对齐旧站 Done / WaterTypeIncDec） */
 export function normalizeMultiFilterParam(
-  value: Array<number | string> | number | string | undefined | null,
+  value: Array<number | string> | null | number | string | undefined,
   fallback = '',
 ) {
   if (value === undefined || value === null || value === '') {
@@ -111,12 +111,15 @@ export function formatAdjustHandleType(type?: number | string) {
 /** 上分绿 / 下分红，对齐旧站 */
 export function getAdjustHandleTypeColor(type?: number | string) {
   switch (Number(type)) {
-    case 1:
+    case 1: {
       return '#67c23a';
-    case 2:
+    }
+    case 2: {
       return '#f56c6c';
-    default:
+    }
+    default: {
       return '#909399';
+    }
   }
 }
 
@@ -131,16 +134,21 @@ export function getAdjustDoneColor(
   done?: number | string,
 ): 'default' | 'error' | 'processing' | 'success' | 'warning' {
   switch (Number(done)) {
-    case 1:
+    case 1: {
       return 'processing';
-    case 2:
+    }
+    case 2: {
       return 'success';
-    case 3:
+    }
+    case 3: {
       return 'warning';
-    case 4:
+    }
+    case 4: {
       return 'error';
-    default:
+    }
+    default: {
       return 'default';
+    }
   }
 }
 
@@ -155,16 +163,21 @@ export function getAdjustApproveColor(
   approve?: number | string,
 ): 'default' | 'error' | 'processing' | 'success' | 'warning' {
   switch (Number(approve)) {
-    case 1:
+    case 1: {
       return 'warning';
-    case 2:
+    }
+    case 2: {
       return 'success';
-    case 3:
+    }
+    case 3: {
       return 'error';
-    case 4:
+    }
+    case 4: {
       return 'processing';
-    default:
+    }
+    default: {
       return 'default';
+    }
   }
 }
 

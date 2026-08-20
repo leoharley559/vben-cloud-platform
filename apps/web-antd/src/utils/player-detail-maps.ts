@@ -210,5 +210,5 @@ export function formatTransferAccount(
   if (Number(type) === 1) {
     return '中心钱包';
   }
-  return gameName || (gameId !== undefined ? String(gameId) : '-');
+  return gameName || (gameId === undefined ? '-' : String(gameId));
 }

@@ -6,13 +6,7 @@ import type { NetcashListResult } from '#/types/netcash';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import {
-  Button,
-  Input,
-  InputNumber,
-  Select,
-  Space,
-} from 'ant-design-vue';
+import { Button, Input, InputNumber, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -61,9 +55,9 @@ export interface CreditPanelConfig {
 const props = defineProps<{ config: CreditPanelConfig }>();
 
 const filterValues = reactive<Record<string, unknown>>({});
-const rangeValues = reactive<Record<string, [number | undefined, number | undefined]>>(
-  {},
-);
+const rangeValues = reactive<
+  Record<string, [number | undefined, number | undefined]>
+>({});
 const dateRangeValues = reactive<Record<string, [Dayjs, Dayjs] | undefined>>(
   {},
 );
@@ -145,7 +139,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       field: column.field,
       formatter: column.slot
         ? undefined
-        : column.formatter
+        : (column.formatter
           ? ({
               cellValue,
               row,
@@ -153,7 +147,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
               cellValue: unknown;
               row: Record<string, unknown>;
             }) => column.formatter!(cellValue, row)
-          : undefined,
+          : undefined),
       minWidth: column.minWidth || 120,
       slots: column.slot ? { default: column.slot } : undefined,
       title: column.title,
@@ -182,7 +176,9 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
           const result = (await props.config.fetchApi(buildQuery(page))) || {};
           const items = Array.isArray(result.Items) ? result.Items : [];
           totalData.value =
-            result.Total && typeof result.Total === 'object' ? result.Total : {};
+            result.Total && typeof result.Total === 'object'
+              ? result.Total
+              : {};
           return {
             items,
             total: Number(result.Pagination?.MaxCount ?? items.length),
@@ -209,7 +205,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
 });
 
 const hasSummary = computed(
-  () => Array.isArray(props.config.summaries) && props.config.summaries.length > 0,
+  () =>
+    Array.isArray(props.config.summaries) && props.config.summaries.length > 0,
 );
 
 const summaryItems = computed(() =>
@@ -243,15 +240,21 @@ async function exportExcel() {
   exporting.value = true;
   try {
     const currentTotal = Number(
-      (gridApi.grid as unknown as { getProxyInfo?: () => { pager?: { total?: number } } })
-        ?.getProxyInfo?.()?.pager?.total || 0,
+      (
+        gridApi.grid as unknown as {
+          getProxyInfo?: () => { pager?: { total?: number } };
+        }
+      )?.getProxyInfo?.()?.pager?.total || 0,
     );
     const result = await props.config.fetchApi({
-      ...buildQuery({ currentPage: 1, pageSize: Math.max(currentTotal + 1, 1000) }),
+      ...buildQuery({
+        currentPage: 1,
+        pageSize: Math.max(currentTotal + 1, 1000),
+      }),
       IsExp: true,
     });
     const rows = Array.isArray(result?.Items) ? result.Items : [];
-    if (!rows.length) return;
+    if (rows.length === 0) return;
     const { utils, writeFile } = await import('xlsx');
     const data = rows.map((row) =>
       Object.fromEntries(
@@ -283,82 +286,80 @@ defineExpose({
 <template>
   <div>
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <template v-for="filter in config.filters || []" :key="filter.label">
-        <div
-          v-if="(!filter.type || filter.type === 'input') && filter.field"
-        >
-          <Input
-            v-model:value="filterValues[filter.field]"
-            allow-clear
-            @press-enter="gridApi.reload()"
-            :placeholder="`请输入${filter.label}`"
+      <div class="ops-query-filters">
+        <template v-for="filter in config.filters || []" :key="filter.label">
+          <div v-if="(!filter.type || filter.type === 'input') && filter.field">
+            <Input
+              v-model:value="filterValues[filter.field]"
+              allow-clear
+              @press-enter="gridApi.reload()"
+              :placeholder="`请输入${filter.label}`"
+            >
+              <template #addonBefore>{{ filter.label }}</template>
+            </Input>
+          </div>
+          <Space.Compact
+            v-else-if="
+              (filter.type === 'select' || filter.type === 'multiSelect') &&
+              filter.field
+            "
           >
-            <template #addonBefore>{{ filter.label }}</template>
-          </Input>
-        </div>
-        <Space.Compact
-          v-else-if="
-            (filter.type === 'select' || filter.type === 'multiSelect') &&
-            filter.field
-          "
-        >
-          <span class="query-field-addon">{{ filter.label }}</span>
-          <Select
-            v-if="filter.type === 'select'"
-            v-model:value="filterValues[filter.field]"
-            allow-clear
-            :options="filter.options"
-            :placeholder="`请选择${filter.label}`"
-          />
-          <Select
-            v-else
-            v-model:value="filterValues[filter.field]"
-            allow-clear
-            mode="multiple"
-            :options="filter.options"
-            :placeholder="`请选择${filter.label}`"
-          />
-        </Space.Compact>
-        <div
-          v-else-if="filter.type === 'dateRange' && filter.fields"
-          class="query-filter-wide"
-        >
-          <QueryDatetimeRangePicker
-            v-model="dateRangeValues[filter.label]"
-            :label="filter.label"
-          />
-        </div>
-        <Space.Compact
-          v-else-if="filter.type === 'amountRange' && filter.fields"
-        >
-          <span class="query-field-addon">{{ filter.label }}</span>
-          <InputNumber
-            v-model:value="rangeValues[filter.label][0]"
-            :min="0"
-            placeholder="请输入起"
-          />
-          <InputNumber
-            v-model:value="rangeValues[filter.label][1]"
-            :min="0"
-            placeholder="请输入止"
-          />
-        </Space.Compact>
-      </template>
+            <span class="query-field-addon">{{ filter.label }}</span>
+            <Select
+              v-if="filter.type === 'select'"
+              v-model:value="filterValues[filter.field]"
+              allow-clear
+              :options="filter.options"
+              :placeholder="`请选择${filter.label}`"
+            />
+            <Select
+              v-else
+              v-model:value="filterValues[filter.field]"
+              allow-clear
+              mode="multiple"
+              :options="filter.options"
+              :placeholder="`请选择${filter.label}`"
+            />
+          </Space.Compact>
+          <div
+            v-else-if="filter.type === 'dateRange' && filter.fields"
+            class="query-filter-wide"
+          >
+            <QueryDatetimeRangePicker
+              v-model="dateRangeValues[filter.label]"
+              :label="filter.label"
+            />
+          </div>
+          <Space.Compact
+            v-else-if="filter.type === 'amountRange' && filter.fields"
+          >
+            <span class="query-field-addon">{{ filter.label }}</span>
+            <InputNumber
+              v-model:value="rangeValues[filter.label][0]"
+              :min="0"
+              placeholder="请输入起"
+            />
+            <InputNumber
+              v-model:value="rangeValues[filter.label][1]"
+              :min="0"
+              placeholder="请输入止"
+            />
+          </Space.Compact>
+        </template>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-      <Button @click="reset">重置</Button>
-      <Button
-        v-if="config.exportFileName"
-        :loading="exporting"
-        @click="exportExcel"
-      >
-        导出 Excel
-      </Button>
-      <slot name="toolbar" :reload="gridApi.reload"></slot>
+          <Button @click="reset">重置</Button>
+          <Button
+            v-if="config.exportFileName"
+            :loading="exporting"
+            @click="exportExcel"
+          >
+            导出 Excel
+          </Button>
+          <slot name="toolbar" :reload="gridApi.reload"></slot>
         </div>
+      </div>
     </div>
-  </div>
 
     <div
       v-if="hasSummary || $slots.summaryExtra"
@@ -386,7 +387,7 @@ defineExpose({
         :key="column.slot"
         #[column.slot!]="{ row }"
       >
-        <slot :name="column.slot" :row="row" />
+        <slot :name="column.slot" :row="row"></slot>
       </template>
       <template v-if="config.showActions" #actions="{ row }">
         <slot name="actions" :row="row"></slot>

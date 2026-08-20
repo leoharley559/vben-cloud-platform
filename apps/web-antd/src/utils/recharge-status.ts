@@ -28,16 +28,20 @@ export function getRechargeStatusColor(
   status?: number | string,
 ): 'default' | 'error' | 'processing' | 'success' | 'warning' {
   switch (Number(status)) {
-    case 1:
+    case 1: {
       return 'warning';
-    case 2:
+    }
+    case 2: {
       return 'success';
-    case 3:
+    }
+    case 3: {
       return 'error';
+    }
     case 4:
     case 5:
-    case 11:
+    case 11: {
       return 'processing';
+    }
   }
   return 'default';
 }

@@ -1,5 +1,6 @@
-import { requestClient } from '#/api/request';
 import type { NetcashListQuery, NetcashListResult } from '#/types/netcash';
+
+import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -55,10 +56,15 @@ export async function fetchTeamRecordListApi(query: NetcashListQuery) {
  * @returns 代理账号 Items 及 Pagination
  * @see views/netcash/teamManage/index.vue
  */
-export async function fetchTeamPrincipalListApi(query: Record<string, unknown>) {
-  const result = await requestClient.get<NetcashListResult | null>('/backend/agentnetcash/list', {
-    params: trimSpace(query),
-  });
+export async function fetchTeamPrincipalListApi(
+  query: Record<string, unknown>,
+) {
+  const result = await requestClient.get<NetcashListResult | null>(
+    '/backend/agentnetcash/list',
+    {
+      params: trimSpace(query),
+    },
+  );
   return normalizeList(result);
 }
 

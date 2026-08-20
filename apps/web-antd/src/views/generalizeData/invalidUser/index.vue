@@ -6,11 +6,10 @@ import { computed, onMounted, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 
 import { Button, Card, Descriptions, Result } from 'ant-design-vue';
-
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import dayjs from 'dayjs';
 
 import { fetchInvalidUserSummaryApi } from '#/api/promotion/generalize-data';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 
 defineOptions({ name: 'InvalidUser' });
@@ -24,7 +23,7 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs(),
 ]);
 
-const canViewPage = computed(() => checkPermission(10888));
+const canViewPage = computed(() => checkPermission(10_888));
 
 function formatPercent(part?: number, total?: number) {
   if (!total) {
@@ -104,15 +103,18 @@ onMounted(() => {
   >
     <Card :loading="loading">
       <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-              <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" precision="date" />
+        <div class="ops-query-filters">
+          <div class="query-filter-wide">
+            <QueryDatetimeRangePicker
+              v-model="filterDateRange"
+              precision="date"
+            />
+          </div>
+          <div class="query-filter-actions query-filter-actions-single">
+            <Button type="primary" @click="loadData">查询</Button>
+          </div>
         </div>
-        <div class="query-filter-actions query-filter-actions-single">
-          <Button type="primary" @click="loadData">查询</Button>
-        </div>
-    </div>
-  </div>
+      </div>
 
       <Descriptions bordered :column="1" size="small" title="数量">
         <Descriptions.Item

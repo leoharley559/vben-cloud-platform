@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import type { ColumnsType } from 'ant-design-vue/es/table';
 
+import type { ChannelDim, ChannelRow } from '#/utils/channel-data-calc';
+
 import { computed, h } from 'vue';
 
 import { Table, Tag, Tooltip } from 'ant-design-vue';
-
-import type { ChannelDim, ChannelRow } from '#/utils/channel-data-calc';
 
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
@@ -48,7 +48,7 @@ function percent(value: unknown) {
 
 function coloredMoney(value: unknown) {
   const num = Number(value || 0);
-  const color = num > 0 ? '#059669' : num < 0 ? '#ef4444' : undefined;
+  const color = num > 0 ? '#059669' : (num < 0 ? '#ef4444' : undefined);
   return h('span', { style: color ? { color } : undefined }, money(value));
 }
 
@@ -120,7 +120,7 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
         width: 110,
       },
       {
-        dataIndex: 'PackageName', 
+        dataIndex: 'PackageName',
         title: '所属产品',
         width: 120,
       },

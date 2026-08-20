@@ -6,39 +6,39 @@ import { computed, onMounted, ref } from 'vue';
 import {
   Button,
   Input,
+  message,
   Result,
   Select,
-  Tag,
-  message,
   Space,
+  Tag,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchRewardPointAdjustListApi } from '#/api/operationManage/reward-mall';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import ChannelSelect from '#/components/global/channel-select.vue';
-import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import { fetchRewardPointAdjustListApi } from '#/api/operationManage/reward-mall';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
+import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 import {
-  REWARD_ADJUST_APPROVE_RECORD_OPTIONS,
-  REWARD_ADJUST_DONE_OPTIONS,
-  REWARD_ADJUST_HANDLE_TYPE_OPTIONS,
-  REWARD_ADJUST_TYPE_OPTIONS,
   formatRewardAdjustApprove,
   formatRewardAdjustDone,
   formatRewardAdjustHandleType,
   getRewardAdjustApproveColor,
   getRewardAdjustDoneColor,
   getRewardAdjustHandleTypeColor,
+  REWARD_ADJUST_APPROVE_RECORD_OPTIONS,
+  REWARD_ADJUST_DONE_OPTIONS,
+  REWARD_ADJUST_HANDLE_TYPE_OPTIONS,
+  REWARD_ADJUST_TYPE_OPTIONS,
 } from './reward-mall-shared';
 
 defineOptions({ name: 'PointsAdjustRecordPanel' });
@@ -67,7 +67,7 @@ interface AdjustRecordRow {
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
-const canView = computed(() => checkPermission(13337));
+const canView = computed(() => checkPermission(13_337));
 
 /** 对齐旧站 adjustList：申请/审批时间默认均为今天 */
 const defaultRange = getTodayRangeSeconds();
@@ -181,7 +181,12 @@ const gridOptions: VxeTableGridOptions<AdjustRecordRow> = {
       slots: { default: 'loginAccount' },
       title: '游戏账号',
     },
-    { field: 'AdminUserName', minWidth: 110, slots: { default: 'adminUserName' }, title: '代理账号' },
+    {
+      field: 'AdminUserName',
+      minWidth: 110,
+      slots: { default: 'adminUserName' },
+      title: '代理账号',
+    },
     { field: 'PackageName', minWidth: 100, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '所属渠道' },
     {
@@ -295,7 +300,7 @@ async function handleExport() {
       IsExp: true,
     })) as { Items?: AdjustRecordRow[]; Total?: number | string };
     const rows = result?.Items || [];
-    if (!rows.length) {
+    if (rows.length === 0) {
       message.warning('暂无数据可导出');
       return;
     }
@@ -354,128 +359,132 @@ onMounted(() => {
 <template>
   <div v-if="canView">
     <div class="ops-query-scope mb-3">
-    <div class="ops-query-filters">
-            <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterOrderId"
-          allow-clear
-          placeholder="请输入订单编号"
-        >
-          <template #addonBefore>订单编号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="filterPackageId"
-          allow-clear
-         
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          show-search
-          placeholder="请选择所属产品"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect v-model:value="filterChannelIds" placeholder="请输入渠道号" />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterAdminUserName"
-          allow-clear
-          placeholder="请输入代理账号"
-        >
-          <template #addonBefore>代理账号</template>
-        </Input>
-      </div>
-      <Space.Compact>
-        <span class="query-field-addon">游戏状态</span>
-        <Select
-          v-model:value="filterDone"
-          allow-clear
-         
-          mode="multiple"
-          :max-tag-count="1"
-          :options="REWARD_ADJUST_DONE_OPTIONS"
-          placeholder="请选择游戏状态"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">调整类型</span>
-        <Select
-          v-model:value="filterAdjustType"
-         
-          :options="REWARD_ADJUST_TYPE_OPTIONS"
-          placeholder="请选择调整类型"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">调整方式</span>
-        <Select
-          v-model:value="filterHandleType"
-         
-          :options="REWARD_ADJUST_HANDLE_TYPE_OPTIONS"
-          placeholder="请选择调整方式"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">状态</span>
-        <Select
-          v-model:value="filterApprove"
-         
-          :options="REWARD_ADJUST_APPROVE_RECORD_OPTIONS"
-          placeholder="请选择状态"
-        />
-      </Space.Compact>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterApplyName"
-          allow-clear
-          placeholder="请输入申请账号"
-        >
-          <template #addonBefore>申请账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterApproveName"
-          allow-clear
-          placeholder="请输入审核账号"
-        >
-          <template #addonBefore>审核账号</template>
-        </Input>
-      </div>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterCreateRange" label="创建时间" />
+      <div class="ops-query-filters">
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
         </div>
-      <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterApproveRange" label="审核时间" />
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            show-search
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model:value="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAdminUserName"
+            allow-clear
+            placeholder="请输入代理账号"
+          >
+            <template #addonBefore>代理账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">游戏状态</span>
+          <Select
+            v-model:value="filterDone"
+            allow-clear
+            mode="multiple"
+            :max-tag-count="1"
+            :options="REWARD_ADJUST_DONE_OPTIONS"
+            placeholder="请选择游戏状态"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">调整类型</span>
+          <Select
+            v-model:value="filterAdjustType"
+            :options="REWARD_ADJUST_TYPE_OPTIONS"
+            placeholder="请选择调整类型"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">调整方式</span>
+          <Select
+            v-model:value="filterHandleType"
+            :options="REWARD_ADJUST_HANDLE_TYPE_OPTIONS"
+            placeholder="请选择调整方式"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterApprove"
+            :options="REWARD_ADJUST_APPROVE_RECORD_OPTIONS"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterApplyName"
+            allow-clear
+            placeholder="请输入申请账号"
+          >
+            <template #addonBefore>申请账号</template>
+          </Input>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterApproveName"
+            allow-clear
+            placeholder="请输入审核账号"
+          >
+            <template #addonBefore>审核账号</template>
+          </Input>
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterCreateRange"
+            label="创建时间"
+          />
+        </div>
+        <div class="query-filter-wide">
+          <QueryDatetimeRangePicker
+            v-model="filterApproveRange"
+            label="审核时间"
+          />
         </div>
         <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
-        查询
-      </Button>
-      <Button @click="resetFilters">重置</Button>
-      <Button :loading="exportLoading" @click="handleExport">
-        导出 Excel
-      </Button>
+            查询
+          </Button>
+          <Button @click="resetFilters">重置</Button>
+          <Button :loading="exportLoading" @click="handleExport">
+            导出 Excel
+          </Button>
         </div>
+      </div>
     </div>
-  </div>
 
     <SummaryCards :items="summaryItems" />
 

@@ -14,7 +14,7 @@ defineOptions({ name: 'ActivityTemplatePanel' });
 const { checkPermission } = useCloudPermission();
 const activeSubTab = ref<'category' | 'own' | 'system'>('system');
 
-if (!checkPermission(10308)) {
+if (!checkPermission(10_308)) {
   activeSubTab.value = 'system';
 }
 </script>

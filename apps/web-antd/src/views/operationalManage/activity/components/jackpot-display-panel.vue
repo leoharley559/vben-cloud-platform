@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
@@ -6,6 +8,7 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Radio,
   Select,
@@ -14,10 +17,8 @@ import {
   Switch,
   Table,
   TimePicker,
-  message,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
 
 import { fetchHotSubGameListApi } from '#/api/gameManage';
 import {
@@ -43,7 +44,7 @@ interface GameRow {
 
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
-const canEdit = computed(() => checkPermission(12657));
+const canEdit = computed(() => checkPermission(12_657));
 
 const loading = ref(false);
 const saving = ref(false);
@@ -90,7 +91,7 @@ const editTimeIndex = ref(-1);
 const editGameIndex = ref(-1);
 const timeDraft = reactive({
   IntervalTime: 30,
-  TimeRange: null as null | [Dayjs, Dayjs],
+  TimeRange: null as [Dayjs, Dayjs] | null,
 });
 const gameDraft = reactive({
   BonusMax: 1000,
@@ -108,7 +109,7 @@ const venueGameOptions = computed(() => {
       label: game.gameName || id,
       value: id,
     }));
-  if (list.length) {
+  if (list.length > 0) {
     return list;
   }
   return Object.entries(gameConfig.value.games).map(([id, game]) => ({
@@ -731,7 +732,10 @@ onMounted(() => {
         :columns="timeColumns"
         :data-source="timeRows"
         :pagination="false"
-        :row-key="(row) => `time-${row.BeginTime ?? row.StartTime ?? JSON.stringify(row)}`"
+        :row-key="
+          (row) =>
+            `time-${row.BeginTime ?? row.StartTime ?? JSON.stringify(row)}`
+        "
         size="small"
         class="mb-6"
       >
@@ -768,7 +772,9 @@ onMounted(() => {
         :columns="gameColumns"
         :data-source="gameRows"
         :pagination="false"
-        :row-key="(row) => `game-${row.GameId ?? row.GameType ?? JSON.stringify(row)}`"
+        :row-key="
+          (row) => `game-${row.GameId ?? row.GameType ?? JSON.stringify(row)}`
+        "
         size="small"
         class="mb-4"
       >

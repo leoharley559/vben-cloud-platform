@@ -8,7 +8,7 @@ import { requestClient } from '#/api/request';
  */
 export function fetchJackpotConfigApi() {
   return requestClient.get<
-    { Items?: Record<string, unknown> } | Record<string, unknown>
+    Record<string, unknown> | { Items?: Record<string, unknown> }
   >('/backend/jackpotconfig/list');
 }
 

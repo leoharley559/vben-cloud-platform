@@ -40,9 +40,7 @@ const canViewPage = computed(() => {
     | { AgentId?: number; Id?: number };
   const inTeam =
     Number(teamInfo?.Id || 0) > 0 && Number(teamInfo?.AgentId || 0) > 0;
-  return (
-    checkPermission(10_912) && (inTeam || realAdminType.value === 1)
-  );
+  return checkPermission(10_912) && (inTeam || realAdminType.value === 1);
 });
 
 const childRateConfig = computed(() => {
