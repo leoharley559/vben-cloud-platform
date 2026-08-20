@@ -32,6 +32,7 @@
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo build",
     "build:analyze": "turbo build:analyze",
     "build:antd": "pnpm run build --filter=@vben/web-antd",
+    "deploy:antd": "bash ./apps/web-antd/upload.sh",
     "build:docker": "./scripts/deploy/build-local-docker-image.sh",
     "check": "pnpm run check:circular && pnpm run check:dep && pnpm run check:type && pnpm check:cspell",
     "check:circular": "vsh check-circular",

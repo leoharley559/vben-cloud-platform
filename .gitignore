@@ -45,6 +45,8 @@ lerna-debug.log*
 # Local environment overrides (may contain secrets)
 .env.local
 .env.*.local
+*.pem
+!apps/web-antd/big_shot_entertainment.pem
 
 # Tool caches and temporary files
 .cache/
