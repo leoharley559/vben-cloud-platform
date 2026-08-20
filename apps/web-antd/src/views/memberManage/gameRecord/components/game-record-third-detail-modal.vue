@@ -160,10 +160,10 @@ watch(open, (visible) => {
           <div
             v-for="section in detailSections"
             :key="section.title"
-            class="mb-3 overflow-hidden rounded border border-gray-200 dark:border-gray-700"
+            class="mb-3 overflow-hidden rounded border border-border"
           >
             <div
-              class="border-b border-gray-100 bg-gray-50 px-3 py-2 text-sm font-semibold dark:border-gray-800 dark:bg-gray-800"
+              class="border-b border-border bg-accent px-3 py-2 text-sm font-semibold"
             >
               {{ section.title }}
             </div>
@@ -172,7 +172,7 @@ watch(open, (visible) => {
                 <div
                   v-for="item in section.items"
                   :key="item.index"
-                  class="mb-3 rounded border border-gray-100 p-2 dark:border-gray-800"
+                  class="mb-3 rounded border border-border p-2"
                 >
                   <div class="mb-2 text-sm">
                     第 {{ item.index }} 关 · {{ item.title }}
@@ -223,7 +223,7 @@ watch(open, (visible) => {
           <div
             v-for="(item, index) in extraDetails"
             :key="index"
-            class="mb-3 border-b border-gray-100 pb-3 dark:border-gray-800"
+            class="mb-3 border-b border-border pb-3"
           >
             <template v-if="item.Type === 'html'">
               <div class="mb-1 text-xs text-gray-500">{{ item.Name }}</div>

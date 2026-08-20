@@ -49,7 +49,7 @@ async function copyUrl() {
   >
     <div class="mb-3 flex w-full min-w-0 items-stretch gap-2">
       <div
-        class="flex min-w-0 flex-1 items-center overflow-hidden rounded bg-gray-50 px-2 text-xs dark:bg-gray-800"
+        class="flex min-w-0 flex-1 items-center overflow-hidden rounded bg-accent px-2 text-xs"
         :title="url"
       >
         <span class="truncate">{{ url }}</span>

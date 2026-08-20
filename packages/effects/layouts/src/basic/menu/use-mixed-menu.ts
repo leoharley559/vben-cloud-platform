@@ -3,7 +3,7 @@ import type { MenuRecordRaw } from '@vben/types';
 import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { preferences, usePreferences } from '@vben/preferences';
+import { preferences, updatePreferences, usePreferences } from '@vben/preferences';
 import { useAccessStore } from '@vben/stores';
 import { findRootMenuByPath } from '@vben/utils';
 
@@ -19,7 +19,7 @@ function useMixedMenu() {
   const mixExtraMenus = ref<MenuRecordRaw[]>([]);
   /** 记录当前顶级菜单下哪个子菜单最后激活 */
   const defaultSubMap = new Map<string, string>();
-  const { isMixedNav, isHeaderMixedNav } = usePreferences();
+  const { isMixedNav, isHeaderMixedNav, isMobile } = usePreferences();
 
   const needSplit = computed(
     () =>
@@ -80,6 +80,20 @@ function useMixedMenu() {
   });
 
   /**
+   * 移动端点击叶子菜单后收起侧栏抽屉
+   */
+  function collapseMobileSidebar() {
+    if (!isMobile.value) {
+      return;
+    }
+    updatePreferences({
+      sidebar: {
+        collapsed: true,
+      },
+    });
+  }
+
+  /**
    * 菜单点击事件处理
    * @param key 菜单路径
    * @param mode 菜单模式
@@ -87,6 +101,7 @@ function useMixedMenu() {
   const handleMenuSelect = (key: string, mode?: string) => {
     if (!needSplit.value || mode === 'vertical') {
       navigation(key);
+      collapseMobileSidebar();
       return;
     }
     const rootMenu = menus.value.find((item) => item.path === key);
@@ -99,12 +114,14 @@ function useMixedMenu() {
 
     if (_splitSideMenus.length === 0) {
       navigation(key);
+      collapseMobileSidebar();
     } else if (rootMenu && preferences.sidebar.autoActivateChild) {
       navigation(
         defaultSubMap.has(rootMenu.path)
           ? (defaultSubMap.get(rootMenu.path) as string)
           : rootMenu.path,
       );
+      collapseMobileSidebar();
     }
   };
 

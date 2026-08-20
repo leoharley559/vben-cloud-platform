@@ -823,7 +823,7 @@ onMounted(async () => {
 
 .drag-tip {
   flex: none;
-  color: #8c8c8c;
+  color: hsl(var(--muted-foreground));
   font-size: 12px;
   cursor: grab;
 }
@@ -832,7 +832,7 @@ onMounted(async () => {
   max-height: 420px;
   padding: 8px;
   overflow: auto;
-  border: 1px solid #f0f0f0;
+  border: 1px solid hsl(var(--border));
   border-radius: 6px;
 }
 

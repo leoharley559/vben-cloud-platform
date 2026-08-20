@@ -365,7 +365,7 @@ onMounted(async () => {
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <Space align="center">
         <span
-          class="inline-flex h-8 items-center rounded-md border border-[#91caff] bg-[#e6f4ff] px-3 text-sm leading-8 text-[#1677ff]"
+          class="inline-flex h-8 items-center rounded-md border border-primary/40 bg-primary/10 px-3 text-sm leading-8 text-primary"
         >
           当前流水：{{
             formatAmountFromCent(

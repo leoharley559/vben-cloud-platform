@@ -24,7 +24,7 @@ defineProps<{ items: SummaryCardItem[] }>();
       class="rounded border p-2"
       :class="[
         item.cardClass,
-        item.onClick ? 'cursor-pointer hover:border-blue-400' : '',
+        item.onClick ? 'cursor-pointer hover:border-primary' : '',
       ]"
       @click="item.onClick?.()"
     >

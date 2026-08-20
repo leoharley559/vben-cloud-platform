@@ -20,10 +20,19 @@ export const overridesPreferences = defineOverridesPreferences({
     // mixed：前端路由 + 后端 Nav 菜单并存（迁移期）
     accessMode: 'mixed',
     defaultHomePath: '/dashboard/index',
+    enablePreferences: false,
     enableRefreshToken: false,
     // 迁移期固定简体中文，菜单文案来自 cloudPlatform zh-CN
     locale: 'zh-CN',
     name: import.meta.env.VITE_APP_TITLE,
+  },
+  shortcutKeys: {
+    globalPreferences: false,
+  },
+  widget: {
+    languageToggle: false,
+    notification: false,
+    timezone: false,
   },
   logo: {
     source: '/logo.png',

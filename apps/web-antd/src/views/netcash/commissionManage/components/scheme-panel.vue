@@ -759,8 +759,8 @@ onMounted(async () => {
 
 .scheme-name-label {
   padding: 5px 12px;
-  color: #fff;
-  background: #1677ff;
+  color: hsl(var(--primary-foreground));
+  background: hsl(var(--primary));
   border-radius: 6px;
 }
 </style>

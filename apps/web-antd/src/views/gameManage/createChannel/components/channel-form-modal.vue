@@ -1666,9 +1666,9 @@ function requestClose() {
   margin: 28px auto;
   max-width: 620px;
   padding: 28px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(var(--border));
   border-radius: 10px;
-  background: #fafafa;
+  background: hsl(var(--accent));
 }
 
 .owner-name {
@@ -1679,7 +1679,7 @@ function requestClose() {
 
 .owner-account {
   margin-top: 6px;
-  color: #6b7280;
+  color: hsl(var(--muted-foreground));
   text-align: center;
 }
 
@@ -1698,21 +1698,21 @@ function requestClose() {
 .section-title {
   margin: 8px 0 22px;
   padding: 7px 12px;
-  border-left: 3px solid #1677ff;
-  background: #f5f7fa;
+  border-left: 3px solid hsl(var(--primary));
+  background: hsl(var(--accent));
   font-weight: 600;
 }
 
 .field-hint {
   margin-top: 6px;
-  color: #9ca3af;
+  color: hsl(var(--muted-foreground));
   font-size: 12px;
 }
 
 .venue-list {
   overflow: hidden;
   max-width: 560px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(var(--border));
   border-radius: 6px;
 }
 
@@ -1721,7 +1721,7 @@ function requestClose() {
   min-height: 44px;
   align-items: center;
   padding: 6px 10px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid hsl(var(--border));
   grid-template-columns: 92px 48px 1fr;
   gap: 12px;
 }
@@ -1745,11 +1745,11 @@ function requestClose() {
   cursor: pointer;
   border: 2px solid transparent;
   border-radius: 8px;
-  background: #f3f4f6;
+  background: hsl(var(--muted));
 }
 
 .resource-card.selected {
-  border-color: #1677ff;
+  border-color: hsl(var(--primary));
 }
 
 .resource-card :deep(.ant-radio-wrapper) {
@@ -1810,8 +1810,8 @@ function requestClose() {
   padding: 14px 0 2px;
   justify-content: flex-end;
   gap: 10px;
-  border-top: 1px solid #f0f0f0;
-  background: #fff;
+  border-top: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
 }
 
 .result-details {

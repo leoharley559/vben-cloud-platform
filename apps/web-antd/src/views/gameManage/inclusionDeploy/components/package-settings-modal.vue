@@ -2274,7 +2274,7 @@ watch(
 
 .hint {
   margin-top: 6px;
-  color: #8c8c8c;
+  color: hsl(var(--muted-foreground));
   font-size: 12px;
 }
 
@@ -2284,25 +2284,25 @@ watch(
   align-items: center;
   gap: 1px;
   overflow: hidden;
-  border: 1px solid #f0f0f0;
+  border: 1px solid hsl(var(--border));
   border-radius: 6px;
-  background: #f0f0f0;
+  background: hsl(var(--border));
 }
 
 .auth-table > * {
   min-height: 42px;
   padding: 10px 14px;
-  background: white;
+  background: hsl(var(--card));
 }
 
 .auth-head {
-  background: #fafafa;
+  background: hsl(var(--accent));
   font-weight: 600;
 }
 
 .extra-field-list {
   margin-bottom: 16px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid hsl(var(--border));
   border-radius: 6px;
 }
 
@@ -2313,7 +2313,7 @@ watch(
   gap: 16px;
   min-height: 54px;
   padding: 8px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .extra-field-row:last-child {
@@ -2322,7 +2322,7 @@ watch(
 
 .identity-card {
   padding: 16px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid hsl(var(--border));
   border-radius: 8px;
 }
 
@@ -2334,7 +2334,7 @@ watch(
 
 .contact-card {
   padding: 14px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid hsl(var(--border));
   border-radius: 8px;
 }
 
@@ -2352,13 +2352,13 @@ watch(
 
 .site-list {
   margin-top: 12px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid hsl(var(--border));
   border-radius: 6px;
 }
 
 .language-order {
   margin-top: 10px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid hsl(var(--border));
   border-radius: 6px;
 }
 
@@ -2368,7 +2368,7 @@ watch(
   justify-content: space-between;
   min-height: 42px;
   padding: 6px 10px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .language-row:last-child {
@@ -2381,7 +2381,7 @@ watch(
   justify-content: space-between;
   min-height: 52px;
   padding: 8px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .site-row:last-child {

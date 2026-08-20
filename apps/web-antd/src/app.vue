@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 import { useAntdDesignTokens } from '@vben/hooks';
 import { preferences, usePreferences } from '@vben/preferences';
@@ -42,6 +42,18 @@ const tokenTheme = computed(() => {
     token: tokens,
   };
 });
+
+// Modal.confirm / message / notification 走独立实例，必须同步全局主题，否则暗色下仍是白底
+watch(
+  [tokenTheme, antdLocale],
+  ([themeConfig, locale]) => {
+    ConfigProvider.config({
+      locale,
+      theme: themeConfig,
+    } as Parameters<typeof ConfigProvider.config>[0]);
+  },
+  { deep: true, immediate: true },
+);
 </script>
 
 <template>

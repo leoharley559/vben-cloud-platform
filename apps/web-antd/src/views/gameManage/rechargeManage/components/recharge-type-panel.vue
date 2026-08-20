@@ -772,14 +772,14 @@ onMounted(() => void load(true));
   gap: 8px;
   padding: 8px 10px;
   border: 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid hsl(var(--border));
   background: transparent;
   text-align: left;
   cursor: pointer;
 }
 .type-item:hover,
 .type-item.active {
-  background: #e6f4ff;
+  background: hsl(var(--primary) / 14%);
 }
 .type-item:last-child {
   border-bottom: 0;
@@ -806,8 +806,8 @@ onMounted(() => void load(true));
   white-space: nowrap;
 }
 :deep(.channel-disabled > td) {
-  background: #fff1f0 !important;
-  color: #9ca3af;
+  background: hsl(var(--destructive) / 14%) !important;
+  color: hsl(var(--muted-foreground));
 }
 @media (max-width: 900px) {
   .manager-layout {
@@ -822,7 +822,7 @@ onMounted(() => void load(true));
   .type-item {
     width: 190px;
     flex: 0 0 190px;
-    border-right: 1px solid #f0f0f0;
+    border-right: 1px solid hsl(var(--border));
     border-bottom: 0;
   }
 }

@@ -133,7 +133,7 @@ defineExpose({
     />
     <div v-if="showPassForm" class="space-y-3">
       <template v-if="type === 'private'">
-        <div class="text-sm text-gray-500">请输入私人密码</div>
+        <div class="text-sm text-muted-foreground">请输入私人密码</div>
         <Input.Password
           v-model:value="privatePassword"
           allow-clear
@@ -141,7 +141,7 @@ defineExpose({
         />
       </template>
       <template v-else-if="type === 'gcode'">
-        <div class="text-sm text-gray-500">请输入谷歌验证码</div>
+        <div class="text-sm text-muted-foreground">请输入谷歌验证码</div>
         <Input
           v-model:value="validCode"
           allow-clear
@@ -150,7 +150,7 @@ defineExpose({
         />
       </template>
       <template v-else>
-        <div class="text-sm text-gray-500">请输入文件密码</div>
+        <div class="text-sm text-muted-foreground">请输入文件密码</div>
         <Input.Password
           v-model:value="filePassword"
           allow-clear

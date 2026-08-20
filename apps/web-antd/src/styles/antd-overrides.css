@@ -49,7 +49,7 @@
   font-size: 14px;
   line-height: 1;
   white-space: nowrap;
-  background-color: hsl(var(--muted) / 20%);
+  background-color: hsl(var(--accent));
   border: 1px solid hsl(var(--border));
   border-right: 0px;
 }
@@ -166,6 +166,12 @@
 .ops-summary-cards > * {
   min-width: 0;
   width: 100%;
+}
+
+.ops-summary-cards > * {
+  color: hsl(var(--foreground) / 82%);
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
 }
 
 .ops-query-filters .query-filter-actions {
@@ -317,4 +323,99 @@
 
 .ant-table-wrapper .ant-table-footer {
   border-radius: 0 0 4px 4px;
+}
+
+/* 业务页大量写死了 Tailwind 灰白，暗色下跟随主题变量，避免白底/黑字 */
+html.dark .bg-white:not(.keep-light-bg) {
+  background-color: hsl(var(--card));
+}
+
+html.dark .keep-light-bg {
+  background-color: #fff !important;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-slate-50,
+html.dark .bg-zinc-50,
+html.dark .bg-neutral-50 {
+  background-color: hsl(var(--accent));
+}
+
+html.dark .bg-gray-100,
+html.dark .bg-slate-100,
+html.dark .bg-zinc-100,
+html.dark .bg-neutral-100 {
+  background-color: hsl(var(--muted));
+}
+
+html.dark .bg-gray-200,
+html.dark .bg-slate-200 {
+  background-color: hsl(var(--accent-dark));
+}
+
+html.dark .hover\:bg-gray-50:hover,
+html.dark .hover\:bg-gray-100:hover,
+html.dark .hover\:bg-white:hover {
+  background-color: hsl(var(--accent-hover));
+}
+
+html.dark .text-gray-900,
+html.dark .text-gray-800,
+html.dark .text-slate-900,
+html.dark .text-neutral-900 {
+  color: hsl(var(--foreground));
+}
+
+html.dark .text-gray-700,
+html.dark .text-gray-600,
+html.dark .text-slate-700 {
+  color: hsl(var(--foreground) / 78%);
+}
+
+html.dark .text-gray-500,
+html.dark .text-gray-400,
+html.dark .text-slate-500,
+html.dark .text-neutral-500 {
+  color: hsl(var(--muted-foreground));
+}
+
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300,
+html.dark .border-slate-200,
+html.dark .border-neutral-200,
+html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: hsl(var(--border));
+}
+
+html.dark .bg-blue-50,
+html.dark .bg-sky-50,
+html.dark .bg-indigo-50 {
+  background-color: hsl(var(--primary) / 16%);
+}
+
+html.dark .bg-red-50,
+html.dark .bg-rose-50 {
+  background-color: hsl(var(--destructive) / 16%);
+}
+
+html.dark .bg-green-50,
+html.dark .bg-emerald-50 {
+  background-color: hsl(var(--success) / 16%);
+}
+
+html.dark .bg-orange-50,
+html.dark .bg-amber-50,
+html.dark .bg-yellow-50 {
+  background-color: hsl(var(--warning) / 16%);
+}
+
+html.dark .ring-blue-200 {
+  --tw-ring-color: hsl(var(--primary) / 35%);
+}
+
+/* 下拉、日期面板、图片预览等浮层：暗色下跟主题走 */
+html.dark .ant-image-preview-mask {
+  background: hsl(var(--overlay));
 }

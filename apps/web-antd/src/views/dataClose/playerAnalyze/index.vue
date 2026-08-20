@@ -555,7 +555,7 @@ onMounted(() => {
 
       <Row :gutter="16">
         <Col :xs="24" :md="6" :lg="5">
-          <div class="mb-3 rounded border border-gray-100 bg-white p-3">
+          <div class="mb-3 rounded border border-border bg-card p-3">
             <div class="text-gray-500">用户数量</div>
             <div class="text-xl font-medium">{{ total }}</div>
           </div>

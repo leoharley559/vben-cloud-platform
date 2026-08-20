@@ -489,9 +489,11 @@ function getPopupContainer(node: HTMLElement) {
   position: fixed;
   z-index: 1050;
   overflow: visible;
-  background: #fff;
+  color: hsl(var(--foreground));
+  background: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
   border-radius: 8px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 16px hsl(var(--foreground) / 12%);
 }
 
 .query-datetime-range-compact.ant-space-compact {
@@ -565,7 +567,7 @@ function getPopupContainer(node: HTMLElement) {
   position: relative;
   display: flex;
   overflow: visible;
-  background: #fff;
+  background: hsl(var(--popover));
 }
 
 .query-datetime-range-presets {
@@ -713,7 +715,7 @@ function getPopupContainer(node: HTMLElement) {
 
 .day-cell.is-start span,
 .day-cell.is-end span {
-  color: #fff;
+  color: hsl(var(--primary-foreground));
   background: hsl(var(--primary));
   border-color: hsl(var(--primary));
 }

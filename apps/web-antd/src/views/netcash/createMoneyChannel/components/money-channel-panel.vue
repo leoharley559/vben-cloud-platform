@@ -951,7 +951,7 @@ onBeforeUnmount(() => {
 
 <style>
 .vxe-body--row.money-channel-disabled-row > .vxe-body--column {
-  background: #fff1f0 !important;
+  background: hsl(var(--destructive) / 14%) !important;
   color: #a8071a;
 }
 </style>

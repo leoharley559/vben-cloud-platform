@@ -489,7 +489,7 @@ defineExpose({ buildPatch, hydrate });
 .venue-categories,
 .venue-games {
   padding: 12px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid hsl(var(--border));
   border-radius: 8px;
 }
 
@@ -505,7 +505,7 @@ defineExpose({ buildPatch, hydrate });
 .game-link {
   padding: 0;
   border: 0;
-  color: #1677ff;
+  color: hsl(var(--primary));
   background: transparent;
   cursor: pointer;
 }

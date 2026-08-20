@@ -317,7 +317,7 @@ onMounted(() => {
       <EchartsUI ref="chartRef" height="326px" width="100%" />
       <div
         v-if="!loading && !hasChartData"
-        class="absolute inset-0 flex items-center justify-center bg-white px-6 text-center text-sm text-gray-400"
+        class="absolute inset-0 flex items-center justify-center bg-card px-6 text-center text-sm text-muted-foreground"
       >
         {{ emptyHint }}
       </div>

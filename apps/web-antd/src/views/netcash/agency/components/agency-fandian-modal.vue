@@ -176,9 +176,9 @@ const columns = computed(() => [
     width="860px"
   >
     <div v-if="gradeColumns.length > 0" class="space-y-4">
-      <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-700">
+      <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
         <span v-for="grade in gradeColumns" :key="grade.key">
-          <span class="font-medium text-gray-900">{{ grade.label }}</span>
+          <span class="font-medium text-foreground">{{ grade.label }}</span>
           有效流水：≥ {{ grade.flow }}
         </span>
       </div>
@@ -196,7 +196,7 @@ const columns = computed(() => [
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'type'">
             <div class="text-center">
-              <div class="text-sm text-gray-900">{{ record.type }}</div>
+              <div class="text-sm text-foreground">{{ record.type }}</div>
               <div
                 v-if="record.venues"
                 class="mt-0.5 text-xs leading-5 text-gray-400"

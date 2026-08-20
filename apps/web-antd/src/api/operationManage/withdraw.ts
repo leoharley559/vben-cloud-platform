@@ -223,3 +223,15 @@ export function updateWithdrawReceivedStatusApi(data: { Id: number | string }) {
     data,
   );
 }
+
+/**
+ * 头部导航提款待处理数量。
+ *
+ * @returns Count 待处理笔数，LastId 最新订单 Id
+ * @see layouts/components/header-alert-bar.vue
+ */
+export function fetchWithdrawAlertApi() {
+  return requestClient.get<{ Count?: number; LastId?: number }>(
+    '/backend/playerwithdraw/alert',
+  );
+}

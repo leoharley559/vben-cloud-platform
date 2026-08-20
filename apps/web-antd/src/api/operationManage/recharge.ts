@@ -111,3 +111,15 @@ export function createRechargeBlankOrderApi(data: {
 }) {
   return requestClient.post('/backend/playerpayment/replaceemptyorder', data);
 }
+
+/**
+ * 头部导航充值待处理数量。
+ *
+ * @returns Count 待处理笔数，LastId 最新订单 Id
+ * @see layouts/components/header-alert-bar.vue
+ */
+export function fetchRechargeAlertApi() {
+  return requestClient.get<{ Count?: number; LastId?: number }>(
+    '/backend/playereasyrecharge/alert',
+  );
+}

@@ -375,7 +375,7 @@ onMounted(() => {
           >
             <div class="flex items-start gap-2">
               <div
-                class="w-[220px] overflow-hidden rounded border border-gray-200 bg-white"
+                class="w-[220px] overflow-hidden rounded border border-border bg-card"
               >
                 <div
                   class="flex items-center gap-2 bg-gray-50 px-3 py-2 text-sm"

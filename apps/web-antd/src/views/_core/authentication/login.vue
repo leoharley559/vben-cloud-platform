@@ -47,7 +47,8 @@ function renderCaptchaAddon() {
   return h(
     'div',
     {
-      class: 'flex h-full cursor-pointer items-center justify-center bg-white',
+      class:
+        'keep-light-bg flex h-full cursor-pointer items-center justify-center bg-white',
       style: { minWidth: '96px', height: '38px', borderRadius: '4px', padding: '0 4px' },
       title: '点击刷新验证码',
       onClick: () => refreshCaptcha(),

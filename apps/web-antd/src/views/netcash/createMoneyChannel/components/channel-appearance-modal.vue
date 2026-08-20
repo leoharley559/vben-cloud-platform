@@ -358,7 +358,7 @@ async function submit() {
   overflow: hidden;
   border-radius: 6px;
   background: hsl(var(--muted));
-  color: #9ca3af;
+  color: hsl(var(--muted-foreground));
 }
 
 .picture-preview :deep(img) {
@@ -368,6 +368,6 @@ async function submit() {
 }
 
 .picture-card small {
-  color: #9ca3af;
+  color: hsl(var(--muted-foreground));
 }
 </style>

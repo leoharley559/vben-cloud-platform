@@ -199,7 +199,7 @@ async function handleSubmit() {
 
       <div
         v-if="playerId"
-        class="mb-4 rounded border bg-gray-50 px-3 py-2 text-sm"
+        class="mb-4 rounded border border-border bg-accent px-3 py-2 text-sm"
       >
         <div>玩家 ID：{{ playerId }}</div>
         <div>账户余额：{{ formatAmountFromCent(playerGold) }}</div>

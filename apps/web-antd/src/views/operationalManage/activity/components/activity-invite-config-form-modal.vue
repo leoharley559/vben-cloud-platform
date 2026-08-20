@@ -501,7 +501,7 @@ async function handleSubmit() {
           <div
             v-for="(tier, index) in form.InviterTiers"
             :key="index"
-            class="flex flex-wrap items-center gap-2 rounded border border-gray-100 bg-gray-50 p-2"
+            class="flex flex-wrap items-center gap-2 rounded border border-border bg-accent p-2"
           >
             <span class="text-sm text-gray-500">第 {{ index + 1 }} 档</span>
             <InputNumber

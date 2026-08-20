@@ -1858,19 +1858,19 @@ onBeforeUnmount(() =>
 .choice-card.selected,
 .theme-card:hover,
 .theme-card.selected {
-  border-color: #1677ff;
-  box-shadow: 0 4px 16px rgb(22 119 255 / 12%);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 4px 16px hsl(var(--primary) / 12%);
 }
 
 .choice-card.selected {
-  background: rgb(22 119 255 / 5%);
+  background: hsl(var(--primary) / 10%);
 }
 
 .choice-number {
   align-items: center;
-  background: #1677ff;
+  background: hsl(var(--primary));
   border-radius: 50%;
-  color: white;
+  color: hsl(var(--primary-foreground));
   display: flex;
   font-size: 18px;
   height: 40px;
@@ -1880,7 +1880,7 @@ onBeforeUnmount(() =>
 
 .choice-card small,
 .theme-card small {
-  color: #8c8c8c;
+  color: hsl(var(--muted-foreground));
   display: block;
   margin-top: 4px;
 }
@@ -1982,7 +1982,7 @@ onBeforeUnmount(() =>
 }
 
 .preview-frame {
-  background: #f5f5f5;
+  background: hsl(var(--accent));
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
   height: 520px;

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 
@@ -20,6 +21,7 @@ import SelfCheckTabs from './components/self-check-tabs.vue';
 defineOptions({ name: 'OperationalRechargeList' });
 
 const { checkPermission } = useCloudPermission();
+const route = useRoute();
 
 const canAisleRecharge = computed(() => checkPermission(10261));
 const canFastRecharge = computed(() => checkPermission(10262));
@@ -46,7 +48,17 @@ const canViewAny = computed(
 
 const activeTab = ref('aisle');
 
+function applyRouteTab() {
+  const raw = String(route.query.tab || route.query.type || '');
+  if ((raw === 'fast' || raw === 'second') && canFastRecharge.value) {
+    activeTab.value = 'fast';
+    return true;
+  }
+  return false;
+}
+
 function resolveDefaultTab() {
+  if (applyRouteTab()) return;
   const tabs = [
     { key: 'aisle', visible: canAisleRecharge.value },
     { key: 'fast', visible: canFastRecharge.value },
@@ -65,6 +77,13 @@ function resolveDefaultTab() {
 onMounted(() => {
   resolveDefaultTab();
 });
+
+watch(
+  () => [route.query.tab, route.query.type],
+  () => {
+    applyRouteTab();
+  },
+);
 </script>
 
 <template>

@@ -106,9 +106,9 @@ onMounted(async () => {
     description="数据汇总 · 在线总览"
     title="在线总览"
   >
-    <div class="flex flex-col gap-4 bg-[#f0f2f5] pb-4">
+    <div class="flex flex-col gap-4 pb-4">
       <Spin v-if="canChart" :spinning="reportLoading">
-        <div class="rounded-xl bg-white p-4 shadow-sm">
+        <div class="rounded-xl bg-card p-4 shadow-sm">
           <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
             <div class="xl:col-span-3">
               <OnlineCountCard

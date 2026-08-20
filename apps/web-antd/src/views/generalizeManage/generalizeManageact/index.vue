@@ -1032,8 +1032,8 @@ onMounted(() => {
 .modal-tip {
   padding: 10px 12px;
   font-size: 12px;
-  color: #d46b08;
-  background: #fff7e6;
+  color: hsl(var(--warning));
+  background: hsl(var(--warning) / 14%);
   border-radius: 6px;
 }
 

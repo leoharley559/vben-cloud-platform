@@ -92,10 +92,10 @@ onMounted(() => {
     description="数据汇总 · 数据总览"
     title="数据总览"
   >
-    <div class="flex flex-col gap-4 bg-[#f0f2f5] pb-4">
+    <div class="flex flex-col gap-4 pb-4">
       <template v-if="canOverview">
         <Spin :spinning="loading">
-          <div class="rounded-xl bg-white p-4 shadow-sm">
+          <div class="rounded-xl bg-card p-4 shadow-sm">
             <PanelMetrics
               :active-key="activeKey"
               :hide-money="hideMoney"
