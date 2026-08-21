@@ -93,6 +93,16 @@ const coreRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    name: 'Page403',
+    path: '/403',
+    component: () => import('#/views/_core/fallback/forbidden.vue'),
+    meta: {
+      hideInMenu: true,
+      hideInTab: true,
+      title: '403',
+    },
+  },
+  {
     meta: {
       hideInTab: true,
       title: '移动端登录',

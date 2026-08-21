@@ -14,7 +14,7 @@ import { ensureAuthToken } from '#/utils/ensure-auth-token';
 
 defineOptions({ name: 'App' });
 
-/** 登录页也在 Auth 布局下，必须在这里初始化 AuthToken */
+/** 登录页也在 Auth 布局下，必须在这里初始化 AuthToken（开发环境写兜底，正式服只读 cookie） */
 ensureAuthToken();
 useAuthTokenPoller();
 useAppVersionCheck();

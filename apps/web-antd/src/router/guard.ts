@@ -8,6 +8,11 @@ import { startProgress, stopProgress } from '@vben/utils';
 import { hasSessionRoles } from '#/router/generate-access-routes';
 import { coreRouteNames } from '#/router/routes';
 import { useAuthStore } from '#/store';
+import { getCloudToken } from '#/utils/auth-token';
+import {
+  FORBIDDEN_PATH,
+  hasRequiredAuthToken,
+} from '#/utils/ensure-auth-token';
 
 /**
  * 通用守卫配置
@@ -48,9 +53,28 @@ function setupCommonGuard(router: Router) {
  */
 function setupAccessGuard(router: Router) {
   router.beforeEach(async (to, from) => {
+    // 对齐旧 App.vue initAuthToken：正式服只认 cookie `auth`，没有则 403（不是登录页）
+    if (!hasRequiredAuthToken()) {
+      if (to.path === FORBIDDEN_PATH) {
+        return true;
+      }
+      return { path: FORBIDDEN_PATH, replace: true };
+    }
+
     const accessStore = useAccessStore();
     const userStore = useUserStore();
     const authStore = useAuthStore();
+
+    // 对齐旧站 getToken()：登录态以 cookie Cloud-Token 为准
+    const cookieToken = getCloudToken();
+    if (cookieToken && !accessStore.accessToken) {
+      accessStore.setAccessToken(cookieToken);
+    }
+
+    // 403 在白名单：有 AuthToken 也可停留（对齐旧 permission.js）
+    if (to.path === FORBIDDEN_PATH) {
+      return true;
+    }
 
     // 基本路由，这些路由不需要进入权限拦截
     if (coreRouteNames.includes(to.name as string)) {
@@ -61,15 +85,24 @@ function setupAccessGuard(router: Router) {
             preferences.app.defaultHomePath,
         );
       }
-      if (
-        (to.path === '/mlogin' || to.path === '/mobilelogin') &&
-        accessStore.accessToken
-      ) {
-        return to.path === '/mobilelogin'
-          ? '/mobileCloud/index'
-          : '/mobile/index';
+      if (to.path === '/' && accessStore.accessToken) {
+        if (hasSessionRoles() && accessStore.isAccessChecked) {
+          return (
+            userStore.userInfo?.homePath || preferences.app.defaultHomePath
+          );
+        }
+        // 尚未生成菜单：不要放行走 Root 默认 redirect（数据总览）
+      } else {
+        if (
+          (to.path === '/mlogin' || to.path === '/mobilelogin') &&
+          accessStore.accessToken
+        ) {
+          return to.path === '/mobilelogin'
+            ? '/mobileCloud/index'
+            : '/mobile/index';
+        }
+        return true;
       }
-      return true;
     }
 
     // accessToken 检查（对齐旧站 getToken）
@@ -98,17 +131,19 @@ function setupAccessGuard(router: Router) {
     }
 
     try {
-      let userInfo = userStore.userInfo;
       // roles 未加载：并行拉 config + islogin（对齐 permission.js）
       if (!hasSessionRoles()) {
-        userInfo = await authStore.initSession();
+        await authStore.initSession();
       }
       await authStore.generateAccessRoutes();
 
+      const homePath =
+        userStore.userInfo?.homePath || preferences.app.defaultHomePath;
+      const isDefaultEntry =
+        to.path === '/' || to.path === preferences.app.defaultHomePath;
+
       const redirectPath = (from.query.redirect ??
-        (to.path === preferences.app.defaultHomePath
-          ? userInfo?.homePath || preferences.app.defaultHomePath
-          : to.fullPath)) as string;
+        (isDefaultEntry ? homePath : to.fullPath)) as string;
 
       return {
         ...router.resolve(decodeURIComponent(redirectPath)),

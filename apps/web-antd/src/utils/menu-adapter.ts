@@ -285,9 +285,60 @@ export function convertNavToVbenRoutes(
   return topLevelRoutes.map((route) => toVbenRoute(route, true));
 }
 
+interface HomeMenuNode {
+  children?: HomeMenuNode[];
+  meta?: { hideInMenu?: boolean };
+  path?: string;
+  show?: boolean;
+}
+
+function isVisibleHomeMenu(menu: HomeMenuNode) {
+  if (menu.show === false || menu.meta?.hideInMenu) {
+    return false;
+  }
+  return true;
+}
+
+function findFirstVisibleMenuPath(menus: HomeMenuNode[]): string {
+  for (const menu of menus) {
+    if (!isVisibleHomeMenu(menu)) {
+      continue;
+    }
+    const visibleChildren = (menu.children || []).filter((child) =>
+      isVisibleHomeMenu(child),
+    );
+    if (visibleChildren.length > 0) {
+      const nested = findFirstVisibleMenuPath(visibleChildren);
+      if (nested) {
+        return nested;
+      }
+    }
+    const path = menu.path?.trim();
+    if (path && path !== '/' && !path.startsWith('/cloud/placeholder')) {
+      return path.startsWith('/') ? path : `/${path}`;
+    }
+  }
+  return '';
+}
+
 /**
- * 登录后默认首页：数据总览（前端路由，保证可打开）
+ * 登录后默认首页：左侧菜单第一个可见页面
+ * 对齐旧站 GenerateRoutes：accessedRoutes[0].children[0].path
  */
-export function resolveHomePathFromNav(_navItems: CloudNavItem[]) {
-  return '/dashboard/index';
+export function resolveHomePathFromMenus(
+  menus: HomeMenuNode[],
+  fallback = '/dashboard/index',
+) {
+  return findFirstVisibleMenuPath(menus) || fallback;
+}
+
+export function resolveHomePathFromNav(
+  navItems: CloudNavItem[],
+  projectConfig: CloudProjectConfig | null = null,
+  fallback = '/dashboard/index',
+) {
+  return resolveHomePathFromMenus(
+    convertNavToVbenRoutes(navItems, projectConfig),
+    fallback,
+  );
 }

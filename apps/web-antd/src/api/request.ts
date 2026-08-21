@@ -18,8 +18,8 @@ import {
   getHelpLink,
   getLanguageCookie,
 } from '#/utils/auth-token';
-import { decryptResponse, encryptData, isDevMode } from '#/utils/crypto';
-import { ensureAuthToken } from '#/utils/ensure-auth-token';
+import { decryptResponse, enableAes, encryptData } from '#/utils/crypto';
+import { ensureAuthToken, FORBIDDEN_PATH } from '#/utils/ensure-auth-token';
 import {
   FORCE_LOGOUT_CODE,
   LOGOUT_ERROR_CODES,
@@ -80,7 +80,7 @@ function transformRequestBody(
 
   if (contentType.includes('application/json')) {
     const payload = encryptData(JSON.stringify(data));
-    if (!isDevMode && headers) {
+    if (enableAes && headers) {
       headers['Content-Type'] = 'application/x-www-form-urlencoded';
     }
     return payload;
@@ -145,7 +145,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
         return config;
       }
 
-      if (!isDevMode && !config.params && !config.data) {
+      if (enableAes && !config.params && !config.data) {
         config.params = { content: 'empty' };
       }
 
@@ -198,21 +198,14 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       response.data = normalizeResponseData(responseData as CloudApiResponse);
 
       const status = Number(response.data.status);
-      const requestUrl = response.config.url || '';
 
-      // 登录相关接口的 403 只提示，不整页跳转（缺 AuthToken / 无权限时常见）
+      // 对齐旧 request.js：接口 403 → 整页 /403
       if (status === 403) {
-        const errorMsg = response.data.message || '无访问权限(403)';
-        if (
-          requestUrl.includes('/user/login') ||
-          requestUrl.includes('/user/vlogin') ||
-          requestUrl.includes('/user/islogin') ||
-          requestUrl.includes('/public/user/')
-        ) {
-          message.error(errorMsg);
-          return Promise.reject(response.data);
-        }
-        message.error(errorMsg);
+        void import('#/router').then(({ router }) => {
+          if (router.currentRoute.value.path !== FORBIDDEN_PATH) {
+            void router.replace(FORBIDDEN_PATH);
+          }
+        });
         return Promise.reject(response.data);
       }
 

@@ -5,6 +5,7 @@ import type { CloudUserData } from '#/types/cloud-platform';
 import { requestClient } from '#/api/request';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { setCloudToken } from '#/utils/auth-token';
+import { resolveHomePathFromNav } from '#/utils/menu-adapter';
 
 /**
  * 将任意值转为可展示的字符串名称
@@ -54,8 +55,8 @@ function mapCloudUserToUserInfo(data: CloudUserData): UserInfo {
     // 空字符串由布局侧 || defaultAvatar 回退
     avatar,
     desc: displayName,
-    // 登录后进入数据总览
-    homePath: '/dashboard/index',
+    // 先按 Nav 估一个首页，GenerateRoutes 后会改成左侧第一个可见菜单
+    homePath: resolveHomePathFromNav(data.Nav || [], cloudStore.projectConfig),
     realName: displayName,
     roles: (data.Role || []).map((role) => String(role.Name || role.Id || '')),
     token: data.Token,

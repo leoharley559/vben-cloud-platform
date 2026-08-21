@@ -26,7 +26,11 @@ export function useUserInfoRefreshOnActivity() {
     }
     lastRefreshAt = now + USER_INFO_REFRESH_GAP_MS;
 
-    if (route.path === LOGIN_PATH || route.path.startsWith('/auth')) {
+    if (
+      route.path === LOGIN_PATH ||
+      route.path === '/403' ||
+      route.path.startsWith('/auth')
+    ) {
       return;
     }
 

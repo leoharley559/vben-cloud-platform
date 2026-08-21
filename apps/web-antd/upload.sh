@@ -96,15 +96,25 @@ resolve_ssh_key() {
     return 1
 }
 
+zip_has_file() {
+    local zip_file="$1"
+    local name="$2"
+    local pattern
+    pattern="$(printf '%s' "$name" | sed 's/[].[*^$()+?{|]/\\&/g')"
+    # 不用 grep -q：找到即退出会让 unzip 收到 SIGPIPE（exit 141），
+    # 在 set -o pipefail 下会被误判成压缩包缺文件。
+    unzip -l "$zip_file" | grep -E "(^|[[:space:]])${pattern}($|[[:space:]])" >/dev/null
+}
+
 ensure_zip_has_required_files() {
     local zip_file="$1"
-    if ! unzip -l "$zip_file" | grep -qE '(^|[[:space:]])index\.html$'; then
+    if ! zip_has_file "$zip_file" 'index.html'; then
         log_error "压缩包缺少 index.html: ${zip_file}"
     fi
-    if ! unzip -l "$zip_file" | grep -qE '(^|[[:space:]])_app\.config\.js$'; then
+    if ! zip_has_file "$zip_file" '_app.config.js'; then
         log_error "压缩包缺少 _app.config.js（生产环境接口配置必须一起发布）: ${zip_file}"
     fi
-    if ! unzip -l "$zip_file" | grep -qE '(^|[[:space:]])version\.json$'; then
+    if ! zip_has_file "$zip_file" 'version.json'; then
         log_error "压缩包缺少 version.json（版本检测必须一起发布）: ${zip_file}"
     fi
 }
@@ -298,6 +308,9 @@ REMOTE_CMD="
         echo '错误: 解压后未找到 version.json'
         exit 1
     fi
+
+    echo '修正静态文件权限（nginx worker 需可读，避免 logo.png 等 403）...'
+    chmod -R a+rX .
 
     echo '部署文件校验通过'
 "

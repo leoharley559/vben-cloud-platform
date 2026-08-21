@@ -3,8 +3,15 @@ import CryptoJS from 'crypto-js';
 const key = CryptoJS.enc.Utf8.parse(import.meta.env.VITE_CRYPTO_KEY || '');
 const iv = CryptoJS.enc.Utf8.parse(import.meta.env.VITE_CRYPTO_IV || '');
 
-/** 开发环境不加密，与旧项目 isDevMode 行为一致 */
+/** Vite 开发服务器（本地 `pnpm dev`） */
 export const isDevMode = import.meta.env.DEV;
+
+/**
+ * 是否对请求/响应做 AES。
+ * 老站现行研发服（prod.env.js 的 NODE_ENV=development）不加密；
+ * 真正的加密正式服把 VITE_ENABLE_AES 设为 true。
+ */
+export const enableAes = import.meta.env.VITE_ENABLE_AES === 'true';
 
 export function decrypt(text: string) {
   try {
@@ -36,14 +43,14 @@ export function encrypt(data: unknown) {
 }
 
 export function encryptData(data: string) {
-  if (isDevMode) {
+  if (!enableAes) {
     return data;
   }
   return `EncryptData=${encodeURIComponent(encrypt(data) || '')}`;
 }
 
 export function decryptResponse<T = unknown>(res: { data: unknown }) {
-  if (isDevMode) {
+  if (!enableAes) {
     return res;
   }
   const decryptedData = decrypt(String(res.data));

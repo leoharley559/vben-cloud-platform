@@ -22,6 +22,11 @@ import { useVbenForm } from './form';
 setupVbenVxeTable({
   configVxeTable: (vxeUI) => {
     vxeUI.setConfig({
+      table: {
+        rowConfig: {
+          keyField: 'Id',
+        },
+      },
       grid: {
         align: 'center',
         border: false,
@@ -45,6 +50,10 @@ setupVbenVxeTable({
           showResponseMsg: false,
         },
         round: true,
+        rowConfig: {
+          // vxe-table 4.18+ 必填；业务表主键多为 Id，个别表可自行覆盖
+          keyField: 'Id',
+        },
         showOverflow: true,
         size: 'small',
       } as VxeTableGridOptions,

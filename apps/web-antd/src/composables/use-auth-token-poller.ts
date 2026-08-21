@@ -1,16 +1,18 @@
 import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { getAuthToken } from '#/utils/auth-token';
 import {
   ensureAuthToken,
+  FORBIDDEN_PATH,
+  hasRequiredAuthToken,
   shouldUseFallbackAuthToken,
 } from '#/utils/ensure-auth-token';
 
 const AUTH_POLL_INTERVAL_MS = 290 * 1000;
 
 /**
- * cloudPlatform AuthToken 轮询（对齐旧 App.vue 逻辑）
+ * cloudPlatform AuthToken 轮询（对齐旧 App.vue）
+ * 正式服 cookie `auth` 丢失 → /403，不是登录页
  */
 export function useAuthTokenPoller() {
   const router = useRouter();
@@ -23,8 +25,11 @@ export function useAuthTokenPoller() {
       return;
     }
 
-    if (!getAuthToken()) {
-      router.replace('/auth/login');
+    if (
+      !hasRequiredAuthToken() &&
+      router.currentRoute.value.path !== FORBIDDEN_PATH
+    ) {
+      void router.replace(FORBIDDEN_PATH);
     }
   };
 

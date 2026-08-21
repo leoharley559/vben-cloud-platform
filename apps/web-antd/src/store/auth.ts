@@ -28,7 +28,6 @@ import { $t } from '#/locales';
 import { generateAccessRoutes } from '#/router/generate-access-routes';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import {
-  removeAuthToken,
   removeCloudToken,
   setCloudToken,
 } from '#/utils/auth-token';
@@ -90,14 +89,13 @@ export const useAuthStore = defineStore('auth', () => {
     const userInfo = await initSession();
     await generateAccessRoutesAction();
 
+    const homePath =
+      userStore.userInfo?.homePath || preferences.app.defaultHomePath;
+
     if (accessStore.loginExpired) {
       accessStore.setLoginExpired(false);
     } else {
-      onSuccess
-        ? await onSuccess?.()
-        : await router.push(
-            userInfo.homePath || preferences.app.defaultHomePath,
-          );
+      onSuccess ? await onSuccess?.() : await router.push(homePath);
     }
 
     if (userInfo?.realName) {
@@ -108,7 +106,7 @@ export const useAuthStore = defineStore('auth', () => {
       });
     }
 
-    return userInfo;
+    return userStore.userInfo ?? userInfo;
   }
 
   /**
@@ -187,7 +185,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     removeCloudToken();
-    removeAuthToken();
     resetGameConfigCache();
     cloudStore.$reset();
     resetAllStores();

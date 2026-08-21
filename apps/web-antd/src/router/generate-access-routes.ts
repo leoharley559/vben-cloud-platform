@@ -5,9 +5,11 @@ import { useAccessStore, useUserStore } from '@vben/stores';
 import { generateAccess } from '#/router/access';
 import { accessRoutes } from '#/router/routes';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import { resolveHomePathFromMenus } from '#/utils/menu-adapter';
 
 /**
- * 对齐旧站 GenerateRoutes：基于当前 Nav / roles 生成菜单与动态路由
+ * 对齐旧站 GenerateRoutes：基于当前 Nav / roles 生成菜单与动态路由，
+ * 并把登录首页设为左侧第一个可见菜单
  */
 export async function generateAccessRoutes(router: Router) {
   const accessStore = useAccessStore();
@@ -27,6 +29,14 @@ export async function generateAccessRoutes(router: Router) {
   accessStore.setAccessMenus(accessibleMenus);
   accessStore.setAccessRoutes(accessibleRoutes);
   accessStore.setIsAccessChecked(true);
+
+  const userInfo = userStore.userInfo;
+  if (userInfo) {
+    userStore.setUserInfo({
+      ...userInfo,
+      homePath: resolveHomePathFromMenus(accessibleMenus),
+    });
+  }
 
   return { accessibleMenus, accessibleRoutes };
 }

@@ -38,6 +38,9 @@ export const overridesPreferences = defineOverridesPreferences({
   logo: {
     source: '/logo.png',
   },
+  theme: {
+    mode: 'light',
+  },
 });
 
 export const preferencesExtension =
