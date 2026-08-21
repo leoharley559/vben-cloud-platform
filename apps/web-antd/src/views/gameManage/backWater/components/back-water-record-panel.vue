@@ -728,7 +728,6 @@ onMounted(async () => {
 
     <SummaryCards :items="summaryItems" />
 
-    <div class="data-grid">
       <Grid>
         <template #adminName="{ row }">
           <AgencyAccountLink
@@ -766,7 +765,6 @@ onMounted(async () => {
           </Tag>
         </template>
       </Grid>
-    </div>
 
     <Modal
       v-model:open="detailsVisible"
@@ -842,10 +840,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
-.data-grid {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-</style>
+

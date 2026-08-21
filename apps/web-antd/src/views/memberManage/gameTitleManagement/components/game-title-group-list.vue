@@ -195,15 +195,17 @@ onMounted(() => {
           <template #addonBefore>类别名称</template>
         </Input>
       </div>
-      <div class="query-filter-actions query-filter-actions-single">
-        <Space>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button v-if="canAdd" type="primary" @click="openForm('add')">
-            新增类别
-          </Button>
-        </Space>
+      <div class="query-filter-actions">
+        <Button type="primary" @click="handleSearch">查询</Button>
       </div>
     </template>
+
+    <div
+      v-if="canAdd"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button type="primary" @click="openForm('add')">新增类别</Button>
+    </div>
 
     <Grid>
       <template #switch="{ row }">

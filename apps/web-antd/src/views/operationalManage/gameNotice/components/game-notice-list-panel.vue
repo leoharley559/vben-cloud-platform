@@ -407,15 +407,15 @@ function handleDelete(row: NoticeRow) {
           </Input>
         </div>
 
-        <div class="flex items-center gap-1">
-          <span class="whitespace-nowrap text-sm text-gray-500">状态</span>
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
           <Select
             v-model:value="filterStatus"
             allow-clear
             :options="NOTICE_FILTER_STATUS_OPTIONS"
-            placeholder="请选择"
+            placeholder="请选择状态"
           />
-        </div>
+        </Space.Compact>
 
         <div class="flex flex-col gap-1">
           <Input
@@ -433,11 +433,12 @@ function handleDelete(row: NoticeRow) {
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
           <Button @click="resetFilters">重置</Button>
-          <Button v-if="canCreate" type="primary" @click="openCreate">
-新增
-</Button>
         </div>
       </div>
+    </div>
+
+    <div v-if="canCreate" class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button type="primary" @click="openCreate">新增</Button>
     </div>
 
     <Grid v-if="canViewTable">

@@ -67,12 +67,12 @@ const summaryItems = computed(() => [
   {
     label: '申请金额总计',
     value: formatAmountFromCent(totalAmount.value),
-    valueClass: 'font-medium text-gray-900',
+    valueClass: 'font-medium',
   },
   {
     label: '实发金额总计',
     value: formatAmountFromCent(totalRealAmount.value),
-    valueClass: 'font-medium text-gray-900',
+    valueClass: 'font-medium',
   },
 ]);
 
@@ -493,7 +493,7 @@ onMounted(() => {
 
     <div
       v-if="canBatchApprove || canBatchReject"
-      class="mb-3 flex flex-wrap gap-2"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
     >
       <Button
         v-if="canBatchApprove"

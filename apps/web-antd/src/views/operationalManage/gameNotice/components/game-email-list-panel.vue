@@ -435,21 +435,10 @@ async function openReadPlayers(row: EmailRow) {
           </Input>
         </div>
 
-        <div class="flex items-center gap-0">
-          <span
-            class="inline-flex h-8 items-center whitespace-nowrap rounded-l border border-r-0 border-gray-300 bg-gray-50 px-2 text-sm text-gray-600"
-          >
-            代理/推广账号
-          </span>
-          <Space.Compact>
-            <span class="query-field-addon">账号</span>
-            <AccountSelect
-              v-model="filterUsername"
-              class="w-[250px]"
-              return-name
-            />
-          </Space.Compact>
-        </div>
+        <Space.Compact>
+          <span class="query-field-addon">代理/推广账号</span>
+          <AccountSelect v-model="filterUsername" return-name />
+        </Space.Compact>
 
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
@@ -457,11 +446,12 @@ async function openReadPlayers(row: EmailRow) {
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
           <Button @click="resetFilters">重置</Button>
-          <Button v-if="canCreate" type="primary" @click="openCreate">
-新增
-</Button>
         </div>
       </div>
+    </div>
+
+    <div v-if="canCreate" class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button type="primary" @click="openCreate">新增</Button>
     </div>
 
     <Grid v-if="canViewTable">

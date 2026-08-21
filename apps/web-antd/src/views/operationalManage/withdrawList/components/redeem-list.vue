@@ -736,7 +736,7 @@ onMounted(() => {
 
     <div
       v-if="canBatchManual || canBatchReject"
-      class="mb-3 flex flex-wrap gap-2"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
     >
       <Button
         v-if="canBatchManual"

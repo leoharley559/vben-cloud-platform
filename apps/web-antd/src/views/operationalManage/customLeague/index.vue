@@ -309,13 +309,14 @@ function handlePreview(path?: string) {
             <QueryDatetimeRangePicker v-model="filterDateRange" label="时间" />
           </div>
           <div class="query-filter-actions">
-            <Space>
-              <Button type="primary" @click="handleSearch">查询</Button>
-              <Button @click="handleReset">重置</Button>
-              <Button type="primary" ghost @click="openAdd">新增</Button>
-            </Space>
+            <Button type="primary" @click="handleSearch">查询</Button>
+            <Button @click="handleReset">重置</Button>
           </div>
         </div>
+      </div>
+
+      <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+        <Button type="primary" ghost @click="openAdd">新增</Button>
       </div>
 
       <Grid>

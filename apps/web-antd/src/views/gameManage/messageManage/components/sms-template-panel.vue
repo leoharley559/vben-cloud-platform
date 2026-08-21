@@ -245,7 +245,6 @@ async function submitEdit() {
       </div>
     </div>
   </div>
-  <div class="data-grid">
     <Grid>
       <template #status="{ row }">
         <Tag :color="Number(row.IsOpen) === 1 ? 'green' : 'red'">
@@ -266,7 +265,6 @@ async function submitEdit() {
         <Button size="small" type="link" @click="openEdit(row)">编辑</Button>
       </template>
     </Grid>
-  </div>
 
   <Modal
     v-model:open="editVisible"
@@ -291,10 +289,3 @@ async function submitEdit() {
   </Modal>
 </template>
 
-<style scoped>
-.data-grid {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-</style>

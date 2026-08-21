@@ -25,6 +25,7 @@ import EasyRechargeActionModal from '#/components/easy-recharge/easy-recharge-ac
 import EasyRechargeVoucherCell from '#/components/easy-recharge/easy-recharge-voucher-cell.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
+import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
@@ -223,6 +224,27 @@ const gridOptions: VxeTableGridOptions<PlayerEasyRechargeItem> = {
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 const loading = computed(() => gridApi.grid?.loading ?? false);
 
+const summaryItems = computed(() => [
+  {
+    label: '充值总额',
+    value: formatAmountFromCent(totalStats.value.sumAmount),
+    valueClass: 'text-green-600',
+  },
+  {
+    label: '发送金额',
+    value: formatAmountFromCent(totalStats.value.sumSendAmount),
+  },
+  {
+    label: '成功笔数',
+    value: totalStats.value.payNum,
+  },
+  {
+    label: '未成功金额',
+    value: formatAmountFromCent(totalStats.value.failAmount),
+    valueClass: 'text-red-500',
+  },
+]);
+
 function handleSearch() {
   gridApi.reload();
 }
@@ -397,30 +419,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="mb-4 grid gap-3 md:grid-cols-4">
-      <div class="rounded border p-3 text-sm">
-        <div class="text-gray-500">充值总额</div>
-        <div class="font-medium text-green-600">
-          {{ formatAmountFromCent(totalStats.sumAmount) }}
-        </div>
-      </div>
-      <div class="rounded border p-3 text-sm">
-        <div class="text-gray-500">发送金额</div>
-        <div class="font-medium">
-          {{ formatAmountFromCent(totalStats.sumSendAmount) }}
-        </div>
-      </div>
-      <div class="rounded border p-3 text-sm">
-        <div class="text-gray-500">成功笔数</div>
-        <div class="font-medium">{{ totalStats.payNum }}</div>
-      </div>
-      <div class="rounded border p-3 text-sm">
-        <div class="text-gray-500">未成功金额</div>
-        <div class="font-medium text-red-500">
-          {{ formatAmountFromCent(totalStats.failAmount) }}
-        </div>
-      </div>
-    </div>
+    <SummaryCards :items="summaryItems" />
 
     <Grid>
       <template #status="{ row }">

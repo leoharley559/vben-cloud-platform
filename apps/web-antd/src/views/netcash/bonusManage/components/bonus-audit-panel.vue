@@ -377,22 +377,28 @@ onMounted(() => {
             查询
           </Button>
           <Button @click="resetAudit">重置</Button>
-          <Button
-            v-if="canBatchApprove"
-            type="primary"
-            @click="openAuditAction('batchApprove')"
-          >
-            批量通过
-          </Button>
-          <Button
-            v-if="canBatchReject"
-            danger
-            @click="openAuditAction('batchReject')"
-          >
-            批量拒绝
-          </Button>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="canBatchApprove || canBatchReject"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button
+        v-if="canBatchApprove"
+        type="primary"
+        @click="openAuditAction('batchApprove')"
+      >
+        批量通过
+      </Button>
+      <Button
+        v-if="canBatchReject"
+        danger
+        @click="openAuditAction('batchReject')"
+      >
+        批量拒绝
+      </Button>
     </div>
 
     <SummaryCards :items="auditSummaryItems" />

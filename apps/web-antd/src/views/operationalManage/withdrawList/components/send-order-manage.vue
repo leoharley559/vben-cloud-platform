@@ -357,10 +357,10 @@ onMounted(async () => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
       <div
         v-if="canSwitch"
-        class="flex items-center gap-2 rounded border px-3 py-2"
+        class="inline-flex h-8 items-center gap-2 rounded-md border px-[15px] text-sm"
       >
         <span>自动派单开关</span>
         <Switch

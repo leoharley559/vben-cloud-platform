@@ -607,9 +607,7 @@ void loadReport();
         </div>
       </div>
       <SummaryCards :items="detailSummaryItems" />
-      <div class="data-grid">
         <DetailGrid />
-      </div>
     </template>
   </div>
 </template>
@@ -626,11 +624,5 @@ void loadReport();
   align-items: center;
   justify-content: space-between;
   margin-top: 18px;
-}
-
-.data-grid {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
 }
 </style>

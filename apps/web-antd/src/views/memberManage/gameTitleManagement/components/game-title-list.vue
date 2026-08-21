@@ -363,33 +363,37 @@ onMounted(async () => {
         <QueryDatetimeRangePicker v-model="filterDateRange" label="获得时间" />
       </div>
       <div class="query-filter-actions">
-        <Space wrap>
-          <Button type="primary" @click="handleSearch">查询</Button>
-          <Button v-if="canAdd" type="primary" @click="openCreate">
-            新增称号
-          </Button>
-          <Dropdown v-if="canBatch">
-            <Button>批量编辑</Button>
-            <template #overlay>
-              <Menu>
-                <Menu.Item key="open" @click="handleBatchSwitch(1)">
-                  批量开启
-                </Menu.Item>
-                <Menu.Item key="close" @click="handleBatchSwitch(0)">
-                  批量关闭
-                </Menu.Item>
-                <Menu.Item key="cal" @click="openBatchEdit('calTime')">
-                  批量改计算时间
-                </Menu.Item>
-                <Menu.Item key="vip" @click="openBatchEdit('vip')">
-                  批量改 VIP
-                </Menu.Item>
-              </Menu>
-            </template>
-          </Dropdown>
-        </Space>
+        <Button type="primary" @click="handleSearch">查询</Button>
       </div>
     </template>
+
+    <div
+      v-if="canAdd || canBatch"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button v-if="canAdd" type="primary" @click="openCreate">
+        新增称号
+      </Button>
+      <Dropdown v-if="canBatch">
+        <Button>批量编辑</Button>
+        <template #overlay>
+          <Menu>
+            <Menu.Item key="open" @click="handleBatchSwitch(1)">
+              批量开启
+            </Menu.Item>
+            <Menu.Item key="close" @click="handleBatchSwitch(0)">
+              批量关闭
+            </Menu.Item>
+            <Menu.Item key="cal" @click="openBatchEdit('calTime')">
+              批量改计算时间
+            </Menu.Item>
+            <Menu.Item key="vip" @click="openBatchEdit('vip')">
+              批量改 VIP
+            </Menu.Item>
+          </Menu>
+        </template>
+      </Dropdown>
+    </div>
 
     <Grid>
       <template #switch="{ row }">

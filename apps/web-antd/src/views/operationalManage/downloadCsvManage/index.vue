@@ -378,8 +378,16 @@ onUnmounted(() => {
             <Button @click="resetFilters">重置</Button>
           </div>
         </div>
-        <div v-if="canAutoRefresh" class="flex items-center gap-2 mt-2">
-          <span class="text-sm text-gray-500">自动刷新</span>
+      </div>
+
+      <div
+        v-if="canAutoRefresh"
+        class="mb-2 flex flex-wrap items-center justify-end gap-2"
+      >
+        <div
+          class="inline-flex h-8 items-center gap-2 rounded-md border px-[15px] text-sm"
+        >
+          <span>自动刷新</span>
           <Switch :checked="autoRefresh" @change="handleAutoRefreshChange" />
           <Tooltip title="开启后每 15 秒自动刷新；开启时日期仅能查询当天数据">
             <span class="cursor-help text-xs text-gray-400">说明</span>

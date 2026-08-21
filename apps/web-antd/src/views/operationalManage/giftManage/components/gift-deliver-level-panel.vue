@@ -577,15 +577,15 @@ onMounted(() => {
           >
             导出 Excel
           </Button>
-          <Button
-            v-if="canBatchDeliver"
-            type="primary"
-            @click="openBatchDeliver"
-          >
-            批量发货
-          </Button>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="canBatchDeliver"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button type="primary" @click="openBatchDeliver">批量发货</Button>
     </div>
 
     <Grid>

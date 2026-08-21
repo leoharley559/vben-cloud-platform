@@ -76,9 +76,11 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         </Space.Compact>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-          <Button disabled type="primary">添加模板</Button>
         </div>
       </div>
+    </div>
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button disabled type="primary">添加模板</Button>
     </div>
     <Grid>
       <template #action>

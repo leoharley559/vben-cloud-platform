@@ -271,19 +271,21 @@ defineExpose({ reload: () => gridApi.reload() });
         <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="resetFilters">重置</Button>
-          <Space class="ml-auto">
-            <Button v-if="canCreate" type="primary" @click="createOpen = true">
-              新增
-            </Button>
-            <Button v-if="canCreate" @click="importOpen = true">
-批量导入
-</Button>
-            <Button v-if="canDelete" danger @click="handleBatchDelete">
-              批量删除
-            </Button>
-          </Space>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="canCreate || canDelete"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button v-if="canCreate" type="primary" @click="createOpen = true">
+        新增
+      </Button>
+      <Button v-if="canCreate" @click="importOpen = true">批量导入</Button>
+      <Button v-if="canDelete" danger @click="handleBatchDelete">
+        批量删除
+      </Button>
     </div>
 
     <Grid>

@@ -276,27 +276,31 @@ onMounted(() => {
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
-        <div class="query-filter-actions">
-          <Space wrap>
-            <Button :loading="loading" type="primary" @click="gridApi.reload()">
-              查询
-            </Button>
-            <Button @click="handleReset">重置</Button>
-            <Button v-if="canCreate" type="primary" @click="openCreate">
-              手动添加
-            </Button>
-            <Button v-if="canAutoConfig" @click="openAuto">自动条件设置</Button>
-            <Button
-              v-if="canBatchDelete"
-              danger
-              :disabled="selectedIds.length === 0"
-              @click="handleBatchDelete"
-            >
-              批量删除
-            </Button>
-          </Space>
+        <div class="query-filter-actions query-filter-actions-single">
+          <Button :loading="loading" type="primary" @click="gridApi.reload()">
+            查询
+          </Button>
+          <Button @click="handleReset">重置</Button>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="canCreate || canAutoConfig || canBatchDelete"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button v-if="canCreate" type="primary" @click="openCreate">
+        手动添加
+      </Button>
+      <Button v-if="canAutoConfig" @click="openAuto">自动条件设置</Button>
+      <Button
+        v-if="canBatchDelete"
+        danger
+        :disabled="selectedIds.length === 0"
+        @click="handleBatchDelete"
+      >
+        批量删除
+      </Button>
     </div>
 
     <Grid>

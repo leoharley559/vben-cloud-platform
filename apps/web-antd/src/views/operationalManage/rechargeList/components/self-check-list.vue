@@ -273,22 +273,7 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-4 flex flex-wrap items-center gap-3">
-      <div
-        v-if="canGameSwitch"
-        class="flex items-center gap-2 rounded border px-3 py-2"
-      >
-        <span>游戏端入口开关</span>
-        <Switch
-          :checked="gameSwitchStatus"
-          :loading="gameSwitchLoading"
-          @update:checked="(value) => void submitGameSwitch(!!value)"
-        />
-      </div>
-      <Button v-if="canEntryImage" @click="entryImageOpen = true">
-        入口图片设置
-      </Button>
-    </div>
+    
 
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
@@ -363,7 +348,25 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
+    <div
+      v-if="canGameSwitch || canEntryImage"
+      class="mb-2 flex flex-wrap items-center justify-end gap-3"
+    >
+      <div
+        v-if="canGameSwitch"
+        class="inline-flex h-8 items-center gap-2 rounded-md border px-[15px] text-sm"
+      >
+        <span>游戏端入口开关</span>
+        <Switch
+          :checked="gameSwitchStatus"
+          :loading="gameSwitchLoading"
+          @update:checked="(value) => void submitGameSwitch(!!value)"
+        />
+      </div>
+      <Button v-if="canEntryImage" @click="entryImageOpen = true">
+        入口图片设置
+      </Button>
+    </div>
     <Grid>
       <template #status="{ row }">
         <Tag :color="getSelfCheckStatusColor(row.Status)">

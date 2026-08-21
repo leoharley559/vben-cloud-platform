@@ -1,6 +1,6 @@
 /* 全局收紧 Card 内容区内边距 */
 .ant-card .ant-card-body {
-  padding: 10px 15px;
+  padding: 10px 10px;
 }
 
 /* 下拉框末端始终显示向下箭头，便于和输入框区分 */
@@ -169,9 +169,17 @@
 }
 
 .ops-summary-cards > * {
-  color: hsl(var(--foreground) / 82%);
-  background-color: hsl(var(--card));
-  border-color: hsl(var(--border));
+  color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 8%);
+  border-color: hsl(var(--primary) / 42%);
+}
+
+.ops-summary-card .ops-summary-label {
+  color: hsl(var(--primary) / 78%);
+}
+
+.ops-summary-card .ops-summary-value {
+  font-weight: 600;
 }
 
 .ops-query-filters .query-filter-actions {

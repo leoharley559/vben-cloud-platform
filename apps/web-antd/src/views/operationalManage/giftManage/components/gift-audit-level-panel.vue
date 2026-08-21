@@ -617,7 +617,6 @@ onMounted(() => {
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
           <Button @click="resetFilters">重置</Button>
-          <Button v-if="canRecord" @click="openRecord">人工录单</Button>
           <Button
             v-if="canExport"
             :loading="exportLoading"
@@ -625,20 +624,25 @@ onMounted(() => {
           >
             导出 Excel
           </Button>
-          <Space v-if="canBatchApprove || canBatchReject">
-            <Button
-              v-if="canBatchApprove"
-              type="primary"
-              @click="handleBatch(1)"
-            >
-              批量通过
-            </Button>
-            <Button v-if="canBatchReject" danger @click="handleBatch(2)">
-              批量拒绝
-            </Button>
-          </Space>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="canRecord || canBatchApprove || canBatchReject"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button v-if="canRecord" @click="openRecord">人工录单</Button>
+      <Button
+        v-if="canBatchApprove"
+        type="primary"
+        @click="handleBatch(1)"
+      >
+        批量通过
+      </Button>
+      <Button v-if="canBatchReject" danger @click="handleBatch(2)">
+        批量拒绝
+      </Button>
     </div>
 
     <Grid>

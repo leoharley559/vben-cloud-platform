@@ -321,13 +321,13 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
+    <div class="mb-3">
     <Card v-if="canRealtime" size="small" title="实时数据">
       <Spin :spinning="loading">
         <DailyReportTable :list="realTimeData" variant="package" />
       </Spin>
     </Card>
-
+    </div>
     <Card v-if="canHistory" size="small" title="历史数据">
       <Spin :spinning="loading">
         <DailyReportTable :list="historyData" variant="package" />

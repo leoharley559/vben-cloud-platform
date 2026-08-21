@@ -160,11 +160,14 @@ onMounted(() => canView.value && gridApi.reload());
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
           <Button @click="reset">重置</Button>
-          <Button v-if="canCreate" type="primary" @click="openCreate">
-新增发展人
-</Button>
         </div>
       </div>
+    </div>
+    <div
+      v-if="canCreate"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button type="primary" @click="openCreate">新增发展人</Button>
     </div>
     <Grid>
       <template #actions="{ row }">

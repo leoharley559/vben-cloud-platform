@@ -368,7 +368,6 @@ async function exportDetail() {
       </div>
     </div>
   </div>
-  <div class="data-grid">
     <Grid>
       <template #baseCount="{ row }">
         <Button type="link" @click="showDetail(row, 0)">
@@ -406,7 +405,6 @@ async function exportDetail() {
         </Button>
       </template>
     </Grid>
-  </div>
 
   <Modal v-model:open="messageVisible" title="召回短信" :footer="null">
     <Input.TextArea :value="recallMessage" disabled :rows="6" />
@@ -505,11 +503,6 @@ async function exportDetail() {
   justify-content: space-between;
 }
 
-.data-grid {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
 
 .detail-table-wrap {
   overflow: auto;

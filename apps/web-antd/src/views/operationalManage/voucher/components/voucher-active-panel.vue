@@ -332,41 +332,41 @@ function handleOffshelf(row: VoucherRow) {
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
-          <Space>
-            <Button type="primary" @click="handleSearch">查询</Button>
-            <Button @click="handleReset">重置</Button>
-          </Space>
-          <Space v-if="!isHistory">
-            <span
-              v-if="canConfig"
-              class="inline-flex items-center gap-2 text-sm"
-            >
-              票券中心开关
-              <Switch
-                :checked="globalActive"
-                :loading="globalLoading"
-                @change="handleToggleGlobal"
-              />
-            </span>
-            <Button v-if="canConfig" @click="configOpen = true">
-              全局设置
-            </Button>
-            <Dropdown v-if="canCreate" :trigger="['click']">
-              <Button type="primary">新增票券</Button>
-              <template #overlay>
-                <Menu @click="({ key }) => openAdd(Number(key))">
-                  <Menu.Item
-                    v-for="item in addTypeOptions"
-                    :key="String(item.value)"
-                  >
-                    {{ item.label }}
-                  </Menu.Item>
-                </Menu>
-              </template>
-            </Dropdown>
-          </Space>
+          <Button type="primary" @click="handleSearch">查询</Button>
+          <Button @click="handleReset">重置</Button>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="!isHistory && (canConfig || canCreate)"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <span
+        v-if="canConfig"
+        class="inline-flex h-8 items-center gap-2 rounded-md border px-[15px] text-sm"
+      >
+        票券中心开关
+        <Switch
+          :checked="globalActive"
+          :loading="globalLoading"
+          @change="handleToggleGlobal"
+        />
+      </span>
+      <Button v-if="canConfig" @click="configOpen = true">全局设置</Button>
+      <Dropdown v-if="canCreate" :trigger="['click']">
+        <Button type="primary">新增票券</Button>
+        <template #overlay>
+          <Menu @click="({ key }) => openAdd(Number(key))">
+            <Menu.Item
+              v-for="item in addTypeOptions"
+              :key="String(item.value)"
+            >
+              {{ item.label }}
+            </Menu.Item>
+          </Menu>
+        </template>
+      </Dropdown>
     </div>
 
     <Grid>

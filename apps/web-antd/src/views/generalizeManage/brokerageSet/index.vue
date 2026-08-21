@@ -8,6 +8,7 @@ import { Page } from '@vben/common-ui';
 
 import {
   Button,
+  Card,
   Form,
   Input,
   InputNumber,
@@ -15,7 +16,6 @@ import {
   Modal,
   Result,
   Select,
-  Space,
 } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -331,17 +331,17 @@ onMounted(async () => {
     description="推广管理 · 代理设定"
     title="代理设定"
   >
-    <Card size="small">
-      <div class="mb-3 flex items-center justify-between gap-3">
-        <div class="text-base font-medium">游戏佣金设置</div>
-        <Space>
-          <Button v-if="canReset" :loading="resetLoading" @click="handleReset">
-            恢复设置
-          </Button>
-          <Button v-if="canBatch" type="primary" @click="openBatch">
-            批量设置
-          </Button>
-        </Space>
+    <Card>
+      <div
+        v-if="canReset || canBatch"
+        class="mb-2 flex flex-wrap items-center justify-end gap-2"
+      >
+        <Button v-if="canReset" :loading="resetLoading" @click="handleReset">
+          恢复设置
+        </Button>
+        <Button v-if="canBatch" type="primary" @click="openBatch">
+          批量设置
+        </Button>
       </div>
 
       <Grid v-if="canViewTable">

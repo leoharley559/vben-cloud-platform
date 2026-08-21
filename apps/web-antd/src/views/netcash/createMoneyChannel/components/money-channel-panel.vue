@@ -732,7 +732,7 @@ onBeforeUnmount(() => {
 
     <div
       v-if="can('hierarchy')"
-      class="mb-4 rounded border border-gray-200 p-3"
+      class="mb-3 rounded border border-gray-200 p-3"
     >
       <div class="mb-2 flex items-center justify-between">
         <b>代理层级</b>

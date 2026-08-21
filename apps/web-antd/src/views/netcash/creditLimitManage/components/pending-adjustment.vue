@@ -225,24 +225,30 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
         <div class="query-filter-actions">
           <Button type="primary" @click="search">查询</Button>
           <Button @click="reset">重置</Button>
-          <Button
-            v-if="canApprove"
-            :disabled="selectedKeys.length === 0"
-            type="primary"
-            @click="batchReview(true)"
-            >
-批量通过
-</Button>
-          <Button
-            v-if="canReject"
-            :disabled="selectedKeys.length === 0"
-            danger
-            @click="batchReview(false)"
-            >
-批量拒绝
-</Button>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="canApprove || canReject"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button
+        v-if="canApprove"
+        :disabled="selectedKeys.length === 0"
+        type="primary"
+        @click="batchReview(true)"
+      >
+        批量通过
+      </Button>
+      <Button
+        v-if="canReject"
+        :disabled="selectedKeys.length === 0"
+        danger
+        @click="batchReview(false)"
+      >
+        批量拒绝
+      </Button>
     </div>
 
     <div class="mb-2 flex flex-wrap items-stretch justify-between gap-2">

@@ -331,31 +331,29 @@ function statusLabel(status?: number) {
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
-          <Space>
-            <Button type="primary" @click="handleSearch">查询</Button>
-            <Button @click="handleReset">重置</Button>
-          </Space>
-          <Space v-if="!isHistory">
-            <span
-              v-if="canConfig"
-              class="inline-flex items-center gap-2 text-sm"
-            >
-              活动开关
-              <Switch
-                :checked="globalActive"
-                :loading="globalLoading"
-                @change="handleToggleGlobal"
-              />
-            </span>
-            <Button v-if="canConfig" @click="configOpen = true">
-全局设置
-</Button>
-            <Button v-if="canCreate" type="primary" @click="openAdd">
-              新增活动
-            </Button>
-          </Space>
+          <Button type="primary" @click="handleSearch">查询</Button>
+          <Button @click="handleReset">重置</Button>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="!isHistory && (canConfig || canCreate)"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <span
+        v-if="canConfig"
+        class="inline-flex h-8 items-center gap-2 rounded-md border px-[15px] text-sm"
+      >
+        活动开关
+        <Switch
+          :checked="globalActive"
+          :loading="globalLoading"
+          @change="handleToggleGlobal"
+        />
+      </span>
+      <Button v-if="canConfig" @click="configOpen = true">全局设置</Button>
+      <Button v-if="canCreate" type="primary" @click="openAdd">新增活动</Button>
     </div>
 
     <Grid>

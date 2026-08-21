@@ -613,10 +613,12 @@ onMounted(loadMain);
         </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="loadWhitelist">查询</Button>
-          <Button type="primary" @click="openWhitelistAdd">新增白名单</Button>
-          <Button @click="openBatch">Excel/批量导入</Button>
         </div>
       </div>
+    </div>
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button type="primary" @click="openWhitelistAdd">新增白名单</Button>
+      <Button @click="openBatch">Excel/批量导入</Button>
     </div>
     <Table
       :columns="whitelistColumns"

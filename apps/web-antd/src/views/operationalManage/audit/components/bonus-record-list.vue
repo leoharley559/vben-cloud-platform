@@ -73,7 +73,7 @@ const summaryItems = computed(() => [
   {
     label: '红利总计',
     value: formatAmountFromCent(sumBonus.value),
-    valueClass: 'text-red-500',
+    valueClass: '',
   },
 ]);
 

@@ -1072,28 +1072,6 @@ onMounted(async () => {
             >
               导出 Excel
             </Button>
-            <Dropdown v-if="canBatchEdit">
-              <Button>批量编辑</Button>
-              <template #overlay>
-                <Menu>
-                  <Menu.Item key="1" @click="openBatch(1)">
-批量修改标签状态
-</Menu.Item>
-                  <Menu.Item key="2" @click="openBatch(2)">
-批量修改备注
-</Menu.Item>
-                  <Menu.Item key="3" @click="openBatch(3)">
-批量重置次数
-</Menu.Item>
-                  <Menu.Item key="4" @click="openBatch(4)">
-批量上标签
-</Menu.Item>
-                  <Menu.Item key="5" @click="openBatch(5)">
-批量修改会员层级
-</Menu.Item>
-                </Menu>
-              </template>
-            </Dropdown>
           </div>
         </template>
 
@@ -1101,6 +1079,34 @@ onMounted(async () => {
           <SummaryCards :items="summaryItems" />
           <Tag v-if="filterFiltersJson" color="processing">已启用高级搜索</Tag>
         </template>
+
+        <div
+          v-if="canBatchEdit"
+          class="mb-2 flex flex-wrap items-center justify-end gap-2"
+        >
+          <Dropdown>
+            <Button>批量编辑</Button>
+            <template #overlay>
+              <Menu>
+                <Menu.Item key="1" @click="openBatch(1)">
+                  批量修改标签状态
+                </Menu.Item>
+                <Menu.Item key="2" @click="openBatch(2)">
+                  批量修改备注
+                </Menu.Item>
+                <Menu.Item key="3" @click="openBatch(3)">
+                  批量重置次数
+                </Menu.Item>
+                <Menu.Item key="4" @click="openBatch(4)">
+                  批量上标签
+                </Menu.Item>
+                <Menu.Item key="5" @click="openBatch(5)">
+                  批量修改会员层级
+                </Menu.Item>
+              </Menu>
+            </template>
+          </Dropdown>
+        </div>
 
         <Grid v-if="canViewTable">
           <template #loginAccount="{ row }">

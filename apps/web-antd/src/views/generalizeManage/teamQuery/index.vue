@@ -7,7 +7,6 @@ import { computed, onMounted, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 
 import {
-  Alert,
   Breadcrumb,
   Button,
   Card,
@@ -15,6 +14,7 @@ import {
   message,
   Result,
   Space,
+  Tooltip,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -199,6 +199,7 @@ const gridOptions: VxeTableGridOptions<TeamQueryItem> = {
           Number(row.SumNextGameTax || 0) + Number(row.SumSelfGameTax || 0),
         ),
       minWidth: 120,
+      slots: { header: 'taxHeader' },
       title: '税收',
     },
     {
@@ -339,13 +340,15 @@ onMounted(() => {
       <SummaryCards :items="summaryItems" />
 
       <div class="mb-3 text-base font-medium">下级列表</div>
-      <Alert
-        class="mb-3"
-        message="税收：单人游戏按流水的 1.5%，多人游戏按流水的 2.5%；收入按税收与分成比例计算。"
-        show-icon
-        type="info"
-      />
       <Grid>
+        <template #taxHeader>
+          <span class="inline-flex items-center gap-1">
+            税收
+            <Tooltip title="税收：单人游戏按流水的 1.5%，多人游戏按流水的 2.5%；收入按税收与分成比例计算。">
+              <span class="cursor-help text-gray-400">ⓘ</span>
+            </Tooltip>
+          </span>
+        </template>
         <template #adminUsername="{ row }">
           <AgencyAccountLink
             :admin-id="row.AdminId as number | string | undefined"

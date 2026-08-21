@@ -388,6 +388,20 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <Radio.Group
+          v-model:value="dim"
+          button-style="solid"
+          @change="handleDimChange"
+        >
+          <Radio.Button v-if="showAgentRadio" value="agent">
+            代理数据
+          </Radio.Button>
+          <Radio.Button v-if="showChannelRadio" value="channel">
+            渠道数据
+          </Radio.Button>
+        </Radio.Group>
+      </div>
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <Space.Compact>
@@ -495,31 +509,15 @@ onMounted(() => {
             </Space.Compact>
           </div>
         </template>
-        <div class="query-filter-actions query-filter-actions-single">
+        <div class="query-filter-actions ">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
+          <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
+          导出 Excel
+        </Button>
         </div>
       </div>
     </div>
-
-    <Card size="small">
-      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <Radio.Group
-          v-model:value="dim"
-          button-style="solid"
-          @change="handleDimChange"
-        >
-          <Radio.Button v-if="showAgentRadio" value="agent">
-            代理数据
-          </Radio.Button>
-          <Radio.Button v-if="showChannelRadio" value="channel">
-            渠道数据
-          </Radio.Button>
-        </Radio.Group>
-        <Button v-if="canExport" :loading="exportLoading" @click="handleExport">
-          导出 Excel
-        </Button>
-      </div>
 
       <Spin :spinning="loading">
         <div
@@ -549,7 +547,6 @@ onMounted(() => {
             />
           </div>
         </template>
-      </Spin>
-    </Card>
+      </Spin> 
   </div>
 </template>

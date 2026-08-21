@@ -270,11 +270,13 @@ onMounted(async () => {
       :max-range-days="30"
       show-landing
       @search="handleSearch"
+    />
+    <div
+      v-if="canAdd"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
     >
-      <Button v-if="canAdd" type="primary" @click="openForm('add')">
-        新增数据
-      </Button>
-    </PromoteDataSearch>
+      <Button type="primary" @click="openForm('add')">新增数据</Button>
+    </div>
     <Grid v-if="canViewTable">
       <template #actions="{ row }">
         <Space>

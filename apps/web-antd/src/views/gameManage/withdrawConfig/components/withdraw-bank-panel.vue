@@ -154,7 +154,7 @@ function handleBatch(isOpen: number) {
 
 <template>
   <div v-if="canViewTable">
-    <div class="mb-3 flex flex-wrap gap-2">
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
       <Button
         v-if="canBatchOpen"
         :disabled="!selectedKeys"

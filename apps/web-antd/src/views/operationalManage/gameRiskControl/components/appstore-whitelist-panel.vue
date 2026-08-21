@@ -9,7 +9,6 @@ import {
   Modal,
   Result,
   Select,
-  Space,
   Table,
 } from 'ant-design-vue';
 
@@ -146,17 +145,19 @@ onMounted(() => {
       <div class="ops-query-filters">
         <Select v-model:value="filterKey" :options="APP_STORE_KEY_OPTIONS" />
         <div class="query-filter-actions">
-          <Space>
-            <Button :loading="loading" type="primary" @click="loadList">
-              查询
-            </Button>
-            <Button @click="resetFilters">重置</Button>
-            <Button v-if="canCreate" type="primary" @click="openCreate">
-              新增
-            </Button>
-          </Space>
+          <Button :loading="loading" type="primary" @click="loadList">
+            查询
+          </Button>
+          <Button @click="resetFilters">重置</Button>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="canCreate"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button type="primary" @click="openCreate">新增</Button>
     </div>
 
     <Table

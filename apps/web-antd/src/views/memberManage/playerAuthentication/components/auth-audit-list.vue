@@ -406,24 +406,27 @@ onMounted(() => {
         </Button>
         <Button @click="handleReset">重置</Button>
         <Button :loading="exportLoading" @click="handleExport">
-导出 Excel
-</Button>
-        <Button
-          :disabled="!canBatchAction"
-          type="primary"
-          @click="openActionModal('approve')"
-        >
-          批量通过
-        </Button>
-        <Button
-          :disabled="!canBatchAction"
-          danger
-          @click="openActionModal('reject')"
-        >
-          批量拒绝
+          导出 Excel
         </Button>
       </div>
     </template>
+
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button
+        :disabled="!canBatchAction"
+        type="primary"
+        @click="openActionModal('approve')"
+      >
+        批量通过
+      </Button>
+      <Button
+        :disabled="!canBatchAction"
+        danger
+        @click="openActionModal('reject')"
+      >
+        批量拒绝
+      </Button>
+    </div>
 
     <Grid>
       <template #username="{ row }">

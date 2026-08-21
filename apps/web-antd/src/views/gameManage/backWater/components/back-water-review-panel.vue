@@ -660,7 +660,7 @@ onMounted(async () => {
 
     <div
       v-if="canBatchApprove || canBatchReject"
-      class="mb-3 flex flex-wrap gap-2"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
     >
       <Button
         v-if="canBatchApprove"
@@ -680,7 +680,6 @@ onMounted(async () => {
       </Button>
     </div>
 
-    <div class="data-grid">
       <Grid>
         <template #adminName="{ row }">
           <AgencyAccountLink
@@ -717,7 +716,6 @@ onMounted(async () => {
           </Tag>
         </template>
       </Grid>
-    </div>
 
     <Modal
       v-model:open="approveVisible"
@@ -788,10 +786,3 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
-.data-grid {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-</style>

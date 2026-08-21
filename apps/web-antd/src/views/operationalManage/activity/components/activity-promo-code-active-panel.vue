@@ -112,9 +112,11 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
-          <Button disabled type="primary">添加优惠码</Button>
         </div>
       </div>
+    </div>
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button disabled type="primary">添加优惠码</Button>
     </div>
     <Grid>
       <template #action>

@@ -795,32 +795,36 @@ onMounted(loadProgrammes);
 
     <Card
       v-if="subtype === 1 && checkPermission(11_242)"
-      class="section-card"
+      class="section-card qr-card"
       size="small"
       title="二维码配置"
     >
-      <div class="qr-grid">
-        <Form.Item label="全站 APP 二维码">
+      <div class="qr-config">
+        <div class="qr-item">
+          <span class="qr-label">全站 APP 二维码</span>
           <VoucherImageField
             v-model="sportsAppQrCode"
-            dimension-hint="请上传全站 APP 二维码"
-            :preview-height="120"
-            :preview-width="120"
+            dimension-hint="不超过 500K"
+            :preview-height="64"
+            :preview-width="64"
           />
-        </Form.Item>
-        <Form.Item label="代理 APP 二维码">
-          <Space align="start">
-            <Switch v-model:checked="agentQrEnabled" />
-            <VoucherImageField
-              v-model="agentAppQrCode"
-              :disabled="!agentQrEnabled"
-              dimension-hint="请上传代理 APP 二维码"
-              :preview-height="120"
-              :preview-width="120"
-            />
-          </Space>
-        </Form.Item>
-        <Button type="primary" @click="saveProgrammeConfig('二维码保存成功')">
+        </div>
+        <div class="qr-item">
+          <span class="qr-label">代理 APP 二维码</span>
+          <Switch v-model:checked="agentQrEnabled" size="small" />
+          <VoucherImageField
+            v-model="agentAppQrCode"
+            :disabled="!agentQrEnabled"
+            dimension-hint="不超过 500K"
+            :preview-height="64"
+            :preview-width="64"
+          />
+        </div>
+        <Button
+          type="primary"
+          size="small"
+          @click="saveProgrammeConfig('二维码保存成功')"
+        >
           保存二维码配置
         </Button>
       </div>
@@ -1075,10 +1079,35 @@ onMounted(loadProgrammes);
   justify-content: space-between;
 }
 
-.qr-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(280px, 1fr));
-  gap: 16px;
+.qr-card :deep(.ant-card-head) {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.qr-card :deep(.ant-card-head-title) {
+  padding: 8px 0;
+}
+
+.qr-card :deep(.ant-card-body) {
+  padding: 10px 12px;
+}
+
+.qr-config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  align-items: center;
+}
+
+.qr-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.qr-label {
+  color: rgb(0 0 0 / 65%);
+  white-space: nowrap;
 }
 
 .form-scroll {

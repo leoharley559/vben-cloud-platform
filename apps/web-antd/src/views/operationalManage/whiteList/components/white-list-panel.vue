@@ -537,14 +537,14 @@ onMounted(() => {
         <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
-          <Button
-            v-if="(isIp && canCreateIp) || (!isIp && canCreateUser)"
-            @click="openCreate"
-          >
-            新增
-          </Button>
         </div>
       </div>
+    </div>
+    <div
+      v-if="(isIp && canCreateIp) || (!isIp && canCreateUser)"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button @click="openCreate">新增</Button>
     </div>
     <Grid>
       <template #status="{ row }">

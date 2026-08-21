@@ -235,17 +235,19 @@ onMounted(() => {
         <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
       </div>
       <div class="query-filter-actions">
-        <Space>
-          <Button :loading="loading" type="primary" @click="handleSearch">
-            查询
-          </Button>
-          <Button @click="handleReset">重置</Button>
-          <Button v-if="canAdd" type="primary" @click="openCreate">
-            新增银行卡
-          </Button>
-        </Space>
+        <Button :loading="loading" type="primary" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
       </div>
     </template>
+
+    <div
+      v-if="canAdd"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button type="primary" @click="openCreate">新增银行卡</Button>
+    </div>
 
     <Grid>
       <template #loginAccount="{ row }">

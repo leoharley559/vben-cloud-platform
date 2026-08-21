@@ -4,7 +4,7 @@ import type { CardMultiBindListItem } from '#/types/card-multi-bind';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Input, message, Modal, Space } from 'ant-design-vue';
+import { Button, Input, message, Modal } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -159,15 +159,16 @@ onMounted(() => {
         <QueryDatetimeRangePicker v-model="filterDateRange" label="添加时间" />
       </div>
       <div class="query-filter-actions">
-        <Space>
-          <Button :loading="loading" type="primary" @click="handleSearch">
-            查询
-          </Button>
-          <Button @click="handleReset">重置</Button>
-          <Button type="primary" @click="openCreate">新增</Button>
-        </Space>
+        <Button :loading="loading" type="primary" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">重置</Button>
       </div>
     </template>
+
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button type="primary" @click="openCreate">新增</Button>
+    </div>
 
     <Grid>
       <template #actions="{ row }">

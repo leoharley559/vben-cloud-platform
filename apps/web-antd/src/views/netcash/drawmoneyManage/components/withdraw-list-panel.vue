@@ -858,36 +858,41 @@ onUnmounted(() => {
           <Button type="primary" @click="withdrawGridApi.reload()">查询</Button>
           <Button @click="resetWithdraw">重置</Button>
           <Button @click="exportWithdraw">导出 Excel</Button>
-          <Button
-            v-if="checkPermission(12032)"
-            type="primary"
-            ghost
-            @click="openAuto"
-          >
-            自动出款设置
-          </Button>
-          <span v-if="checkPermission(12749)">
-            自动刷新
-            <Switch
-              :checked="autoRefreshStatus === 1"
-              @change="(v) => toggleAutoRefresh(!!v)"
-            />
-          </span>
-          <Button
-            type="primary"
-            :disabled="selected.length === 0"
-            @click="batchManual"
-          >
-            批量人工出款
-          </Button>
-          <Button danger :disabled="selected.length === 0" @click="batchRefuse">
-            批量拒绝出款
-          </Button>
         </div>
       </div>
     </div>
 
     <SummaryCards :items="withdrawSummaryItems" />
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button
+        v-if="checkPermission(12032)"
+        type="primary"
+        ghost
+        @click="openAuto"
+      >
+        自动出款设置
+      </Button>
+      <span
+        v-if="checkPermission(12749)"
+        class="inline-flex h-8 items-center gap-2 rounded-md border px-[15px] text-sm"
+      >
+        自动刷新
+        <Switch
+          :checked="autoRefreshStatus === 1"
+          @change="(v) => toggleAutoRefresh(!!v)"
+        />
+      </span>
+      <Button
+        type="primary"
+        :disabled="selected.length === 0"
+        @click="batchManual"
+      >
+        批量人工出款
+      </Button>
+      <Button danger :disabled="selected.length === 0" @click="batchRefuse">
+        批量拒绝出款
+      </Button>
+    </div>
     <Space v-if="Number(withdrawTotal.PendingCountNum) > 0" class="mb-3">
       <Button danger type="link" @click="filterPending">查看未处理订单</Button>
     </Space>

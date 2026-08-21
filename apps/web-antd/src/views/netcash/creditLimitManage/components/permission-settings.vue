@@ -80,13 +80,13 @@ const restrictionColumns = computed(() => [
   { dataIndex: 'AccountType', key: 'AccountType', title: '代理类型' },
   ...(activeType.value === 3
     ? [
-        { key: 'range', title: '单笔代存范围（元）' },
-        {
-          dataIndex: 'DailyDepositAmount',
-          key: 'DailyDepositAmount',
-          title: '每日代存额度（元）',
-        },
-      ]
+      { key: 'range', title: '单笔代存范围（元）' },
+      {
+        dataIndex: 'DailyDepositAmount',
+        key: 'DailyDepositAmount',
+        title: '每日代存额度（元）',
+      },
+    ]
     : []),
   { dataIndex: 'CreateTime', key: 'CreateTime', title: '添加时间', width: 180 },
   { dataIndex: 'CreateAccount', key: 'CreateAccount', title: '添加人' },
@@ -121,11 +121,11 @@ async function loadSettings(type = activeType.value) {
       ...item,
       ...(type === 3
         ? {
-            DailyDepositAmount: Number(item.DailyDepositAmount || 0) / 100,
-            MaxDepositAmount: Number(item.MaxDepositAmount || 0) / 100,
-            MinDepositAmount: Number(item.MinDepositAmount || 0) / 100,
-            editing: false,
-          }
+          DailyDepositAmount: Number(item.DailyDepositAmount || 0) / 100,
+          MaxDepositAmount: Number(item.MaxDepositAmount || 0) / 100,
+          MinDepositAmount: Number(item.MinDepositAmount || 0) / 100,
+          editing: false,
+        }
         : {}),
     }));
   } catch {
@@ -298,10 +298,10 @@ async function submitAdd() {
       AgentAccounts: accounts,
       ...(activeType.value === 3
         ? {
-            DailyDepositAmount: Math.round(daily * 100),
-            MaxDepositAmount: Math.round(max * 100),
-            MinDepositAmount: Math.round(min * 100),
-          }
+          DailyDepositAmount: Math.round(daily * 100),
+          MaxDepositAmount: Math.round(max * 100),
+          MinDepositAmount: Math.round(min * 100),
+        }
         : {}),
       Hash: createRequestHash(),
       LimitType: activeType.value,
@@ -348,18 +348,18 @@ async function handleExport() {
       },
       ...(activeType.value === 3
         ? [
-            {
-              field: 'MinDepositAmount',
-              formatter: (_value: unknown, row: Row) =>
-                `${amount(row.MinDepositAmount)} ~ ${amount(row.MaxDepositAmount)}`,
-              title: '单笔代存范围（元）',
-            },
-            {
-              field: 'DailyDepositAmount',
-              formatter: amount,
-              title: '每日代存额度（元）',
-            },
-          ]
+          {
+            field: 'MinDepositAmount',
+            formatter: (_value: unknown, row: Row) =>
+              `${amount(row.MinDepositAmount)} ~ ${amount(row.MaxDepositAmount)}`,
+            title: '单笔代存范围（元）',
+          },
+          {
+            field: 'DailyDepositAmount',
+            formatter: amount,
+            title: '每日代存额度（元）',
+          },
+        ]
         : []),
       { field: 'CreateAccount', title: '添加人' },
       { field: 'CreateTime', formatter: date, title: '添加时间' },
@@ -396,140 +396,94 @@ onMounted(loadTab);
         </Radio.Button>
       </Radio.Group>
     </div>
-
-    <Card :loading="loading" size="small">
-      <p class="mb-4 text-sm text-gray-500">{{ currentTab?.note }}</p>
-      <template v-if="activeType !== 3">
-        <Space size="large" wrap>
-          <span>官方代理：<Switch
-              :checked="Number(firstSetting(activeType).ActiveOfficial) === 1"
-              :disabled="!canEdit"
-              @change="(value) => updateToggle('official', Boolean(value))"
-          /></span>
-          <span>普通代理：<Switch
-              :checked="Number(firstSetting(activeType).ActiveNormal) === 1"
-              :disabled="!canEdit"
-              @change="(value) => updateToggle('normal', Boolean(value))"
-          /></span>
-          <Space v-if="activeType === 2">
-            <span>提款流水倍数：</span>
-            <InputNumber
-              :value="Number(firstSetting(2).WithdrawWaterMultiply || 1)"
-              :disabled="!canEdit"
-              :min="1"
-              :precision="0"
-              @change="
-                (value) => (firstSetting(2).WithdrawWaterMultiply = value)
-              "
-            />
-            <Button v-if="canEdit" type="primary" @click="updateWater">
-保存
-</Button>
-          </Space>
-        </Space>
-      </template>
-
-      <Table
-        v-else
-        bordered
-        :columns="depositColumns"
-        :data-source="settings[3]"
-        :pagination="false"
-        row-key="AccountType"
-        size="small"
-      >
-        <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'AccountType'">
-{{
-            accountTypeMap[Number(record.AccountType)] || '-'
-          }}
-</template>
-          <template v-else-if="column.key === 'range'">
-            <Space v-if="record.editing">
-<InputNumber
-                v-model:value="record.MinDepositAmount"
-                :min="0"
-                :precision="2"
-/><span>~</span><InputNumber
-                v-model:value="record.MaxDepositAmount"
-                :min="0"
-                :precision="2"
-            />
-</Space>
-            <span v-else>{{ Number(record.MinDepositAmount).toFixed(2) }} ~
-              {{ Number(record.MaxDepositAmount).toFixed(2) }}</span>
-          </template>
-          <template v-else-if="column.key === 'DailyDepositAmount'">
-<InputNumber
-              v-if="record.editing"
-              v-model:value="record.DailyDepositAmount"
-              :min="0"
-              :precision="2"
-            /><span v-else>{{
-              Number(record.DailyDepositAmount).toFixed(2)
-            }}</span>
-</template>
-          <template v-else-if="column.key === 'Status'">
-<Switch
-              v-model:checked="record.Status"
-              :checked-value="1"
-              :disabled="!record.editing"
-              :un-checked-value="0"
-          />
-</template>
-          <template v-else-if="column.key === 'UpdateTime'">
-{{
-            date(record.UpdateTime)
-          }}
-</template>
-          <template v-else-if="column.key === 'actions'">
-            <Space v-if="canEdit">
-              <Button
-                v-if="!record.editing"
-                size="small"
-                type="link"
-                @click="beginDepositEdit(record)"
-                >
-编辑
-</Button>
-              <template v-else>
-<Button size="small" type="link" @click="saveDeposit(record)">
-保存
-</Button><Button
-                  size="small"
-                  type="link"
-                  @click="cancelDepositEdit(record)"
-                  >
-取消
-</Button>
-</template>
+    <div class="mb-3">
+      <Card :loading="loading" size="small">
+        <p class="mb-4 text-sm text-gray-500">{{ currentTab?.note }}</p>
+        <template v-if="activeType !== 3">
+          <Space size="large" wrap>
+            <span>官方代理：
+              <Switch :checked="Number(firstSetting(activeType).ActiveOfficial) === 1" :disabled="!canEdit"
+                @change="(value) => updateToggle('official', Boolean(value))" />
+            </span>
+            <span>普通代理：
+              <Switch :checked="Number(firstSetting(activeType).ActiveNormal) === 1" :disabled="!canEdit"
+                @change="(value) => updateToggle('normal', Boolean(value))" />
+            </span>
+            <Space v-if="activeType === 2">
+              <span>提款流水倍数：</span>
+              <InputNumber :value="Number(firstSetting(2).WithdrawWaterMultiply || 1)" :disabled="!canEdit" :min="1"
+                :precision="0" @change="
+                  (value) => (firstSetting(2).WithdrawWaterMultiply = value)
+                " />
+              <Button v-if="canEdit" type="primary" @click="updateWater">
+                保存
+              </Button>
             </Space>
-            <Tag v-else>只读</Tag>
-          </template>
+          </Space>
         </template>
-      </Table>
-    </Card>
+
+        <Table v-else bordered :columns="depositColumns" :data-source="settings[3]" :pagination="false"
+          row-key="AccountType" size="small">
+          <template #bodyCell="{ column, record }">
+            <template v-if="column.key === 'AccountType'">
+              {{
+                accountTypeMap[Number(record.AccountType)] || '-'
+              }}
+            </template>
+            <template v-else-if="column.key === 'range'">
+              <Space v-if="record.editing">
+                <InputNumber v-model:value="record.MinDepositAmount" :min="0" :precision="2" /><span>~</span>
+                <InputNumber v-model:value="record.MaxDepositAmount" :min="0" :precision="2" />
+              </Space>
+              <span v-else>{{ Number(record.MinDepositAmount).toFixed(2) }} ~
+                {{ Number(record.MaxDepositAmount).toFixed(2) }}</span>
+            </template>
+            <template v-else-if="column.key === 'DailyDepositAmount'">
+              <InputNumber v-if="record.editing" v-model:value="record.DailyDepositAmount" :min="0" :precision="2" />
+              <span v-else>{{
+                Number(record.DailyDepositAmount).toFixed(2)
+                }}</span>
+            </template>
+            <template v-else-if="column.key === 'Status'">
+              <Switch v-model:checked="record.Status" :checked-value="1" :disabled="!record.editing"
+                :un-checked-value="0" />
+            </template>
+            <template v-else-if="column.key === 'UpdateTime'">
+              {{
+                date(record.UpdateTime)
+              }}
+            </template>
+            <template v-else-if="column.key === 'actions'">
+              <Space v-if="canEdit">
+                <Button v-if="!record.editing" size="small" type="link" @click="beginDepositEdit(record)">
+                  编辑
+                </Button>
+                <template v-else>
+                  <Button size="small" type="link" @click="saveDeposit(record)">
+                    保存
+                  </Button><Button size="small" type="link" @click="cancelDepositEdit(record)">
+                    取消
+                  </Button>
+                </template>
+              </Space>
+              <Tag v-else>只读</Tag>
+            </template>
+          </template>
+        </Table>
+      </Card>
+    </div>
 
     <Card class="mt-4" size="small" title="按代理账号限制">
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
           <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="query.AgentAccount"
-              allow-clear
-              @press-enter="search"
-              placeholder="请输入代理账号"
-            >
+            <Input v-model:value="query.AgentAccount" allow-clear @press-enter="search" placeholder="请输入代理账号">
               <template #addonBefore>代理账号</template>
             </Input>
           </div>
           <Space.Compact>
             <span class="query-field-addon">代理类型</span>
-            <Select
-              v-model:value="query.AccountType"
-              :options="accountTypeOptions"
-              placeholder="请选择代理类型"
-            />
+            <Select v-model:value="query.AccountType" :options="accountTypeOptions" placeholder="请选择代理类型" />
           </Space.Compact>
           <div class="query-filter-wide">
             <QueryDatetimeRangePicker v-model="createRange" />
@@ -538,125 +492,79 @@ onMounted(loadTab);
             <Button type="primary" @click="search">查询</Button>
             <Button @click="reset">重置</Button>
             <Button v-if="canExport" :loading="exporting" @click="handleExport">
-导出 Excel
-</Button>
+              导出 Excel
+            </Button>
             <Button v-if="canAdd" type="primary" @click="openAdd">添加</Button>
-            <Popconfirm
-              v-if="canRemove"
-              title="确认批量移除选中的代理限制？"
-              @confirm="removeRows(selectedKeys)"
-              >
-<Button :disabled="selectedKeys.length === 0" danger>
-批量移除
-</Button>
-</Popconfirm>
+            <Popconfirm v-if="canRemove" title="确认批量移除选中的代理限制？" @confirm="removeRows(selectedKeys)">
+              <Button :disabled="selectedKeys.length === 0" danger>
+                批量移除
+              </Button>
+            </Popconfirm>
           </div>
         </div>
       </div>
-      <Table
-        bordered
-        :columns="restrictionColumns"
-        :data-source="rows"
-        :loading="loading"
-        :pagination="false"
-        :row-selection="
-          canRemove
+      <Table bordered :columns="restrictionColumns" :data-source="rows" :loading="loading" :pagination="false"
+        :row-selection="canRemove
             ? {
-                selectedRowKeys: selectedKeys,
-                onChange: (keys: Array<number | string>) =>
-                  (selectedKeys = keys),
-              }
+              selectedRowKeys: selectedKeys,
+              onChange: (keys: Array<number | string>) =>
+                (selectedKeys = keys),
+            }
             : undefined
-        "
-        row-key="Id"
-        :scroll="{ x: 1000 }"
-        size="small"
-      >
+          " row-key="Id" :scroll="{ x: 1000 }" size="small">
         <template #bodyCell="{ column, record, index }">
           <template v-if="column.key === 'seq'">
-{{
-            (query.Page - 1) * query.PageSize + index + 1
-          }}
-</template>
+            {{
+              (query.Page - 1) * query.PageSize + index + 1
+            }}
+          </template>
           <template v-else-if="column.key === 'AccountType'">
-{{
-            accountTypeMap[Number(record.AccountType)] || '-'
-          }}
-</template>
+            {{
+              accountTypeMap[Number(record.AccountType)] || '-'
+            }}
+          </template>
           <template v-else-if="column.key === 'range'">
-{{ amount(record.MinDepositAmount) }} ~
+            {{ amount(record.MinDepositAmount) }} ~
             {{ amount(record.MaxDepositAmount) }}
-</template>
+          </template>
           <template v-else-if="column.key === 'DailyDepositAmount'">
-{{
-            amount(record.DailyDepositAmount)
-          }}
-</template>
+            {{
+              amount(record.DailyDepositAmount)
+            }}
+          </template>
           <template v-else-if="column.key === 'CreateTime'">
-{{
-            date(record.CreateTime)
-          }}
-</template>
+            {{
+              date(record.CreateTime)
+            }}
+          </template>
           <template v-else-if="column.key === 'actions'">
-<Popconfirm
-              v-if="canRemove"
-              title="确认移除此代理限制？"
-              @confirm="removeRows([record.Id])"
-              >
-<Button danger size="small" type="link">移除</Button>
-</Popconfirm>
-</template>
+            <Popconfirm v-if="canRemove" title="确认移除此代理限制？" @confirm="removeRows([record.Id])">
+              <Button danger size="small" type="link">移除</Button>
+            </Popconfirm>
+          </template>
         </template>
       </Table>
-      <Pagination
-        v-if="total"
-        v-model:current="query.Page"
-        v-model:page-size="query.PageSize"
-        :page-size-options="['10', '20', '50', '100']"
-        :total="total"
-        class="mt-4 text-right"
-        show-size-changer
-        @change="loadRestrictions"
-        @show-size-change="loadRestrictions"
-      />
+      <Pagination v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize"
+        :page-size-options="['10', '20', '50', '100']" :total="total" class="mt-4 text-right" show-size-changer
+        @change="loadRestrictions" @show-size-change="loadRestrictions" />
     </Card>
   </div>
 
-  <Modal
-    v-model:open="addOpen"
-    :confirm-loading="addSubmitting"
-    title="添加代理账号限制"
-    @ok="submitAdd"
-  >
+  <Modal v-model:open="addOpen" :confirm-loading="addSubmitting" title="添加代理账号限制" @ok="submitAdd">
     <Form layout="vertical">
       <Form.Item label="代理账号（多个用英文逗号分隔）" required>
-<Input.TextArea v-model:value="addForm.AgentAccounts" :rows="4" />
-</Form.Item>
+        <Input.TextArea v-model:value="addForm.AgentAccounts" :rows="4" />
+      </Form.Item>
       <template v-if="activeType === 3">
         <Form.Item label="最小单笔代存金额（元）" required>
-<InputNumber
-            v-model:value="addForm.MinDepositAmount"
-            :min="0"
-            :precision="2"
-            class="w-full"
-        />
-</Form.Item>
+          <InputNumber v-model:value="addForm.MinDepositAmount" :min="0" :precision="2" class="w-full" />
+        </Form.Item>
         <Form.Item label="最大单笔代存金额（元）" required>
-<InputNumber
-            v-model:value="addForm.MaxDepositAmount"
-            :min="0"
-            :precision="2"
-            class="w-full"
-        />
-</Form.Item>
+          <InputNumber v-model:value="addForm.MaxDepositAmount" :min="0" :precision="2" class="w-full" />
+        </Form.Item>
         <Form.Item label="每日代存额度（元）" required>
-<InputNumber
-            v-model:value="addForm.DailyDepositAmount"
-            :min="0"
-            :precision="2"
-            class="w-full"
-        />
-</Form.Item>
+          <InputNumber v-model:value="addForm.DailyDepositAmount" :min="0" :precision="2" class="w-full" />
+        </Form.Item>
       </template>
     </Form>
   </Modal>

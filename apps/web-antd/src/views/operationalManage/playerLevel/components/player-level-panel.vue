@@ -291,11 +291,15 @@ onMounted(() => {
       <div class="query-filter-actions">
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
-        <Button v-if="canAdd" type="primary" ghost @click="openCreate">
-          新增层级
-        </Button>
       </div>
     </template>
+
+    <div
+      v-if="canAdd"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button type="primary" ghost @click="openCreate">新增层级</Button>
+    </div>
 
     <Grid>
       <template #levelName="{ row }">

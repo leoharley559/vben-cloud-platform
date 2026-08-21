@@ -408,11 +408,15 @@ void loadList();
               查询
             </Button>
             <Button @click="handleReset">重置</Button>
-            <Button v-if="canCreate" type="primary" ghost @click="openCreate">
-              新增
-            </Button>
           </div>
         </div>
+      </div>
+
+      <div
+        v-if="canCreate"
+        class="mb-2 flex flex-wrap items-center justify-end gap-2"
+      >
+        <Button type="primary" ghost @click="openCreate">新增</Button>
       </div>
 
       <div class="table-card">

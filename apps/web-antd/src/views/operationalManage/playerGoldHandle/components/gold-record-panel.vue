@@ -132,12 +132,12 @@ const summaryItems = computed(() => [
   {
     label: '申请金额总计',
     value: formatAmountFromCent(totalAmount.value),
-    valueClass: 'font-medium text-gray-900',
+    valueClass: 'font-medium',
   },
   {
     label: isTake.value ? '实际扣除金额总计' : '实际金额总计',
     value: formatAmountFromCent(totalRealAmount.value),
-    valueClass: 'font-medium text-gray-900',
+    valueClass: 'font-medium',
   },
 ]);
 

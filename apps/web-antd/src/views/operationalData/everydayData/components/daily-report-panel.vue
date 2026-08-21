@@ -405,6 +405,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
+    <div class="mb-3">
     <Card v-if="canChart" size="small" title="趋势图">
       <Spin :spinning="historyLoading">
         <DailyReportLineChart
@@ -414,13 +415,14 @@ onMounted(() => {
         />
       </Spin>
     </Card>
-
+  </div>
+  <div class="mb-3">
     <Card v-if="canRealtime" size="small" title="实时数据">
       <Spin :spinning="realTimeLoading">
         <DailyReportTable :list="realTimeData" />
       </Spin>
     </Card>
-
+</div>
     <Card v-if="canHistory" size="small" title="历史数据">
       <Spin :spinning="historyLoading">
         <div class="mb-3 flex items-center justify-between gap-3">

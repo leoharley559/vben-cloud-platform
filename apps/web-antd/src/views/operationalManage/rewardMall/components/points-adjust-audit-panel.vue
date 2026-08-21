@@ -444,10 +444,13 @@ onMounted(() => {
           <Button :loading="exportLoading" @click="handleExport">
             导出 Excel
           </Button>
-          <Button type="primary" @click="handleBatchApprove">批量通过</Button>
-          <Button danger @click="openReject()">批量拒绝</Button>
         </div>
       </div>
+    </div>
+
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button type="primary" @click="handleBatchApprove">批量通过</Button>
+      <Button danger @click="openReject()">批量拒绝</Button>
     </div>
 
     <Grid>

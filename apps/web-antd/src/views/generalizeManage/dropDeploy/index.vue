@@ -162,11 +162,15 @@ onMounted(async () => {
           </div>
           <div class="query-filter-actions query-filter-actions-single">
             <Button type="primary" @click="gridApi.reload()">查询</Button>
-            <Button v-if="canCreate" type="primary" @click="handleCreate">
-              新增落地
-            </Button>
           </div>
         </div>
+      </div>
+
+      <div
+        v-if="canCreate"
+        class="mb-2 flex flex-wrap items-center justify-end gap-2"
+      >
+        <Button type="primary" @click="handleCreate">新增落地</Button>
       </div>
 
       <Grid v-if="canViewList">

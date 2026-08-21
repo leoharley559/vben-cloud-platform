@@ -363,19 +363,19 @@ onMounted(() => {
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
-          <Space>
-            <Button type="primary" @click="gridApi.reload()">查询</Button>
-            <Button @click="resetFilters">重置</Button>
-            <Button v-if="canWrite" type="primary" @click="openCreate">
-新增
-</Button>
-            <Button v-if="canWrite" @click="importOpen = true">批量导入</Button>
-            <Button v-if="canWrite" danger @click="handleBatchDelete">
-              批量删除
-            </Button>
-          </Space>
+          <Button type="primary" @click="gridApi.reload()">查询</Button>
+          <Button @click="resetFilters">重置</Button>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="canWrite"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button type="primary" @click="openCreate">新增</Button>
+      <Button @click="importOpen = true">批量导入</Button>
+      <Button danger @click="handleBatchDelete">批量删除</Button>
     </div>
 
     <Grid>

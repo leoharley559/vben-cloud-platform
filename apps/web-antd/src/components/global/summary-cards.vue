@@ -21,15 +21,17 @@ defineProps<{ items: SummaryCardItem[] }>();
     <div
       v-for="item in items"
       :key="item.label"
-      class="rounded border p-2"
+      class="ops-summary-card rounded border p-2"
       :class="[
         item.cardClass,
         item.onClick ? 'cursor-pointer hover:border-primary' : '',
       ]"
       @click="item.onClick?.()"
     >
-      {{ item.label }}：
-      <span :class="item.valueClass">{{ item.value }}</span>
+      <span class="ops-summary-label">{{ item.label }}：</span>
+      <span class="ops-summary-value" :class="item.valueClass">{{
+        item.value
+      }}</span>
     </div>
   </div>
 </template>

@@ -354,27 +354,26 @@ async function handleSort(
         <div class="query-filter-actions">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button @click="handleReset">重置</Button>
-          <Space wrap>
-            <span
-              v-if="canConfig"
-              class="inline-flex items-center gap-2 text-sm"
-            >
-              积分商城开关
-              <Switch
-                :checked="globalActive"
-                :loading="globalLoading"
-                @change="handleToggleGlobal"
-              />
-            </span>
-            <Button v-if="canConfig" @click="configOpen = true">
-全局设置
-</Button>
-            <Button @click="tagManageOpen = true">商品页签</Button>
-            <Button @click="taskManageOpen = true">积分任务</Button>
-            <Button type="primary" @click="openAdd">添加商品</Button>
-          </Space>
         </div>
       </div>
+    </div>
+
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <span
+        v-if="canConfig"
+        class="inline-flex h-8 items-center gap-2 rounded-md border px-[15px] text-sm"
+      >
+        积分商城开关
+        <Switch
+          :checked="globalActive"
+          :loading="globalLoading"
+          @change="handleToggleGlobal"
+        />
+      </span>
+      <Button v-if="canConfig" @click="configOpen = true">全局设置</Button>
+      <Button @click="tagManageOpen = true">商品页签</Button>
+      <Button @click="taskManageOpen = true">积分任务</Button>
+      <Button type="primary" @click="openAdd">添加商品</Button>
     </div>
 
     <Grid>

@@ -103,14 +103,7 @@ function reset() {
       </div>
     </div>
     <SummaryCards :items="summaryItems" />
-    <div class="data-grid"><Grid /></div>
+    <Grid />
   </div>
 </template>
 
-<style scoped>
-.data-grid {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: 10px;
-}
-</style>

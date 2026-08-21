@@ -467,12 +467,17 @@ onMounted(() => {
         <div class="query-filter-actions">
           <Button type="primary" @click="searchTeams">查询</Button>
           <Button @click="resetTeams">重置</Button>
-          <Button v-if="canTransfer" @click="openTransfer">转移副线</Button>
-          <Button v-if="canCreate" type="primary" @click="openCreateModal">
-新增团队
-</Button>
         </div>
       </div>
+    </div>
+    <div
+      v-if="canTransfer || canCreate"
+      class="mb-2 flex flex-wrap items-center justify-end gap-2"
+    >
+      <Button v-if="canTransfer" @click="openTransfer">转移副线</Button>
+      <Button v-if="canCreate" type="primary" @click="openCreateModal">
+        新增团队
+      </Button>
     </div>
     <Table
       bordered

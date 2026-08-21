@@ -133,11 +133,9 @@ onMounted(() => {
 
 <template>
   <OpsListPanel v-if="canView">
-    <template #filters>
-      <div class="ml-auto">
-        <Button type="primary" @click="openCreate">新增账号</Button>
-      </div>
-    </template>
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-2">
+      <Button type="primary" @click="openCreate">新增账号</Button>
+    </div>
 
     <Table
       bordered

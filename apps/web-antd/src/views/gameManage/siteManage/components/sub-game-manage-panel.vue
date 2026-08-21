@@ -379,16 +379,14 @@ function handleReset() {
       </div>
     </div>
 
-    <div class="mb-3 flex items-center justify-between gap-3">
-      <Space wrap>
-        <Button v-if="canEdit" type="primary" @click="openBatch(1)">
-          批量编辑标签
-        </Button>
-        <Button v-if="canEdit" @click="openBatch(2)">批量编辑开关</Button>
-      </Space>
-      <span class="text-xs text-gray-400">
+    <div class="mb-2 flex flex-wrap items-center justify-end gap-3">
+      <span class="mr-auto text-xs text-gray-400">
         主场馆行不可关闭或上移；批量操作前请先勾选游戏
       </span>
+      <Button v-if="canEdit" type="primary" @click="openBatch(1)">
+        批量编辑标签
+      </Button>
+      <Button v-if="canEdit" @click="openBatch(2)">批量编辑开关</Button>
     </div>
 
     <div class="game-grid">
