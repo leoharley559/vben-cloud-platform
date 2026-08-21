@@ -27,6 +27,7 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const props = defineProps<{
   adminId: string;
@@ -508,6 +509,7 @@ onMounted(load);
           pageSize: pager.pageSize,
           total: pager.total,
           showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
         }"
         :row-key="(row) => String(row.Id ?? row.OrderId ?? '')"
         :scroll="{ x: activeTab === 'commission' ? 2500 : 1100 }"

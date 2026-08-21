@@ -7,6 +7,7 @@ import { message, Pagination, Table } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchAccountLoginLogListApi } from '#/api/core/account-login';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const loading = ref(false);
 const tableData = ref<AccountLoginLogItem[]>([]);
@@ -99,6 +100,7 @@ onMounted(() => {
       <Pagination
         :current="page"
         :page-size="pageSize"
+        :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
         :total="total"
         show-size-changer
         @change="handlePageChange"

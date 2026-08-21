@@ -38,6 +38,7 @@ import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 import ChannelReportTable from './channel-report-table.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'ChannelReportPanel' });
 
@@ -543,8 +544,9 @@ onMounted(() => {
               :page-size="pageSize"
               :total="total"
               show-size-changer
+              :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
               @change="handlePageChange"
-            />
+      />
           </div>
         </template>
       </Spin> 

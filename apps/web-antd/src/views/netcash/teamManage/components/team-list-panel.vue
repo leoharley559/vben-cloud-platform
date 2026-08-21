@@ -32,6 +32,7 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatNetcashDateTime } from '#/utils/netcash';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'TeamListPanel' });
 type Row = Record<string, unknown>;
@@ -572,8 +573,9 @@ onMounted(() => {
       class="mt-4 text-right"
       :show-size-changer="true"
       :total="teamTotal"
+      :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
       @change="loadTeams"
-    />
+      />
 
     <Modal
       v-model:open="teamModalOpen"

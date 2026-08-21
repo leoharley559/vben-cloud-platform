@@ -18,6 +18,7 @@ import SummaryCards from '#/components/global/summary-cards.vue';
 import { CREDIT_APPROVE_STATUS_MAP } from '#/utils/netcash';
 
 import { accountTypeMap, accountTypeOptions, amount, date, rangeParams, transferTypeMap, transferTypeOptions } from './shared';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const loading = ref(false);
 const rows = ref<Row[]>([]);
@@ -236,7 +237,7 @@ onMounted(load);
       v-if="total"
       v-model:current="query.Page"
       v-model:page-size="query.PageSize"
-      :page-size-options="['10', '20', '50', '100']"
+      :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
       :total="total"
       class="mt-4 text-right"
       show-size-changer

@@ -21,6 +21,7 @@ import { exportRowsToXlsx } from '#/views/dataClose/shared/report-utils';
 import { num, ratioText, SECTION_DAY_COLUMNS } from '../utils';
 import DetailsPanel from './details-panel.vue';
 import KeepQueryBar from './keep-query-bar.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'KeepSectionRetentionPanel' });
 
@@ -170,8 +171,9 @@ onMounted(() => {
           v-model:page-size="page.pageSize"
           :total="total"
           show-size-changer
+          :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
           @change="loadList"
-        />
+      />
       </div>
     </div>
     <DetailsPanel

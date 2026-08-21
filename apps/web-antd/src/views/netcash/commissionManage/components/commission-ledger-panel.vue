@@ -44,6 +44,7 @@ import { useGameConfig } from '#/composables/use-game-config';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatVenueName } from '#/utils/game-config';
 
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import {
   cent,
   currentMonth,
@@ -1241,6 +1242,7 @@ onMounted(async () => {
           v-model:page-size="query.PageSize"
           :show-total="(value) => `共 ${value} 条`"
           :total="totalCount"
+          :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
           show-size-changer
           @change="load"
         />

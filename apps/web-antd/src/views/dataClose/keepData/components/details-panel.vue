@@ -44,6 +44,7 @@ import {
 } from '#/views/dataClose/shared/report-utils';
 
 import { keepDetailsSubTitle, keepDetailsTitle } from '../utils';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'KeepDetailsPanel' });
 
@@ -505,6 +506,7 @@ onMounted(() => {
         v-model:page-size="page.pageSize"
         :total="total"
         show-size-changer
+        :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
         @change="loadList"
       />
     </div>

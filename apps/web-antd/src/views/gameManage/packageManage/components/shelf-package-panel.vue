@@ -46,6 +46,7 @@ import { createRequestHash } from '#/utils/crypto';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 import ShelfAnalyticsModal from './shelf-analytics-modal.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'ShelfPackagePanel' });
 
@@ -428,6 +429,7 @@ void loadList();
             current: page,
             pageSize,
             showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
             total,
           }"
           row-key="AppPackageConfigId"

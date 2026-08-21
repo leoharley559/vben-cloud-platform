@@ -21,6 +21,7 @@ import {
 import { queryPlayerByAccountApi } from '#/api/operationManage/player';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'MobileVerifyWhitelistModal' });
 
@@ -270,6 +271,7 @@ function handleTableChange(pagination: {
         current: page,
         pageSize,
         showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
         total,
       }"
       :row-key="(row) => String(row.PlayerId)"

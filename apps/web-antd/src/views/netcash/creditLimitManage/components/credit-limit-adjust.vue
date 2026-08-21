@@ -28,6 +28,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
 import { accountTypeMap, accountTypeOptions, amount, date, exportRows, rangeParams, unwrapCreditLimitItem } from './shared';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const { checkPermission } = useCloudPermission();
 const loading = ref(false);
@@ -430,7 +431,7 @@ onMounted(load);
       v-if="total"
       v-model:current="query.Page"
       v-model:page-size="query.PageSize"
-      :page-size-options="['10', '20', '50', '100']"
+      :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
       :total="total"
       class="mt-4 text-right"
       show-size-changer

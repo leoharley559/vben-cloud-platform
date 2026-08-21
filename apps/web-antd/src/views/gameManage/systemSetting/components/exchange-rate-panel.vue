@@ -22,6 +22,7 @@ import {
   updateExchangeRateApi,
 } from '#/api/gameManage/system-setting';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'ExchangeRatePanel' });
 
@@ -155,6 +156,7 @@ onMounted(() => {
         current: pager.Page,
         pageSize: pager.PageSize,
         showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
         total,
       }"
       :row-key="(row) => String(row.Id)"

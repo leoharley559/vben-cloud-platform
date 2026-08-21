@@ -20,6 +20,7 @@ import {
 } from '#/api/operationManage/player';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'PlayerRemarkList' });
 
@@ -192,6 +193,7 @@ onMounted(() => {
         current: page,
         pageSize,
         showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
         total,
       }"
       :row-key="(record) => String(record.Id ?? record.CreateTime)"

@@ -28,6 +28,7 @@ import { formatAmountFromCent } from '#/utils/format-amount';
 import { applyGroupDrillStyles, buildParentTreeState, calcGroupDailyRows, defaultGroupDailyRange, defaultGroupMonthlyRange, normalizeGroupTree } from '#/utils/group-daily';
 
 import GroupDailyTable from './group-daily-table.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'GroupDailyPanel' });
 
@@ -441,8 +442,9 @@ onMounted(async () => {
             :page-size="pageSize"
             :total="total"
             show-size-changer
+            :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
             @change="handlePageChange"
-          />
+      />
         </div>
       </Spin>
     </Card>

@@ -22,6 +22,7 @@ import {
   updateWithdrawCustomTipApi,
 } from '#/api/gameManage/withdraw-rules';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 interface LangTip {
   Content: string;
@@ -264,6 +265,8 @@ void load();
       v-model:current="query.Page"
       v-model:page-size="query.PageSize"
       class="mt-3 text-right"
+      :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
+      show-size-changer
       :total="total"
       @change="load"
     />

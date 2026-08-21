@@ -37,6 +37,7 @@ import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 import { formatPlayerStatus } from '#/utils/player-status';
 import { PLAYER_STATISTICS_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import {
   arrayToCsvParam,
   copyTableText,
@@ -1198,9 +1199,10 @@ onMounted(() => {
             :total="total"
             show-size-changer
             show-quick-jumper
+            :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
             @change="handlePageChange"
             @show-size-change="handlePageChange"
-          />
+            />
         </div>
       </OpsListPanel>
     </Card>

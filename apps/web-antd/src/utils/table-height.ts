@@ -1,8 +1,16 @@
 /** 列表行高（与当前页面实测一致） */
 export const TABLE_ROW_HEIGHT = 40;
 
-/** 默认每页条数 */
+/** 默认每页条数（对齐游戏记录 / Vxe 全局分页） */
 export const TABLE_DEFAULT_PAGE_SIZE = 20;
+
+/**
+ * 列表页容量选项（对齐 use-vxe-grid 全局 pagerConfig.pageSizes）。
+ * Vxe 用数字数组；Ant Pagination / Table 用字符串数组。
+ */
+export const TABLE_PAGE_SIZES = [10, 20, 30, 50, 100, 200] as const;
+
+export const TABLE_ANT_PAGE_SIZE_OPTIONS = TABLE_PAGE_SIZES.map(String);
 
 /** 列表高度先按 700 试看（默认 20 条） */
 export const TABLE_LIST_MIN_HEIGHT = 700;

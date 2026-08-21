@@ -165,10 +165,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       : []),
   ],
   height: 'auto',
-  pagerConfig: {
-    pageSize: 20,
-    pageSizes: [10, 20, 50, 100],
-  },
+  pagerConfig: { pageSize: 20 },
   proxyConfig: {
     ajax: {
       query: async ({ page }) => {

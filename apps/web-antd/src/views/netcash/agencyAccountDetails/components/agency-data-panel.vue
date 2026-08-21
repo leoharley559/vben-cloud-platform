@@ -26,6 +26,7 @@ import {
 } from '#/utils/netcash';
 
 import AgencyFanDianModal from '../../agency/components/agency-fandian-modal.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const props = defineProps<{ adminId: string }>();
 const route = useRoute();
@@ -657,6 +658,7 @@ watch(
           pageSize: memberPager.pageSize,
           total: memberPager.total,
           showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
         }"
         :row-key="(row) => String(row.PlayerId || row.LoginAccount)"
         :scroll="{ x: 1200 }"
@@ -792,6 +794,7 @@ watch(
           pageSize: agentPager.pageSize,
           total: agentPager.total,
           showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
         }"
         :row-key="(row) => String(row.AdminId || row.Username)"
         :scroll="{ x: 1200 }"

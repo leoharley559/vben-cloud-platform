@@ -33,6 +33,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
 import { accountTypeMap, accountTypeOptions, amount, date, exportRows, rangeParams } from './shared';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const { checkPermission } = useCloudPermission();
 const canEdit = computed(() => checkPermission(11_785));
@@ -545,7 +546,7 @@ onMounted(loadTab);
         </template>
       </Table>
       <Pagination v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize"
-        :page-size-options="['10', '20', '50', '100']" :total="total" class="mt-4 text-right" show-size-changer
+        :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS" :total="total" class="mt-4 text-right" show-size-changer
         @change="loadRestrictions" @show-size-change="loadRestrictions" />
     </Card>
   </div>

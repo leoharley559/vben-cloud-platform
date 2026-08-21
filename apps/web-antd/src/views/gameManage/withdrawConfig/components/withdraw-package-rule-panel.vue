@@ -21,6 +21,7 @@ import {
 } from '#/api/gameManage/withdraw-rules';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const props = defineProps<{ mode: 'forced' | 'wallet' }>();
 
@@ -178,6 +179,8 @@ onMounted(load);
       v-model:current="query.Page"
       v-model:page-size="query.PageSize"
       class="mt-3 text-right"
+      :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
+      show-size-changer
       :total="total"
       @change="load"
     />

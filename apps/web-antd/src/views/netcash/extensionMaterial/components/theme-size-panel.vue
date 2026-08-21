@@ -23,6 +23,7 @@ import {
   updatePromotionConfApi,
 } from '#/api/netcash/extension-material';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'ExtensionMaterialThemeSizePanel' });
 
@@ -195,7 +196,8 @@ onMounted(() => Promise.all([load(2), load(1)]));
         :page-size="themeQuery.PageSize"
         :show-total="(value: number) => `共 ${value} 条`"
         :total="themeTotal"
-        show-size-changer
+        :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
+          show-size-changer
         @change="(page, size) => changePage(2, page, size)"
         @show-size-change="(page, size) => changePage(2, page, size)"
       />
@@ -252,7 +254,8 @@ onMounted(() => Promise.all([load(2), load(1)]));
         :page-size="sizeQuery.PageSize"
         :show-total="(value: number) => `共 ${value} 条`"
         :total="sizeTotal"
-        show-size-changer
+        :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
+          show-size-changer
         @change="(page, size) => changePage(1, page, size)"
         @show-size-change="(page, size) => changePage(1, page, size)"
       />

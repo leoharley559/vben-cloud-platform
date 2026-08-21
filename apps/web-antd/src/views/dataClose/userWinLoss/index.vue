@@ -34,6 +34,7 @@ import { formatVenueName } from '#/utils/game-config';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import {
   arrayToCsvParam,
   resolveReportRange,
@@ -584,9 +585,10 @@ onMounted(async () => {
           :total="total"
           show-size-changer
           show-quick-jumper
+          :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
           @change="handlePageChange"
           @show-size-change="handlePageChange"
-        />
+            />
       </div>
     </Card>
   </Page>

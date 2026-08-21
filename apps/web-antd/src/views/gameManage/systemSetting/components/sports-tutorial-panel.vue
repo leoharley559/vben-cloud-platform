@@ -28,6 +28,7 @@ import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { getServiceImageUrl } from '#/utils/media';
 
 import SystemImageField from './system-image-field.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'SportsTutorialPanel' });
 
@@ -222,6 +223,7 @@ onMounted(loadData);
         current: pager.Page,
         pageSize: pager.PageSize,
         showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
         total,
       }"
       :row-key="(row) => String(row.Id)"

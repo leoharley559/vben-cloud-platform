@@ -189,11 +189,7 @@ function buildQuery(page?: { currentPage: number; pageSize: number }) {
 const gridOptions: VxeTableGridOptions<AgentDomainRow> = {
   columns,
   height: 'auto',
-  pagerConfig: {
-    currentPage: 1,
-    pageSize: 20,
-    pageSizes: [10, 20, 50, 100],
-  },
+  pagerConfig: { pageSize: 20 },
   proxyConfig: {
     autoLoad: checkPermission(10_550),
     ajax: {

@@ -294,11 +294,7 @@ const gridOptions: VxeTableGridOptions<ChannelRow> = {
   },
   columns,
   height: 'auto',
-  pagerConfig: {
-    currentPage: 1,
-    pageSize: 20,
-    pageSizes: [10, 20, 50, 100],
-  },
+  pagerConfig: { pageSize: 20 },
   proxyConfig: {
     autoLoad: canList.value,
     ajax: {

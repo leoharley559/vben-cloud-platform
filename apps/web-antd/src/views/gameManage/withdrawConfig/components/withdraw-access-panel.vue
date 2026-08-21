@@ -35,6 +35,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import { VISIT_STATISTIC_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import {
   formatVisitDurationSeconds,
   formatVisitSource,
@@ -510,8 +511,9 @@ onMounted(() => {
                 :total="detailTotal"
                 show-quick-jumper
                 show-size-changer
+                :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
                 @change="changeDetailPage"
-              />
+      />
             </div>
           </Spin>
         </OpsListPanel>

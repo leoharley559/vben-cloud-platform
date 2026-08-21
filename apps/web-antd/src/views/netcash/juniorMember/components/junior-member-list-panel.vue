@@ -41,6 +41,7 @@ import { formatNetcashDateTime } from '#/utils/netcash';
 import { buildPlayerDetailPath } from '#/utils/player-detail-route';
 
 import { mapPackageOptions, writeWorkbook } from '../shared';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'JuniorMemberListPanel' });
 
@@ -648,6 +649,7 @@ onMounted(async () => {
         current: page,
         pageSize,
         showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
         total,
       }"
       row-key="PlayerId"

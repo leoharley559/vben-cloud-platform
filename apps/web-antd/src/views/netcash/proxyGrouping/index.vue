@@ -35,6 +35,7 @@ import {
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatNetcashDateTime } from '#/utils/netcash';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'ProxyGrouping' });
 
@@ -737,7 +738,7 @@ onMounted(async () => {
           <Pagination
             :current="query.Page"
             :page-size="query.PageSize"
-            :page-size-options="['10', '20', '50', '100']"
+            :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
             :show-total="(value: number) => `共 ${value} 条`"
             :total="total"
             show-size-changer

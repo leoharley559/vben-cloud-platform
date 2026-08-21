@@ -13,6 +13,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatNetcashDateTime } from '#/utils/netcash';
 
 import { mapPackageOptions, writeWorkbook } from '../shared';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'JuniorChangeRecordPanel' });
 
@@ -172,6 +173,7 @@ onMounted(() => {
       current: recordPage,
       pageSize: recordPageSize,
       showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
       total: recordTotal,
     }"
     row-key="Id"

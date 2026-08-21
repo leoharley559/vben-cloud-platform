@@ -15,6 +15,7 @@ import {
   fetchSubGamePlayersApi,
 } from '#/api/dataClose/game-statement';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import {
   copyTableText,
   exportRowsToXlsx,
@@ -167,7 +168,7 @@ watch(
       </template>
     </Table>
     <div class="mt-3 flex justify-end">
-      <Pagination
+      <Pagination :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
         v-model:current="pager.Page"
         v-model:page-size="pager.PageSize"
         :total="total"

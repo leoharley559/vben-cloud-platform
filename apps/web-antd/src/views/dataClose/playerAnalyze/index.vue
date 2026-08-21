@@ -39,6 +39,7 @@ import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 import { formatPlayerStatus } from '#/utils/player-status';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import {
   arrayToCsvParam,
   calcChargeExchangeRatio,
@@ -667,6 +668,7 @@ onMounted(() => {
             <Pagination
               :current="page.current"
               :page-size="page.pageSize"
+              :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
               :total="total"
               show-size-changer
               show-quick-jumper

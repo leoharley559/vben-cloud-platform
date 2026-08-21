@@ -40,6 +40,7 @@ import {
 import { exportRowsToCsv } from '#/utils/export-csv';
 
 import DailyReportTable from './daily-report-table.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'DimensionDailyPanel' });
 
@@ -462,8 +463,9 @@ onMounted(() => {
             :page-size="pageSize"
             :total="total"
             show-size-changer
+            :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
             @change="handlePageChange"
-          />
+      />
         </div>
       </Spin>
     </Card>

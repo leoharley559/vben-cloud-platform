@@ -23,6 +23,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'WithdrawChannelDataPanel' });
 
@@ -278,8 +279,9 @@ onMounted(() => {
           :total="total"
           show-size-changer
           show-quick-jumper
+          :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
           @change="handlePageChange"
-        />
+      />
       </div>
     </Spin>
   </OpsListPanel>

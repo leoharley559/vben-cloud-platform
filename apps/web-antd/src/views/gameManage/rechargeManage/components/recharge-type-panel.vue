@@ -43,6 +43,7 @@ import PrivateCardPanel from './private-card-panel.vue';
 import UsdtRechargePanel from './usdt-recharge-panel.vue';
 import VipDealerPanel from './vip-dealer-panel.vue';
 import VoucherPaymentPanel from './voucher-payment-panel.vue';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'RechargeTypePanel' });
 
@@ -726,7 +727,8 @@ onMounted(() => void load(true));
               v-model:current="page"
               v-model:page-size="pageSize"
               :show-total="(value) => `共 ${value} 条`"
-              show-size-changer
+              :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
+          show-size-changer
               :total="total"
               @change="load(false)"
               @show-size-change="

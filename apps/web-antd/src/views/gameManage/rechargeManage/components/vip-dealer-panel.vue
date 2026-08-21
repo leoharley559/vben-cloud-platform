@@ -59,6 +59,7 @@ import {
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getServiceImageUrl } from '#/utils/media';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'VipDealerPanel' });
 
@@ -934,7 +935,7 @@ onMounted(() => {
       <Pagination
         v-model:current="query.Page"
         v-model:page-size="query.PageSize"
-        :page-size-options="['10', '20', '50', '100']"
+        :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
         :show-total="(value: number) => `共 ${value} 条`"
         :total="total"
         show-size-changer

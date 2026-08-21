@@ -16,6 +16,7 @@ import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const props = defineProps<{ adminId: string }>();
 const { checkPermission } = useCloudPermission();
@@ -241,6 +242,7 @@ onMounted(load);
         pageSize: pager.pageSize,
         total: pager.total,
         showSizeChanger: true,
+        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
       }"
       :row-key="(row) => String(row.Id ?? row.OrderId ?? '')"
       :scroll="{ x: 1450 }"

@@ -35,6 +35,7 @@ import {
 } from '#/api/gameManage/withdraw-rules';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const { packageOptions } = useOperationOptions();
 const loading = ref(false);
@@ -648,6 +649,8 @@ onMounted(loadMain);
       v-model:current="whitelistQuery.Page"
       v-model:page-size="whitelistQuery.PageSize"
       class="mt-3 text-right"
+      :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
+      show-size-changer
       :total="whitelistTotal"
       @change="loadWhitelist"
     />

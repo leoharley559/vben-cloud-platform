@@ -27,6 +27,7 @@ import {
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
@@ -261,6 +262,8 @@ onMounted(loadConfig);
       v-model:current="ignoreQuery.Page"
       v-model:page-size="ignoreQuery.PageSize"
       class="mt-3 text-right"
+      :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
+      show-size-changer
       :total="ignoreTotal"
       @change="loadIgnore"
     />

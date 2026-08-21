@@ -40,6 +40,7 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'ExtensionMaterialList' });
 
@@ -644,7 +645,7 @@ onMounted(async () => {
       <Pagination
         :current="query.Page"
         :page-size="query.PageSize"
-        :page-size-options="['10', '20', '50', '100']"
+        :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
         :show-total="(value: number) => `共 ${value} 条`"
         :total="total"
         show-size-changer
