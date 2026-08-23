@@ -21,6 +21,7 @@ export interface AgentFanDianGrade {
 export type AgentFanDianConfig = Record<string, AgentFanDianGrade>;
 
 export interface AgencyListItem {
+  [key: string]: unknown;
   AccountLevel?: number;
   AccountType?: number;
   AdminId?: number | string;
@@ -39,8 +40,8 @@ export interface AgencyListItem {
   LastLoginIp?: string;
   LowerAgent?: number;
   MainAdminId?: number | string;
-  MainUsername?: string;
   MaintainerName?: string;
+  MainUsername?: string;
   Members?: number;
   MobileNumber?: string;
   Name?: string;
@@ -61,7 +62,6 @@ export interface AgencyListItem {
   TeamName?: string;
   Type?: number;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface AgencyListQuery {
@@ -71,11 +71,11 @@ export interface AgencyListQuery {
   CountEndTime?: number | string;
   DeveloperName?: string;
   EndTime?: number | string;
+  IsExp?: boolean;
   LastLoginDevice?: string;
   LastLoginIP?: string;
-  IsExp?: boolean;
-  MainUsername?: string;
   MaintainerName?: string;
+  MainUsername?: string;
   MobileNumber?: string;
   Page: number;
   PageSize: number;
@@ -92,12 +92,13 @@ export interface AgencyListQuery {
 }
 
 export interface AgencyRegisterItem {
+  [key: string]: unknown;
   Approve?: number;
   ApproveName?: string;
   CloneChannelPlanName?: string;
   CreateTime?: number | string;
-  DevicePlatform?: string;
   DeveloperName?: string;
+  DevicePlatform?: string;
   Email?: string;
   Id?: number | string;
   Mobile?: string;
@@ -107,7 +108,6 @@ export interface AgencyRegisterItem {
   RegisterIP?: string;
   Status?: number;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface AgencyRegisterListQuery {
@@ -124,6 +124,7 @@ export interface AgencyRegisterListQuery {
 }
 
 export interface SpillManageItem {
+  [key: string]: unknown;
   Account?: string;
   AgreeDesc?: string;
   ApplyPlatform?: string;
@@ -144,7 +145,6 @@ export interface SpillManageItem {
   Status?: number;
   Url?: string;
   VipLevel?: number | string;
-  [key: string]: unknown;
 }
 
 export interface SpillManageListResult {
@@ -173,6 +173,7 @@ export interface SpillManageAuditPayload {
 }
 
 export interface HelpCenterItem {
+  [key: string]: unknown;
   AdminId?: number | string;
   Content?: string;
   Deleted?: number;
@@ -182,14 +183,13 @@ export interface HelpCenterItem {
   Sort?: number;
   Status?: number | string;
   Tag?: string;
-  [key: string]: unknown;
 }
 
 export interface HelpCenterLangTextItem {
+  [key: string]: unknown;
   Content?: string;
   LangGroupId?: number | string;
   Tag?: string;
-  [key: string]: unknown;
 }
 
 export type HelpCenterLangText =
@@ -206,15 +206,16 @@ export interface HelpCenterListQuery {
 }
 
 export interface PromotionConfItem {
+  [key: string]: unknown;
   CreateTime?: number | string;
   Id?: number | string;
   Sort?: number;
   Type?: number | string;
   Value?: string;
-  [key: string]: unknown;
 }
 
 export interface ExtensionMaterialItem {
+  [key: string]: unknown;
   CreateTime?: number | string;
   Id?: number | string;
   Image?: string;
@@ -229,7 +230,6 @@ export interface ExtensionMaterialItem {
   Status?: number | string;
   ThemeId?: number | string;
   ThemeName?: string;
-  [key: string]: unknown;
 }
 
 export interface ExtensionMaterialListQuery {
@@ -246,6 +246,8 @@ export interface ExtensionMaterialListQuery {
 }
 
 export interface PromotionMaterialPayload {
+  createSize?: '1' | '2';
+  createTheme?: '1' | '2';
   Id?: number | string;
   Image?: string;
   ImagePath?: string;
@@ -256,8 +258,6 @@ export interface PromotionMaterialPayload {
   SizeId?: number | string;
   Status?: number | string;
   ThemeId?: number | string;
-  createSize?: '1' | '2';
-  createTheme?: '1' | '2';
 }
 
 export type NetcashMutationResult = null | Record<string, unknown> | undefined;
@@ -296,6 +296,7 @@ export interface RecordQueryBaseQuery {
 }
 
 export interface RecordQueryTotal {
+  [key: string]: number | undefined;
   AddGoldTotal?: number;
   BackWaterTotal?: number;
   RealAmountTotal?: number;
@@ -304,7 +305,6 @@ export interface RecordQueryTotal {
   TotalAfterAdjustAmount?: number;
   TotalBeforeAdjustAmount?: number;
   TotalReal?: number;
-  [key: string]: number | undefined;
 }
 
 export interface RecordQueryListResult<
@@ -317,12 +317,12 @@ export interface RecordQueryListResult<
 }
 
 export interface RecordBaseItem {
+  [key: string]: unknown;
   AgentAccount?: string;
   AgentName?: string;
   CreateTime?: number | string;
   LoginAccount?: string;
   PackageName?: string;
-  [key: string]: unknown;
 }
 
 export interface RecordAdjustItem extends RecordBaseItem {
@@ -357,6 +357,7 @@ export interface RecordGameItem extends RecordBaseItem {
 }
 
 export interface RecordBonusItem {
+  [key: string]: unknown;
   ApplyAccount?: string;
   ApplyNote?: string;
   ApplyTime?: number | string;
@@ -377,10 +378,10 @@ export interface RecordBonusItem {
   Status?: number;
   Username?: string;
   VipLevel?: number;
-  [key: string]: unknown;
 }
 
 export interface RecordTransactionItem {
+  [key: string]: unknown;
   AdjustAmount?: number;
   AdjustAmountAft?: number;
   AdjustAmountBef?: number;
@@ -390,13 +391,12 @@ export interface RecordTransactionItem {
   TransferType?: number;
   UpdateTime?: number | string;
   WalletType?: number;
-  [key: string]: unknown;
 }
 
 export interface NetcashListQuery {
+  [key: string]: unknown;
   Page: number;
   PageSize: number;
-  [key: string]: unknown;
 }
 
 export interface NetcashListResult<T = Record<string, unknown>> {
@@ -424,8 +424,8 @@ export interface CommissionListQuery {
   IsMulti: number;
   IsSettlement?: number | string;
   IsTeam: number;
-  MainUsername?: string;
   MaintainerName?: string;
+  MainUsername?: string;
   PackageIds?: string;
   Page: number;
   PageSize: number;
@@ -440,25 +440,26 @@ export interface CommissionListQuery {
 }
 
 export interface CommissionRow {
+  [key: string]: unknown;
   Id?: number | string;
   IsMulti?: number;
   IsSettlement?: number;
   IsTeam?: number;
   ReportMonth?: string;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export type CommissionListResult = NetcashListResult<CommissionRow>;
 
 export interface PlatformCreditInfo {
+  [key: string]: unknown;
   Credit?: number;
   Dkcredit?: number;
   Items?: PlatformCreditInfo;
-  [key: string]: unknown;
 }
 
 export interface PlatformCreditApplyRecord {
+  [key: string]: unknown;
   AdjustAmount?: number;
   ApplyAccount?: string;
   ApplyTime?: number | string;
@@ -469,10 +470,10 @@ export interface PlatformCreditApplyRecord {
   OrderId?: number | string;
   Status?: number;
   WalletType?: number;
-  [key: string]: unknown;
 }
 
 export interface PlatformNetCashLog {
+  [key: string]: unknown;
   AdjustAmount?: number;
   AdjustAmountAft?: number;
   AdjustAmountBef?: number;
@@ -480,7 +481,6 @@ export interface PlatformNetCashLog {
   ReviewNote?: string;
   UpdateTime?: number | string;
   WalletType?: number;
-  [key: string]: unknown;
 }
 
 export interface PlatformCreditApplyRecordQuery extends NetcashListQuery {
@@ -519,12 +519,12 @@ export interface CloneChannelPlanQuery {
 }
 
 export interface CloneChannelPlanItem {
+  [key: string]: unknown;
   ChannelId?: string;
   Id?: ChannelId;
   IsHidden?: number;
   Name?: string;
   PackageId?: string;
-  [key: string]: unknown;
 }
 
 export interface CloneChannelPlanResult {
@@ -539,20 +539,21 @@ export interface CloneChannelPlanPayload {
 }
 
 export interface LogoGroupOption {
+  [key: string]: unknown;
   Id?: ChannelId;
   LogoGroupId?: ChannelId;
   Name?: string;
   TemplateName?: string;
-  [key: string]: unknown;
 }
 
 export interface LogoGroupListResult {
+  [key: string]: unknown;
   Items?: LogoGroupOption[] | null;
   PackageLogo?: null | { LogoGroupId?: ChannelId };
-  [key: string]: unknown;
 }
 
 export interface AgentDomainRow {
+  [key: string]: unknown;
   AdminId?: ChannelId;
   AdminStatus?: number;
   ChannelId?: ChannelId;
@@ -569,7 +570,6 @@ export interface AgentDomainRow {
   Status?: number;
   Type?: number;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface AgentDomainQuery extends NetcashListQuery {
@@ -586,6 +586,7 @@ export interface AgentDomainQuery extends NetcashListQuery {
 }
 
 export interface BonusManageItem {
+  [key: string]: unknown;
   Amount?: number;
   ApplyDesc?: string;
   ApplyName?: string;
@@ -602,15 +603,14 @@ export interface BonusManageItem {
   RealAmount?: number;
   Username?: string;
   WalletType?: number;
-  [key: string]: unknown;
 }
 
 export interface BonusAdminItem {
+  [key: string]: unknown;
   AdminId?: number | string;
   Amount?: number;
   Type?: number;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface BonusBatchResult {
@@ -626,6 +626,7 @@ export interface BonusBatchResult {
 }
 
 export interface ProxyGroupItem {
+  [key: string]: unknown;
   GroupName?: string;
   Id: number | string;
   Level?: number;
@@ -633,15 +634,14 @@ export interface ProxyGroupItem {
   ParentId?: number | string;
   ParentTree?: string;
   Sort?: number;
-  [key: string]: unknown;
 }
 
 export interface ProxyGroupingListItem {
+  [key: string]: unknown;
   DeveloperName?: string;
   Group?: number | string;
   GroupCreateTime?: number | string;
   Id: number | string;
   Name?: string;
   Username?: string;
-  [key: string]: unknown;
 }

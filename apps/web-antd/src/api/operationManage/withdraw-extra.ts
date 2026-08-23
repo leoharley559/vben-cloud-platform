@@ -137,7 +137,7 @@ export function deleteSendOrderManageApi(id: number | string) {
  */
 export function fetchWithdrawAutoSchemeListApi() {
   return requestClient.get<
-    Array<{ Id?: number | string; SchemeType?: number | string }>
+    Array<{ Id?: number | string; Name?: string; SchemeType?: number | string }>
   >('/backend/withdrawautoconfig/listSchemeName');
 }
 

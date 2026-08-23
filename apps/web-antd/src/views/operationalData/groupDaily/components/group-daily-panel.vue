@@ -26,9 +26,9 @@ import { calcDailyReportRow } from '#/utils/everyday-data-calc';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { applyGroupDrillStyles, buildParentTreeState, calcGroupDailyRows, defaultGroupDailyRange, defaultGroupMonthlyRange, normalizeGroupTree } from '#/utils/group-daily';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import GroupDailyTable from './group-daily-table.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'GroupDailyPanel' });
 

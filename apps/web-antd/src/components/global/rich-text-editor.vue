@@ -14,7 +14,7 @@ import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
 
 defineOptions({ name: 'RichTextEditor' });
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     disabled?: boolean;
     maxHeight?: number | string;

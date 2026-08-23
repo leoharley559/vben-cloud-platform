@@ -509,11 +509,12 @@ async function handleSubmit() {
             />
             <span>~</span>
             <InputNumber
-              v-model:value="tier.MaxCount"
+              :value="tier.MaxCount ?? undefined"
               :min="0"
               :precision="0"
               placeholder="不限"
               style="width: 110px"
+              @update:value="(value) => (tier.MaxCount = value == null ? null : Number(value))"
             />
             <span class="text-xs text-gray-400">人（空=无上限）</span>
             <InputNumber

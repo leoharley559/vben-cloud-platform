@@ -14,7 +14,7 @@ const props = withDefaults(
   defineProps<{
     /** 状态为「正常」(0) 时是否不渲染（用于账号旁角标） */
     hideNormal?: boolean;
-    status?: null | number | string;
+    status?: unknown;
   }>(),
   {
     hideNormal: false,
@@ -22,8 +22,12 @@ const props = withDefaults(
   },
 );
 
-const text = computed(() => formatPlayerStatus(props.status));
-const color = computed(() => playerStatusTagColor(props.status));
+const text = computed(() => formatPlayerStatus(props.status as null | number | string | undefined));
+const color = computed(() =>
+  playerStatusTagColor(
+    props.status as null | number | string | undefined,
+  ),
+);
 const isNormal = computed(() => Number(props.status) === 0);
 </script>
 

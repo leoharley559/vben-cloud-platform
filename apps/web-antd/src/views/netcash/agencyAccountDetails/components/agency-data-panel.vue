@@ -24,9 +24,9 @@ import {
   getAgentFanDianLines,
   parseAgentFanDianConfig,
 } from '#/utils/netcash';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import AgencyFanDianModal from '../../agency/components/agency-fandian-modal.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const props = defineProps<{ adminId: string }>();
 const route = useRoute();
@@ -806,7 +806,7 @@ watch(
         <template #bodyCell="{ column, record }">
           <AgencyAccountLink
             v-if="column.key === 'account'"
-            :admin-id="record.AdminId as number | string | undefined"
+            :admin-id="record.AdminId"
             :query="{
               Name: String(record.Username || ''),
               CountBeginTime: dateRange?.[0]?.startOf('day').unix() || '',

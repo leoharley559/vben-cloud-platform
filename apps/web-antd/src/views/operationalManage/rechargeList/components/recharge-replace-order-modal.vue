@@ -98,7 +98,7 @@ async function handleOk() {
       </Form.Item>
       <Form.Item label="实付金额">
         <Input
-          :value="formatAmountFromCent(detail?.RealAmount ?? row?.RealAmount)"
+          :value="formatAmountFromCent((detail?.RealAmount ?? row?.RealAmount) as string | number | null | undefined)"
           disabled
         />
       </Form.Item>

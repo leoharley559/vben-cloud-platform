@@ -10,7 +10,7 @@ defineOptions({ name: 'PlayerAccountLink' });
 const props = defineProps<{
   loginAccount?: string;
   permissionId?: number;
-  playerId?: number | string;
+  playerId?: unknown;
 }>();
 
 const router = useRouter();
@@ -23,7 +23,9 @@ const canOpenDetail = computed(() =>
 const hasLink = computed(
   () =>
     canOpenDetail.value &&
-    props.playerId &&
+    props.playerId !== undefined &&
+    props.playerId !== null &&
+    props.playerId !== '' &&
     props.loginAccount !== undefined &&
     props.loginAccount !== '',
 );
@@ -32,7 +34,12 @@ function openDetail() {
   if (!hasLink.value) {
     return;
   }
-  router.push(buildPlayerDetailPath(props.playerId!, props.loginAccount));
+  router.push(
+    buildPlayerDetailPath(
+      props.playerId as number | string,
+      props.loginAccount,
+    ),
+  );
 }
 </script>
 

@@ -37,13 +37,13 @@ import {
 } from '#/api/gameManage/recharge-channel';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import OrdinaryChannelEditor from './ordinary-channel-editor.vue';
 import PrivateCardPanel from './private-card-panel.vue';
 import UsdtRechargePanel from './usdt-recharge-panel.vue';
 import VipDealerPanel from './vip-dealer-panel.vue';
 import VoucherPaymentPanel from './voucher-payment-panel.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'RechargeTypePanel' });
 
@@ -240,7 +240,7 @@ async function load(discover = false) {
       // 接口常缺 MaxCount，回退当前页条数（与空结果 0 区分）
       const maxCount = result.Pagination?.MaxCount;
       total.value = Number(
-        maxCount == null || maxCount === '' ? items.value.length : maxCount,
+        maxCount == null || String(maxCount) === '' ? items.value.length : maxCount,
       );
     }
   } catch (error) {

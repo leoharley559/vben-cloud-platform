@@ -25,8 +25,8 @@ import PromoteDataSearch from './promote-data-search.vue';
 defineOptions({ name: 'ChannelDataList' });
 
 interface ChannelDataRow extends ChannelDataItem {
-  RowKey?: string;
   children?: ChannelDataRow[];
+  RowKey?: string;
 }
 
 const { checkPermission } = useCloudPermission();

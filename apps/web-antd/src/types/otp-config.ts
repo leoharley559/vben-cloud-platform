@@ -1,7 +1,7 @@
 export interface OtpConfigItem {
+  [key: string]: unknown;
   DeviceLimit?: number | string;
   IpLimit?: number | string;
-  [key: string]: unknown;
 }
 
 export interface OtpConfigPayload {

@@ -63,10 +63,10 @@ const props = defineProps<{
 }>();
 
 interface ProgrammeRow {
+  [key: string]: unknown;
   Id: number | string;
   SPDisplayMode?: number;
   TemplateName?: string;
-  [key: string]: unknown;
 }
 
 interface LanguageContent {
@@ -81,6 +81,7 @@ interface LanguageContent {
 }
 
 interface AdvertisementRow {
+  [key: string]: unknown;
   BeginTime?: number;
   CrossImageUrl?: string;
   DailyCount?: number;
@@ -112,7 +113,6 @@ interface AdvertisementRow {
   ValidAppUrl?: string;
   ValidChannels?: string;
   Vip?: string;
-  [key: string]: unknown;
 }
 
 interface PermissionSet {
@@ -131,12 +131,12 @@ interface PermissionSet {
 }
 
 interface SelectSource {
+  [key: string]: unknown;
   Id?: number | string;
   LangText?: string;
   Name?: string;
   Title?: string;
   Type?: number | string;
-  [key: string]: unknown;
 }
 
 const PERMISSIONS: Record<number, PermissionSet> = {
@@ -984,8 +984,8 @@ onMounted(async () => {
         }
         return {
           ...item,
-          Title: title || item.Id,
-        };
+          Title: String(title || (item.Id ?? '')),
+        } as SelectSource;
       });
     }),
   ]);
@@ -1352,7 +1352,7 @@ onMounted(async () => {
               />
               <Select
                 v-else-if="Number(form.OpenType) === 4"
-                v-model:value="form.Jump as string | number"
+                v-model:value="form.Jump as string | number | undefined"
                 :options="
                   notices.map((item) => ({
                     label: String(item.Title || item.Id || ''),
@@ -1363,7 +1363,7 @@ onMounted(async () => {
               />
               <Select
                 v-else-if="Number(form.OpenType) === 5"
-                v-model:value="form.Jump as string | number"
+                v-model:value="form.Jump as string | number | undefined"
                 :options="gameOptions"
                 show-search
               />
@@ -1387,7 +1387,7 @@ onMounted(async () => {
               <Switch
                 :checked="Number(form.RegStartEndDate) === 1"
                 @update:checked="
-                  (checked: boolean) => {
+                  (checked: boolean | number | string) => {
                     form.RegStartEndDate = checked ? 1 : 2;
                     if (!checked) {
                       form.RegStartDate = '';
@@ -1447,7 +1447,7 @@ onMounted(async () => {
                 <Switch
                   :checked="Number(form.RegStartEndDate) === 1"
                   @update:checked="
-                    (checked: boolean) => {
+                    (checked: boolean | number | string) => {
                       form.RegStartEndDate = checked ? 1 : 0;
                       if (!checked) {
                         form.RegStartDate = '';
@@ -1521,13 +1521,13 @@ onMounted(async () => {
             </Form.Item>
             <Form.Item label="生效渠道">
               <ChannelSelect
-                v-model="form.ValidChannels as Array<number | string>"
+                v-model="form.ValidChannels as Array<string | number>"
                 placeholder="请输入渠道号"
               />
             </Form.Item>
             <Form.Item label="屏蔽渠道">
               <ChannelSelect
-                v-model="form.ShieldChannels as Array<number | string>"
+                v-model="form.ShieldChannels as Array<string | number>"
                 placeholder="请输入渠道号"
               />
             </Form.Item>

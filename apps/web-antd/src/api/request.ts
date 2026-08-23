@@ -210,10 +210,15 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       }
 
       if (status === apiSuccessCode) {
-        if (response.config.responseReturn === 'raw') {
+        const responseReturn = (
+          response.config as InternalAxiosRequestConfig & {
+            responseReturn?: 'body' | 'data' | 'raw';
+          }
+        ).responseReturn;
+        if (responseReturn === 'raw') {
           return response;
         }
-        if (response.config.responseReturn === 'body') {
+        if (responseReturn === 'body') {
           return response.data;
         }
         return response.data.Data;
@@ -249,7 +254,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       message.error('网络请求超时，请稍后重试');
       return Promise.reject(error);
     },
-  });
+  } as Parameters<typeof client.addResponseInterceptor>[0]);
 
   return client;
 }

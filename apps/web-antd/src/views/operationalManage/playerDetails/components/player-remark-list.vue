@@ -29,12 +29,12 @@ const props = defineProps<{
 }>();
 
 interface RemarkItem {
+  [key: string]: unknown;
   CreateTime?: number | string;
   Id?: number | string;
   Name?: string;
   Remark?: string;
   UpdateTime?: number | string;
-  [key: string]: unknown;
 }
 
 const { checkPermission } = useCloudPermission();

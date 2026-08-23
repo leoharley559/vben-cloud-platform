@@ -628,9 +628,11 @@ async function openAuto() {
       (result.Total as Record<string, unknown> | undefined)
         ?.TotalAutoWithdrawalAmount || 0,
     );
-    const accounts =
-      (await drawmoneyRequest.channelAccounts({ Page: 1, PageSize: 999 }))
-        .Items || [];
+    const channelAccountsResult = await drawmoneyRequest.channelAccounts({
+      Page: 1,
+      PageSize: 999,
+    });
+    const accounts = channelAccountsResult.Items || [];
     autoChannels.value = accounts.filter((x) => Number(x.Switch) === 1);
     autoRules.value = (Array.isArray(result.Rules) ? result.Rules : []).map(
       (x: any) => ({
@@ -1009,7 +1011,10 @@ onUnmounted(() => {
           <Select
             v-model:value="actionForm.WithdrawAccountId"
             :options="
-              agreeChannels.map((x) => ({ label: x.ShowName, value: x.Id }))
+              agreeChannels.map((x) => ({
+                label: String(x.ShowName ?? ''),
+                value: x.Id as string | number,
+              }))
             "
           />
         </Form.Item>
@@ -1074,7 +1079,7 @@ onUnmounted(() => {
           :un-checked-value="0"
         />
         <Checkbox
-          v-model:checked="autoSetting.RealNameBlockStatus"
+          v-model:checked="autoSetting.RealNameBlockStatus as unknown as boolean"
           :disabled="autoSetting.Status === 1"
           :false-value="0"
           :true-value="1"

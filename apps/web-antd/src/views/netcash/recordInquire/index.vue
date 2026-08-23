@@ -35,6 +35,9 @@ const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
 const dt = (v: unknown) => formatNetcashDateTime(v as string);
 const cash = (v: unknown) => (Number(v || 0) / 100).toFixed(2);
+function toPlayerStatus(value: unknown) {
+  return value as null | number | string | undefined;
+}
 const payment: Record<number, string> = {
   1: '银行卡',
   2: '支付宝',
@@ -449,7 +452,7 @@ onMounted(() => {
               <div>
                 <PlayerAccountLink
                   :login-account="String(row.LoginAccount || '')"
-                  :player-id="row.PlayerId as number | string | undefined"
+                  :player-id="row.PlayerId"
                 />
                 <div
                   v-if="
@@ -458,7 +461,7 @@ onMounted(() => {
                   class="mt-1"
                 >
                   <PlayerStatusTag
-                    :status="row.PlayerStatus as number | string | null"
+                    :status="toPlayerStatus(row.PlayerStatus)"
                   />
                 </div>
               </div>

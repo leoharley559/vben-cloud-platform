@@ -32,6 +32,7 @@ const props = withDefaults(
   {
     height: '360px',
     metrics: () => [],
+    title: undefined,
   },
 );
 

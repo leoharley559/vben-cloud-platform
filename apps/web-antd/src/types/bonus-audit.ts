@@ -1,4 +1,5 @@
 export interface BonusAuditListItem {
+  [key: string]: unknown;
   Amount?: number | string;
   Approve?: number;
   ApproveName?: string;
@@ -25,10 +26,10 @@ export interface BonusAuditListItem {
   Water?: number | string;
   WaterAmount?: number | string;
   WaterType?: number;
-  [key: string]: unknown;
 }
 
 export interface BonusRecordListItem {
+  [key: string]: unknown;
   Account?: string;
   ActivityType?: number | string;
   Amount?: number | string;
@@ -63,17 +64,16 @@ export interface BonusRecordListItem {
   WaterAmount?: number | string;
   WaterReward?: number | string;
   WaterType?: number | string;
-  [key: string]: unknown;
 }
 
 export interface BonusAuditListQuery {
   ActivityType?: number;
+  ApplyBeginTime?: number | string;
+  ApplyEndTime?: number | string;
   Approve?: number | string;
   ApproveBeginTime?: number | string;
   ApproveEndTime?: number | string;
   ApproveStatus?: number | string;
-  ApplyBeginTime?: number | string;
-  ApplyEndTime?: number | string;
   AppUrl?: string;
   BeginTime?: number | string;
   BonusTitle?: string;

@@ -398,7 +398,7 @@ function resolveSearchedPromoter(
   const candidates: Array<ChannelAdminOption | ChannelRow> = [
     ...result.ItemsSon,
     ...(result.ItemsAdmin ? [result.ItemsAdmin] : []),
-    [...(result.Parents || [])].toReversed(),
+    ...(result.Parents || []).toReversed(),
   ];
   return (
     candidates.find((item) => promoterMatches(item, username, name)) ??

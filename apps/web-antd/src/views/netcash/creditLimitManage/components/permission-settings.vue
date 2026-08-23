@@ -31,9 +31,9 @@ import {
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import { accountTypeMap, accountTypeOptions, amount, date, exportRows, rangeParams } from './shared';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const { checkPermission } = useCloudPermission();
 const canEdit = computed(() => checkPermission(11_785));
@@ -403,19 +403,25 @@ onMounted(loadTab);
         <template v-if="activeType !== 3">
           <Space size="large" wrap>
             <span>官方代理：
-              <Switch :checked="Number(firstSetting(activeType).ActiveOfficial) === 1" :disabled="!canEdit"
-                @change="(value) => updateToggle('official', Boolean(value))" />
+              <Switch
+:checked="Number(firstSetting(activeType).ActiveOfficial) === 1" :disabled="!canEdit"
+                @change="(value) => updateToggle('official', Boolean(value))"
+/>
             </span>
             <span>普通代理：
-              <Switch :checked="Number(firstSetting(activeType).ActiveNormal) === 1" :disabled="!canEdit"
-                @change="(value) => updateToggle('normal', Boolean(value))" />
+              <Switch
+:checked="Number(firstSetting(activeType).ActiveNormal) === 1" :disabled="!canEdit"
+                @change="(value) => updateToggle('normal', Boolean(value))"
+/>
             </span>
             <Space v-if="activeType === 2">
               <span>提款流水倍数：</span>
-              <InputNumber :value="Number(firstSetting(2).WithdrawWaterMultiply || 1)" :disabled="!canEdit" :min="1"
+              <InputNumber
+:value="Number(firstSetting(2).WithdrawWaterMultiply || 1)" :disabled="!canEdit" :min="1"
                 :precision="0" @change="
                   (value) => (firstSetting(2).WithdrawWaterMultiply = value)
-                " />
+                "
+/>
               <Button v-if="canEdit" type="primary" @click="updateWater">
                 保存
               </Button>
@@ -423,8 +429,10 @@ onMounted(loadTab);
           </Space>
         </template>
 
-        <Table v-else bordered :columns="depositColumns" :data-source="settings[3]" :pagination="false"
-          row-key="AccountType" size="small">
+        <Table
+v-else bordered :columns="depositColumns" :data-source="settings[3]" :pagination="false"
+          row-key="AccountType" size="small"
+>
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'AccountType'">
               {{
@@ -446,8 +454,10 @@ onMounted(loadTab);
                 }}</span>
             </template>
             <template v-else-if="column.key === 'Status'">
-              <Switch v-model:checked="record.Status" :checked-value="1" :disabled="!record.editing"
-                :un-checked-value="0" />
+              <Switch
+v-model:checked="record.Status" :checked-value="1" :disabled="!record.editing"
+                :un-checked-value="0"
+/>
             </template>
             <template v-else-if="column.key === 'UpdateTime'">
               {{
@@ -504,7 +514,8 @@ onMounted(loadTab);
           </div>
         </div>
       </div>
-      <Table bordered :columns="restrictionColumns" :data-source="rows" :loading="loading" :pagination="false"
+      <Table
+bordered :columns="restrictionColumns" :data-source="rows" :loading="loading" :pagination="false"
         :row-selection="canRemove
             ? {
               selectedRowKeys: selectedKeys,
@@ -512,7 +523,8 @@ onMounted(loadTab);
                 (selectedKeys = keys),
             }
             : undefined
-          " row-key="Id" :scroll="{ x: 1000 }" size="small">
+          " row-key="Id" :scroll="{ x: 1000 }" size="small"
+>
         <template #bodyCell="{ column, record, index }">
           <template v-if="column.key === 'seq'">
             {{
@@ -545,9 +557,11 @@ onMounted(loadTab);
           </template>
         </template>
       </Table>
-      <Pagination v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize"
+      <Pagination
+v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize"
         :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS" :total="total" class="mt-4 text-right" show-size-changer
-        @change="loadRestrictions" @show-size-change="loadRestrictions" />
+        @change="loadRestrictions" @show-size-change="loadRestrictions"
+/>
     </Card>
   </div>
 

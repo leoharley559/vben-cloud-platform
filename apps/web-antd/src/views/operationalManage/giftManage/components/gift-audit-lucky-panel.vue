@@ -11,7 +11,6 @@ import {
   Modal,
   Result,
   Select,
-  Space,
   Tag,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -66,8 +65,8 @@ interface LuckyAuditRow {
   BonusId?: number | string;
   BonusTitle?: string;
   ChannelId?: number | string;
-  CreateTime?: number | string;
   Contact?: string;
+  CreateTime?: number | string;
   ErrMsg?: string;
   GiftAttribute?: string;
   GiftName?: string | string[];
@@ -634,7 +633,7 @@ onMounted(() => {
         <div>
           <PlayerAccountLink
             :login-account="String(row.LoginAccount || '')"
-            :player-id="row.PlayerId as number | string | undefined"
+            :player-id="row.PlayerId"
           />
           <div class="mt-1">
             <PlayerStatusTag :status="row.PlayerStatus" hide-normal />

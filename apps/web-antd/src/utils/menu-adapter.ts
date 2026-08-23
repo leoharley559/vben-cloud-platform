@@ -15,8 +15,8 @@ interface BuiltRouteNode {
   id: number;
   keepAlive: boolean;
   name: string;
-  path: string;
   parentId: number;
+  path: string;
 }
 
 function buildParentMap(navItems: CloudNavItem[]) {
@@ -193,7 +193,7 @@ function buildRouteTree(
     }
 
     const routeNode: BuiltRouteNode = {
-      children: [],
+      children: buildRouteTree(child.Id, parentMap, projectConfig),
       // 对齐旧站 permission.js：hidden = IsShow == '1'（宽松比较）
        
       hidden: child.IsShow == '1',
@@ -206,19 +206,16 @@ function buildRouteTree(
       path: child.Router,
     };
 
-    routeNode.children = buildRouteTree(child.Id, parentMap, projectConfig);
     routes.push(routeNode);
   }
 
   return routes;
 }
 
-function toVbenRoute(
-  node: BuiltRouteNode,
-  isTopLevel = false,
-): RouteRecordStringComponent {
+function toVbenRoute(node: BuiltRouteNode): RouteRecordStringComponent {
   const path = node.path.startsWith('/') ? node.path : `/${node.path}`;
   const route: RouteRecordStringComponent = {
+    component: PLACEHOLDER_COMPONENT,
     meta: {
       hideInMenu: node.hidden,
       icon: resolveMenuIcon(node.name, node.path),
@@ -229,7 +226,7 @@ function toVbenRoute(
         ? { fullPathKey: false }
         : {}),
       originalPath: path,
-      title: translateMenuTitle(node.name),
+      title: translateMenuTitle(node.name) || node.name,
     },
     name: `${node.name}_${node.id}`,
     path,
@@ -249,19 +246,15 @@ function toVbenRoute(
 
   if (node.children.length > 0) {
     // 有子菜单的父级不挂页面组件，由框架自动 redirect 到第一个子路由
-    route.children = node.children.map((child) => toVbenRoute(child, false));
-    if (isTopLevel) {
-      // 顶级由 accessible 挂到 Root/BasicLayout，这里不设 BasicLayout，避免双层布局
-      route.component = PLACEHOLDER_COMPONENT;
-    } else {
-      route.component = PLACEHOLDER_COMPONENT;
-    }
+    route.children = node.children.map((child) => toVbenRoute(child));
+    route.component = PLACEHOLDER_COMPONENT;
   } else {
     route.component = resolveLeafComponent(node.path);
     if (route.component === PLACEHOLDER_COMPONENT) {
       route.meta = {
         ...route.meta,
         originalPath: path,
+        title: route.meta?.title || translateMenuTitle(node.name) || node.name,
       };
     }
   }
@@ -282,7 +275,7 @@ export function convertNavToVbenRoutes(
     (item) => item.children.length > 0,
   );
 
-  return topLevelRoutes.map((route) => toVbenRoute(route, true));
+  return topLevelRoutes.map((route) => toVbenRoute(route));
 }
 
 interface HomeMenuNode {

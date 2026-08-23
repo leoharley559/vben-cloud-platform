@@ -2,13 +2,14 @@ export type PackageId = number | string;
 export type SerializedPackageField = string;
 
 export interface PackagePagination {
+  [key: string]: unknown;
   MaxCount?: number;
   Page?: number;
   PageSize?: number;
-  [key: string]: unknown;
 }
 
 export interface PackageListQuery {
+  [key: string]: unknown;
   FilterKey?: string;
   FilterValue?: string;
   Keyword?: string;
@@ -16,16 +17,16 @@ export interface PackageListQuery {
   Page?: number;
   PageSize?: number;
   Sort?: string;
-  [key: string]: unknown;
 }
 
 export interface PackageLanguage {
+  [key: string]: unknown;
   label?: string;
   value: string;
-  [key: string]: unknown;
 }
 
 export interface PackageLanguageText {
+  [key: string]: unknown;
   CompanyProfile?: string;
   CsAgentConfig?: SerializedPackageField;
   CsLineConfig?: SerializedPackageField;
@@ -33,7 +34,6 @@ export interface PackageLanguageText {
   LangGroupId?: PackageId;
   LoadingPictureUrl?: SerializedPackageField;
   VenueSetting?: SerializedPackageField;
-  [key: string]: unknown;
 }
 
 export interface PackageGameMenuStyle {
@@ -41,6 +41,7 @@ export interface PackageGameMenuStyle {
 }
 
 export interface PackageResourceItem {
+  [key: string]: unknown;
   Id?: PackageId;
   PictureIp?: string;
   PictureName?: string;
@@ -48,18 +49,17 @@ export interface PackageResourceItem {
   PictureTheme?: number | string;
   PictureType?: number | string;
   SmallPictureIp?: string;
-  [key: string]: unknown;
 }
 
 export interface PackageMoreItems {
-  Resources?: PackageResourceItem[];
   [key: string]: unknown;
+  Resources?: PackageResourceItem[];
 }
 
 export interface PackageVipBadgeGroup {
+  [key: string]: unknown;
   TemplateId?: PackageId;
   TemplateName?: string;
-  [key: string]: unknown;
 }
 
 /**
@@ -68,6 +68,7 @@ export interface PackageVipBadgeGroup {
  * wire even though editors commonly parse them into richer client-side data.
  */
 export interface PackageListItem {
+  [key: string]: unknown;
   AppBannerId?: PackageId;
   AppHomeAdTmpId?: PackageId;
   Background?: PackageId | string;
@@ -84,8 +85,8 @@ export interface PackageListItem {
   H5LoginBackground?: PackageId | string;
   Icon?: PackageId;
   Id?: PackageId;
-  Languages?: SerializedPackageField;
   LangText?: SerializedPackageField;
+  Languages?: SerializedPackageField;
   LivestreamFloatingTmpId?: PackageId;
   MainImgId?: PackageId;
   MusicData?: SerializedPackageField;
@@ -104,10 +105,10 @@ export interface PackageListItem {
   StyleTypePc?: number | string;
   Uid?: string;
   VIPBadgeGroupID?: PackageId;
-  [key: string]: unknown;
 }
 
 export interface PackageFormPayload {
+  [key: string]: unknown;
   AppBannerId?: PackageId;
   AppHomeAdTmpId?: PackageId;
   Background?: PackageId | string;
@@ -120,13 +121,13 @@ export interface PackageFormPayload {
   Games: SerializedPackageField;
   GamesLayoutType: SerializedPackageField;
   GameTemplate: number;
-  Hash?: string;
   H5HallBackground?: PackageId | string;
   H5LoginBackground?: PackageId | string;
+  Hash?: string;
   Icon: PackageId;
   Id?: PackageId;
-  Languages: SerializedPackageField;
   LangText?: SerializedPackageField;
+  Languages: SerializedPackageField;
   LivestreamFloatingTmpId?: PackageId;
   LogoSetting?: SerializedPackageField;
   MainImgId?: PackageId;
@@ -147,7 +148,6 @@ export interface PackageFormPayload {
   StyleTypePc?: number | string;
   Uid?: string;
   VIPBadgeGroupID?: PackageId;
-  [key: string]: unknown;
 }
 
 export interface PackageDetail extends PackageListItem {
@@ -166,49 +166,49 @@ export interface PackageDetail extends PackageListItem {
 }
 
 export interface PackageListResult {
+  [key: string]: unknown;
   Items?: PackageListItem[];
   MoreItems?: PackageMoreItems;
   Pagination?: PackagePagination;
   VIPBadgeGroups?: PackageVipBadgeGroup[];
-  [key: string]: unknown;
 }
 
 export interface PackageResourceQuery {
+  [key: string]: unknown;
   AgentId?: PackageId;
   Page?: number;
   PageSize?: number;
   PictureStyle?: number | string;
   PictureTheme?: number | string;
   PictureType?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PackageResourceListResult {
+  [key: string]: unknown;
   Items?: PackageResourceItem[];
   Pagination?: PackagePagination;
-  [key: string]: unknown;
 }
 
 export interface PackageDescriptionPayload {
+  [key: string]: unknown;
   Description: string;
   Id: PackageId;
-  [key: string]: unknown;
 }
 
 export interface PackageUnderageQuery {
+  [key: string]: unknown;
   Id: PackageId;
   Type: number;
-  [key: string]: unknown;
 }
 
 export interface PackageUnderageConfig {
+  [key: string]: unknown;
   Age?: number | string;
   Id?: PackageId;
   IsOpen?: boolean | number;
   LangText?: SerializedPackageField;
   PackageId?: PackageId;
   Type?: number;
-  [key: string]: unknown;
 }
 
 export interface PackageUnderagePayload extends PackageUnderageConfig {
@@ -217,63 +217,63 @@ export interface PackageUnderagePayload extends PackageUnderageConfig {
 }
 
 export interface PackageColorThemeQuery {
+  [key: string]: unknown;
   DeviceType: number;
   Page?: number;
   PageSize?: number;
   ThemeId?: '' | PackageId;
-  [key: string]: unknown;
 }
 
 export interface PackageColorThemeItem {
+  [key: string]: unknown;
   Color?: Record<string, string> | string;
   ColorName?: string;
   Id?: PackageId;
   ThemeDescription?: string;
   ThemeId?: PackageId;
-  [key: string]: unknown;
 }
 
 export interface PackageColorThemeListResult {
+  [key: string]: unknown;
   Items?: null | PackageColorThemeItem[];
   Pagination?: PackagePagination;
-  [key: string]: unknown;
 }
 
 export interface AvailableChannelQuery {
+  [key: string]: unknown;
   ChannelType?: string;
   PackageConfigId?: PackageId;
   PackageId?: PackageId;
   Status?: number;
-  [key: string]: unknown;
 }
 
 export interface AvailableChannel {
+  [key: string]: unknown;
   ChannelName?: string;
   Id?: PackageId;
   Name?: string;
   PackageId?: PackageId;
   Status?: number;
-  [key: string]: unknown;
 }
 
 export interface AvailableChannelsResult {
+  [key: string]: unknown;
   /** The backend's canonical field. */
   Item?: AvailableChannel[];
   /** Some deployments return the conventional plural field instead. */
   Items?: AvailableChannel[];
   Pagination?: PackagePagination;
-  [key: string]: unknown;
 }
 
 export interface PackageDependencyItem {
+  [key: string]: unknown;
   Id?: PackageId;
   Name?: string;
-  [key: string]: unknown;
 }
 
 export interface PackageDependencyListResult {
+  [key: string]: unknown;
   Item?: PackageDependencyItem[];
   Items?: PackageDependencyItem[];
   Pagination?: PackagePagination;
-  [key: string]: unknown;
 }

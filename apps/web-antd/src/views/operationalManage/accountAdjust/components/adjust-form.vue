@@ -194,7 +194,7 @@ function downloadBatchTemplate() {
   URL.revokeObjectURL(url);
 }
 
-function onBatchFileChange(event: Event) {
+async function onBatchFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) {
@@ -205,25 +205,22 @@ function onBatchFileChange(event: Event) {
     input.value = '';
     return;
   }
-  const reader = new FileReader();
-  reader.addEventListener('load', () => {
-    const text = String(reader.result || '');
-    const lines = text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    if (lines.length === 0) {
-      message.warning('文件为空');
-      return;
-    }
-    const first = lines[0] || '';
-    const body = /游戏账号|产品名称|调整金额/i.test(first)
-      ? lines.slice(1)
-      : lines;
-    batchText.value = body.join('\n');
-    message.success(`已读取 ${body.length} 行，请预览匹配`);
-  });
-  reader.readAsText(file);
+  const text = await file.text();
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) {
+    message.warning('文件为空');
+    input.value = '';
+    return;
+  }
+  const first = lines[0] || '';
+  const body = /游戏账号|产品名称|调整金额/i.test(first)
+    ? lines.slice(1)
+    : lines;
+  batchText.value = body.join('\n');
+  message.success(`已读取 ${body.length} 行，请预览匹配`);
   input.value = '';
 }
 
@@ -483,7 +480,7 @@ function exportFailItems() {
 </script>
 
 <template>
-  <div v-if="canViewPage">
+  <div v-if="canViewPage" class="min-w-0 max-w-full">
     <div class="mb-3">
       <Radio.Group v-model:value="saveType" button-style="solid">
         <Radio.Button v-if="canSingle" value="single">单人调整</Radio.Button>
@@ -495,23 +492,23 @@ function exportFailItems() {
       <div class="mb-3 text-base font-medium">玩家信息</div>
       <template v-if="saveType === 'single'">
         <div class="mb-4 flex flex-wrap items-end gap-2">
-          <div class="flex flex-col gap-1">
+          <div class="flex w-full min-w-0 max-w-[260px] flex-col gap-1">
             <Input
               v-model:value="loginAccount"
               allow-clear
-              style="width: 260px"
+              class="w-full"
               @blur="lookupPlayer"
               placeholder="请输入游戏账号"
             >
               <template #addonBefore>游戏账号</template>
             </Input>
           </div>
-          <Space.Compact>
+          <Space.Compact class="w-full max-w-xs sm:w-auto sm:max-w-none">
             <span class="query-field-addon">产品</span>
             <Select
               v-model:value="packageName"
               allow-clear
-              class="w-48"
+              class="min-w-0 flex-1 sm:w-48"
               :options="packageSelectOptions"
               placeholder="请选择产品"
               show-search
@@ -622,9 +619,9 @@ function exportFailItems() {
     <div>
       <div class="mb-3 text-base font-medium">账号调整</div>
       <Form
-        class="max-w-xl"
-        :label-col="{ span: 5 }"
-        :wrapper-col="{ span: 16 }"
+        class="max-w-xl min-w-0"
+        :label-col="{ xs: 24, sm: 5 }"
+        :wrapper-col="{ xs: 24, sm: 16 }"
       >
         <Form.Item label="调整方式" required>
           <Select
@@ -684,18 +681,22 @@ function exportFailItems() {
           </Form.Item>
         </template>
 
-        <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
-          <Space>
+        <Form.Item
+          :wrapper-col="{
+            xs: { offset: 0, span: 24 },
+            sm: { offset: 5, span: 16 },
+          }"
+        >
+          <div class="flex flex-wrap gap-2">
             <Button
               :loading="submitting"
-              class="w-28"
               type="primary"
               @click="handleSubmit"
             >
               申请调整
             </Button>
-            <Button class="w-28" @click="handleReset">重置</Button>
-          </Space>
+            <Button @click="handleReset">重置</Button>
+          </div>
         </Form.Item>
       </Form>
     </div>

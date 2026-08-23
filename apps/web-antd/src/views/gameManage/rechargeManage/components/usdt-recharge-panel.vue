@@ -67,9 +67,9 @@ interface UsdtFormModel {
   Priority: number | undefined;
   RegTime: [number, number];
   TestChannel: RechargeChannelId[];
-  VipV2: number[];
   timeCheck: boolean;
   vipCheck: boolean;
+  VipV2: number[];
 }
 
 const PAY_TYPE = 26;

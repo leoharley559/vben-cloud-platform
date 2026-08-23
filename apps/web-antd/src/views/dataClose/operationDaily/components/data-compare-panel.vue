@@ -132,7 +132,13 @@ const sections = computed(() => {
   const groups = new Map<string, Array<Record<string, unknown>>>();
   for (const metric of COMPARE_METRICS) {
     if (metric.permission && !checkPermission(metric.permission)) continue;
-    const row = {
+    const row: Record<string, unknown> & {
+      field: string;
+      isRate: boolean | undefined;
+      label: string;
+      section: string;
+      TodayItems?: unknown;
+    } = {
       ...buildMetricRow(
         metricMap.value as any,
         metric.field,
@@ -164,27 +170,27 @@ const summaryItems = computed(() => {
       { title: '首存人数', value: num(today.SumFirstPayNum) },
       {
         title: '转化率',
-        value: `${today.PercentConversion ?? '0.00'}%`,
+        value: `${String(today.PercentConversion ?? '0.00')}%`,
       },
     );
   }
   if (checkPermission(10_519)) {
     items.push(
       { title: '登录人数', value: num(today.SumLogin) },
-      { title: '充值金额', value: today.SumPayMergerMoney ?? '0.00' },
-      { title: '公司输赢', value: today.FirmBunko ?? '0.00' },
+      { title: '充值金额', value: String(today.SumPayMergerMoney ?? '0.00') },
+      { title: '公司输赢', value: String(today.FirmBunko ?? '0.00') },
     );
   }
   if (checkPermission(10_520)) {
     items.push(
-      { title: '返水金额', value: today.SumBetWaterMoney ?? '0.00' },
-      { title: '红利金额', value: today.SumRedSumNum ?? '0.00' },
+      { title: '返水金额', value: String(today.SumBetWaterMoney ?? '0.00') },
+      { title: '红利金额', value: String(today.SumRedSumNum ?? '0.00') },
     );
   }
   if (checkPermission(10_521)) {
     items.push(
-      { title: '收入', value: today.Income ?? '0.00' },
-      { title: '毛利率', value: `${today.GrossMargin ?? '0.00'}%` },
+      { title: '收入', value: String(today.Income ?? '0.00') },
+      { title: '毛利率', value: `${String(today.GrossMargin ?? '0.00')}%` },
     );
   }
   return items;

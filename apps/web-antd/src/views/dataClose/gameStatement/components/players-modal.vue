@@ -161,14 +161,15 @@ watch(
         <template v-if="column.key === 'LoginAccount'">
           <PlayerAccountLink
             :login-account="String(record.LoginAccount || '')"
-            :player-id="record.PlayerId as number | string | undefined"
+            :player-id="record.PlayerId"
           />
         </template>
         <template v-else>{{ text }}</template>
       </template>
     </Table>
     <div class="mt-3 flex justify-end">
-      <Pagination :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
+      <Pagination
+:page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
         v-model:current="pager.Page"
         v-model:page-size="pager.PageSize"
         :total="total"

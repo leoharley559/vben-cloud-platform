@@ -970,7 +970,7 @@ onMounted(() => {
         {{ info.Address }}
       </Descriptions.Item>
       <Descriptions.Item v-if="info.DateOfBirth" label="生日">
-        {{ formatDateOnly(info.DateOfBirth as number | string) }}
+        {{ formatDateOnly(info.DateOfBirth as string | number | undefined) }}
       </Descriptions.Item>
       <Descriptions.Item v-if="info.BindQQ" label="Viber">
         {{ canViewViber ? info.BindQQ : '***' }}

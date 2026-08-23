@@ -96,7 +96,7 @@ export async function getAgentPermissionsApi(query: NetcashListQuery) {
  * @returns 信用额度详情（可用额度、总额度等）
  * @see views/netcash/creditLimitManage/components/credit-limit-adjust.vue
  */
-export function getAgentCreditLimitApi(query: NetcashListQuery) {
+export function getAgentCreditLimitApi(query: Partial<NetcashListQuery> = {}) {
   return requestClient.get<Record<string, unknown>>(
     '/backend/agentcreditlimit/getagentcreditlimit',
     { params: trimSpace(query) },

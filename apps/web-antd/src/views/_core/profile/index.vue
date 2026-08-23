@@ -26,6 +26,7 @@ const profileUserInfo = computed(() => {
   const roles = (userStore.userInfo?.roles || []).filter(Boolean);
   return {
     ...userStore.userInfo,
+    userId: userStore.userInfo?.userId ?? '',
     // 个人中心固定使用默认头像
     avatar: preferences.app.defaultAvatar,
     // 昵称优先用账号资料里的 Name

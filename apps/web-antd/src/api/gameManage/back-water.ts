@@ -3,6 +3,7 @@ import { trimSpace } from '#/utils/string';
 
 /** 返水记录/审核列表响应（含汇总字段） */
 export interface BackWaterListResult<T = Record<string, unknown>> {
+  [key: string]: unknown;
   Count?: number;
   Items?: null | T[];
   Pagination?: null | { MaxCount?: number };
@@ -11,7 +12,6 @@ export interface BackWaterListResult<T = Record<string, unknown>> {
   SumValidWater?: number;
   Total?: number;
   UnSum?: number;
-  [key: string]: unknown;
 }
 
 function withItems<T extends { Items?: null | unknown[] }>(

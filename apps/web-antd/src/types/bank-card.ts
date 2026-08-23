@@ -1,7 +1,7 @@
 export interface BankCardListQuery {
   BankCardNum?: string;
-  BeginTime?: number;
-  EndTime?: number;
+  BeginTime?: number | string;
+  EndTime?: number | string;
   LoginAccount?: string;
   Page: number;
   PageSize: number;
@@ -9,6 +9,7 @@ export interface BankCardListQuery {
 }
 
 export interface BankCardListItem {
+  [key: string]: unknown;
   AlipayAccount?: string;
   AlipayName?: string;
   BankCardNum?: string;
@@ -22,7 +23,6 @@ export interface BankCardListItem {
   PlayerId?: number | string;
   RealName?: string;
   ThirdPartyUserId?: string;
-  [key: string]: unknown;
 }
 
 export interface BankCardFormPayload {

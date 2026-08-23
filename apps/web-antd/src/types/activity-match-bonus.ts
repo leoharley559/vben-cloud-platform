@@ -1,4 +1,5 @@
 export interface ActivityMatchBonusItem {
+  [key: string]: unknown;
   ApplyNote1?: string;
   ApplyNote2?: string;
   ApplyNote3?: string;
@@ -21,5 +22,4 @@ export interface ActivityMatchBonusItem {
   Remarks?: string;
   ReviewNote?: string;
   VipLevel?: number | string;
-  [key: string]: unknown;
 }

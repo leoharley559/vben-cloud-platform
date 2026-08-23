@@ -434,7 +434,7 @@ async function exportExcel() {
         </template>
         <template #username="{ row }">
           <AgencyAccountLink
-            :admin-id="row.AdminId as number | string | undefined"
+            :admin-id="row.AdminId"
             :username="row.Username"
           />
         </template>

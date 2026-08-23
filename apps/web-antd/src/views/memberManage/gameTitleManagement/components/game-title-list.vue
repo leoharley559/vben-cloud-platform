@@ -214,7 +214,7 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
   const [begin, end] = filterDateRange.value || [];
   return {
     BeginTime: begin ? begin.unix() : undefined,
-    CategoryId: filterCategoryId.value ? filterCategoryId.value : undefined,
+    CategoryId: filterCategoryId.value || undefined,
     EndTime: end ? end.unix() : undefined,
     Name: filterName.value || undefined,
     Page: page.currentPage,

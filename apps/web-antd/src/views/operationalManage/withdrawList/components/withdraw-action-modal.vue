@@ -80,7 +80,7 @@ async function loadRejectReasons() {
     if (!key) {
       continue;
     }
-    let titleText = key;
+    let titleText: string;
     let reasonText = '';
     try {
       const parsed = JSON.parse(String(item.Value || '{}')) as {

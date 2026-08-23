@@ -26,6 +26,7 @@ import { ServiceMessageType } from '#/utils/ws/service-message-type';
 defineOptions({ name: 'EnterLineMonitorPanel' });
 
 interface MonitorPlayer {
+  [key: string]: unknown;
   ClientId: string;
   HubName?: string;
   IsInterlocution?: boolean;
@@ -34,7 +35,6 @@ interface MonitorPlayer {
   Receive?: string;
   ServiceId?: number | string;
   VipLevel?: number | string;
-  [key: string]: unknown;
 }
 
 interface ChatMessage {
@@ -181,6 +181,20 @@ function decodeContent(raw: unknown) {
   }
 }
 
+function formatMessageContent(type: number, raw: unknown) {
+  const decoded = decodeContent(raw);
+  if (type === ServiceMessageType.MESSAGE_IMAGE) {
+    return `[图片] ${decoded}`;
+  }
+  if (type === ServiceMessageType.MESSAGE_VIDEO) {
+    return `[视频] ${decoded}`;
+  }
+  if (type === ServiceMessageType.MESSAGE_AUDIO) {
+    return `[语音] ${decoded}`;
+  }
+  return decoded;
+}
+
 function mapChatList(list: unknown[], targetId: string) {
   return list
     .map((item, index) => {
@@ -188,14 +202,7 @@ function mapChatList(list: unknown[], targetId: string) {
       const type = Number(
         row.MessageType ?? row.messageType ?? ServiceMessageType.MESSAGE_TEXT,
       );
-      const content =
-        type === ServiceMessageType.MESSAGE_IMAGE
-          ? `[图片] ${decodeContent(row.Content)}`
-          : type === ServiceMessageType.MESSAGE_VIDEO
-            ? `[视频] ${decodeContent(row.Content)}`
-            : type === ServiceMessageType.MESSAGE_AUDIO
-              ? `[语音] ${decodeContent(row.Content)}`
-              : decodeContent(row.Content);
+      const content = formatMessageContent(type, row.Content);
       return {
         ack: Number(row.Ack || 0),
         content,
@@ -783,7 +790,7 @@ onBeforeUnmount(() => {
             <template v-if="column.key === 'LoginAccount'">
               <PlayerAccountLink
                 :login-account="String(record.LoginAccount || '')"
-                :player-id="record.Receive as number | string | undefined"
+                :player-id="record.Receive"
               />
             </template>
             <template v-else>{{ text }}</template>

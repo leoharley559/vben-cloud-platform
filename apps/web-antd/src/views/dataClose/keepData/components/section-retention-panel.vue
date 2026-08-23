@@ -16,12 +16,12 @@ import {
 
 import { fetchKeepDataSectionRetentionListApi } from '#/api/dataClose/keep-data';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import { exportRowsToXlsx } from '#/views/dataClose/shared/report-utils';
 
 import { num, ratioText, SECTION_DAY_COLUMNS } from '../utils';
 import DetailsPanel from './details-panel.vue';
 import KeepQueryBar from './keep-query-bar.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'KeepSectionRetentionPanel' });
 
@@ -155,7 +155,7 @@ onMounted(() => {
               @click="
                 openDetails(
                   SECTION_DAY_COLUMNS.find((item) => item.field === column.key)
-                    ?.day,
+                    ?.day ?? 0,
                 )
               "
             >

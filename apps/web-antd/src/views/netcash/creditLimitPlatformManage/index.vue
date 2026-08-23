@@ -384,9 +384,9 @@ onMounted(() => {
             <div>
               <div class="mb-3 text-base font-medium">额度申请</div>
               <Form
-                class="max-w-xl"
-                :label-col="{ span: 5 }"
-                :wrapper-col="{ span: 16 }"
+                class="max-w-xl min-w-0"
+                :label-col="{ xs: 24, sm: 5 }"
+                :wrapper-col="{ xs: 24, sm: 16 }"
               >
                 <Form.Item label="调整类型" required>
                   <Select
@@ -417,19 +417,23 @@ onMounted(() => {
                     style="width: 100%"
                   />
                 </Form.Item>
-                <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
-                  <Space>
+                <Form.Item
+                  :wrapper-col="{
+                    xs: { offset: 0, span: 24 },
+                    sm: { offset: 5, span: 16 },
+                  }"
+                >
+                  <div class="flex flex-wrap gap-2">
                     <Button
                       v-if="canApply"
                       :loading="applySubmitting"
-                      class="w-28"
                       type="primary"
                       @click="submitApply"
                     >
                       提交申请
                     </Button>
-                    <Button class="w-28" @click="resetApplyForm">重置</Button>
-                  </Space>
+                    <Button @click="resetApplyForm">重置</Button>
+                  </div>
                 </Form.Item>
               </Form>
             </div>

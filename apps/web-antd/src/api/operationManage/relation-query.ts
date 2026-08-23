@@ -61,7 +61,9 @@ export async function fetchRelationQueryListApi(query: RelationQueryListQuery) {
  * @see views/operationalManage/relationQuery/index.vue
  */
 export function exportRelationQueryApi(params: Record<string, unknown>) {
-  const normalized = normalizeRelationQuery(params as RelationQueryListQuery);
+  const normalized = normalizeRelationQuery(
+    params as unknown as RelationQueryListQuery,
+  );
   return requestClient.get<{ Id?: number; Remark?: string; Status?: number }>(
     '/backend/relationsearch/recordexport',
     { params: trimSpace(normalized) },

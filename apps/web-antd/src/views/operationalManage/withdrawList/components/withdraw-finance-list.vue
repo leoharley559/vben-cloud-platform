@@ -234,7 +234,7 @@ function handleReceivedStatusFix(row: WithdrawFinanceItem) {
     title: '处理到账异常',
     content: '确定将该订单到账状态标记为已处理吗？',
     onOk: async () => {
-      await updateWithdrawReceivedStatusApi({ Id: row.Id });
+      await updateWithdrawReceivedStatusApi({ Id: row.Id ?? '' });
       message.success('操作成功');
       gridApi.reload();
     },
@@ -464,7 +464,7 @@ onMounted(() => {
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"
-          :player-id="row.PlayerId as number | string | undefined"
+          :player-id="row.PlayerId"
         />
       </template>
       <template #remark="{ row }">

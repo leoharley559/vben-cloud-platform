@@ -8,6 +8,7 @@ export interface MobileVerifyCodeListQuery {
 }
 
 export interface MobileVerifyCodeListItem {
+  [key: string]: unknown;
   CreateTime?: number | string;
   HandlerName?: string;
   LoginAccount?: string;
@@ -15,7 +16,6 @@ export interface MobileVerifyCodeListItem {
   PhoneNum?: string;
   PlayerId?: number | string;
   VerifyCode?: string;
-  [key: string]: unknown;
 }
 
 export interface MobileVerifyWhitelistListQuery {
@@ -27,11 +27,11 @@ export interface MobileVerifyWhitelistListQuery {
 }
 
 export interface MobileVerifyWhitelistItem {
+  [key: string]: unknown;
   Account?: string;
   ChannelId?: number | string;
   PackageName?: string;
   PlayerId?: number | string;
-  [key: string]: unknown;
 }
 
 export interface MobileVerifyWhitelistPayload {

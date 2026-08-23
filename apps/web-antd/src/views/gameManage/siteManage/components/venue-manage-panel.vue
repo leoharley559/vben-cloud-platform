@@ -58,9 +58,9 @@ interface VenueRow {
 }
 
 interface LangEntry {
+  [key: string]: unknown;
   Info: string;
   LangGroupId: number | string;
-  [key: string]: unknown;
 }
 
 const { checkPermission, projectConfig } = useCloudPermission();
@@ -379,25 +379,6 @@ function resetSwitchTime() {
   }
 }
 
-function changeSwitchRange(
-  value: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
-) {
-  if (!value?.[0] || !value[1]) {
-    resetSwitchTime();
-    return;
-  }
-  const start = dayjs(value[0]);
-  const end = dayjs(value[1]);
-  switchRange.value = [start, end];
-  if (switchMode.value === 'switch') {
-    switchForm.LoginEnableStartTime = start.unix();
-    switchForm.LoginEnableEndTime = end.unix();
-  } else {
-    switchForm.WalletLockStartTime = start.unix();
-    switchForm.WalletLockEndTime = end.unix();
-  }
-}
-
 async function submitSwitch() {
   if (showTimedPicker.value && !switchRange.value) {
     message.warning('请选择定时关闭时间');
@@ -444,22 +425,6 @@ function openMaintain(row: VenueRow) {
       ? [dayjs.unix(maintainForm.StartTime), dayjs.unix(maintainForm.EndTime)]
       : undefined;
   maintainVisible.value = true;
-}
-
-function changeMaintainRange(
-  value: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
-) {
-  if (!value?.[0] || !value[1]) {
-    maintainRange.value = undefined;
-    maintainForm.StartTime = 0;
-    maintainForm.EndTime = 0;
-    return;
-  }
-  const start = dayjs(value[0]);
-  const end = dayjs(value[1]);
-  maintainRange.value = [start, end];
-  maintainForm.StartTime = start.unix();
-  maintainForm.EndTime = end.unix();
 }
 
 async function submitMaintain() {

@@ -33,13 +33,14 @@ import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
 import { formatDevicePlatform } from '#/utils/everyday-report-format';
-import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 import { formatPlayerStatus } from '#/utils/player-status';
 import { PLAYER_STATISTICS_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
-import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
+import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
 import {
+  amount,
   arrayToCsvParam,
+  cents,
   copyTableText,
   formatReportDateTime,
   resolveReportRange,
@@ -150,9 +151,9 @@ const filters = reactive({
   StatisticType: 1 as number,
   InviteSite: [] as Array<string>,
   BindPhone: '',
-  regRange: null as [Dayjs, Dayjs] | null,
+  regRange: undefined as [Dayjs, Dayjs] | undefined,
   totalRange: [...defaultStatRange] as [Dayjs, Dayjs],
-  firstPayRange: null as [Dayjs, Dayjs] | null,
+  firstPayRange: undefined as [Dayjs, Dayjs] | undefined,
 });
 
 const page = reactive({ current: 1, pageSize: 20 });
@@ -258,7 +259,7 @@ function companyWinLoss(row: Row) {
 }
 
 function signedAmountNode(value: number) {
-  return h('span', { class: signedClass(value) }, formatAmountFromCent(value));
+  return h('span', { class: signedClass(value) }, cents(value));
 }
 
 function promoteIncome(row: Row) {
@@ -334,7 +335,7 @@ function buildQuery(searchType: 'list' | 'total') {
 const summaryItems = computed(() => [
   {
     title: '会员总余额',
-    value: formatAmountFromCent(
+    value: cents(
       num(totalData.value.SumGold) + num(totalData.value.SumWalletBalance),
     ),
   },
@@ -343,7 +344,7 @@ const summaryItems = computed(() => [
 function cellText(field: string, row: Row): string {
   switch (field) {
     case 'AccBalance': {
-      return formatAmountFromCent(accBalance(row));
+      return cents(accBalance(row));
     }
     case 'BackWaterMoney':
     case 'BetMoney':
@@ -355,7 +356,7 @@ function cellText(field: string, row: Row): string {
     case 'RedMoney':
     case 'WinMoney':
     case 'WithDrawMoney': {
-      return formatAmountFromCent(row[field]);
+      return cents(row[field]);
     }
     case 'BankCardTime':
     case 'CreateTime':
@@ -367,16 +368,16 @@ function cellText(field: string, row: Row): string {
       return formatReportDateTime(row[field]);
     }
     case 'CompanyWinLoss': {
-      return formatAmountFromCent(companyWinLoss(row));
+      return cents(companyWinLoss(row));
     }
     case 'DevicePlatform': {
       return formatDevicePlatform(row.DevicePlatform);
     }
     case 'FirstPayMoney': {
-      return formatAmount(row.FirstPayMoney);
+      return amount(row.FirstPayMoney);
     }
     case 'PromoteIncome': {
-      return formatAmountFromCent(promoteIncome(row));
+      return cents(promoteIncome(row));
     }
     case 'Status': {
       return formatPlayerStatus(row.Status as number);
@@ -388,7 +389,7 @@ function cellText(field: string, row: Row): string {
       return `VIP ${row.VipLevel ?? ''}`;
     }
     case 'WinLose': {
-      return formatAmountFromCent(winLose(row));
+      return cents(winLose(row));
     }
     default: {
       return String(row[field] ?? '');
@@ -454,7 +455,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     AccBalance: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(accBalance(record)),
+      customRender: ({ record }) => cents(accBalance(record)),
       key: 'AccBalance',
       title: '账户余额',
       width: 120,
@@ -468,7 +469,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     PayMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.PayMoney),
+      customRender: ({ record }) => cents(record.PayMoney),
       dataIndex: 'PayMoney',
       key: 'PayMoney',
       sorter: true,
@@ -484,7 +485,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     WithDrawMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.WithDrawMoney),
+      customRender: ({ record }) => cents(record.WithDrawMoney),
       dataIndex: 'WithDrawMoney',
       key: 'WithDrawMoney',
       sorter: true,
@@ -493,21 +494,21 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     BetValidMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.BetValidMoney),
+      customRender: ({ record }) => cents(record.BetValidMoney),
       key: 'BetValidMoney',
       title: '有效投注额',
       width: 120,
     },
     BetMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.BetMoney),
+      customRender: ({ record }) => cents(record.BetMoney),
       key: 'BetMoney',
       title: '投注金额',
       width: 110,
     },
     WinMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.WinMoney),
+      customRender: ({ record }) => cents(record.WinMoney),
       key: 'WinMoney',
       title: '派彩金额',
       width: 110,
@@ -528,28 +529,28 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     RedMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.RedMoney),
+      customRender: ({ record }) => cents(record.RedMoney),
       key: 'RedMoney',
       title: '红利',
       width: 100,
     },
     BackWaterMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.BackWaterMoney),
+      customRender: ({ record }) => cents(record.BackWaterMoney),
       key: 'BackWaterMoney',
       title: '返水',
       width: 100,
     },
     ChangeMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.ChangeMoney),
+      customRender: ({ record }) => cents(record.ChangeMoney),
       key: 'ChangeMoney',
       title: '账户调整',
       width: 110,
     },
     PromoteIncome: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(promoteIncome(record)),
+      customRender: ({ record }) => cents(promoteIncome(record)),
       key: 'PromoteIncome',
       title: '推广收入',
       width: 110,
@@ -608,14 +609,14 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     FirstPayMoney: {
       align: 'center',
-      customRender: ({ record }) => formatAmount(record.FirstPayMoney),
+      customRender: ({ record }) => amount(record.FirstPayMoney),
       key: 'FirstPayMoney',
       title: '首存金额',
       width: 110,
     },
     FirstBetGold: {
       align: 'center',
-      customRender: ({ record }) => formatAmountFromCent(record.FirstBetGold),
+      customRender: ({ record }) => cents(record.FirstBetGold),
       key: 'FirstBetGold',
       title: '首投金额',
       width: 110,
@@ -623,7 +624,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     FirstWithDrawMoney: {
       align: 'center',
       customRender: ({ record }) =>
-        formatAmountFromCent(record.FirstWithDrawMoney),
+        cents(record.FirstWithDrawMoney),
       key: 'FirstWithDrawMoney',
       title: '首提金额',
       width: 110,
@@ -757,10 +758,10 @@ function summaryValue(key: string) {
     case 'WinMoney':
     case 'WithDrawMoney': {
       const raw = summaryRaw(key);
-      return raw === null ? '-' : formatAmountFromCent(raw);
+      return raw === null ? '-' : cents(raw);
     }
     case 'FirstPayMoney': {
-      return formatAmount(t.SumFirstPayMoney);
+      return amount(t.SumFirstPayMoney);
     }
     case 'LoginAccount': {
       return '合计';
@@ -850,12 +851,12 @@ function handleReset() {
   filters.StatisticType = 1;
   filters.InviteSite = [];
   filters.BindPhone = '';
-  filters.regRange = null;
+  filters.regRange = undefined;
   filters.totalRange = [...resolveReportRange('currentMonth')] as [
     Dayjs,
     Dayjs,
   ];
-  filters.firstPayRange = null;
+  filters.firstPayRange = undefined;
   sort.value = '';
   handleSearch();
 }

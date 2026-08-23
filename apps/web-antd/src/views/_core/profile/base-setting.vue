@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   refresh: [];
-  'switch-tab': [tab: string];
+  switchTab: [tab: string];
 }>();
 
 const editing = ref(false);
@@ -121,7 +121,7 @@ async function saveNickname() {
         v-else
         type="link"
         class="px-0"
-        @click="emit('switch-tab', 'phone')"
+        @click="emit('switchTab', 'phone')"
       >
         未绑定
       </Button>
@@ -132,7 +132,7 @@ async function saveNickname() {
         v-else
         type="link"
         class="px-0"
-        @click="emit('switch-tab', 'private')"
+        @click="emit('switchTab', 'private')"
       >
         未设置
       </Button>
@@ -142,7 +142,7 @@ async function saveNickname() {
       <Button
         type="link"
         class="px-0"
-        @click="emit('switch-tab', 'login-security')"
+        @click="emit('switchTab', 'login-security')"
       >
         去设置
       </Button>

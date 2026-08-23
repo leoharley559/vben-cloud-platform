@@ -31,7 +31,7 @@ const props = withDefaults(
   },
 );
 
-const modelValue = defineModel<[Dayjs, Dayjs] | undefined>();
+const modelValue = defineModel<[Dayjs, Dayjs] | null | undefined>();
 
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
 const DEFAULT_START_TIME = '00:00:00';
@@ -295,16 +295,16 @@ function commitEndDate() {
   syncDateTexts();
 }
 
-function updateStartTime(value: Dayjs | null) {
-  if (!value) {
+function updateStartTime(value: Dayjs | null | string) {
+  if (!value || typeof value === 'string') {
     return;
   }
   const base = draftStart.value || dayjs();
   draftStart.value = applyTime(base, value, DEFAULT_START_TIME);
 }
 
-function updateEndTime(value: Dayjs | null) {
-  if (!value) {
+function updateEndTime(value: Dayjs | null | string) {
+  if (!value || typeof value === 'string') {
     return;
   }
   const base = draftEnd.value || draftStart.value || dayjs();
@@ -351,8 +351,9 @@ function shiftYear(offset: number) {
   leftMonth.value = leftMonth.value.add(offset, 'year');
 }
 
-function getPopupContainer(node: HTMLElement) {
-  return node.closest('.query-datetime-range-panel') || document.body;
+function getPopupContainer(node: HTMLElement): HTMLElement {
+  const panel = node.closest('.query-datetime-range-panel');
+  return panel instanceof HTMLElement ? panel : document.body;
 }
 </script>
 

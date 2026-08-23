@@ -149,7 +149,7 @@ onMounted(() => {
                 openDetails(
                   record.RegisterDate,
                   LOGIN_DAY_COLUMNS.find((item) => item.field === column.key)
-                    ?.day,
+                    ?.day ?? 0,
                 )
               "
             >

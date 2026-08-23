@@ -5,14 +5,15 @@ import { trimSpace } from '#/utils/string';
 
 /** AI 助手内容分类项 */
 export interface AiAssistantCategoryItem {
+  [key: string]: unknown;
   Id?: number | string;
   /** 分类标题 */
   Title?: string;
-  [key: string]: unknown;
 }
 
 /** AI 助手内容浏览/咨询记录项 */
 export interface AiAssistantContentViewItem {
+  [key: string]: unknown;
   /** 所属分类标题 */
   CategoryTitle?: string;
   ContentId?: number | string;
@@ -26,7 +27,6 @@ export interface AiAssistantContentViewItem {
   Satisfaction?: number;
   /** 内容标题 */
   Title?: string;
-  [key: string]: unknown;
 }
 
 /**

@@ -44,9 +44,9 @@ interface NoticeRow {
   Packages?: number | string;
   ShowIdx?: number;
   ShowStage?: number;
+  StartTime?: number | string;
   /** 行内 Status：2=已关闭（与筛选 Status 语义不同） */
   Status?: number;
-  StartTime?: number | string;
   UpdateTime?: number | string;
 }
 

@@ -74,6 +74,11 @@ function clearPendingWhiteUsername() {
   pendingWhiteUsername.value = '';
 }
 
+type WhiteListMode = 'ip' | 'user';
+function toWhiteListMode(key: string): WhiteListMode {
+  return key as WhiteListMode;
+}
+
 onMounted(() => {
   activeTab.value = tabs.value[0]?.key || 'ip';
   void loadStats();
@@ -99,7 +104,7 @@ watch(activeTab, (key) => {
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
           <WhiteListPanel
             v-if="activeTab === item.key"
-            :mode="item.key as 'ip' | 'user'"
+            :mode="toWhiteListMode(item.key)"
             :initial-white-username="
               item.key === 'ip' ? pendingWhiteUsername : ''
             "

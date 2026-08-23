@@ -24,12 +24,11 @@ import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
-import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatVenueName } from '#/utils/game-config';
 import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import { arrayToCsvParam } from '#/views/dataClose/shared/report-utils';
+import { arrayToCsvParam, cents } from '#/views/dataClose/shared/report-utils';
 
 import {
   calcCompanyIncome,
@@ -115,14 +114,14 @@ const summaryItems = computed(() => {
   if (canIncome.value) {
     items.push({
       title: '公司收入',
-      value: formatAmountFromCent(calcCompanyIncome(t)),
+      value: cents(calcCompanyIncome(t)),
     });
   }
   if (canWin.value) {
     items.push(
       {
         title: '公司总输赢',
-        value: formatAmountFromCent(calcCompanyWin(t)),
+        value: cents(calcCompanyWin(t)),
       },
       {
         title: '盈利率',
@@ -134,7 +133,7 @@ const summaryItems = computed(() => {
       },
       {
         title: '存兑差',
-        value: formatAmountFromCent(
+        value: cents(
           num(t.SumPayMergerMoney) - num(t.SumWithdrawMoney),
         ),
       },
@@ -144,7 +143,7 @@ const summaryItems = computed(() => {
       },
       {
         title: '运营总成本',
-        value: formatAmountFromCent(calcOperatingCost(t)),
+        value: cents(calcOperatingCost(t)),
       },
     );
   }
@@ -201,19 +200,19 @@ const venueColumns: TableColumnType<Row>[] = [
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumBet),
+    customRender: ({ record }) => cents(record.SumBet),
     key: 'SumBet',
     title: '投注额',
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumValidWater),
+    customRender: ({ record }) => cents(record.SumValidWater),
     key: 'SumValidWater',
     title: '有效流水',
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(venueProfit(record)),
+    customRender: ({ record }) => cents(venueProfit(record)),
     key: 'SumBetWin',
     title: '盈亏',
   },
@@ -235,7 +234,7 @@ const playerColumns: TableColumnType<Row>[] = [
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(playerProfit(record)),
+    customRender: ({ record }) => cents(playerProfit(record)),
     key: 'SumBetWin',
     title: '盈亏',
   },
@@ -681,14 +680,14 @@ onMounted(() => {
         :items="[
           {
             title: '新用户充值',
-            value: formatAmountFromCent(
+            value: cents(
               num(incomeData.SumNewPayMoney) +
                 num(incomeData.SumNewAgentPayMoney),
             ),
           },
           {
             title: '老用户充值',
-            value: formatAmountFromCent(
+            value: cents(
               num(incomeData.SumPayMergerMoney) -
                 (num(incomeData.SumNewPayMoney) +
                   num(incomeData.SumNewAgentPayMoney)),
@@ -696,11 +695,11 @@ onMounted(() => {
           },
           {
             title: '官方充值',
-            value: formatAmountFromCent(incomeData.SumPayMoney),
+            value: cents(incomeData.SumPayMoney),
           },
           {
             title: '币商充值',
-            value: formatAmountFromCent(incomeData.SumAgentPayMoney),
+            value: cents(incomeData.SumAgentPayMoney),
           },
           {
             title: '充值成功率',

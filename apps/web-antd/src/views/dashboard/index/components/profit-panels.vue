@@ -60,7 +60,7 @@ async function loadPlayerProfit() {
           LoginAccount: user.LoginAccount,
           PackageName: user.PackageName,
           PlayerName: user.PlayerName,
-        };
+        } as Record<string, unknown>;
       });
     }
 

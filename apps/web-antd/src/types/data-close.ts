@@ -14,11 +14,33 @@ export interface DataCloseQuery extends Record<string, unknown> {
 export interface ReportListResult<
   T extends ReportRow = ReportRow,
 > extends CloudListResult<T> {
+  [key: string]: unknown;
   ItemsMoney?: T[];
   ItemsOld?: T[];
   MoreItems?: ReportRow;
-  Total?: number | ReportRow;
-  [key: string]: unknown;
+}
+
+function resolveReportItems(
+  data: {
+    Items?: null | ReportRow[];
+    ItemsMoney?: null | ReportRow[];
+    ItemsOld?: null | ReportRow[];
+  },
+  items?: ReportRow[],
+) {
+  if (items) {
+    return items;
+  }
+  if (Array.isArray(data.ItemsMoney) && data.ItemsMoney.length > 0) {
+    return data.ItemsMoney;
+  }
+  if (Array.isArray(data.ItemsOld) && data.ItemsOld.length > 0) {
+    return data.ItemsOld;
+  }
+  if (Array.isArray(data.Items)) {
+    return data.Items;
+  }
+  return [];
 }
 
 export function toListResult(
@@ -42,15 +64,7 @@ export function toListResult(
     };
   }
 
-  const resolvedItems =
-    items ??
-    (Array.isArray(data.ItemsMoney) && data.ItemsMoney.length > 0
-      ? data.ItemsMoney
-      : Array.isArray(data.ItemsOld) && data.ItemsOld.length > 0
-        ? data.ItemsOld
-        : Array.isArray(data.Items)
-          ? data.Items
-          : []);
+  const resolvedItems = resolveReportItems(data, items);
 
   return {
     ...data,

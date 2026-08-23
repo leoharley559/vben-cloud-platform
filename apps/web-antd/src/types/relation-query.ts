@@ -1,4 +1,5 @@
 export interface RelationQueryItem {
+  [key: string]: unknown;
   ChannelId?: number | string;
   DeviceId?: string;
   InviterLoginAccount?: number | string;
@@ -9,7 +10,6 @@ export interface RelationQueryItem {
   LoginPlatform?: string;
   LoginTime?: number | string;
   PackageName?: string;
-  [key: string]: unknown;
 }
 
 export interface RelationQueryTotal {

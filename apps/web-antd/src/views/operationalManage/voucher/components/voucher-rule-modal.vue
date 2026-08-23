@@ -41,7 +41,7 @@ watch(
     }
     if (props.mode === 'edit' && props.rule) {
       resetDraft();
-      Object.assign(draft, JSON.parse(JSON.stringify(props.rule)));
+      Object.assign(draft, structuredClone(props.rule));
     } else {
       resetDraft();
     }
@@ -53,7 +53,7 @@ function handleOk() {
     message.warning('请填写跳转参数');
     return;
   }
-  emit('submit', JSON.parse(JSON.stringify(draft)));
+  emit('submit', structuredClone(draft));
   open.value = false;
 }
 </script>

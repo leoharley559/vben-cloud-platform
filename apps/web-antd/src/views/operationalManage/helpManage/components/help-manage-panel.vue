@@ -185,7 +185,7 @@ const gridOptions: VxeTableGridOptions<HelpRow> = {
           Sort: sortValue.value,
         });
         const items = ((result.Items || []) as unknown as HelpRow[]).filter(
-          matchStatusFilter,
+          (row) => matchStatusFilter(row),
         );
         return {
           items,
@@ -215,7 +215,6 @@ function handleReset() {
 }
 
 function runAction(
-  title: string,
   content: string,
   api: (data: { Id: number | string }) => Promise<unknown>,
   row: HelpRow,
@@ -237,15 +236,15 @@ function runAction(
 }
 
 function handleAgree(row: HelpRow) {
-  runAction('同意协助', '是否同意此协助订单？', agreeHelpRecordApi, row);
+  runAction('是否同意此协助订单？', agreeHelpRecordApi, row);
 }
 
 function handleReject(row: HelpRow) {
-  runAction('拒绝', '是否拒绝此协助订单？', rejectHelpRecordApi, row);
+  runAction('是否拒绝此协助订单？', rejectHelpRecordApi, row);
 }
 
 function handleClose(row: HelpRow) {
-  runAction('终止', '是否终止此协助订单？', closeHelpRecordApi, row);
+  runAction('是否终止此协助订单？', closeHelpRecordApi, row);
 }
 </script>
 

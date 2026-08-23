@@ -100,8 +100,18 @@ onUnmounted(clearTimer);
 </script>
 
 <template>
-  <Form class="max-w-xl" :label-col="{ span: 5 }" :wrapper-col="{ span: 16 }">
-    <Form.Item v-if="!info.Phone" :wrapper-col="{ offset: 5, span: 16 }">
+  <Form
+    class="max-w-xl min-w-0"
+    :label-col="{ xs: 24, sm: 5 }"
+    :wrapper-col="{ xs: 24, sm: 16 }"
+  >
+    <Form.Item
+      v-if="!info.Phone"
+      :wrapper-col="{
+        xs: { offset: 0, span: 24 },
+        sm: { offset: 5, span: 16 },
+      }"
+    >
       <div class="text-amber-600">请先绑定手机号后再设置私人密码</div>
     </Form.Item>
     <Form.Item label="私人密码" required>
@@ -114,8 +124,8 @@ onUnmounted(clearTimer);
       />
     </Form.Item>
     <Form.Item label="验证码" required>
-      <div class="flex gap-2">
-        <Input v-model:value="verifyCode" placeholder="短信验证码" />
+      <div class="flex flex-wrap gap-2">
+        <Input v-model:value="verifyCode" class="min-w-0 flex-1" placeholder="短信验证码" />
         <Button
           :disabled="countdown > 0 || !info.Phone"
           :loading="sending"
@@ -125,7 +135,12 @@ onUnmounted(clearTimer);
         </Button>
       </div>
     </Form.Item>
-    <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
+    <Form.Item
+      :wrapper-col="{
+        xs: { offset: 0, span: 24 },
+        sm: { offset: 5, span: 16 },
+      }"
+    >
       <Button
         block
         :disabled="!info.Phone"

@@ -100,14 +100,16 @@ function buildFilter() {
     filters.push({ key: 'Content', value: filterContent.value });
   }
   const [begin, end] = filterDateRange.value || [];
-  filters.push({
-    key: 'BeginTime',
-    value: String(begin ? begin.unix() : ''),
-  });
-  filters.push({
-    key: 'EndTime',
-    value: String(end ? end.unix() : ''),
-  });
+  filters.push(
+    {
+      key: 'BeginTime',
+      value: String(begin ? begin.unix() : ''),
+    },
+    {
+      key: 'EndTime',
+      value: String(end ? end.unix() : ''),
+    },
+  );
   return filters;
 }
 

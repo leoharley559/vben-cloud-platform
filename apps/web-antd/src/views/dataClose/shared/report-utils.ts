@@ -164,9 +164,7 @@ export function formatOfflineDuration(seconds: unknown) {
   const value = Math.floor(Number(seconds) || 0);
   if (!value) return '-';
   if (value < 60) return `${value}秒`;
-  let remain = value;
-  let minute = Math.floor(remain / 60);
-  remain = remain % 60;
+  let minute = Math.floor(value / 60);
   let hour = 0;
   let day = 0;
   if (minute >= 60) {
@@ -228,9 +226,9 @@ export function amount(value: unknown) {
 }
 
 export function calcProfit(bet: unknown, win: unknown, other: unknown = 0) {
-  return new BigNumber(bet || 0)
-    .minus(win || 0)
-    .plus(other || 0)
+  return new BigNumber(Number(bet || 0))
+    .minus(Number(win || 0))
+    .plus(Number(other || 0))
     .toNumber();
 }
 

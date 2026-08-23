@@ -653,6 +653,7 @@ async function submitAdjust() {
 }
 
 interface BatchRow {
+  _rowKey: number;
   Amount: number;
   PackageName: string;
   PlayerId: number;
@@ -660,7 +661,6 @@ interface BatchRow {
   ReferenceAccount: string;
   Remarks: string;
   WithdrawWaterMultiply: number;
-  _rowKey: number;
 }
 const batchOpen = ref(false);
 const batchSubmitting = ref(false);

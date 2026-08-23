@@ -23,6 +23,7 @@ import { toUnixRange } from '#/views/dataClose/shared/report-utils';
 defineOptions({ name: 'GoldInventoryPanel' });
 
 interface InventoryRow {
+  [key: string]: unknown;
   HistoryScores?: number;
   InParentAgentScores?: number;
   InPlatformScores?: number;
@@ -31,7 +32,6 @@ interface InventoryRow {
   ReportDay?: string;
   SelfPayMoney?: number;
   SelfWithdrawMoney?: number;
-  [key: string]: unknown;
 }
 
 interface TotalSum {

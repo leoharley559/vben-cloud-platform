@@ -45,7 +45,8 @@ const thirdModalsRef = ref<InstanceType<typeof ThirdChannelModals>>();
 
 async function loadTypes() {
   try {
-    types.value = (await fetchDrawingsChannelSettingListApi()).toSorted(
+    const result = await fetchDrawingsChannelSettingListApi();
+    types.value = result.toSorted(
       (a, b) => Number(a.Sort || 0) - Number(b.Sort || 0),
     );
     if (!channelType.value) {
@@ -122,7 +123,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
     {
       field: 'AccountNum',
       formatter: ({ row }) =>
-        row.ThirdWithdrawId ? row.ShowName : row.AccountNum,
+        String(row.ThirdWithdrawId ? row.ShowName : row.AccountNum ?? ''),
       minWidth: 150,
       title: '出款账号',
     },

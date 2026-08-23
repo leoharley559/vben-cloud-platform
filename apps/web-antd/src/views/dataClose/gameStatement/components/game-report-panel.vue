@@ -237,7 +237,7 @@ async function handleExport() {
     ],
     '游戏报表',
     (row) => [
-      formatVenueName(row.GameType, gameConfig.value),
+      venueLabel(row.GameType),
       row.CountBetNum,
       row.CountNum,
       cents(row.SumBet),
@@ -303,10 +303,11 @@ onMounted(async () => {
         />
         <Input
           v-else
-          v-model:value="adminSearch"
+          :value="Array.isArray(adminSearch) ? '' : adminSearch"
           style="width: 180px"
           allow-clear
           placeholder="请输入代理账号"
+          @update:value="(v) => (adminSearch = v)"
         />
       </Space.Compact>
       <Space.Compact>
@@ -327,10 +328,11 @@ onMounted(async () => {
         />
         <Input
           v-else
-          v-model:value="channelSearch"
+          :value="Array.isArray(channelSearch) ? '' : channelSearch"
           style="width: 180px"
           allow-clear
           placeholder="请输入渠道"
+          @update:value="(v) => (channelSearch = v)"
         />
       </Space.Compact>
       <Space.Compact>

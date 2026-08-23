@@ -26,6 +26,13 @@ const emit = defineEmits<{
 
 const { projectConfig } = useCloudPermission();
 
+type BankOption = { BankCode: string; BankName?: string };
+
+function getBankList(): BankOption[] {
+  const list = projectConfig.value?.BankList;
+  return Array.isArray(list) ? (list as BankOption[]) : [];
+}
+
 const formOpen = ref(false);
 const secretOpen = ref(false);
 const form = reactive<Record<string, any>>({});
@@ -41,7 +48,7 @@ function openEdit(row: Record<string, unknown>) {
     MinOrderMoney: Number(row.MinOrderMoney || 0) / 100,
     SupportBank: row.SupportBank
       ? String(row.SupportBank).split(',')
-      : (projectConfig.value?.BankList || []).map((b: any) => b.BankCode),
+      : (getBankList().map((b) => b.BankCode)),
     WithdrawId: row.ThirdWithdrawId ? row.Id : undefined,
     fromStrategy: !!row.ThirdWithdrawId,
   });
@@ -49,7 +56,7 @@ function openEdit(row: Record<string, unknown>) {
 }
 
 function openSecret(row: Record<string, unknown>) {
-  let params: Record<string, unknown> = {};
+  let params: Record<string, unknown>;
   try {
     params = row.AgentParams ? JSON.parse(String(row.AgentParams)) : {};
   } catch {
@@ -162,7 +169,7 @@ defineExpose({ openEdit, openSecret });
         <Checkbox.Group
           v-model:value="form.SupportBank"
           :options="
-            (projectConfig?.BankList || []).map((b: any) => ({
+            getBankList().map((b) => ({
               label: b.BankName,
               value: b.BankCode,
             }))

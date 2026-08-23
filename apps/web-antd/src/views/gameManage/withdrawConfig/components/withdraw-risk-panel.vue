@@ -221,7 +221,7 @@ const usesMultiSelect = computed(() =>
 );
 
 function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return structuredClone(value);
 }
 
 function parseSettings(value: WithdrawRiskRule['Setting']) {
@@ -265,30 +265,56 @@ function formatTemplate(template: string, values: unknown[]) {
   );
 }
 
+function buildDetailTemplateValues(
+  row: WithdrawRiskRule,
+  setting: Record<string, unknown>,
+) {
+  if (row.Name === 'DepositWithdrawBehavior') {
+    return [
+      currencyName(setting.DepositCurrency),
+      currencyName(setting.WithdrawCurrency),
+      setting.Number,
+      setting.Trigger,
+    ];
+  }
+  if (row.Name === 'CumulativeWithdraw') {
+    return [
+      row.Number,
+      currencyName(setting.WithdrawCurrency),
+      setting.WithdrawAmount,
+    ];
+  }
+  if (row.Name === 'RegisterTime') {
+    return [currencyName(setting.RegisterCurrency), setting.Number];
+  }
+  if (['FirstWithdraw', 'FirstWithdrawToday'].includes(row.Name)) {
+    return [currencyName(setting.WithdrawCurrency), setting.WithdrawAmount];
+  }
+  return [row.Number, row.Str];
+}
+
+function formatRuleValue(row: WithdrawRiskRule) {
+  if (['AfterNameChanged', 'AfterPhoneChanged'].includes(row.Name)) {
+    return `${row.Number ?? '-'} 次提现`;
+  }
+  if (row.Name === 'PaymentWithdrawRate') {
+    return `${row.Number ?? '-'}%`;
+  }
+  if (timeRuleNames.has(row.Name)) {
+    return `${row.Number ?? '-'} 小时；参数 ${row.Str || '-'}`;
+  }
+  if (row.Name === 'IpLimit') {
+    return row.Str;
+  }
+  return row.Number;
+}
+
 function formatRule(row: WithdrawRiskRule) {
   const settings = parseSettings(row.Setting);
   const setting = settings[0] || {};
   const detailTemplate = detailTemplates[row.Name];
   if (detailTemplate) {
-    const values: unknown[] =
-      row.Name === 'DepositWithdrawBehavior'
-        ? [
-            currencyName(setting.DepositCurrency),
-            currencyName(setting.WithdrawCurrency),
-            setting.Number,
-            setting.Trigger,
-          ]
-        : row.Name === 'CumulativeWithdraw'
-          ? [
-              row.Number,
-              currencyName(setting.WithdrawCurrency),
-              setting.WithdrawAmount,
-            ]
-          : row.Name === 'RegisterTime'
-            ? [currencyName(setting.RegisterCurrency), setting.Number]
-            : ['FirstWithdraw', 'FirstWithdrawToday'].includes(row.Name)
-              ? [currencyName(setting.WithdrawCurrency), setting.WithdrawAmount]
-              : [row.Number, row.Str];
+    const values = buildDetailTemplateValues(row, setting);
     return formatTemplate(detailTemplate, values);
   }
   const name = ruleNameMap[row.Name] || row.Name;
@@ -302,15 +328,7 @@ function formatRule(row: WithdrawRiskRule) {
     return `${name}（${optionNames(row.Str, rechargeOptions.value)}）`;
   }
   if (noParameterRuleNames.has(row.Name)) return name;
-  const value = ['AfterNameChanged', 'AfterPhoneChanged'].includes(row.Name)
-    ? `${row.Number ?? '-'} 次提现`
-    : row.Name === 'PaymentWithdrawRate'
-      ? `${row.Number ?? '-'}%`
-      : timeRuleNames.has(row.Name)
-        ? `${row.Number ?? '-'} 小时；参数 ${row.Str || '-'}`
-        : row.Name === 'IpLimit'
-          ? row.Str
-          : row.Number;
+  const value = formatRuleValue(row);
   return `${name} ${symbolMap[row.Name] || ''} ${value ?? '-'}`.trim();
 }
 

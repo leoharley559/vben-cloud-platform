@@ -111,7 +111,7 @@ export async function fetchGameRecordListApi(query: GameRecordListQuery) {
 export function exportGameRecordListApi(params: Record<string, unknown>) {
   return requestClient.get<{ Id?: number; Remark?: string; Status?: number }>(
     '/backend/operation/gametransactiondetailexcel',
-    { params: normalizeGameRecordQuery(params as GameRecordListQuery) },
+    { params: normalizeGameRecordQuery(params as unknown as GameRecordListQuery) },
   );
 }
 

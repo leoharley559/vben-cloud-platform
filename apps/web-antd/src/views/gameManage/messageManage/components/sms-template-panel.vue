@@ -31,13 +31,13 @@ import { formatOperationDateTime } from '#/utils/operation-status';
 defineOptions({ name: 'SmsTemplatePanel' });
 
 interface TemplateRow {
+  [key: string]: unknown;
   ApplyGamePackageIds?: string;
   Id: number | string;
   IsOpen?: number;
   OperateTime?: number | string;
   Operator?: string;
   Scenario?: number;
-  [key: string]: unknown;
 }
 
 const { projectConfig } = useCloudPermission();

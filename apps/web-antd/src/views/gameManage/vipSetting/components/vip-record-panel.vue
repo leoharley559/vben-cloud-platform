@@ -388,7 +388,7 @@ onMounted(() => {
         <template v-if="column.key === 'LoginAccount'">
           <PlayerAccountLink
             :login-account="String(record.LoginAccount || '')"
-            :player-id="record.PlayerId as number | string | undefined"
+            :player-id="record.PlayerId"
           />
         </template>
         <span v-else-if="column.key === 'CreateTime'">

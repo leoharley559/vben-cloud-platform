@@ -448,7 +448,7 @@ async function handleExport() {
         },
         {
           header: '玩家昵称',
-          value: (row) => row.PlayerName || '-',
+          value: (row) => String(row.PlayerName || '-'),
         },
         { header: '代理账号', value: (row) => row.AdminUserName || '-' },
         { header: '产品名称', value: (row) => row.PackageName || '-' },
@@ -639,7 +639,7 @@ onMounted(() => {
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"
-          :player-id="row.PlayerId as number | string | undefined"
+          :player-id="row.PlayerId"
         />
       </template>
       <template #actions="{ row }">

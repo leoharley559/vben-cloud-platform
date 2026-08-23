@@ -3,12 +3,12 @@ import { trimSpace } from '#/utils/string';
 
 /** 短信/召回等模块通用列表响应 */
 export interface SmsListResult<T = Record<string, unknown>> {
+  [key: string]: unknown;
   Items?: T[];
   Message?: string;
   Pagination?: { MaxCount?: number };
   Switch?: { IsAuto?: boolean; IsOpen?: boolean };
   Total?: number | Record<string, unknown>;
-  [key: string]: unknown;
 }
 
 /** 短信通道配置列表响应 */

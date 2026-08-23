@@ -36,11 +36,12 @@ import {
 defineOptions({ name: 'ApplyServicePanel' });
 
 interface ApplyRow {
-  Id: number | string;
   Content?: string;
   CreateTime?: number | string;
   FileUrl?: string;
+  Id: number | string;
   LoginAccount?: string;
+  newQuest?: string;
   OperatorUsername?: string;
   OrderId?: string;
   PackageName?: string;
@@ -54,7 +55,6 @@ interface ApplyRow {
   UpdateTime?: number | string;
   WorkQuestionType?: number | string;
   WorkQuestionTypeName?: string;
-  newQuest?: string;
 }
 
 interface OptionItem {
@@ -646,7 +646,7 @@ onMounted(() => {
             mode="multiple"
             :options="statusOptions"
             placeholder="请选择"
-            @change="onStatusChange"
+            @change="(value) => onStatusChange((value as Array<number | string>) || [])"
           />
         </div>
 

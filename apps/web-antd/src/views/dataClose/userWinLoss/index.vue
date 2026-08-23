@@ -29,14 +29,14 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
-import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatVenueName } from '#/utils/game-config';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import {
   arrayToCsvParam,
+  cents,
   resolveReportRange,
 } from '#/views/dataClose/shared/report-utils';
 
@@ -183,16 +183,16 @@ function buildQuery(isExp = false) {
 const summaryItems = computed(() => {
   const m = moreItems.value;
   return [
-    { title: '投注总计', value: formatAmountFromCent(m.SumBetGold) },
-    { title: '有效投注总计', value: formatAmountFromCent(m.SumValidWater) },
+    { title: '投注总计', value: cents(m.SumBetGold) },
+    { title: '有效投注总计', value: cents(m.SumValidWater) },
     {
       title: '派送总计',
-      value: formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold)),
+      value: cents(num(m.SumWinGold) - num(m.SumProfitGold)),
     },
 
     {
       title: '玩家盈亏总计',
-      value: formatAmountFromCent(m.SumWinGold),
+      value: cents(m.SumWinGold),
     },
   ];
 });
@@ -230,7 +230,7 @@ const columns = computed<TableColumnType<Row>[]>(() => [
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumBetGold),
+    customRender: ({ record }) => cents(record.SumBetGold),
     dataIndex: 'SumBetGold',
     key: 'SumBetGold',
     sorter: true,
@@ -244,7 +244,7 @@ const columns = computed<TableColumnType<Row>[]>(() => [
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumValidWater),
+    customRender: ({ record }) => cents(record.SumValidWater),
     dataIndex: 'SumValidWater',
     key: 'SumValidWater',
     sorter: true,
@@ -252,7 +252,7 @@ const columns = computed<TableColumnType<Row>[]>(() => [
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(deliveryGold(record)),
+    customRender: ({ record }) => cents(deliveryGold(record)),
     key: 'DeliveryGold',
     title: '实际派送',
   },
@@ -273,11 +273,11 @@ function getSummary() {
     '-',
     '-',
     '-',
-    formatAmountFromCent(m.SumBetGold),
+    cents(m.SumBetGold),
     String(m.SumBetCount ?? '-'),
-    formatAmountFromCent(m.SumValidWater),
-    formatAmountFromCent(num(m.SumWinGold) - num(m.SumProfitGold)),
-    formatAmountFromCent(m.SumWinGold),
+    cents(m.SumValidWater),
+    cents(num(m.SumWinGold) - num(m.SumProfitGold)),
+    cents(m.SumWinGold),
   ];
 }
 
@@ -391,11 +391,11 @@ async function handleExport() {
           row.ChannelName,
           row.Username,
           isTotal ? '-' : formatVenue(row.GameType),
-          formatAmountFromCent(row.SumBetGold),
+          cents(row.SumBetGold),
           row.SumBetCount,
-          formatAmountFromCent(row.SumValidWater),
-          formatAmountFromCent(deliveryGold(row)),
-          formatAmountFromCent(row.SumWinGold),
+          cents(row.SumValidWater),
+          cents(deliveryGold(row)),
+          cents(row.SumWinGold),
         ];
       },
     );
@@ -546,7 +546,7 @@ onMounted(async () => {
           <PlayerAccountLink
             v-if="column.key === 'LoginAccount'"
             :login-account="String(record.LoginAccount || '')"
-            :player-id="record.PlayerId as number | string | undefined"
+            :player-id="record.PlayerId"
           />
           <AgencyAccountLink
             v-else-if="column.key === 'Username'"
@@ -559,7 +559,7 @@ onMounted(async () => {
                 color: num(record.SumWinGold) < 0 ? '#f5222d' : '#52c41a',
               }"
             >
-              {{ formatAmountFromCent(record.SumWinGold) }}
+              {{ cents(record.SumWinGold) }}
             </span>
           </template>
         </template>

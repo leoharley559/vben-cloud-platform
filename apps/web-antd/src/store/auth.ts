@@ -106,7 +106,7 @@ export const useAuthStore = defineStore('auth', () => {
       });
     }
 
-    return userStore.userInfo ?? userInfo;
+    return userStore.userInfo ?? (userInfo as UserInfo);
   }
 
   /**
@@ -131,7 +131,10 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       if (loginResult.accessToken) {
-        userInfo = await completeLogin(loginResult.accessToken, onSuccess);
+        userInfo = (await completeLogin(
+          loginResult.accessToken,
+          onSuccess,
+        )) as UserInfo;
       }
 
       return { loginResult, userInfo };
@@ -155,7 +158,6 @@ export const useAuthStore = defineStore('auth', () => {
     },
     onSuccess?: () => Promise<void> | void,
   ) {
-    let userInfo: null | UserInfo = null;
     try {
       twoFactorLoading.value = true;
       const loginResult = await loginByPhoneApi({
@@ -167,7 +169,10 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error('二次验证失败，未返回 Token');
       }
 
-      userInfo = await completeLogin(loginResult.accessToken, onSuccess);
+      const userInfo = (await completeLogin(
+        loginResult.accessToken,
+        onSuccess,
+      )) as UserInfo;
       return { userInfo };
     } catch (error) {
       console.error('[authLoginBy2FA] failed', error);

@@ -5,13 +5,13 @@ import { trimSpace } from '#/utils/string';
 
 /** 公司/包体/设备日报原始响应 */
 export interface DailyReportRespond {
-  /** 历史日报明细行 */
-  Items?: Record<string, unknown>[];
-  /** 今日日报单行 */
-  TodayItems?: Record<string, unknown>;
   /** 横幅汇总指标 */
   BannerItems?: Record<string, unknown>;
+  /** 历史日报明细行 */
+  Items?: Record<string, unknown>[];
   Pagination?: { MaxCount?: number };
+  /** 今日日报单行 */
+  TodayItems?: Record<string, unknown>;
 }
 
 /**

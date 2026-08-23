@@ -39,6 +39,10 @@ const activeList = computed(() =>
 
 const hasSelection = computed(() => selectedRowKeys.value.length > 0);
 
+function onSelectChange(keys: (number | string)[]) {
+  selectedRowKeys.value = keys;
+}
+
 const columns = [
   { dataIndex: 'index', key: 'index', title: '序号', width: 70 },
   { dataIndex: 'path', key: 'path', title: '路径', width: 460 },
@@ -154,7 +158,7 @@ function handlePassConfirm(data: Record<string, unknown>) {
       :row-key="(record) => record.Id"
       :row-selection="{
         selectedRowKeys,
-        onChange: (keys) => (selectedRowKeys = keys as Array<number | string>),
+        onChange: onSelectChange,
       }"
       :scroll="{ x: 980, y: antTableScrollY(60) }"
     >

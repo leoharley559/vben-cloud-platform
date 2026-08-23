@@ -1,9 +1,9 @@
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 
 export interface SecuritySettingItem {
+  [key: string]: unknown;
   IsOpen?: boolean;
   PageId?: number | string;
-  [key: string]: unknown;
 }
 
 /** 判断页面是否开启谷歌验证码等安全校验 */

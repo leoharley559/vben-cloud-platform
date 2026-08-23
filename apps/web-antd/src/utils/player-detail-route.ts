@@ -1,10 +1,9 @@
 /** 构建玩家详情路由路径（对齐旧站 PlayerId:LoginAccount） */
 export function buildPlayerDetailPath(
   playerId: number | string,
-  loginAccount?: string,
+  loginAccount = '',
 ) {
-  const account = loginAccount || '';
-  return `/operationalManage/playerDetails/${playerId}:${account}`;
+  return `/operationalManage/playerDetails/${playerId}:${loginAccount}`;
 }
 
 /** 解析路由参数 :id */

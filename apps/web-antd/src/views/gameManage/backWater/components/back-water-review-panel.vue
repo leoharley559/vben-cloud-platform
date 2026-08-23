@@ -42,6 +42,8 @@ defineOptions({ name: 'BackWaterReviewPanel' });
 
 type ReviewMode = 'manual' | 'system';
 interface ReviewRow {
+  AdminId?: number | string;
+  AdminName?: string;
   ApplyBackWater?: number;
   AwardDesc?: string;
   AwardTime?: number | string;
@@ -51,6 +53,7 @@ interface ReviewRow {
   ConfigName?: string;
   CreateTime?: number | string;
   Id: number | string;
+  LevelName?: string;
   LoginAccount?: string;
   OrderId?: string;
   PackageName?: string;
@@ -690,7 +693,7 @@ onMounted(async () => {
         <template #loginAccount="{ row }">
           <PlayerAccountLink
             :login-account="String(row.LoginAccount || '')"
-            :player-id="row.PlayerId as number | string | undefined"
+            :player-id="row.PlayerId"
           />
         </template>
         <template #action="{ row }">

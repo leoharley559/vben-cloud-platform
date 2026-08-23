@@ -12,7 +12,6 @@ import {
   Modal,
   Radio,
   Select,
-  Space,
   Table,
   Tag,
 } from 'ant-design-vue';
@@ -316,7 +315,7 @@ function exportBatchFailures() {
 </script>
 
 <template>
-  <div>
+  <div class="min-w-0 max-w-full">
     <div class="mb-3">
       <Radio.Group v-model:value="provideMode" button-style="solid">
         <Radio.Button v-if="canSingleProvide" value="single">
@@ -332,13 +331,13 @@ function exportBatchFailures() {
       <div class="mb-3 text-base font-medium">代理信息</div>
       <template v-if="provideMode === 'single'">
         <div class="mb-4 flex flex-wrap items-end gap-2">
-          <div class="flex flex-col gap-1">
+          <div class="flex w-full min-w-0 max-w-[260px] flex-col gap-1">
             <Input
               v-model:value="provideForm.AdminName"
               allow-clear
+              class="w-full"
               :maxlength="100"
               placeholder="请输入代理账号"
-              style="width: 260px"
             >
               <template #addonBefore>代理账号</template>
             </Input>
@@ -382,9 +381,9 @@ function exportBatchFailures() {
     <div>
       <div class="mb-3 text-base font-medium">红利发放</div>
       <Form
-        class="max-w-xl"
-        :label-col="{ span: 5 }"
-        :wrapper-col="{ span: 16 }"
+        class="max-w-xl min-w-0"
+        :label-col="{ xs: 24, sm: 5 }"
+        :wrapper-col="{ xs: 24, sm: 16 }"
       >
         <Form.Item label="钱包类型">
           <Radio.Group v-model:value="provideForm.WalletType">
@@ -416,10 +415,14 @@ function exportBatchFailures() {
             show-count
           />
         </Form.Item>
-        <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
-          <Space>
+        <Form.Item
+          :wrapper-col="{
+            xs: { offset: 0, span: 24 },
+            sm: { offset: 5, span: 16 },
+          }"
+        >
+          <div class="flex flex-wrap gap-2">
             <Button
-              class="w-28"
               type="primary"
               :loading="provideSubmitting || provideQuerying"
               @click="
@@ -430,8 +433,8 @@ function exportBatchFailures() {
             >
               {{ provideMode === 'single' ? '确认发放' : '批量发放' }}
             </Button>
-            <Button class="w-28" @click="resetProvide">重置</Button>
-          </Space>
+            <Button @click="resetProvide">重置</Button>
+          </div>
         </Form.Item>
       </Form>
     </div>

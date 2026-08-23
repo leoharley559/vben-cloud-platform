@@ -2,9 +2,9 @@ import { requestClient } from '#/api/request';
 
 /** 提现配置模块分页列表响应 */
 export interface PageResult<T = Record<string, unknown>> {
+  [key: string]: unknown;
   Items: T[];
   Pagination: { [key: string]: unknown; MaxCount?: number; };
-  [key: string]: unknown;
 }
 
 function pageResult<T>(

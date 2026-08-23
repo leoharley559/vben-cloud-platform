@@ -12,7 +12,7 @@ import PlayerWithdrawRecord from './player-withdraw-record.vue';
 
 defineOptions({ name: 'PlayerRechargeWithdrawPanel' });
 
-const props = defineProps<{
+defineProps<{
   playerId: number | string;
 }>();
 

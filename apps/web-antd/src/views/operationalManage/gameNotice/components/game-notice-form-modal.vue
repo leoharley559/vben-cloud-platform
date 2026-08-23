@@ -281,7 +281,7 @@ function parseLangText(raw: unknown): LangItem[] {
     ];
   }
   return groups.map((group) => {
-    const hit = obj[String(group.Id)] || obj[group.Id as string];
+    const hit = obj[String(group.Id)];
     return {
       LangGroupId: group.Id,
       NoticeRaw: String(hit?.NoticeRaw || hit?.Notice || ''),

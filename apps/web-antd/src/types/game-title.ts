@@ -1,12 +1,12 @@
 export interface GameTitleGroupItem {
+  [key: string]: unknown;
   Id?: number | string;
   Name?: string;
-  Ordinal?: number;
   OperatorName?: string;
+  Ordinal?: number;
   Switch?: number;
   UpdateTime?: number | string;
   UseCount?: number;
-  [key: string]: unknown;
 }
 
 export interface GameTitleGroupListQuery {

@@ -28,8 +28,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  'change-type': [type: 'bar' | 'line'];
-  'reload-dates': [dates: { Date1?: string; Date2?: string; Date3?: string }];
+  changeType: [type: 'bar' | 'line'];
+  reloadDates: [dates: { Date1?: string; Date2?: string; Date3?: string }];
 }>();
 
 const showTypeSwitch = computed(() => props.showTypeSwitch !== false);
@@ -230,7 +230,7 @@ function confirmDates() {
       payload[item.key] = formatted;
     }
   }
-  emit('reload-dates', payload);
+  emit('reloadDates', payload);
 }
 
 watch(
@@ -244,7 +244,7 @@ watch(
       props.yesterday,
       props.loading,
     ] as const,
-  ([, , , , , , loading]) => {
+  ([_activeKey, _chartType, _totalCount, _totalHours, _today, _yesterday, loading]) => {
     if (!loading) {
       void renderChart();
     }
@@ -267,14 +267,14 @@ onMounted(() => {
           <Button
             :type="chartType === 'line' ? 'primary' : 'default'"
             size="small"
-            @click="emit('change-type', 'line')"
+            @click="emit('changeType', 'line')"
           >
             折线图
           </Button>
           <Button
             :type="chartType === 'bar' ? 'primary' : 'default'"
             size="small"
-            @click="emit('change-type', 'bar')"
+            @click="emit('changeType', 'bar')"
           >
             柱状图
           </Button>

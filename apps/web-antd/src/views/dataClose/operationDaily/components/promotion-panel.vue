@@ -18,11 +18,11 @@ import dayjs from 'dayjs';
 import { fetchOperationPromotionAnalyzeApi } from '#/api/dataClose/operation-daily';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useReportOptions } from '#/composables/use-report-options';
-import { formatAmountFromCent } from '#/utils/format-amount';
 import { calcArppu } from '#/utils/promotion-data';
 import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
 import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
+import { cents } from '#/views/dataClose/shared/report-utils';
 
 import {
   disabledBeforeToday,
@@ -55,8 +55,10 @@ const filters = reactive({
 });
 
 const dateRange = computed<[Dayjs, Dayjs] | undefined>({
-  get: () => [filters.beginDate, filters.endDate],
-  set: (value) => {
+  get(): [Dayjs, Dayjs] {
+    return [filters.beginDate, filters.endDate];
+  },
+  set(value: [Dayjs, Dayjs] | null | undefined) {
     if (value?.[0] && value[1]) {
       filters.beginDate = value[0];
       filters.endDate = value[1];
@@ -89,7 +91,7 @@ const summaryItems = computed(() => {
     },
     {
       title: '新增付费金额',
-      value: formatAmountFromCent(newPayMoney),
+      value: cents(newPayMoney),
     },
     {
       title: '新增ARPPU',
@@ -273,9 +275,9 @@ const channelRows = computed(() => {
       PayMoney,
       TodayPayRate: percentText(PayNum, Reg),
       TodayArppu: calcArppu(PayNumOnly, PayMoney),
-      PayMoneyText: formatAmountFromCent(PayMoney),
-      WithdrawText: formatAmountFromCent(WithdrawMoney),
-      DiffText: formatAmountFromCent(Diff),
+      PayMoneyText: cents(PayMoney),
+      WithdrawText: cents(WithdrawMoney),
+      DiffText: cents(Diff),
       _todayReg: Reg,
       _yesterdayReg: YesterdayReg,
       _todayPayNum: PayNum,

@@ -36,10 +36,10 @@ interface LanguageItem {
 interface LanguageGroupItem {
   Default?: boolean;
   Id?: number;
+  isEditingName: boolean;
   IsOpen: boolean;
   Languages: LanguageItem[];
   Name: string;
-  isEditingName: boolean;
 }
 
 const { adminInfo, checkPermission } = useCloudPermission();

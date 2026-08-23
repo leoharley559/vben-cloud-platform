@@ -1,4 +1,5 @@
 export interface PlayerBasicInfo {
+  [key: string]: unknown;
   BanRemark?: string;
   BindPhone?: string;
   ChannelId?: number | string;
@@ -9,8 +10,8 @@ export interface PlayerBasicInfo {
   DialingCode?: string;
   Email?: string;
   Gold?: number | string;
-  InviterLoginAccount?: string;
   InviteCode?: string;
+  InviterLoginAccount?: string;
   LastLoginTime?: number | string;
   LoginAccount?: string;
   Online?: boolean;
@@ -23,16 +24,15 @@ export interface PlayerBasicInfo {
   RegIp?: string;
   Status?: number;
   VipLevel?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerWalletItem {
+  [key: string]: unknown;
   Balance?: number | string;
   GameId?: number | string;
+  gameName?: string;
   Result?: number;
   UnlockWater?: number | string;
-  gameName?: string;
-  [key: string]: unknown;
 }
 
 export interface PlayerWalletListResult {
@@ -41,6 +41,7 @@ export interface PlayerWalletListResult {
 }
 
 export interface PlayerLoginIpRecord {
+  [key: string]: unknown;
   AppVersion?: string;
   ChannelId?: number | string;
   ChannelName?: string;
@@ -51,16 +52,15 @@ export interface PlayerLoginIpRecord {
   IpName?: string;
   LoginPlatform?: string;
   SystemVersion?: string;
-  [key: string]: unknown;
 }
 
 export interface PlayerLoginStatItem {
+  [key: string]: unknown;
   DeviceId?: string;
   DeviceTotal?: number | string;
   Ip?: string;
   IpName?: string;
   Total?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerLoginQuery {
@@ -76,6 +76,7 @@ export interface PlayerLoginQuery {
 }
 
 export interface PlayerGoldPeriodItem {
+  [key: string]: unknown;
   BetGold?: number | string;
   BetWater?: number | string;
   ChangeGold?: number | string;
@@ -85,10 +86,10 @@ export interface PlayerGoldPeriodItem {
   ValidWater?: number | string;
   WinGold?: number | string;
   Withdraw?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerGoldPeriodTotal {
+  [key: string]: unknown;
   SumBetGold?: number | string;
   SumBetWater?: number | string;
   SumChangeGold?: number | string;
@@ -97,20 +98,19 @@ export interface PlayerGoldPeriodTotal {
   SumValidWater?: number | string;
   SumWinGold?: number | string;
   SumWithdraw?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerGoldChangeItem {
+  [key: string]: unknown;
   Reason?: number | string;
   Total?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerSettleItem {
+  [key: string]: unknown;
   GameId?: number | string;
   RoomId?: number | string;
   Total?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerGoldQuery {
@@ -124,6 +124,7 @@ export interface PlayerGoldQuery {
 }
 
 export interface PlayerAdjustListItem {
+  [key: string]: unknown;
   AdminUserName?: string;
   Amount?: number | string;
   Approve?: number;
@@ -136,8 +137,8 @@ export interface PlayerAdjustListItem {
   CreateTime?: number | string;
   Done?: number;
   HandleDesc?: string;
-  HandleType?: number;
   HandlerName?: string;
+  HandleType?: number;
   Id?: number | string;
   LoginAccount?: string;
   OrderId?: string;
@@ -147,7 +148,6 @@ export interface PlayerAdjustListItem {
   Water?: number | string;
   WaterAmount?: number | string;
   WaterType?: number;
-  [key: string]: unknown;
 }
 
 export interface PlayerAdjustListQuery {
@@ -162,8 +162,8 @@ export interface PlayerAdjustListQuery {
   DataSearchType?: number;
   Done?: Array<number | string> | number | string;
   EndTime?: number | string;
-  HandleType?: number | string;
   HandlerName?: string;
+  HandleType?: number | string;
   IsApprove?: number;
   IsExp?: boolean;
   Keyword?: string;
@@ -201,15 +201,18 @@ export interface PlayerBetListQuery {
 }
 
 export interface PlayerBetRecordItem {
+  [key: string]: unknown;
   BetGold?: number | string;
   CurrentVipLevel?: number | string;
   GameId?: number | string;
   GameType?: number | string;
+  IsBetTrade?: number;
   LoginAccount?: string;
   PackageName?: string;
   PlayerId?: number | string;
   PlayerStatus?: number | string;
   RoundId?: string;
+  SettleCount?: number;
   SettlementTime?: number | string;
   Status?: number | string;
   TagName?: string;
@@ -220,41 +223,39 @@ export interface PlayerBetRecordItem {
   ValidWater?: number | string;
   VipLevel?: number | string;
   WinGold?: number | string;
-  IsBetTrade?: number;
-  SettleCount?: number;
-  [key: string]: unknown;
 }
 
 export interface PlayerBetVenueStatItem {
+  [key: string]: unknown;
   Count?: number | string;
   GameType?: number | string;
   SumBetGold?: number | string;
   SumTotalBetGold?: number | string;
   SumValidWater?: number | string;
   SumWinGold?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerBetDateStatItem {
+  [key: string]: unknown;
   Count?: number | string;
   ReportDay?: string;
   SumBetGold?: number | string;
   SumTotalBetGold?: number | string;
   SumValidWater?: number | string;
   SumWinGold?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerBetSummary {
+  [key: string]: unknown;
   Count?: number | string;
   SumBetGold?: number | string;
   SumTotalBetGold?: number | string;
   SumValidWater?: number | string;
   SumWinGold?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerBonusRewardItem {
+  [key: string]: unknown;
   ApplyAccount?: string;
   ApplyNote?: string;
   ApplyTime?: number | string;
@@ -273,7 +274,6 @@ export interface PlayerBonusRewardItem {
   WaterAmount?: number | string;
   WaterReward?: number | string;
   WaterType?: number;
-  [key: string]: unknown;
 }
 
 export interface PlayerBonusRewardQuery {
@@ -290,10 +290,10 @@ export interface PlayerBonusRewardQuery {
 }
 
 export interface PlayerBonusRewardSummary {
+  [key: string]: unknown;
   SumPerformance?: number | string;
   SumRecharge?: number | string;
   SumReward?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerGameDetailQuery {
@@ -309,6 +309,7 @@ export interface PlayerGameDetailQuery {
 }
 
 export interface PlayerGameDetailItem {
+  [key: string]: unknown;
   AddGold?: number | string;
   ChannelName?: string;
   CreateTime?: number | string;
@@ -322,12 +323,11 @@ export interface PlayerGameDetailItem {
   Reason?: number | string;
   Remark?: string;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface PlayerGameDetailSummary {
-  SumAddGold?: number | string;
   [key: string]: unknown;
+  SumAddGold?: number | string;
 }
 
 export interface PlayerVenueTransferQuery {
@@ -346,13 +346,13 @@ export interface PlayerVenueTransferQuery {
 }
 
 export interface PlayerVenueTransferItem {
+  [key: string]: unknown;
   Amount?: number | string;
   CreateTime?: number | string;
   GameId?: number | string;
   OrderId?: string;
   State?: number | string;
   Type?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerRelationQuery {
@@ -365,6 +365,7 @@ export interface PlayerRelationQuery {
 }
 
 export interface PlayerRelationItem {
+  [key: string]: unknown;
   DeviceId?: string;
   DevicePlatform?: string;
   Ip?: string;
@@ -373,7 +374,6 @@ export interface PlayerRelationItem {
   PlayerCount?: number | string;
   SumRecharge?: number | string;
   SumWithdraw?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerRebateRecordQuery {
@@ -389,18 +389,19 @@ export interface PlayerRebateRecordQuery {
 }
 
 export interface PlayerRebateRecordItem {
+  [key: string]: unknown;
   AwardStatus?: number;
   AwardTime?: number | string;
   AwardType?: number;
   BackWater?: number | string;
   CreateTime?: number | string;
   OrderId?: string;
-  [key: string]: unknown;
 }
 
 export interface PlayerDrawWaterItem {
-  BillType?: number;
+  [key: string]: unknown;
   BillSubType?: number;
+  BillType?: number;
   CreateTime?: number | string;
   CreateTimeMicroUnix?: number | string;
   CurrentDrawWater?: number | string;
@@ -409,17 +410,16 @@ export interface PlayerDrawWaterItem {
   OrderId?: string;
   ProcessTime?: number | string;
   RequireWater?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerDrawWaterSummary {
-  CurrentTotInCompletedDrawWater?: number | string;
-  SelectedGameTypesInCompletedDrawWater?: Record<string, number | string>;
-  SelectedGamesInCompletedDrawWater?: Record<string, number | string>;
-  TotAllGamesInCompletedDrawWater?: number | string;
-  TotalSelectedGameTypesInCompletedDrawWater?: number | string;
-  TotalSelectedGamesInCompletedDrawWater?: number | string;
   [key: string]: unknown;
+  CurrentTotInCompletedDrawWater?: number | string;
+  SelectedGamesInCompletedDrawWater?: Record<string, number | string>;
+  SelectedGameTypesInCompletedDrawWater?: Record<string, number | string>;
+  TotAllGamesInCompletedDrawWater?: number | string;
+  TotalSelectedGamesInCompletedDrawWater?: number | string;
+  TotalSelectedGameTypesInCompletedDrawWater?: number | string;
 }
 
 export interface PlayerCreditRecordQuery {
@@ -442,6 +442,7 @@ export interface PlayerCreditRecordQuery {
 }
 
 export interface PlayerCreditRecordItem {
+  [key: string]: unknown;
   AdminAccount?: string;
   Amount?: number | string;
   ChannelName?: string;
@@ -454,7 +455,6 @@ export interface PlayerCreditRecordItem {
   VipLevel?: number | string;
   WalletType?: number;
   WithdrawWaterMultiply?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerEasyRechargeQuery {
@@ -474,6 +474,7 @@ export interface PlayerEasyRechargeQuery {
 }
 
 export interface PlayerEasyRechargeItem {
+  [key: string]: unknown;
   Amount?: number | string;
   Bank?: string;
   CardNo?: string;
@@ -491,7 +492,6 @@ export interface PlayerEasyRechargeItem {
   RealName?: string;
   SendAmount?: number | string;
   Status?: number;
-  [key: string]: unknown;
 }
 
 export interface EasyRechargeListTotal {
@@ -521,29 +521,29 @@ export interface PlayerPointsRecordQuery {
 }
 
 export interface PlayerPointsRecordItem {
+  [key: string]: unknown;
   ApplyTime?: number | string;
   BonusType?: number;
   OrderId?: string;
   PlayerPoint?: number | string;
   Point?: number | string;
   PointType?: number;
-  [key: string]: unknown;
 }
 
 export interface PlayerRiskAnalysisItem {
+  [key: string]: unknown;
   Content?: string;
   ExtInfo?: unknown;
   RiskWarnLevel?: number;
   Type?: number;
-  [key: string]: unknown;
 }
 
 export interface PlayerRiskAnalysisGameItem {
+  [key: string]: unknown;
   BetGold?: number | string;
   GameId?: number | string;
   RiskWarnLevel?: number;
   WinGold?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PlayerLogQuery {
@@ -558,11 +558,11 @@ export interface PlayerLogQuery {
 }
 
 export interface PlayerLogItem {
+  [key: string]: unknown;
   ActionType?: number | string;
   CreateTime?: number | string;
   HandlerName?: string;
   Remark?: string;
-  [key: string]: unknown;
 }
 
 export interface PlayerDetailTabConfig {

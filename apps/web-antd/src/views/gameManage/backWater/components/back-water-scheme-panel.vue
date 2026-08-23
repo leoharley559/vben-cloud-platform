@@ -66,11 +66,12 @@ interface ConfigRow {
   WaterMin?: number;
 }
 interface RuleRow {
+  [key: string]: number | string | undefined;
   Id?: number | string;
   Name?: string;
-  [key: string]: number | string | undefined;
 }
 interface LangItem {
+  [key: string]: unknown;
   ActName?: string;
   Banner2?: string;
   Banner3?: string;
@@ -85,7 +86,6 @@ interface LangItem {
   Param2?: number;
   Param3?: number;
   Rule: RuleRow[];
-  [key: string]: unknown;
 }
 
 const MAX_REBATE_ID = 999;

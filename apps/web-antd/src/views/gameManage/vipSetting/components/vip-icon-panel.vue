@@ -133,7 +133,7 @@ async function loadTemplates() {
   // 方案列表偶发夹带图标字段，按 TemplateId 去重
   const map = new Map<string, Template>();
   for (const item of list) {
-    const row = item as Template;
+    const row = item as unknown as Template;
     if (row?.TemplateId === undefined || row?.TemplateId === null) continue;
     const key = String(row.TemplateId);
     if (!map.has(key)) {

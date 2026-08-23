@@ -49,19 +49,19 @@ interface HelpTab extends Record<string, unknown> {
   Sort?: number;
 }
 interface HelpContent extends Record<string, unknown> {
+  children?: HelpContent[];
   Content?: string | string[];
   Id?: number | string;
   LangText?: string;
+  parentIcon?: string;
+  parentName?: string;
   SecIcon?: string;
   SecName?: string;
+  source?: HelpContent;
   TabId?: number | string;
   TabName?: string;
   ThirdIcon?: string;
   ThirdName?: string;
-  children?: HelpContent[];
-  parentIcon?: string;
-  parentName?: string;
-  source?: HelpContent;
 }
 interface LangContent {
   Content: string;

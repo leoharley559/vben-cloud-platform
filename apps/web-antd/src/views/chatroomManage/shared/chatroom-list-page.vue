@@ -25,7 +25,10 @@ const props = withDefaults(
   {
     columns: () => [],
     description: '',
+    fetchApi: undefined,
     filters: () => [],
+    permission: undefined,
+    permissionKey: undefined,
     placeholder: false,
     tip: '',
   },

@@ -28,6 +28,7 @@ import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 defineOptions({ name: 'WithdrawChannelDataPanel' });
 
 interface WithdrawChannelRow {
+  [key: string]: unknown;
   Account?: string;
   AccountType?: number | string;
   DailyAmount?: number;
@@ -37,7 +38,6 @@ interface WithdrawChannelRow {
   Id?: number | string;
   RealName?: string;
   ThirdWithdrawId?: number | string;
-  [key: string]: unknown;
 }
 
 const { checkPermission } = useCloudPermission();

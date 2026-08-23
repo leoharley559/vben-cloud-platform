@@ -217,7 +217,8 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       formatter: c.slot
         ? undefined
         : (c.formatter
-          ? ({ cellValue, row }: any) => c.formatter!(cellValue, row)
+          ? ({ cellValue, row }: any) =>
+              String(c.formatter!(cellValue, row))
           : undefined),
       minWidth: c.minWidth || 130,
       slots: c.slot ? { default: c.slot } : undefined,

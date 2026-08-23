@@ -152,7 +152,7 @@ function handleDelete(id?: number | string) {
   });
 }
 
-function handleSwitch(checked: boolean) {
+function handleSwitch(checked: boolean | number | string) {
   const next = checked ? 1 : 2;
   Modal.confirm({
     content: checked ? '确认开启提现流水设置？' : '确认关闭提现流水设置？',

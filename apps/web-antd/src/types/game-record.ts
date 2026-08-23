@@ -6,14 +6,14 @@ export interface GameRecordListQuery extends PlayerBetListQuery {
   ChannelIds?: Array<number | string> | number | string;
   DevicePlatform?: Array<string> | string;
   EndBetGold?: number | string;
-  InviteSite?: Array<string> | string;
+  InviteSite?: Array<number | string> | number | string;
   PackageId?: number | string;
   PlayerStatus?: Array<number | string> | number | string;
   SubGameId?: number | string;
   TagName?: string;
   TimeZone?: string;
   Username?: string;
-  VenueTypes?: Array<string> | string;
   /** 仅前端：场馆模版，提交前删除 */
   VenuesTemp?: string[];
+  VenueTypes?: Array<string> | string;
 }

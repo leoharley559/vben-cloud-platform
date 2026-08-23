@@ -66,7 +66,8 @@ export interface AdminFormModel {
   ValidCode?: string;
 }
 
-export interface AdminDetailRecord extends AdminFormModel {
+export interface AdminDetailRecord
+  extends Omit<AdminFormModel, 'SonUserRoleDataField'> {
   CreateTime?: string;
   CreateUsername?: string;
   HandlerUsername?: string;
@@ -81,12 +82,12 @@ export interface PackageOption {
 }
 
 export interface CloudSubMenuItem {
+  [key: string]: unknown;
   HaveDesData?: number;
   Id: number;
   MenuId?: number;
   Name: string;
   ParentId?: number;
-  [key: string]: unknown;
 }
 
 export interface RoleListQuery {

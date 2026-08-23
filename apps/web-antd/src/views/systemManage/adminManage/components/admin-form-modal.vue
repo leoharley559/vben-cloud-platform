@@ -155,7 +155,7 @@ async function handleConfirm() {
   try {
     validateForm();
     emit('submit', {
-      form: JSON.parse(JSON.stringify(formModel)) as AdminFormModel,
+      form: structuredClone(formModel),
       mode: mode.value,
     });
   } catch (error) {

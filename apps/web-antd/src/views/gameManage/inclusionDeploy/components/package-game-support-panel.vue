@@ -28,26 +28,26 @@ interface LangGroup {
 }
 
 interface SupportLine {
+  [key: string]: unknown;
   csType: number;
   enable: boolean;
   vipBegin: number;
   vipEnd: number;
-  [key: string]: unknown;
 }
 
 interface LocalizedSupport {
+  [key: string]: unknown;
   normalLine: { [key: string]: unknown; customerServiceName2: string };
   officialCsLogo: string;
   specialLine: { [key: string]: unknown; customerServiceName1: string };
-  [key: string]: unknown;
 }
 
 interface UniversalSupport {
+  [key: string]: unknown;
   normalLine: SupportLine;
   specialLine: SupportLine;
   thirdPartyCsUrl: string;
   thirdPartyPcFloatCode: string;
-  [key: string]: unknown;
 }
 
 const sourceDetail = ref<Record<string, unknown>>({});

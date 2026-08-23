@@ -21,8 +21,8 @@ interface DetailRow {
   BCAmount?: number | string;
   ConsumeType?: number;
   CreateTime?: number | string;
-  HandleType?: number;
   HandlerName?: string;
+  HandleType?: number;
 }
 
 const { checkPermission } = useCloudPermission();
@@ -199,7 +199,7 @@ onMounted(() => {
 
     <Grid>
       <template #amount="{ row }">
-        <span v-if="row.HandleType == 1" class="text-red-500">-{{ row.Amount }}</span>
+        <span v-if="row.HandleType === 1" class="text-red-500">-{{ row.Amount }}</span>
         <span v-else class="text-green-600">+{{ row.Amount }}</span>
       </template>
     </Grid>

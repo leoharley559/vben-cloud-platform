@@ -63,10 +63,12 @@ function syncMoreFromStorage() {
   });
 }
 
-function onMoreChange(values: number[]) {
+function onMoreChange(values: import('ant-design-vue/es/select').SelectValue) {
   const next = [false, false, false, false, false];
-  values.forEach((v) => {
-    if (v >= 0 && v < next.length) next[v] = true;
+  const list = Array.isArray(values) ? values : (values == null ? [] : [values]);
+  list.forEach((v) => {
+    const index = Number(v);
+    if (index >= 0 && index < next.length) next[index] = true;
   });
   tabTitleBol.value = next;
   saveLtvVisibility(next);

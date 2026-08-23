@@ -26,9 +26,9 @@ import {
 } from '#/api/gameManage/system-setting';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import { getServiceImageUrl } from '#/utils/media';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import SystemImageField from './system-image-field.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'SportsTutorialPanel' });
 

@@ -61,6 +61,7 @@ interface ProgrammeRow {
 }
 
 interface OtherRow {
+  [key: string]: unknown;
   ActivityTitle?: string;
   CrossImageId?: number | string;
   CrossImageUrl?: string;
@@ -83,7 +84,6 @@ interface OtherRow {
   Type?: number | string;
   UrlApp?: string;
   UrlWeb?: string;
-  [key: string]: unknown;
 }
 
 interface LanguageData {

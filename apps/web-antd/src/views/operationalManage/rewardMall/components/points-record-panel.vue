@@ -50,6 +50,8 @@ defineOptions({ name: 'PointsRecordPanel' });
 
 interface PointsRecordRow {
   ActivityType?: number | string;
+  AdminId?: number | string;
+  ApplyTime?: number | string;
   BonusCategory?: number | string;
   BonusTitle?: string;
   BonusType?: number;
@@ -62,7 +64,6 @@ interface PointsRecordRow {
   PlayerStatus?: number;
   Point?: number | string;
   SendType?: number;
-  ApplyTime?: number | string;
   Username?: string;
   VipLevel?: number | string;
 }

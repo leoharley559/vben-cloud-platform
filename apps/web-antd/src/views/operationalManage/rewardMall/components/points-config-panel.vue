@@ -279,7 +279,7 @@ const betEditGamesRatio = ref<Record<string, number | undefined>>({});
 const gamesList = computed(() =>
   Object.entries(gameConfig.value.games)
     .map(([id, game]) => ({ id: Number(id), name: game.gameName || id }))
-    .sort((a, b) => a.id - b.id),
+    .toSorted((a, b) => a.id - b.id),
 );
 
 function openBetBatchEdit() {

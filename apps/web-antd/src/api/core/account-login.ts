@@ -2,6 +2,7 @@ import { requestClient } from '#/api/request';
 
 /** 个人中心账号资料 */
 export interface AccountLoginInfo {
+  [key: string]: unknown;
   Address?: string;
   CloudCoin?: number | string;
   Count?: number | string;
@@ -15,15 +16,14 @@ export interface AccountLoginInfo {
   PrivatePassword?: string;
   Scores?: number | string;
   Username?: string;
-  [key: string]: unknown;
 }
 
 /** 登录记录项 */
 export interface AccountLoginLogItem {
+  [key: string]: unknown;
   Address?: string;
   CreateTime?: number | string;
   Ip?: string;
-  [key: string]: unknown;
 }
 
 export interface AccountLoginLogResult {

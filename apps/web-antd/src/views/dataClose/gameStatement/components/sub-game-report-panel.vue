@@ -215,8 +215,14 @@ async function handleExport() {
     ],
     '子游戏报表',
     (row) => [
-      formatGameName(row.SubGameId, gameConfig.value.games),
-      formatVenueName(row.GameType, gameConfig.value),
+      formatGameName(
+        row.SubGameId as number | string | undefined,
+        gameConfig.value.games,
+      ),
+      formatVenueName(
+        row.GameType as null | number | string | undefined,
+        gameConfig.value,
+      ),
       row.CountBetNum,
       row.CountNum,
       cents(row.SumBet),
@@ -295,10 +301,11 @@ onMounted(async () => {
         />
         <Input
           v-else
-          v-model:value="adminSearch"
+          :value="Array.isArray(adminSearch) ? '' : adminSearch"
           style="width: 180px"
           allow-clear
           placeholder="请输入代理账号"
+          @update:value="(v) => (adminSearch = v)"
         />
       </Space.Compact>
       <Space.Compact>
@@ -319,10 +326,11 @@ onMounted(async () => {
         />
         <Input
           v-else
-          v-model:value="channelSearch"
+          :value="Array.isArray(channelSearch) ? '' : channelSearch"
           style="width: 180px"
           allow-clear
           placeholder="请输入渠道"
+          @update:value="(v) => (channelSearch = v)"
         />
       </Space.Compact>
       <Space.Compact>
@@ -431,7 +439,7 @@ onMounted(async () => {
           </a>
         </template>
         <template v-else-if="column.key === 'GameType'">
-          {{ formatVenueName(record.GameType as number | string, gameConfig) }}
+          {{ formatVenueName(record.GameType, gameConfig) }}
         </template>
         <template v-else-if="column.key === 'CountBetNum'">
           <a v-if="Number(record.CountBetNum) > 0" @click="openPlayers(record)">

@@ -44,15 +44,16 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 import { formatOperationDateTime } from '#/utils/operation-status';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import ShelfAnalyticsModal from './shelf-analytics-modal.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'ShelfPackagePanel' });
 
 const props = defineProps<{ platform: ShelfPlatform }>();
 
 interface ShelfRow {
+  [key: string]: unknown;
   AppName?: string;
   AppPackageConfigId: PackageManageId;
   AppUploadUrl?: string;
@@ -65,7 +66,6 @@ interface ShelfRow {
   IsAnalyticsSet?: boolean;
   PackageId?: PackageManageId;
   ThirdCustomIosUrl?: string;
-  [key: string]: unknown;
 }
 
 const { checkPermission } = useCloudPermission();

@@ -48,27 +48,7 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 const todayData = ref<TeamDailySummary>({});
 const historySummary = ref<TeamDailySummary>({});
 const rows = ref<TeamDailyHistoryItem[]>([]);
-const rangeSelecting = ref<dayjs.Dayjs>();
 let requestId = 0;
-
-/** 对齐旧站 SearchTypeOne limit-number=31 */
-function disabledDate(current: dayjs.Dayjs) {
-  if (!rangeSelecting.value) return false;
-  const min = rangeSelecting.value.subtract(30, 'day');
-  const max = rangeSelecting.value.add(30, 'day');
-  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
-}
-
-function onCalendarChange(
-  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
-) {
-  const first = dates?.[0];
-  rangeSelecting.value = first
-    ? (dayjs.isDayjs(first)
-      ? first
-      : dayjs(first))
-    : undefined;
-}
 
 const teamAccountOptions = computed(() => {
   const source = (projectConfig.value?.ChildAccountTeam || []) as Array<{
@@ -405,8 +385,8 @@ onMounted(() => {
             <div class="query-filter-wide">
               <QueryDatetimeRangePicker
                 v-model="filterDateRange"
+                :max-range-days="30"
                 precision="date"
-                :disabled-date="disabledDate"
               />
             </div>
             <Button type="primary" @click="loadData">查询</Button>

@@ -63,7 +63,7 @@ const columns = [
 const stats = computed(() => ({
   invalid: rows.value.filter((item) => !isValid(item)).length,
   total: rows.value.length,
-  valid: rows.value.filter(isValid).length,
+  valid: rows.value.filter((item) => isValid(item)).length,
 }));
 const summaryItems = computed(() => [
   { label: '总数', value: stats.value.total },
@@ -90,7 +90,7 @@ function normalizeChecked(items: Row[]) {
     Note: item.Note || '转移代理',
     _key: item.PlayerId || `${item.PlayerAccount}-${item.PackageName}-${index}`,
   }));
-  selectedKeys.value = rows.value.filter(isValid).map((item) => item._key);
+  selectedKeys.value = rows.value.filter((item) => isValid(item)).map((item) => item._key);
 }
 async function precheck(
   players: Array<{ PackageName: string; PlayerAccount: string }>,
@@ -268,7 +268,7 @@ watch(
         <template v-if="column.key === 'PlayerAccount'">
           <PlayerAccountLink
             :login-account="String(record.PlayerAccount || '')"
-            :player-id="record.PlayerId as number | string | undefined"
+            :player-id="record.PlayerId"
           />
         </template>
         <template v-else-if="column.key === 'OriginalAdmin'">

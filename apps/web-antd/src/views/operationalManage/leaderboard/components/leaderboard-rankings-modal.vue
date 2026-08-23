@@ -175,7 +175,7 @@ watch(
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"
-          :player-id="row.PlayerId as number | string | undefined"
+          :player-id="row.PlayerId"
         />
       </template>
     </Grid>

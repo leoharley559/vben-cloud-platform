@@ -55,7 +55,7 @@ const recordColumns = [
 ];
 function recordContent(row: Row) {
   if (!row.LogTemplate || !row.Params) return String(row.Note || '');
-  let params: Row = {};
+  let params: Row;
   try {
     params =
       typeof row.Params === 'string'
@@ -67,10 +67,11 @@ function recordContent(row: Row) {
   if (Number(row.TemplateId) === 872 && params.TeamType !== undefined) {
     params.TeamType = Number(params.TeamType) === 1 ? '普通团队' : '正式团队';
   }
-  return Object.entries(params).reduce(
-    (text, [key, value]) => text.replaceAll(`{${key}}`, String(value ?? '')),
-    String(row.LogTemplate),
-  );
+  let text = String(row.LogTemplate);
+  for (const [key, value] of Object.entries(params)) {
+    text = text.replaceAll(`{${key}}`, String(value ?? ''));
+  }
+  return text;
 }
 async function loadRecords() {
   if (!canViewRecordList.value) return;

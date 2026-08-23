@@ -11,9 +11,9 @@ import { fetchJuniorMemberChangeRecordApi } from '#/api/netcash/junior-member';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatNetcashDateTime } from '#/utils/netcash';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import { mapPackageOptions, writeWorkbook } from '../shared';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'JuniorChangeRecordPanel' });
 

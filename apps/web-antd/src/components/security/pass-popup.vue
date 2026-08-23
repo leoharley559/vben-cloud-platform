@@ -16,7 +16,9 @@ const props = withDefaults(
     type?: 'csv' | 'gcode' | 'private';
   }>(),
   {
+    promptMsg: undefined,
     promptType: 'warning',
+    title: undefined,
     type: 'gcode',
   },
 );
@@ -113,8 +115,17 @@ function handleOk() {
   emit('confirm', payload);
 }
 
+/** 兼容旧调用名 prompt */
+function prompt(
+  pageId: number | string,
+  options: Record<string, unknown> = {},
+) {
+  openWithSecurity(pageId, options);
+}
+
 defineExpose({
   openWithSecurity,
+  prompt,
   validate,
 });
 </script>
@@ -148,7 +159,7 @@ defineExpose({
         <Input
           v-model:value="validCode"
           allow-clear
-          maxlength="6"
+          :maxlength="6"
           placeholder="6 位验证码"
         />
       </template>

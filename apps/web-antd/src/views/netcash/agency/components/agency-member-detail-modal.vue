@@ -83,7 +83,7 @@ function query(isExport = false) {
     PageSize: isExport ? 100_000 : 999,
   };
 }
-function mapRows(items: Row[]) {
+function mapRows(items: Row[]): Row[] {
   return items.map((item) => ({
     ...item,
     WinLoss: Number(item.WinGold || 0) - Number(item.BetGold || 0),
@@ -171,7 +171,7 @@ watch(
         <template v-if="column.key === 'LoginAccount'">
           <PlayerAccountLink
             :login-account="String(record.LoginAccount || '')"
-            :player-id="record.PlayerId as number | string | undefined"
+            :player-id="record.PlayerId"
           />
         </template>
         <template v-else-if="column.key === 'Status'">
@@ -179,7 +179,7 @@ watch(
         </template>
         <template v-else>
 {{
-          text ?? display(String(column.key), record[column.key])
+          text ?? display(String(column.key), column.key ? record[column.key] : undefined)
         }}
 </template>
       </template>

@@ -324,13 +324,10 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
 
   const defs: Array<{
     field: string;
-    formatter?: VxeTableGridOptions<PlayerListItem>['columns'] extends Array<
-      infer C
-    >
-      ? C extends { formatter?: infer F }
-        ? F
-        : never
-      : never;
+    formatter?: (params: {
+      cellValue: unknown;
+      row: PlayerListItem;
+    }) => string;
     minWidth?: number;
     slots?: Record<string, string>;
     sortable?: boolean;
@@ -352,7 +349,8 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
     },
     {
       field: 'DataFlag',
-      formatter: ({ cellValue }) => formatMemberType(cellValue),
+      formatter: ({ cellValue }) =>
+        formatMemberType(cellValue as number | string | undefined),
       minWidth: 90,
       title: '会员类型',
     },
@@ -378,7 +376,8 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
     { field: 'PackageName', minWidth: 120, title: '包体名称' },
     {
       field: 'CreateTime',
-      formatter: ({ cellValue }) => formatDateTime(cellValue),
+      formatter: ({ cellValue }) =>
+        formatDateTime(cellValue as number | string | undefined),
       minWidth: 170,
       sortable: true,
       title: '注册时间',
@@ -386,7 +385,8 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
     { field: 'DeviceId', minWidth: 160, title: '设备号' },
     {
       field: 'FirstPayTime',
-      formatter: ({ cellValue }) => formatDateTime(cellValue),
+      formatter: ({ cellValue }) =>
+        formatDateTime(cellValue as number | string | undefined),
       minWidth: 170,
       title: '首存时间',
     },
@@ -396,31 +396,36 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
     { field: 'Email', minWidth: 140, title: '邮箱' },
     {
       field: 'WalletBalance',
-      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+      formatter: ({ cellValue }) =>
+        formatAmountFromCent(cellValue as number | string | undefined),
       minWidth: 120,
       title: '钱包余额',
     },
     {
       field: 'Gold',
-      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+      formatter: ({ cellValue }) =>
+        formatAmountFromCent(cellValue as number | string | undefined),
       minWidth: 100,
       title: '金币',
     },
     {
       field: 'Recharged',
-      formatter: ({ cellValue }) => formatAmount(cellValue),
+      formatter: ({ cellValue }) =>
+        formatAmount(cellValue as number | string | undefined),
       minWidth: 110,
       title: '总充值',
     },
     {
       field: 'WithdrawGold',
-      formatter: ({ cellValue }) => formatAmount(cellValue),
+      formatter: ({ cellValue }) =>
+        formatAmount(cellValue as number | string | undefined),
       minWidth: 110,
       title: '总兑换',
     },
     {
       field: 'FirstPayMoney',
-      formatter: ({ cellValue }) => formatAmount(cellValue),
+      formatter: ({ cellValue }) =>
+        formatAmount(cellValue as number | string | undefined),
       minWidth: 110,
       title: '首存金额',
     },

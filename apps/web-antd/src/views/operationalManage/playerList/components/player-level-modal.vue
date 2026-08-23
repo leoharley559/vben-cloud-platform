@@ -40,7 +40,7 @@ watch(open, async (visible) => {
       ? 0
       : props.playerLevelId;
   const result = await fetchPlayerLevelListApi({ Page: 1, PageSize: 200 });
-  levels.value = ((result?.Items || []) as LevelOption[]).map((item) => ({
+  levels.value = ((result?.Items || []) as unknown as LevelOption[]).map((item) => ({
     Id: item.Id,
     LevelName: String(item.LevelName || item.Id),
     SchemeName: String(item.SchemeName || '产品的返水设置'),

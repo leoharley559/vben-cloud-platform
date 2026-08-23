@@ -1,7 +1,7 @@
 export interface FundFlowListQuery {
-  BeginTime?: number;
+  BeginTime?: number | string;
   DataSearchType?: number;
-  EndTime?: number;
+  EndTime?: number | string;
   LogId?: string;
   LoginAccount?: string;
   PackageId?: number | string;
@@ -12,9 +12,11 @@ export interface FundFlowListQuery {
 }
 
 export interface FundFlowListItem {
+  [key: string]: unknown;
   AddGold?: number | string;
   ChannelName?: string;
   CreateTime?: number | string;
+  ExInfo?: Record<string, unknown>;
   LangEn?: string;
   LangTw?: string;
   LangZh?: string;
@@ -26,8 +28,6 @@ export interface FundFlowListItem {
   PlayerId?: number | string;
   Reason?: number | string;
   Username?: string;
-  ExInfo?: Record<string, unknown>;
-  [key: string]: unknown;
 }
 
 export interface FundFlowSummary {

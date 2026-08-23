@@ -41,7 +41,7 @@ watch(
     }
     activeLang.value = String(defaultLangGroupId.value);
     if (props.mode === 'edit' && props.tag) {
-      Object.assign(form, JSON.parse(JSON.stringify(props.tag)));
+      Object.assign(form, structuredClone(props.tag));
     } else {
       Object.assign(form, createDefaultTagForm(langGroupIds.value));
     }
@@ -59,7 +59,7 @@ function handleOk() {
       return;
     }
   }
-  emit('submit', JSON.parse(JSON.stringify(form)));
+  emit('submit', structuredClone(form));
   open.value = false;
 }
 </script>

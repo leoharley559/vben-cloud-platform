@@ -19,8 +19,8 @@ export interface InviteFriendConfig {
   EndTime?: number;
   Id?: number;
   IncludeDepositTypes?: string[];
-  InviterTiers?: InviteFriendTier[];
   InviteeReward?: number;
+  InviterTiers?: InviteFriendTier[];
   IsActive?: number;
   LangGroupId?: number;
   Open?: boolean;
@@ -40,8 +40,8 @@ export interface InviteFriendConfigPayload {
   DepositThreshold: number;
   EndTime: number;
   IncludeDepositTypes: string[];
-  InviterTiers: InviteFriendTier[];
   InviteeReward: number;
+  InviterTiers: InviteFriendTier[];
   IsActive: number;
   LangGroupId: number;
   Open: boolean;

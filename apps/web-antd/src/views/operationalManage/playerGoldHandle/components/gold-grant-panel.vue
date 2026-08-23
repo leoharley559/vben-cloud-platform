@@ -165,30 +165,27 @@ function downloadBatchTemplate() {
   URL.revokeObjectURL(url);
 }
 
-function onBatchFileChange(event: Event) {
+async function onBatchFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) {
     return;
   }
-  const reader = new FileReader();
-  reader.addEventListener('load', () => {
-    const text = String(reader.result || '');
-    const lines = text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    if (lines.length === 0) {
-      message.warning('文件为空');
-      return;
-    }
-    // 跳过表头
-    const first = lines[0] || '';
-    const body = /游戏账号|gameAcc|账号/i.test(first) ? lines.slice(1) : lines;
-    batchText.value = body.join('\n');
-    message.success(`已读取 ${body.length} 行，请预览匹配`);
-  });
-  reader.readAsText(file);
+  const text = await file.text();
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) {
+    message.warning('文件为空');
+    input.value = '';
+    return;
+  }
+  // 跳过表头
+  const first = lines[0] || '';
+  const body = /游戏账号|gameAcc|账号/i.test(first) ? lines.slice(1) : lines;
+  batchText.value = body.join('\n');
+  message.success(`已读取 ${body.length} 行，请预览匹配`);
   input.value = '';
 }
 
@@ -507,7 +504,7 @@ void loadRedTitles();
 </script>
 
 <template>
-  <div v-if="canView">
+  <div v-if="canView" class="min-w-0 max-w-full">
     <div class="mb-3">
       <Radio.Group v-model:value="grantMode" button-style="solid">
         <Radio.Button v-if="canSingle" value="single">单人发放</Radio.Button>
@@ -519,11 +516,11 @@ void loadRedTitles();
       <div class="mb-3 text-base font-medium">玩家信息</div>
       <template v-if="grantMode === 'single'">
         <div class="mb-4 flex flex-wrap items-end gap-2">
-          <div class="flex flex-col gap-1">
+          <div class="flex w-full min-w-0 max-w-[260px] flex-col gap-1">
             <Input
               v-model:value="queryForm.LoginAccount"
               allow-clear
-              style="width: 260px"
+              class="w-full"
               @blur="
                 () => {
                   if (queryForm.LoginAccount && queryForm.PackageName) {
@@ -536,12 +533,12 @@ void loadRedTitles();
               <template #addonBefore>游戏账号</template>
             </Input>
           </div>
-          <Space.Compact>
+          <Space.Compact class="w-full max-w-xs sm:w-auto sm:max-w-none">
             <span class="query-field-addon">产品</span>
             <Select
               v-model:value="queryForm.PackageName"
               allow-clear
-              class="w-48"
+              class="min-w-0 flex-1 sm:w-48"
               :options="packageSelectOptions"
               placeholder="请选择产品"
               show-search
@@ -634,9 +631,9 @@ void loadRedTitles();
     <div>
       <div class="mb-3 text-base font-medium">红利发放</div>
       <Form
-        class="max-w-xl"
-        :label-col="{ span: 5 }"
-        :wrapper-col="{ span: 16 }"
+        class="max-w-xl min-w-0"
+        :label-col="{ xs: 24, sm: 5 }"
+        :wrapper-col="{ xs: 24, sm: 16 }"
       >
         <Form.Item v-if="grantMode === 'single'" label="存入金额" required>
           <InputNumber
@@ -703,12 +700,16 @@ void loadRedTitles();
         <Form.Item label="备注" required>
           <Input v-model:value="form.HandleDesc" placeholder="请输入备注" />
         </Form.Item>
-        <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
-          <Space>
+        <Form.Item
+          :wrapper-col="{
+            xs: { offset: 0, span: 24 },
+            sm: { offset: 5, span: 16 },
+          }"
+        >
+          <div class="flex flex-wrap gap-2">
             <Button
               v-if="grantMode === 'single'"
               :loading="submitting"
-              class="w-28"
               type="primary"
               @click="submitGrant"
             >
@@ -717,14 +718,13 @@ void loadRedTitles();
             <Button
               v-else
               :loading="submitting"
-              class="w-28"
               type="primary"
               @click="submitBatch"
             >
               确认发放
             </Button>
-            <Button class="w-28" @click="handleReset">重置</Button>
-          </Space>
+            <Button @click="handleReset">重置</Button>
+          </div>
         </Form.Item>
       </Form>
     </div>

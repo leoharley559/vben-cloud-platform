@@ -16,9 +16,9 @@ import { getCreditLimitApplyRecordListApi } from '#/api/netcash/credit-limit';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { CREDIT_APPROVE_STATUS_MAP } from '#/utils/netcash';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import { accountTypeMap, accountTypeOptions, amount, date, rangeParams, transferTypeMap, transferTypeOptions } from './shared';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const loading = ref(false);
 const rows = ref<Row[]>([]);

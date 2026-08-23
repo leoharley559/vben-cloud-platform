@@ -5,11 +5,11 @@ import { trimSpace } from '#/utils/string';
 
 /** 包体注册/登录配置 */
 export interface PackageRegisterLoginConfig {
+  [key: string]: unknown;
   /** 自动登出时长（分钟） */
   AutoLogoutTime?: number;
   Id?: PackageId;
   PackageId?: PackageId;
-  [key: string]: unknown;
 }
 
 /** 包体支付与提现绑定配置 */
@@ -82,6 +82,7 @@ export interface WelcomeEmailConfig {
 
 /** 包体统计/归因分析配置 */
 export interface PackageAnalyticsConfig {
+  [key: string]: unknown;
   AdjustAppToken?: string;
   AdjustEventTokenCompleteRegister?: string;
   AdjustEventTokenFirstDeposit?: string;
@@ -111,7 +112,6 @@ export interface PackageAnalyticsConfig {
   OkSpinPixelId?: string;
   PackageAppNameId?: string;
   PackageId?: PackageId;
-  [key: string]: unknown;
 }
 
 /**

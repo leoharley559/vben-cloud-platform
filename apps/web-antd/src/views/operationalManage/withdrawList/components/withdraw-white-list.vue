@@ -24,7 +24,6 @@ const { checkPermission } = useCloudPermission();
 const { packageOptions } = useOperationOptions();
 
 const canViewTable = computed(() => checkPermission(10_366));
-const canCreate = computed(() => checkPermission(10_367));
 const canEdit = computed(() => checkPermission(10_368));
 const canDelete = computed(() => checkPermission(10_369));
 
@@ -95,12 +94,6 @@ const gridOptions: VxeTableGridOptions<WithdrawWhiteItem> = {
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
 const loading = computed(() => gridApi.grid?.loading ?? false);
-
-function openCreate() {
-  formMode.value = 'create';
-  formRow.value = null;
-  formOpen.value = true;
-}
 
 function openEdit(row: WithdrawWhiteItem) {
   formMode.value = 'update';

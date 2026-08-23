@@ -100,11 +100,11 @@ interface Option {
 }
 
 interface LangTextItem {
+  [key: string]: unknown;
   CompanyProfile?: string;
   LangGrouopId?: PackageId;
   LangGroupId?: PackageId;
   LoadingPictureUrl?: string;
-  [key: string]: unknown;
 }
 
 interface RegisterLoginForm extends Record<string, unknown> {

@@ -38,12 +38,12 @@ import { formatOperationDateTime } from '#/utils/operation-status';
 defineOptions({ name: 'EnterprisePackagePanel' });
 
 interface GameRow {
+  [key: string]: unknown;
   BindChannel?: number | string;
   Icon?: number | string;
   Id: number | string;
   PackageName?: string;
   PictureIp?: string;
-  [key: string]: unknown;
 }
 
 interface EnterpriseRow {

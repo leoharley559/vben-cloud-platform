@@ -161,7 +161,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.Account || '')"
-          :player-id="row.PlayerId as number | string | undefined"
+          :player-id="row.PlayerId"
         />
       </template>
     </Grid>

@@ -5,22 +5,22 @@ export interface EmailVerifyCodeListQuery {
 }
 
 export interface EmailVerifyCodeListItem {
+  [key: string]: unknown;
   EmailAccount?: string;
   HandlerTime?: number | string;
   LoginAccount?: string;
   PackageId?: number | string;
   PackageName?: string;
   VerifyCode?: string;
-  [key: string]: unknown;
 }
 
 export interface EmailOutgoingAccountItem {
+  [key: string]: unknown;
   EmailAccount?: string;
   EmailPassword?: string;
   EmailSmtp?: string;
   Id?: number | string;
   IsPrimary?: boolean | number;
-  [key: string]: unknown;
 }
 
 export interface EmailOutgoingAccountForm {

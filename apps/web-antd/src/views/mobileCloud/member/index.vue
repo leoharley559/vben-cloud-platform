@@ -60,7 +60,7 @@ onMounted(loadData);
           <PlayerAccountLink
             v-if="column.key === 'account'"
             :login-account="String(record.LoginAccount || '')"
-            :player-id="record.PlayerId as number | string | undefined"
+            :player-id="record.PlayerId"
           />
         </template>
       </Table>

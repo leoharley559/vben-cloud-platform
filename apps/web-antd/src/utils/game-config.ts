@@ -6,14 +6,14 @@ export interface GameConfigItem {
 }
 
 export interface GameInfo {
-  apiId?: number | string;
+  [key: string]: unknown;
   ApiFee?: number | string;
+  apiId?: number | string;
   gameCode?: number | string;
   gameName?: string;
   ParentId?: number | string;
   resType?: number;
   rooms?: Record<string, string>;
-  [key: string]: unknown;
 }
 
 export interface GoldSourceItem {
@@ -22,33 +22,33 @@ export interface GoldSourceItem {
 }
 
 export interface GroupPlatformGameTypeItem {
+  [key: string]: unknown;
   gametypes?: Array<Record<string, unknown>>;
   id?: number | string;
   name?: string;
-  [key: string]: unknown;
 }
 
 export interface GameTypeLanguage {
+  [key: string]: unknown;
   Lang?: string;
   Name?: string;
-  [key: string]: unknown;
 }
 
 export interface GameTypeLangGroupItem {
+  [key: string]: unknown;
   Classify?: number | string;
   Langs?: GameTypeLanguage[];
-  [key: string]: unknown;
 }
 
 export interface ParsedGameConfig {
-  GameTypeLangGroup: Record<string, GameTypeLangGroupItem>;
-  GroupPlatformGameType: Record<string, GroupPlatformGameTypeItem>;
   games: Record<string, GameInfo>;
+  GameTypeLangGroup: Record<string, GameTypeLangGroupItem>;
   goldSource: GoldSourceItem[];
-  /** 全部场馆键值（含已关闭），对齐旧站 platformGameTypeAll */
-  platformGameTypeAll: Record<string, string>;
+  GroupPlatformGameType: Record<string, GroupPlatformGameTypeItem>;
   platformGameList: Record<string, GameInfo>;
   platformGameType: Record<string, string>;
+  /** 全部场馆键值（含已关闭），对齐旧站 platformGameTypeAll */
+  platformGameTypeAll: Record<string, string>;
 }
 
 export function parseGameConfig(data: GameConfigItem[] | null | undefined) {

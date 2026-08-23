@@ -7,11 +7,11 @@ import venueConfig from '#/config/venue-config.json';
 import { parseGameConfig } from '#/utils/game-config';
 
 interface GameConfigResponse {
+  [key: string]: unknown;
   Data?: GameConfigResponse;
   GameSetting?: GameConfigItem[];
   platformGameTypeAll?: Record<string, string> | string;
   respond?: GameConfigResponse;
-  [key: string]: unknown;
 }
 
 const STORAGE_GAME_CONFIG = 'gameConfig';

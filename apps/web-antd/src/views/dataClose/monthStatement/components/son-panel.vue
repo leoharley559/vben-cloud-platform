@@ -49,7 +49,7 @@ const sumPositiveProfit = ref(0);
 const adminPath = ref<AgentNode[]>([]);
 const agencyList = ref<AgentNode[]>([]);
 const inquireId = ref<number | string>(
-  projectConfig.value?.AgentAccount?.Id ?? '',
+  String(projectConfig.value?.AgentAccount?.Id ?? ''),
 );
 const adminId = ref<number | string>('');
 const packageId = ref<number | string | undefined>();
@@ -64,8 +64,10 @@ const canExport = computed(() => checkPermission(10_513));
 const canDetail = computed(() => checkPermission(10_514));
 
 const rootAccount = computed<AgentNode>(() => ({
-  Id: projectConfig.value?.AgentAccount?.Id ?? '',
-  Username: projectConfig.value?.AgentAccount?.Username || '当前账号',
+  Id: String(projectConfig.value?.AgentAccount?.Id ?? ''),
+  Username: String(
+    projectConfig.value?.AgentAccount?.Username || '当前账号',
+  ),
 }));
 
 const summaryItems = computed(() => [

@@ -119,25 +119,38 @@ onUnmounted(clearTimer);
 </script>
 
 <template>
-  <Form class="max-w-xl" :label-col="{ span: 5 }" :wrapper-col="{ span: 16 }">
+  <Form
+    class="max-w-xl min-w-0"
+    :label-col="{ xs: 24, sm: 5 }"
+    :wrapper-col="{ xs: 24, sm: 16 }"
+  >
     <Form.Item v-if="!info.Phone" label="手机号" required>
-      <div class="flex gap-2">
-        <Select v-model:value="areaCode" :options="areaOptions" class="w-28" />
-        <Input v-model:value="phone" placeholder="请输入手机号" />
+      <div class="flex flex-wrap gap-2">
+        <Select
+          v-model:value="areaCode"
+          :options="areaOptions"
+          class="w-full max-w-[7rem] sm:w-28"
+        />
+        <Input v-model:value="phone" class="min-w-0 flex-1" placeholder="请输入手机号" />
       </div>
     </Form.Item>
     <Form.Item v-else label="已绑定手机">
       <span>{{ info.Phone }}</span>
     </Form.Item>
     <Form.Item label="验证码" required>
-      <div class="flex gap-2">
-        <Input v-model:value="verifyCode" placeholder="短信验证码" />
+      <div class="flex flex-wrap gap-2">
+        <Input v-model:value="verifyCode" class="min-w-0 flex-1" placeholder="短信验证码" />
         <Button :disabled="countdown > 0" :loading="sending" @click="sendCode">
           {{ countdown > 0 ? `${countdown}S` : '获取验证码' }}
         </Button>
       </div>
     </Form.Item>
-    <Form.Item :wrapper-col="{ offset: 5, span: 16 }">
+    <Form.Item
+      :wrapper-col="{
+        xs: { offset: 0, span: 24 },
+        sm: { offset: 5, span: 16 },
+      }"
+    >
       <Button block :loading="saving" type="primary" @click="submit">
         {{ info.Phone ? '解除绑定' : '绑定手机' }}
       </Button>

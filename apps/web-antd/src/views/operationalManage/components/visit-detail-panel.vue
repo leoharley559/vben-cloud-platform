@@ -48,14 +48,15 @@ const props = defineProps<{
 }>();
 
 interface VisitDetailRow {
+  [key: string]: unknown;
   AppType?: number | string;
   BeginTime?: number | string;
   EndTime?: number | string;
   LoginAccount?: string;
+  PlayerId?: number | string;
   Source?: unknown;
   Vip?: number | string;
   VisitDuration?: number | string;
-  [key: string]: unknown;
 }
 
 const router = useRouter();
@@ -377,7 +378,7 @@ async function handleExport(payload: Record<string, unknown>) {
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"
-          :player-id="row.PlayerId as number | string | undefined"
+          :player-id="row.PlayerId"
         />
       </template>
     </Grid>

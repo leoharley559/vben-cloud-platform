@@ -11,34 +11,35 @@ export interface CloudApiResponse<T = unknown> {
 
 /** 登录接口返回 */
 export interface CloudLoginData {
+  [key: string]: unknown;
   Account: string;
   Token: string;
-  [key: string]: unknown;
 }
 
 /** 菜单 Nav 节点（扁平数组项） */
 export interface CloudNavItem {
-  Id: number;
-  ParentId: number;
-  Router: string;
-  Name: string;
   Icon?: string;
+  Id: number;
   IsShow?: string;
   KeepAlive?: string;
+  Name: string;
+  ParentId: number;
+  Router: string;
 }
 
 /** 角色权限 */
 export interface CloudRole {
+  [key: string]: unknown;
   Id?: number;
   Name?: string;
   Permission?: number[];
   /** 后端可能返回逗号分隔字符串或数组 */
   SubMenuIds?: number | number[] | string;
-  [key: string]: unknown;
 }
 
 /** 用户信息 / islogin 返回 */
 export interface CloudUserData {
+  [key: string]: unknown;
   /**
    * Runtime sessions use an account object (including AdminId), while a few
    * login deployments still return the account name/id directly.
@@ -62,12 +63,11 @@ export interface CloudUserData {
     Languages?: string;
     Username?: string;
   };
+  AdminName?: number | string;
   Avatar?: string;
-  Token: string;
+  CRole?: Array<{ Id: number; Name: string }>;
   Nav: CloudNavItem[];
   Role: CloudRole[];
-  AdminName?: number | string;
-  CRole?: Array<{ Id: number; Name: string }>;
   SubMenus?: Array<{
     [key: string]: unknown;
     HaveDesData?: number;
@@ -76,23 +76,23 @@ export interface CloudUserData {
     Name: string;
     ParentId?: number;
   }>;
-  [key: string]: unknown;
+  Token: string;
 }
 
 /** 项目配置（精简，后续按需扩展） */
 export interface CloudProjectConfig {
-  RoleDataField?: string;
-  AgentVersion?: string;
-  AgentAccount?: {
-    [key: string]: unknown;
-    IsShareServer?: number;
-    KillPower?: number;
-  };
+  [key: string]: unknown;
   AccountTeamInfo?: {
     [key: string]: unknown;
     AgentId?: number;
     ParentId?: number;
   };
+  AgentAccount?: {
+    [key: string]: unknown;
+    IsShareServer?: number;
+    KillPower?: number;
+  };
+  AgentVersion?: string;
   ChildChannelInfo?: unknown[];
   DevicePlatformAll?: Record<string, string>;
   LangGroup?: Array<{
@@ -106,12 +106,12 @@ export interface CloudProjectConfig {
     PackageId: number | string;
     PackageName: string;
   }>;
+  RoleDataField?: string;
   SecuritySetting?: Array<{
     [key: string]: unknown;
     IsOpen?: boolean;
     PageId?: number | string;
   }>;
-  [key: string]: unknown;
 }
 
 export type VbenMenuRoute = RouteRecordStringComponent;

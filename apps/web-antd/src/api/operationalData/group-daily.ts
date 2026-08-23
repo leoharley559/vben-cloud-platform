@@ -41,12 +41,12 @@ export function fetchAgentGroupDailyListApi(query: Record<string, unknown>) {
 
 /** 代理分组树节点 */
 export interface AgentGroupNode {
+  [key: string]: unknown;
   /** 分组名称 */
   GroupName?: string;
   Id?: number | string;
   /** 子分组列表 */
   List?: AgentGroupNode[];
-  [key: string]: unknown;
 }
 
 /**

@@ -38,13 +38,13 @@ import {
   KEEP_DATA_ONETIME_EXPORT_PAGE_ID,
   KEEP_DATA_QUJIAN_EXPORT_PAGE_ID,
 } from '#/utils/security-page-ids';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import {
   exportRowsToXlsx,
   formatReportDateTime,
 } from '#/views/dataClose/shared/report-utils';
 
 import { keepDetailsSubTitle, keepDetailsTitle } from '../utils';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'KeepDetailsPanel' });
 
@@ -222,7 +222,10 @@ async function fetchDetail(isExp = false) {
   const query = buildQuery(isExp);
   const { page: p, type } = props.param;
 
-  let data: { Items?: KeepRow[] | null; Pagination?: { MaxCount?: number } };
+  let data: {
+    Items?: KeepRow[] | null;
+    Pagination?: null | { MaxCount?: number };
+  };
 
   switch (p) {
   case 'login': {

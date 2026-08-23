@@ -410,7 +410,8 @@ async function initialize() {
       .map((venue) => ({
         ...venue,
         Enabled: false,
-        GameId: venue.GameId || findGameIdByApiFee(venue.ApiFee, gameConfig),
+        GameId: (venue.GameId ||
+          findGameIdByApiFee(venue.ApiFee, gameConfig)) as ChannelId,
       }))
       .filter((venue) => Boolean(venue.GameId));
 

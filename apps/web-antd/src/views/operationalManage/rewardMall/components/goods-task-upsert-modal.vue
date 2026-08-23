@@ -84,7 +84,7 @@ watch(
     activeLang.value = String(defaultLangGroupId.value);
     void loadActivityOptions();
     if (props.mode === 'edit' && props.task) {
-      Object.assign(form, JSON.parse(JSON.stringify(props.task)));
+      Object.assign(form, structuredClone(props.task));
     } else {
       Object.assign(form, createDefaultTaskForm(langGroupIds.value));
     }
@@ -114,7 +114,7 @@ function handleOk() {
     message.warning('请选择关联活动');
     return;
   }
-  emit('submit', JSON.parse(JSON.stringify(form)));
+  emit('submit', structuredClone(form));
   open.value = false;
 }
 </script>

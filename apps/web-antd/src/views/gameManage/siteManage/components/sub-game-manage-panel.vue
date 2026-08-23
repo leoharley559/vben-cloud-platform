@@ -33,6 +33,7 @@ import { formatOperationDateTime } from '#/utils/operation-status';
 defineOptions({ name: 'SubGameManagePanel' });
 
 interface SubGameRow {
+  [key: string]: unknown;
   GameId?: number | string;
   GameName?: string;
   HotTag?: boolean | number | string;
@@ -45,7 +46,6 @@ interface SubGameRow {
   SubGameId?: number | string;
   UpdateAdminId?: number | string;
   UpdateTime?: number | string;
-  [key: string]: unknown;
 }
 
 type BatchType = 1 | 2;

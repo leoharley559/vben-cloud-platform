@@ -1,5 +1,7 @@
 export interface CloudPagination {
+  CurrPage?: number;
   MaxCount?: number;
+  MaxPageCount?: number;
   Page?: number;
   PageSize?: number;
 }
@@ -44,6 +46,7 @@ export interface PlayerListQuery {
 }
 
 export interface PlayerListItem {
+  [key: string]: unknown;
   AccountType?: number | string;
   ApiLoginAccount?: string;
   BanRemark?: string;
@@ -58,8 +61,8 @@ export interface PlayerListItem {
   FirstPayMoney?: number | string;
   FirstPayTime?: number | string;
   Gold?: number | string;
-  InviteSite?: string;
   InviterLoginAccount?: string;
+  InviteSite?: string;
   LastBlockTime?: number;
   LastIp?: string;
   LastLoginTime?: number | string;
@@ -81,7 +84,6 @@ export interface PlayerListItem {
   VipLevel?: number | string;
   WalletBalance?: number | string;
   WithdrawGold?: number | string;
-  [key: string]: unknown;
 }
 
 export interface RechargeListQuery {
@@ -107,10 +109,11 @@ export interface RechargeListQuery {
 }
 
 export interface RechargeListItem {
+  [key: string]: unknown;
   Amount?: number | string;
   ChannelName?: string;
-  CreateTime?: number | string;
   CreateAdminName?: string;
+  CreateTime?: number | string;
   FinishTime?: number | string;
   FirstTrialName?: string;
   HandleType?: number;
@@ -127,7 +130,6 @@ export interface RechargeListItem {
   ShowName?: string;
   Status?: number;
   VipLevel?: number | string;
-  [key: string]: unknown;
 }
 
 export interface WithdrawListQuery {
@@ -155,6 +157,7 @@ export interface WithdrawListQuery {
 }
 
 export interface WithdrawListItem {
+  [key: string]: unknown;
   AccountNum?: string;
   AccountType?: number | string;
   AgentWithdrawId?: number | string;
@@ -182,7 +185,6 @@ export interface WithdrawListItem {
   ShowName?: string;
   Status?: number;
   VipLevel?: number | string;
-  [key: string]: unknown;
 }
 
 export interface RechargeLimitConfigItem {
@@ -199,6 +201,7 @@ export interface RechargeCancelStatsItem {
 }
 
 export interface RechargeBlackPlayerItem {
+  [key: string]: unknown;
   BeginTime?: number | string;
   CreateTime?: number | string;
   DeviceId?: string;
@@ -212,10 +215,10 @@ export interface RechargeBlackPlayerItem {
   Recharged?: number | string;
   RegTime?: number | string;
   Remark?: string;
-  [key: string]: unknown;
 }
 
 export interface RechargeBlackDeviceItem {
+  [key: string]: unknown;
   CreateTime?: number | string;
   DeviceId?: string;
   DisableLoginPlayer?: number | string;
@@ -223,10 +226,10 @@ export interface RechargeBlackDeviceItem {
   Operator?: string;
   PayType?: string;
   Remark?: string;
-  [key: string]: unknown;
 }
 
 export interface SelfCheckListItem {
+  [key: string]: unknown;
   Amount?: number | string;
   CompleteDateTime?: number | string;
   CreateTime?: number | string;
@@ -247,15 +250,14 @@ export interface SelfCheckListItem {
   TakerDateTime?: number | string;
   TakerName?: string;
   WaitingTime?: number | string;
-  [key: string]: unknown;
 }
 
 export interface SelfReviewVisitItem {
+  [key: string]: unknown;
   AppType?: string;
   CreateTime?: number | string;
   LoginAccount?: string;
   PackageName?: string;
   PlayerId?: number | string;
   VipLevel?: number | string;
-  [key: string]: unknown;
 }

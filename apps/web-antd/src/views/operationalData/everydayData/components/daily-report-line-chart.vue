@@ -18,7 +18,7 @@ const props = withDefaults(
     adminType?: number;
     exchangeRate?: number;
     tabList: DailyReportRow[];
-    visibleTabs: Partial<Record<ChartMetric, boolean>>;
+    visibleTabs?: Partial<Record<ChartMetric, boolean>>;
   }>(),
   {
     adminType: 1,

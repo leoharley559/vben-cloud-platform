@@ -237,7 +237,7 @@ function openSecret(row: ThirdWithdrawRow) {
     message.warning('请先下架后再编辑密钥');
     return;
   }
-  let values: Record<string, string> = {};
+  let values: Record<string, string>;
   try {
     values = row.AgentParams
       ? (JSON.parse(row.AgentParams) as Record<string, string>)

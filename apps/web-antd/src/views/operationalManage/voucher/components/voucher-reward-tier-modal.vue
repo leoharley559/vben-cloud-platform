@@ -117,7 +117,7 @@ function fillFromRow(row: Record<string, unknown>) {
   }
   Object.assign(
     prizeDraft,
-    JSON.parse(JSON.stringify(row)) as ProbabilityPrizeItem,
+    structuredClone(row),
   );
   prizeDraft.goldYuan = formatCentsToYuan(row.Gold as number);
 }
@@ -222,9 +222,8 @@ function validateAndBuild(): null | Record<string, unknown> {
     return null;
   }
   const lgId = activeLang.value;
-  const result = JSON.parse(
-    JSON.stringify(prizeDraft),
-  ) as ProbabilityPrizeItem & Record<string, unknown>;
+  const result = structuredClone(prizeDraft) as ProbabilityPrizeItem &
+    Record<string, unknown>;
   delete (result as Record<string, unknown>).goldYuan;
   result.Gold = yuanToCents(prizeDraft.goldYuan);
 

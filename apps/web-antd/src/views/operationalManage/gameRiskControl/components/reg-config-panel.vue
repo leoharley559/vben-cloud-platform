@@ -21,11 +21,11 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 defineOptions({ name: 'RegConfigPanel' });
 
 interface RegConfigRow {
+  [key: string]: unknown;
   IsOn?: boolean | number;
   LimitAmt?: number;
   SubType?: number;
   Type?: number;
-  [key: string]: unknown;
 }
 
 const { checkPermission } = useCloudPermission();
@@ -93,7 +93,7 @@ async function loadConfig() {
   try {
     const result = await fetchRegConfigApi({ Type: 1 });
     const rows = normalizeRows(result);
-    original.value = JSON.parse(JSON.stringify(rows)) as RegConfigRow[];
+    original.value = structuredClone(rows);
     const ip = rows[0];
     const device = rows[1];
     if (ip) {

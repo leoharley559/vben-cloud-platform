@@ -70,27 +70,6 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.EndTime),
 ]);
 
-/** 对齐旧站 SearchTypeTwo limit-number=180：选中一端后限制另一端跨度 */
-let rangeSelecting: dayjs.Dayjs | undefined;
-function disabledDate(current: dayjs.Dayjs) {
-  if (!rangeSelecting) {
-    return false;
-  }
-  const min = rangeSelecting.subtract(MAX_RANGE_DAYS, 'day');
-  const max = rangeSelecting.add(MAX_RANGE_DAYS, 'day');
-  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
-}
-function onCalendarChange(
-  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
-) {
-  const first = dates?.[0];
-  rangeSelecting = first
-    ? (dayjs.isDayjs(first)
-      ? first
-      : dayjs(first))
-    : undefined;
-}
-
 const reasonOptions = computed(() =>
   gameConfig.value.goldSource.map((item) => ({
     label: item.Name || String(item.Key),
@@ -354,7 +333,7 @@ onMounted(async () => {
             <QueryDatetimeRangePicker
               v-model="filterDateRange"
               label="时间范围"
-              :disabled-date="disabledDate"
+              :max-range-days="MAX_RANGE_DAYS"
             />
           </div>
           <div class="query-filter-actions query-filter-actions-single">

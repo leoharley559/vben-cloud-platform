@@ -22,11 +22,7 @@ import {
 import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useReportOptions } from '#/composables/use-report-options';
-import { formatAmountFromCent } from '#/utils/format-amount';
-import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
-import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
-import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import { arrayToCsvParam } from '#/views/dataClose/shared/report-utils';
+import { arrayToCsvParam, cents } from '#/views/dataClose/shared/report-utils';
 
 import { num, percentText } from '../utils';
 
@@ -62,13 +58,13 @@ const summaryItems = computed(() => {
   const t = todayItems.value;
   const win = -num(t.SumTransWinMoney1);
   return [
-    { title: '投注金额', value: formatAmountFromCent(t.SumTransBetMoney1) },
+    { title: '投注金额', value: cents(t.SumTransBetMoney1) },
     {
       title: '有效投注',
-      value: formatAmountFromCent(t.SumTransBetValidMoney1),
+      value: cents(t.SumTransBetValidMoney1),
     },
-    { title: '派送金额', value: formatAmountFromCent(t.SumTransWinMoney1) },
-    { title: '公司输赢', value: formatAmountFromCent(win) },
+    { title: '派送金额', value: cents(t.SumTransWinMoney1) },
+    { title: '公司输赢', value: cents(win) },
     {
       title: '盈利率',
       value: percentText(win, t.SumTransBetMoney1),
@@ -124,19 +120,19 @@ const venueColumns: TableColumnType<Row>[] = [
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumBet),
+    customRender: ({ record }) => cents(record.SumBet),
     key: 'SumBet',
     title: '投注额',
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumValidWater),
+    customRender: ({ record }) => cents(record.SumValidWater),
     key: 'SumValidWater',
     title: '有效流水',
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumBetWin),
+    customRender: ({ record }) => cents(record.SumBetWin),
     key: 'SumBetWin',
     title: '盈亏',
   },
@@ -158,7 +154,7 @@ const playerColumns: TableColumnType<Row>[] = [
   },
   {
     align: 'center',
-    customRender: ({ record }) => formatAmountFromCent(record.SumBetWin),
+    customRender: ({ record }) => cents(record.SumBetWin),
     key: 'SumBetWin',
     title: '盈亏',
   },

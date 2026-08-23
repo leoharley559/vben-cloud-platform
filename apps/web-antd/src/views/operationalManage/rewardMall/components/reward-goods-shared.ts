@@ -200,7 +200,7 @@ export function parseGoodsLangText(
   langGroupIds: number[],
   doubleParseKeys: string[] = [],
 ): Record<string, Record<string, unknown>> {
-  let lt: Record<string, Record<string, unknown>> = {};
+  let lt: Record<string, Record<string, unknown>>;
   try {
     if (raw === 'null' || raw === undefined || raw === null) {
       throw new Error('empty LangText');
@@ -294,7 +294,7 @@ function deepClone<T>(value: T): T {
   if (value === undefined) {
     return value;
   }
-  return JSON.parse(JSON.stringify(value)) as T;
+  return structuredClone(value);
 }
 
 function isPrimitiveValue(value: unknown) {

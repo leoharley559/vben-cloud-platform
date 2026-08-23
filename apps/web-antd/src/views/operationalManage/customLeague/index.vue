@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Dayjs } from 'dayjs';
+
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { ref } from 'vue';
@@ -58,21 +60,21 @@ const { packageOptions } = useOperationOptions();
 const filterPackageId = ref<number | string>('');
 const filterIsActive = ref<number | string>(-1);
 const filterLeagueShortName = ref('');
-const filterDateRange = ref<[string, string] | undefined>();
+const filterDateRange = ref<[Dayjs, Dayjs] | undefined>();
 
 const currentRows = ref<CustomLeagueRow[]>([]);
 
 function buildQuery(page: { currentPage: number; pageSize: number }) {
   const [start, end] = filterDateRange.value || [];
   return {
-    EndTime: end || '',
+    EndTime: end ? end.unix() : '',
     IsActive: filterIsActive.value,
     LeagueShortName: filterLeagueShortName.value.trim(),
     Page: page.currentPage,
     PackageIds: filterPackageId.value,
     PageSize: page.pageSize,
     Sort: '',
-    StartTime: start || '',
+    StartTime: start ? start.unix() : '',
   };
 }
 
@@ -174,7 +176,7 @@ function isRowActive(row: CustomLeagueRow) {
   return Number(row.IsActive) === 1 || row.IsActive === true;
 }
 
-function handleSwitch(row: CustomLeagueRow, checked: boolean | string) {
+function handleSwitch(row: CustomLeagueRow, checked: unknown) {
   const nextActive = checked === true || checked === 'true';
   Modal.confirm({
     cancelText: '取消',
@@ -324,9 +326,7 @@ function handlePreview(path?: string) {
           <Switch
             :checked="isRowActive(row)"
             :loading="switchingId === row.Id"
-            @change="
-              (checked) => handleSwitch(row, checked as boolean | string)
-            "
+            @change="(checked) => handleSwitch(row, checked)"
           />
         </template>
         <template #leagueName="{ row }">

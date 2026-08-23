@@ -85,7 +85,6 @@ function assertDateSpan() {
 }
 
 function getQueryParams() {
-  const fallback = getTodayRangeSeconds();
   const [begin, end] = filterDateRange.value || [];
   return {
     BeginTime: begin ? begin.unix() : '',
@@ -96,7 +95,9 @@ function getQueryParams() {
 }
 
 function renderLogContent(row: LogListItem) {
-  return formatLogContent(row, { roles: roleOptions.value });
+  return formatLogContent(row, {
+    roles: roleOptions.value as Array<{ Id: number | string; Name?: string }>,
+  });
 }
 
 const gridOptions: VxeTableGridOptions<LogListItem> = {

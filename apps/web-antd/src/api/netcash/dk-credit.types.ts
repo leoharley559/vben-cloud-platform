@@ -7,6 +7,7 @@ export type DkListResult = NetcashListResult;
 
 /** DK 代理信用额度详情 */
 export interface DkCreditInfo {
+  [key: string]: unknown;
   /** 可申请额度 */
   AppliableAmount?: number;
   /** 当前信用额度 */
@@ -15,11 +16,11 @@ export interface DkCreditInfo {
   Items?: DkCreditInfo;
   /** 信用额度上限 */
   TotalCreditLimit?: number;
-  [key: string]: unknown;
 }
 
 /** 玩家可扣减信用额度信息 */
 export interface DkPlayerAvailableCredit {
+  [key: string]: unknown;
   /** 可扣减金额 */
   AvailableDeductAmount?: number;
   /** 玩家金币余额 */
@@ -28,25 +29,24 @@ export interface DkPlayerAvailableCredit {
   LoginAccount?: string;
   /** 玩家 Id */
   PlayerId?: number | string;
-  [key: string]: unknown;
 }
 
 /** DK 模块下拉选项项 */
 export interface DkSharedOption {
+  [key: string]: unknown;
   /** 展示文案 */
   Label: string;
   /** 选项值 */
   Value?: number | string;
   /** 辅助值（部分下拉第二列） */
   Value2?: string;
-  [key: string]: unknown;
 }
 
 /** DK 模块共享配置（下拉数据源等） */
 export interface DkSharedConfig {
+  [key: string]: unknown;
   /** 后台管理员名称选项 */
   BOAdminName?: DkSharedOption[];
-  [key: string]: unknown;
 }
 
 /** DK 玩家钱包批量调整单行 */

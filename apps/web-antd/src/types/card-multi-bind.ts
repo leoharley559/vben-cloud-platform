@@ -1,19 +1,19 @@
 export interface CardMultiBindListQuery {
   BankAccount?: string;
-  BeginTime?: number;
-  EndTime?: number;
+  BeginTime?: number | string;
+  EndTime?: number | string;
   Page: number;
   PageSize: number;
 }
 
 export interface CardMultiBindListItem {
+  [key: string]: unknown;
   BankCardNum?: string;
   Category?: number;
   CreateTime?: number | string;
   HandlerName?: string;
   Id?: number | string;
   PackageName?: string;
-  [key: string]: unknown;
 }
 
 export interface CardMultiBindFormPayload {

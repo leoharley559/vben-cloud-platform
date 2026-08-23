@@ -15,9 +15,9 @@ export interface ListSearchOption {
 export interface ListSearchParams {
   BeginTime: number | string;
   EndTime: number | string;
-  Keyword: string;
   filterKey: string;
   filterValue: string;
+  Keyword: string;
 }
 
 defineOptions({ name: 'ListSearchBar' });
@@ -62,10 +62,10 @@ const dateRange = ref<[Dayjs, Dayjs] | undefined>();
 
 /** 按最长选项撑开，避免「全部」选中时「账户账号」被截断 */
 const typeSelectStyle = computed(() => {
-  const longest = props.options.reduce(
-    (max, item) => Math.max(max, [...item.label].length),
-    2,
-  );
+  let longest = 2;
+  for (const item of props.options) {
+    longest = Math.max(longest, [...item.label].length);
+  }
   return { minWidth: `${longest + 3}em` };
 });
 

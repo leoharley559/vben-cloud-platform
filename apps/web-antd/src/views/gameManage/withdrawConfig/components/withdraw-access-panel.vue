@@ -47,18 +47,20 @@ import {
 defineOptions({ name: 'WithdrawAccessPanel' });
 
 interface AccessDetailRow {
+  [key: string]: unknown;
   AppType?: number | string;
   BeginTime?: number | string;
   EndTime?: number | string;
   Id?: number | string;
   LoginAccount?: string;
+  PlayerId?: number | string;
   Source?: unknown;
   Vip?: number | string;
   VisitDuration?: number | string;
-  [key: string]: unknown;
 }
 
 interface StatisticsRow {
+  [key: string]: unknown;
   AppVisit?: number;
   GuestVisit?: number;
   H5Visit?: number;
@@ -67,7 +69,6 @@ interface StatisticsRow {
   UserVisit?: number;
   VipVisit?: Record<string, number>;
   WebVisit?: number;
-  [key: string]: unknown;
 }
 
 const router = useRouter();
@@ -499,7 +500,7 @@ onMounted(() => {
                 <template v-else-if="column.key === 'LoginAccount'">
                   <PlayerAccountLink
                     :login-account="String(record.LoginAccount || '')"
-                    :player-id="record.PlayerId as number | string | undefined"
+                    :player-id="record.PlayerId"
                   />
                 </template>
               </template>

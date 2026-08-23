@@ -4,7 +4,6 @@ import type { Dayjs } from 'dayjs';
 import { computed, reactive } from 'vue';
 
 import { Button, message, Select, Space } from 'ant-design-vue';
-import dayjs from 'dayjs';
 
 import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
@@ -34,8 +33,6 @@ const filters = reactive({
   dateRange: [...defaultKeepDateRange()] as [Dayjs, Dayjs],
 });
 
-const pickingDate = reactive({ value: null as Dayjs | null });
-
 const packageSelectOptions = computed(() => [
   { label: '全部产品', value: '' },
   ...packageOptions.value,
@@ -52,14 +49,6 @@ const adminGroupOptions = computed(() =>
     value: item.Id!,
   })),
 );
-
-function onCalendarChange(dates: [Dayjs, Dayjs] | [string, string] | null) {
-  pickingDate.value = dates?.[0] ? dayjs(dates[0]) : null;
-}
-
-function onOpenChange(open: boolean) {
-  if (!open) pickingDate.value = null;
-}
 
 function buildQuery() {
   const range = filters.dateRange;
@@ -153,10 +142,9 @@ defineExpose({ buildQuery, handleSearch });
     <div class="query-filter-wide">
       <QueryDatetimeRangePicker
         v-model="filters.dateRange"
+        :disabled-date="(current) => disabledKeepDate(current)"
+        :max-range-days="29"
         precision="date"
-        :disabled-date="
-          (current) => disabledKeepDate(current, pickingDate.value)
-        "
       />
     </div>
     <template #actions>

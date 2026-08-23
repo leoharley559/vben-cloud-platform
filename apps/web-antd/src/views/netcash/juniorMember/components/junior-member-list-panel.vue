@@ -39,9 +39,9 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
 import { buildPlayerDetailPath } from '#/utils/player-detail-route';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import { mapPackageOptions, writeWorkbook } from '../shared';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'JuniorMemberListPanel' });
 

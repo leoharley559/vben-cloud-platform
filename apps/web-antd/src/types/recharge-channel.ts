@@ -7,14 +7,14 @@ export type RechargePlatformTypeWire = RechargeWireList;
 export type RechargeTestChannelWire = RechargeWireList;
 
 export interface RechargePagination {
-  MaxCount?: number;
   [key: string]: unknown;
+  MaxCount?: number;
 }
 
 export interface RechargeConditions {
+  [key: string]: unknown;
   RegTime: number[];
   VipV2: number[];
-  [key: string]: unknown;
 }
 
 /** Serialized fields used by the legacy backend. */
@@ -44,16 +44,17 @@ export interface RechargeChannelQuery {
 }
 
 export interface RechargeChannelItem extends RechargeAudienceWireFields {
-  Id: RechargeChannelId;
+  [key: string]: unknown;
   AllowInput?: number;
   Amount?: number | string;
   Count?: number;
   CustomRate?: number | string;
   ExpirationTime?: number | string;
-  InUsed?: number;
+  Id: RechargeChannelId;
   Index?: number;
   InputMax?: number | string;
   InputMin?: number | string;
+  InUsed?: number;
   NickName?: string;
   OnShelf?: number;
   Params?: string;
@@ -65,40 +66,39 @@ export interface RechargeChannelItem extends RechargeAudienceWireFields {
   SuccessCount?: number;
   SuccessWarnOpen?: number;
   SuccessWarnRate?: number | string;
-  [key: string]: unknown;
 }
 
 export interface RechargePayTypeConfig {
+  [key: string]: unknown;
+  Closed?: number;
   Id: RechargeChannelId;
   IsExpand?: number;
   IsHot?: number;
+  Opened?: number;
   PayType: number | string;
   Sort?: number;
   Switch?: number;
-  Closed?: number;
-  Opened?: number;
-  [key: string]: unknown;
 }
 
 export interface RechargePayTypeCount {
+  [key: string]: unknown;
   Closed?: number;
   Opened?: number;
   PayType: number | string;
-  [key: string]: unknown;
 }
 
 export interface RechargeChannelListResult {
+  [key: string]: unknown;
   Items: RechargeChannelItem[];
   Pagination: RechargePagination;
   Total: RechargePayTypeCount[];
   TypeList: RechargePayTypeConfig[];
-  [key: string]: unknown;
 }
 
 /** Updates intentionally retain unknown backend fields from the complete row. */
 export interface RechargeChannelUpdatePayload extends RechargeAudienceWireFields {
-  Id: RechargeChannelId;
   [key: string]: unknown;
+  Id: RechargeChannelId;
 }
 
 export interface RechargeIdPayload {
@@ -139,20 +139,20 @@ export interface RechargePayTypeUpdatePayload extends RechargeIdPayload {
 }
 
 export interface RechargeQuickTemplate extends Partial<RechargeAudienceWireFields> {
+  [key: string]: unknown;
   Id: RechargeChannelId;
   ModelName?: string;
-  [key: string]: unknown;
 }
 
 export interface RechargeQuickTemplatePayload extends Partial<RechargeAudienceWireFields> {
-  ModelName: string;
   [key: string]: unknown;
+  ModelName: string;
 }
 
 export interface RechargeQuickTemplateListResult {
+  [key: string]: unknown;
   Items: RechargeQuickTemplate[];
   Pagination?: RechargePagination;
-  [key: string]: unknown;
 }
 
 export interface RechargePlayerLevelQuery {
@@ -164,22 +164,22 @@ export interface RechargePlayerLevelQuery {
 }
 
 export interface RechargePlayerLevel {
+  [key: string]: unknown;
   Id: RechargeChannelId;
   LevelName?: string;
-  [key: string]: unknown;
 }
 
 export interface RechargePlayerLevelListResult {
+  [key: string]: unknown;
   Items: RechargePlayerLevel[];
   Pagination: RechargePagination;
-  [key: string]: unknown;
 }
 
 export interface RechargeChildChannelOption {
+  [key: string]: unknown;
   ChannelId: RechargeChannelId;
   ChannelName?: string;
   IsHidden?: number;
-  [key: string]: unknown;
 }
 
 export interface RechargeSpecializedQuery {
@@ -192,11 +192,12 @@ export interface RechargeSpecializedQuery {
 }
 
 export interface PrivateCardItem extends RechargeAudienceWireFields {
-  Id: RechargeChannelId;
+  [key: string]: unknown;
   AllowInput?: number;
   Bank?: string;
   CardNo?: string;
   Gears?: string;
+  Id: RechargeChannelId;
   Index?: number;
   InputMax?: number | string;
   InputMin?: number | string;
@@ -207,23 +208,22 @@ export interface PrivateCardItem extends RechargeAudienceWireFields {
   Priority?: number | string;
   Rate?: number | string;
   ShowName?: string;
-  [key: string]: unknown;
 }
 
 export interface PrivateCardPayload extends Omit<PrivateCardItem, 'Id'> {
-  Id?: RechargeChannelId;
-  Hash?: string;
   [key: string]: unknown;
+  Hash?: string;
+  Id?: RechargeChannelId;
 }
 
 export type PrivateCardDetail = PrivateCardItem;
 
 export interface PrivateCardListResult {
+  [key: string]: unknown;
   Items: PrivateCardItem[];
   Pagination: RechargePagination;
   Total: RechargePayTypeCount[];
   TypeList: RechargePayTypeConfig[];
-  [key: string]: unknown;
 }
 
 export interface RechargeOpenPayload extends RechargeIdPayload {
@@ -231,23 +231,24 @@ export interface RechargeOpenPayload extends RechargeIdPayload {
 }
 
 export interface RechargeSpecializedTotal {
+  [key: string]: unknown;
   Closed?: number;
   Opened?: number;
-  [key: string]: unknown;
 }
 
 export interface RechargeSpecializedTotalResult {
-  Items: RechargeSpecializedTotal;
   [key: string]: unknown;
+  Items: RechargeSpecializedTotal;
 }
 
 export interface UsdtRechargeItem extends RechargeAudienceWireFields {
-  Id: RechargeChannelId;
+  [key: string]: unknown;
   AgentId?: RechargeChannelId;
   Agreement?: string;
   AllowInput?: number;
   ChannelAddress?: string;
   DailyLimit?: number | string;
+  Id: RechargeChannelId;
   Index?: number;
   InputMax?: number | string;
   InputMin?: number | string;
@@ -255,33 +256,32 @@ export interface UsdtRechargeItem extends RechargeAudienceWireFields {
   Open?: number;
   PayType?: number | string;
   ResetTime?: number | string;
-  [key: string]: unknown;
 }
 
 export interface UsdtRechargePayload extends Omit<UsdtRechargeItem, 'Id'> {
-  Id?: RechargeChannelId;
-  Hash?: string;
   [key: string]: unknown;
+  Hash?: string;
+  Id?: RechargeChannelId;
 }
 
 export type UsdtRechargeDetail = UsdtRechargeItem;
 
 export interface UsdtRechargeListResult {
+  [key: string]: unknown;
   Items: UsdtRechargeItem[];
   Pagination: RechargePagination;
   Total: RechargePayTypeCount[];
   TypeList: RechargePayTypeConfig[];
-  [key: string]: unknown;
 }
 
 export interface VoucherCreatePayload {
+  [key: string]: unknown;
   ConvertType: number;
   ExchangeAmount: number | string;
   ExchangeCode?: string;
   GenerateQuantity?: number | string;
   Hash?: string;
   Password?: string;
-  [key: string]: unknown;
 }
 
 export interface VoucherImportPayload {
@@ -289,9 +289,9 @@ export interface VoucherImportPayload {
 }
 
 export interface VoucherImportResult {
+  [key: string]: unknown;
   Items: string[];
   ItemsExist: string[];
-  [key: string]: unknown;
 }
 
 export interface VoucherRecordQuery {
@@ -309,6 +309,7 @@ export interface VoucherRecordQuery {
 }
 
 export interface VoucherRecordItem {
+  [key: string]: unknown;
   Amount?: number;
   CreateTime?: number;
   DigitalDeliveryInfo?: string;
@@ -318,13 +319,12 @@ export interface VoucherRecordItem {
   OrderEmailStatus?: number;
   OrderStatus?: number | string;
   TradeOrderId?: RechargeChannelId;
-  [key: string]: unknown;
 }
 
 export interface VoucherRecordListResult {
+  [key: string]: unknown;
   Items: VoucherRecordItem[];
   Pagination: RechargePagination;
-  [key: string]: unknown;
 }
 
 export interface VipDealerQuery {
@@ -339,11 +339,12 @@ export interface VipDealerQuery {
 }
 
 export interface VipDealerItem extends RechargeAudienceWireFields {
-  Id: RechargeChannelId;
+  [key: string]: unknown;
   CallCount?: number;
   CoinDealerId?: RechargeChannelId;
   CoinDealerOnline?: number;
   Conditions?: string;
+  Id: RechargeChannelId;
   Index?: number;
   NickName?: string;
   OrderCount?: number;
@@ -352,15 +353,14 @@ export interface VipDealerItem extends RechargeAudienceWireFields {
   Status?: number;
   Types?: string;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface VipDealerPayload extends Omit<VipDealerItem, 'Id'> {
-  Id?: RechargeChannelId;
+  [key: string]: unknown;
   ConfirmPassword?: string;
   Hash?: string;
+  Id?: RechargeChannelId;
   Password?: string;
-  [key: string]: unknown;
 }
 
 export type VipDealerDetail = VipDealerItem;
@@ -372,29 +372,29 @@ export interface VipDealerStatusPayload extends VipDealerPayload {
 }
 
 export interface VipDealerListResult {
+  [key: string]: unknown;
   Items: VipDealerItem[];
   Pagination: RechargePagination;
-  [key: string]: unknown;
 }
 
 export interface AvailableCoinDealer {
+  [key: string]: unknown;
   Id: RechargeChannelId;
+  nick_name?: string;
   NickName?: string;
   Types?: string;
   Username?: string;
-  nick_name?: string;
-  [key: string]: unknown;
 }
 
 export interface AvailableCoinDealerListResult {
+  [key: string]: unknown;
   Items: AvailableCoinDealer[];
   Pagination?: RechargePagination;
-  [key: string]: unknown;
 }
 
 export interface VipDealerOrderMode {
-  OrderSwitch?: number;
   [key: string]: unknown;
+  OrderSwitch?: number;
 }
 
 export interface VipDealerOrderModePayload {

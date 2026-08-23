@@ -35,10 +35,10 @@ import BackWaterGameConfigEditor from '#/views/gameManage/backWater/components/b
 defineOptions({ name: 'AddConfig' });
 
 interface SchemeDetail {
+  [key: string]: unknown;
   Config?: BackWaterVipConfig[] | string;
   Id?: number | string;
   Name?: string;
-  [key: string]: unknown;
 }
 
 interface DisplayConfig extends Omit<BackWaterVipConfig, 'DefaultWater'> {

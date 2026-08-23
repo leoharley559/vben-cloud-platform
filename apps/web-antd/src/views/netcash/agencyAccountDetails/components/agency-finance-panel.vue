@@ -136,13 +136,12 @@ async function loadList() {
 
 async function loadChannelTypes() {
   try {
-    const result = await fetchDrawingsChannelSettingListApi({
+    channelTypes.value = await fetchDrawingsChannelSettingListApi({
       Keyword: '',
       Page: 1,
       PageSize: 999,
       Sort: '',
     });
-    channelTypes.value = Array.isArray(result) ? result : (result?.Items ?? []);
   } catch {
     channelTypes.value = [];
   }

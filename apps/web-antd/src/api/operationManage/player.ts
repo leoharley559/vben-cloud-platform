@@ -93,7 +93,7 @@ export async function fetchPlayerListApi(query: PlayerListQuery) {
 export function exportPlayerListApi(params: Record<string, unknown>) {
   return requestClient.get<{ Id?: number; Remark?: string; Status?: number }>(
     '/backend/playerinfo/listcsv',
-    { params: normalizePlayerQuery(params as PlayerListQuery) },
+    { params: normalizePlayerQuery(params as unknown as PlayerListQuery) },
   );
 }
 

@@ -412,12 +412,12 @@ function statusMeta(value?: number | string) {
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"
-          :player-id="row.PlayerId as number | string | undefined"
+          :player-id="row.PlayerId"
         />
       </template>
       <template #status="{ row }">
-        <Tag :color="statusMeta(row.Status)?.color || 'default'">
-          {{ statusMeta(row.Status)?.label || row.Status || '-' }}
+        <Tag :color="statusMeta(Number(row.Status))?.color || 'default'">
+          {{ statusMeta(Number(row.Status))?.label || row.Status || '-' }}
         </Tag>
       </template>
     </Grid>

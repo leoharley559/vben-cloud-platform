@@ -1,8 +1,8 @@
 export interface LoginLogListQuery {
-  BeginTime: number;
+  BeginTime: number | string;
   ChannelId?: number | string;
   DataSearchType?: number;
-  EndTime: number;
+  EndTime: number | string;
   Ip?: string;
   LoginAccount?: string;
   LoginPlatform?: string;
@@ -14,13 +14,14 @@ export interface LoginLogListQuery {
 }
 
 export interface LoginLogSummaryQuery {
-  BeginTime: number;
+  BeginTime: number | string;
   DataSearchType?: number;
-  EndTime: number;
+  EndTime: number | string;
   Summary: number;
 }
 
 export interface LoginLogSummaryData {
+  [key: string]: unknown;
   Android?: number;
   AppStore?: number;
   H5?: number;
@@ -30,10 +31,10 @@ export interface LoginLogSummaryData {
   TotalVip?: number;
   VipList?: number[];
   Web?: number;
-  [key: string]: unknown;
 }
 
 export interface LoginLogListItem {
+  [key: string]: unknown;
   ChannelId?: number | string;
   CreateTime?: number | string;
   DataFlag?: number;
@@ -44,5 +45,4 @@ export interface LoginLogListItem {
   LoginPlatform?: string;
   PackageName?: string;
   PlayerId?: number | string;
-  [key: string]: unknown;
 }

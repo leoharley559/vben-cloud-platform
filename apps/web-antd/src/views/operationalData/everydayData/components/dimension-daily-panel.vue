@@ -38,9 +38,9 @@ import {
   normalizeSearchValue,
 } from '#/utils/everyday-report-format';
 import { exportRowsToCsv } from '#/utils/export-csv';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import DailyReportTable from './daily-report-table.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'DimensionDailyPanel' });
 

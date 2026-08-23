@@ -159,7 +159,7 @@ async function loadData() {
     };
     mode.value = option;
 
-    allTableData.value = ((configResult.Items || []) as CountryRow[]).map(
+    allTableData.value = ((configResult.Items || []) as unknown as CountryRow[]).map(
       (item) => ({
         ...item,
         Status1: countriesAllow.includes(item.Id) ? 1 : 0,
@@ -350,7 +350,7 @@ onMounted(() => {
                 mode === 1 ? record.Status1 === 1 : record.Status2 === 1
               "
               :disabled="!canEdit"
-              @change="(checked) => setRowStatus(record, !!checked)"
+              @change="(checked) => setRowStatus(record as CountryRow, !!checked)"
             />
           </template>
         </template>

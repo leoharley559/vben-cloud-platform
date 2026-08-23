@@ -29,9 +29,9 @@ interface EditableGame {
   Checked: boolean;
   ClientClassify: Array<number | string>;
   GameId: string;
+  gameName: string;
   ParentId?: number | string;
   Percent?: number;
-  gameName: string;
 }
 
 const { checkPermission } = useCloudPermission();

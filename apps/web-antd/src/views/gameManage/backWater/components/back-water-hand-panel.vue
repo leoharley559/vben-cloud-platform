@@ -35,21 +35,21 @@ import {
 defineOptions({ name: 'BackWaterHandPanel' });
 
 interface VenueRow {
+  BackWater?: number;
+  DayOfWeeks?: string;
   DaysDelay?: number;
   DaysOfCycle?: number;
-  DayOfWeeks?: string;
   GameType?: number | string;
   Rate?: number;
   RebateMode?: number;
   SubGameId?: number | string;
   Water?: number;
-  BackWater?: number;
 }
 
 interface HandInfo {
+  BackedWater?: number | string;
   BackWater?: number | string;
   BackWaterMax?: number | string;
-  BackedWater?: number | string;
   Data?: VenueRow[];
   GameName?: string;
   InvalidWater?: number | string;

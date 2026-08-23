@@ -37,7 +37,7 @@ onMounted(() => {
 <template>
   <div v-if="canViewAny">
     <div class="mb-3">
-      <Radio.Group v-model:value="activeTab" button-style="solid" size="middle">
+      <Radio.Group v-model:value="activeTab" button-style="solid" size="default">
         <Radio.Button v-if="canBonusRelease" value="release">
           红利发放
         </Radio.Button>

@@ -9,6 +9,7 @@ export interface CryptoAddressListQuery {
 }
 
 export interface CryptoAddressListItem {
+  [key: string]: unknown;
   CreateTime?: number | string;
   DigitalAddress?: string;
   DigitalAlias?: string;
@@ -19,7 +20,6 @@ export interface CryptoAddressListItem {
   LoginAccount?: string;
   PackageName?: string;
   PlayerId?: number | string;
-  [key: string]: unknown;
 }
 
 export interface CryptoAddressFormPayload {

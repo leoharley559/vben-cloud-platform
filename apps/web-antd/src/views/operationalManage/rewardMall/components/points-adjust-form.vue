@@ -45,6 +45,7 @@ interface FailItem {
   LoginAccount?: string;
   Msg?: string;
   PackageName?: string;
+  PlayerId?: number | string;
 }
 
 const { checkPermission } = useCloudPermission();
@@ -139,7 +140,7 @@ function downloadBatchTemplate() {
   URL.revokeObjectURL(url);
 }
 
-function onBatchFileChange(event: Event) {
+async function onBatchFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) {
@@ -150,25 +151,22 @@ function onBatchFileChange(event: Event) {
     input.value = '';
     return;
   }
-  const reader = new FileReader();
-  reader.addEventListener('load', () => {
-    const text = String(reader.result || '');
-    const lines = text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    if (lines.length === 0) {
-      message.warning('文件为空');
-      return;
-    }
-    const first = lines[0] || '';
-    const body = /游戏账号|产品名称|调整积分/i.test(first)
-      ? lines.slice(1)
-      : lines;
-    batchText.value = body.join('\n');
-    message.success(`已读取 ${body.length} 行，请预览匹配`);
-  });
-  reader.readAsText(file);
+  const text = await file.text();
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) {
+    message.warning('文件为空');
+    input.value = '';
+    return;
+  }
+  const first = lines[0] || '';
+  const body = /游戏账号|产品名称|调整积分/i.test(first)
+    ? lines.slice(1)
+    : lines;
+  batchText.value = body.join('\n');
+  message.success(`已读取 ${body.length} 行，请预览匹配`);
   input.value = '';
 }
 

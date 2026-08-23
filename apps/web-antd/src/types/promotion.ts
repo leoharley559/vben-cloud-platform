@@ -15,10 +15,12 @@ export interface PromoterListItem {
   AdminId?: number | string;
   ChildMaxCommissionRate?: number;
   ChildMinCommissionRate?: number;
+  children?: PromoterListItem[];
   CommissionRate?: number;
   ContactInf?: string;
   CreateTime?: number | string;
   HasChildren?: boolean;
+  hasChildren?: boolean;
   Id?: number | string;
   IsOneTui?: boolean;
   IsTeamAccount?: number;
@@ -33,8 +35,6 @@ export interface PromoterListItem {
   TeamType?: number;
   Total?: number;
   Username?: string;
-  children?: PromoterListItem[];
-  hasChildren?: boolean;
 }
 
 export interface PromoterListQuery {
@@ -132,8 +132,8 @@ export interface BrokerageSetItem {
   Name?: string;
   ParentId?: number | string;
   Rate?: number;
-  Type?: string;
   resType?: number;
+  Type?: string;
 }
 
 export interface BrokerageSetListQuery {
@@ -244,8 +244,8 @@ export interface HandRecordPayload {
   CostMoney?: number;
   DownNum?: number;
   ExposureNum?: number;
-  Id?: number | string;
   Hash?: string;
+  Id?: number | string;
   Ip?: number;
   ReportDate?: string;
   TemplateId?: number | string;
@@ -415,10 +415,10 @@ export interface TimeshareDataQuery {
 }
 
 export interface ChannelRecoupItem {
-  FirstPayNum?: number;
-  RegNum?: number;
-  RegisterPeriod?: string;
   [key: string]: unknown;
+  FirstPayNum?: number;
+  RegisterPeriod?: string;
+  RegNum?: number;
 }
 
 export interface ChannelRecoupListQuery {

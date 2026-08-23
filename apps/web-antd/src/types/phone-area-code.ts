@@ -6,6 +6,7 @@ export interface PhoneAreaCodeListQuery {
 }
 
 export interface PhoneAreaCodeListItem {
+  [key: string]: unknown;
   CountryName?: string;
   CountryNameEn?: string;
   CountryNameZhTw?: string;
@@ -16,7 +17,6 @@ export interface PhoneAreaCodeListItem {
   Status?: number;
   UpdateBy?: string;
   UpdateTime?: number | string;
-  [key: string]: unknown;
 }
 
 export interface PhoneAreaCodeSwitchPayload {

@@ -33,6 +33,7 @@ const props = withDefaults(
 );
 
 interface StatRow {
+  [key: string]: unknown;
   AppVisit?: number;
   GuestVisit?: number;
   H5Visit?: number;
@@ -51,7 +52,6 @@ interface StatRow {
   Vip9Visit?: number;
   Vip10Visit?: number;
   WebVisit?: number;
-  [key: string]: unknown;
 }
 
 const { projectConfig } = useProjectConfig();

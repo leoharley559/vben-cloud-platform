@@ -32,7 +32,7 @@ import {
 
 defineOptions({ name: 'TeamQuery' });
 
-const { adminInfo, checkPermission, projectConfig } = useCloudPermission();
+const { adminInfo, checkPermission } = useCloudPermission();
 
 const canViewPage = computed(() => checkPermission(10_867));
 
@@ -47,41 +47,11 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
 ]);
 const breadcrumbItems = ref<Array<{ id: number | string; name: string }>>([]);
 const summary = ref(sumTeamQueryStats());
-const rangeSelecting = ref<dayjs.Dayjs>();
 let latestRequestId = 0;
 let latestResult: { items: TeamQueryItem[]; total: number } = {
   items: [],
   total: 0,
 };
-
-/** 对齐旧站 SearchTypeTwo limit-number=30 */
-function disabledDate(current: dayjs.Dayjs) {
-  if (!rangeSelecting.value) return false;
-  const min = rangeSelecting.value.subtract(30, 'day');
-  const max = rangeSelecting.value.add(30, 'day');
-  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
-}
-
-function onCalendarChange(
-  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
-) {
-  const first = dates?.[0];
-  rangeSelecting.value = first
-    ? (dayjs.isDayjs(first)
-      ? first
-      : dayjs(first))
-    : undefined;
-}
-
-const canDrillDown = computed(() => {
-  const accountInfo = projectConfig.value?.AccountInfo as
-    | undefined
-    | { AdminId?: number | string };
-  const agentAccount = projectConfig.value?.AgentAccount as
-    | undefined
-    | { Id?: number | string };
-  return String(accountInfo?.AdminId) === String(agentAccount?.Id);
-});
 
 function getAdminName() {
   const admin = adminInfo.value?.Admin as undefined | { Username?: string };
@@ -257,18 +227,6 @@ function handleReset() {
   gridApi.reload();
 }
 
-function handleDrillDown(row: TeamQueryItem) {
-  if (!canDrillDown.value || !row.AdminId) {
-    return;
-  }
-  filterAdminId.value = row.AdminId;
-  breadcrumbItems.value.push({
-    id: row.AdminId,
-    name: row.AdminName || row.AdminUsername || String(row.AdminId),
-  });
-  gridApi.reload();
-}
-
 function handleBreadcrumbClick(index: number) {
   const item = breadcrumbItems.value[index];
   if (!item) {
@@ -311,7 +269,7 @@ onMounted(() => {
             <QueryDatetimeRangePicker
               v-model="filterDateRange"
               label="统计时间"
-              :disabled-date="disabledDate"
+              :max-range-days="30"
             />
           </div>
           <div class="query-filter-actions query-filter-actions-single">
@@ -347,7 +305,7 @@ onMounted(() => {
         </template>
         <template #adminUsername="{ row }">
           <AgencyAccountLink
-            :admin-id="row.AdminId as number | string | undefined"
+            :admin-id="row.AdminId"
             :username="row.AdminUsername"
           />
         </template>

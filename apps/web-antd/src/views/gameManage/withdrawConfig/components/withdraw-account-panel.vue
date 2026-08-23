@@ -49,26 +49,26 @@ interface WithdrawAccountRow {
   AccountNum?: string;
   AccountType?: number;
   AisleBalance?: number;
+  CustomRate?: number;
   DailyAccAmount?: number;
   DailyAccTimes?: number;
+  Description?: string;
   HandleType?: number;
   Id: number | string;
   MaxOrderMoney?: number;
   MinOrderMoney?: number;
   Money?: number;
+  PayTypeName?: string;
   PerMulti?: number;
   Rate?: number;
   RateType?: number;
-  CustomRate?: number;
-  Description?: string;
-  SupportBank?: string;
-  PayTypeName?: string;
   RealName?: string;
   Round?: number;
   ScriptMode?: number;
   ScriptStatus?: boolean;
   ShowName?: string;
   Status?: number;
+  SupportBank?: string;
   Switch?: number;
   ThirdWithdrawId?: number | string;
 }
@@ -85,8 +85,8 @@ interface PayTypeRow {
   PerMultiVipList?: string;
   PlayerLevelList?: string;
   ServiceRate?: number;
-  Status?: number;
   Sort?: number;
+  Status?: number;
   VipList?: string;
 }
 
@@ -202,6 +202,19 @@ const payTypeName = (type?: number) =>
     6: '易币付',
   })[Number(type)] || `类型 ${type}`;
 
+function formatScriptStatus(row: WithdrawAccountRow) {
+  if (row.HandleType !== 2) {
+    return '-';
+  }
+  if (row.ScriptStatus === true) {
+    return '在线';
+  }
+  if (row.ScriptStatus === false) {
+    return '离线';
+  }
+  return '-';
+}
+
 const gridOptions: VxeTableGridOptions<WithdrawAccountRow> = {
   columns: [
     {
@@ -212,14 +225,7 @@ const gridOptions: VxeTableGridOptions<WithdrawAccountRow> = {
     },
     {
       field: 'ScriptStatus',
-      formatter: ({ row }) =>
-        row.HandleType === 2
-          ? row.ScriptStatus === true
-            ? '在线'
-            : row.ScriptStatus === false
-              ? '离线'
-              : '-'
-          : '-',
+      formatter: ({ row }) => formatScriptStatus(row),
       title: '脚本状态',
       width: 100,
     },
@@ -895,7 +901,7 @@ function handleDelete(row: WithdrawAccountRow) {
       class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 p-3"
     >
       <div>
-        <div class="font-medium">{{ payTypeName(currentPayType) }}通道策略</div>
+        <div class="font-medium">{{ payTypeName(Number(currentPayType)) }}通道策略</div>
         <div class="mt-1 text-xs text-gray-400">
           账户启用后不可编辑或删除；三方账户请在“三方代付通道管理”维护。
         </div>
@@ -1001,7 +1007,7 @@ function handleDelete(row: WithdrawAccountRow) {
           :value="Number(row.Round || 1)"
           size="small"
           style="width: 76px"
-          @change="(value) => updateRound(row, value as number | null)"
+          @change="(value) => updateRound(row, value == null ? null : Number(value))"
         />
       </template>
       <template #action="{ row }">
@@ -1048,7 +1054,7 @@ function handleDelete(row: WithdrawAccountRow) {
     <WithdrawAccountFormModal
       v-if="canCreate || canEdit"
       v-model:open="formOpen"
-      :account-type="currentPayType"
+      :account-type="Number(currentPayType) || undefined"
       :handle-type="createHandleType"
       :row-id="editId"
       @success="gridApi.reload()"

@@ -257,11 +257,11 @@ async function handleExport(payload: Record<string, unknown>) {
         <div class="whitespace-pre-line">
           <PlayerAccountLink
             :login-account="String(row.LoginAccount || '')"
-            :player-id="row.PlayerId as number | string | undefined"
+            :player-id="row.PlayerId"
           />
           <div class="mt-1">
             <PlayerStatusTag
-              :status="row.PlayerStatus as number | string | null"
+              :status="row.PlayerStatus"
               hide-normal
             />
           </div>

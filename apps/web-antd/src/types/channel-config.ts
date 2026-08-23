@@ -9,21 +9,22 @@ export type H5DownloadDialogLangText = ChannelSerializedField;
 export type DefaultTagVenueSetting = ChannelSerializedField;
 
 export interface ChannelPagination {
+  [key: string]: unknown;
   CurrPage?: number;
   MaxCount?: number;
   Page?: number;
   PageSize?: number;
-  [key: string]: unknown;
 }
 
 export interface ChannelAdminOption {
+  [key: string]: unknown;
   Id?: ChannelId;
   Name?: string;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface ChannelResource {
+  [key: string]: unknown;
   CarouselDetail?: unknown[];
   Id?: ChannelId;
   PictureIp?: string;
@@ -31,16 +32,16 @@ export interface ChannelResource {
   PictureProperty?: number;
   PictureStyle?: number | string;
   SmallPictureIp?: string;
-  [key: string]: unknown;
 }
 
 export interface ChannelMoreItems {
+  [key: string]: unknown;
   Parents: ChannelAdminOption[];
   Resources: ChannelResource[];
-  [key: string]: unknown;
 }
 
 export interface ChannelListQuery {
+  [key: string]: unknown;
   ChannelId?: '' | ChannelId;
   ChannelName?: string;
   ChannelType?: number;
@@ -59,10 +60,10 @@ export interface ChannelListQuery {
   PromoterAdminId?: '' | ChannelId;
   PushType?: number | string;
   Sort?: string;
-  [key: string]: unknown;
 }
 
 export interface ChannelRow {
+  [key: string]: unknown;
   AdminId?: ChannelId;
   AndroidAppPkgType?: number;
   AndroidPkgConfigId?: ChannelId;
@@ -94,17 +95,17 @@ export interface ChannelRow {
   SiteName?: string;
   ThirdCustomIosUrl?: string;
   ThirdOrIos?: 1 | 2 | 3 | number;
-  [key: string]: unknown;
 }
 
 export interface ChannelListResult {
+  [key: string]: unknown;
   Items: ChannelRow[];
   MoreItems: ChannelMoreItems;
   Pagination?: ChannelPagination;
-  [key: string]: unknown;
 }
 
 export interface ChannelHierarchyQuery {
+  [key: string]: unknown;
   AdminId?: '' | ChannelId;
   ChannelId?: '' | ChannelId;
   ChannelName?: string;
@@ -113,17 +114,17 @@ export interface ChannelHierarchyQuery {
   PromoterAdminName?: string;
   PromoterAdminUserName?: string;
   PushType?: number | string;
-  [key: string]: unknown;
 }
 
 export interface ChannelHierarchyResult {
+  [key: string]: unknown;
   ItemsAdmin?: ChannelAdminOption;
   ItemsSon: ChannelRow[];
   Parents: ChannelAdminOption[];
-  [key: string]: unknown;
 }
 
 export interface ChannelFormPayload {
+  [key: string]: unknown;
   AdminId?: ChannelId;
   AndroidAppPkgType?: number;
   AppPackageConfigId?: ChannelId;
@@ -170,13 +171,13 @@ export interface ChannelFormPayload {
   SetPackageName?: string;
   TempValue?: unknown[];
   Version?: number;
-  [key: string]: unknown;
 }
 
 export interface ChannelDetail
   extends ChannelRow, Omit<ChannelFormPayload, 'Id'> {}
 
 export interface ChannelBatchPayload {
+  [key: string]: unknown;
   ActionType: number;
   AndroidAppPkgType?: number;
   BackgroundId?: ChannelId;
@@ -200,13 +201,12 @@ export interface ChannelBatchPayload {
   PageAutoDownTime?: number | string;
   PromoterAdminId?: ChannelId;
   PushType?: number;
-  [key: string]: unknown;
 }
 
 export interface ChannelBatchResult {
+  [key: string]: unknown;
   FailCount: number;
   FailIds: ChannelId[];
-  [key: string]: unknown;
 }
 
 export interface ChannelInvitationPayload extends ChannelFormPayload {
@@ -215,20 +215,21 @@ export interface ChannelInvitationPayload extends ChannelFormPayload {
 }
 
 export interface ChannelRepackQuery {
-  ChannelId: ChannelId;
   [key: string]: unknown;
+  ChannelId: ChannelId;
 }
 
 export interface ChannelPackageOption {
+  [key: string]: unknown;
   Id?: ChannelId;
   PackageAlias?: string;
   PackageId?: ChannelId;
   PackageName?: string;
   PackageType?: number;
-  [key: string]: unknown;
 }
 
 export interface ChannelDomainQuery {
+  [key: string]: unknown;
   InUsed?: number;
   IsAll?: number;
   OnlyUnused?: boolean;
@@ -236,25 +237,25 @@ export interface ChannelDomainQuery {
   Page?: number;
   PageSize?: number;
   Type?: number;
-  [key: string]: unknown;
 }
 
 export interface ChannelDomainOption {
+  [key: string]: unknown;
   Domain?: string;
   Id?: ChannelId;
   InUsed?: number;
   Name?: string;
   Type?: number;
-  [key: string]: unknown;
 }
 
 export interface ChannelDomainListResult {
+  [key: string]: unknown;
   Items: ChannelDomainOption[];
   Pagination?: ChannelPagination;
-  [key: string]: unknown;
 }
 
 export interface ChannelIosPackageOption {
+  [key: string]: unknown;
   AppName?: string;
   AppUrl?: string;
   CreateTime?: number | string;
@@ -264,24 +265,23 @@ export interface ChannelIosPackageOption {
   PackageName?: string;
   PkCode?: string;
   PkName?: string;
-  [key: string]: unknown;
 }
 
 export interface ChannelIosPackageListResult {
-  Items: ChannelIosPackageOption[];
   [key: string]: unknown;
+  Items: ChannelIosPackageOption[];
 }
 
 export interface ChannelAppPackageOption {
+  [key: string]: unknown;
   AppName?: string;
   AppUrl?: string;
   CreateTime?: number | string;
   Id?: ChannelId;
+  PackageName?: string;
   PkCode?: string;
   PkName?: string;
-  PackageName?: string;
   Status?: number;
-  [key: string]: unknown;
 }
 
 /**
@@ -296,50 +296,51 @@ export interface ChannelPackagePayload extends ChannelDetail {
 }
 
 export interface ChannelLandingResourceQuery {
+  [key: string]: unknown;
   AgentId?: ChannelId;
   Page?: number;
   PageSize?: number;
   PictureStyle?: number | string;
   PictureType?: number | string;
-  [key: string]: unknown;
 }
 
 export interface ChannelLandingResourceListResult {
+  [key: string]: unknown;
   Items: ChannelResource[];
   Pagination?: ChannelPagination;
-  [key: string]: unknown;
 }
 
 export interface ChannelCountryOption {
+  [key: string]: unknown;
   CountryCode?: string;
   CountryName?: string;
   Id?: ChannelId;
   Name?: string;
-  [key: string]: unknown;
 }
 
 export interface ChannelCountryListResult {
+  [key: string]: unknown;
   Items: ChannelCountryOption[];
   Pagination?: ChannelPagination;
-  [key: string]: unknown;
 }
 
 export interface DefaultTagVenueOption {
+  [key: string]: unknown;
   ApiFee?: number | string;
   GameId?: ChannelId;
   I18nKey?: string;
   Name?: string;
-  [key: string]: unknown;
 }
 
 export type DefaultTagVenuesResult = DefaultTagVenueOption[] | null | string;
 
 export interface ChannelUrlQuery {
-  ChannelId: ChannelId;
   [key: string]: unknown;
+  ChannelId: ChannelId;
 }
 
 export interface ChannelUrlConfig {
+  [key: string]: unknown;
   ChannelId?: ChannelId;
   Domain?: string;
   DomainType?: number;
@@ -347,63 +348,62 @@ export interface ChannelUrlConfig {
   GamePromotionModel?: number;
   MatchDomain?: string;
   MatchDomainType?: number;
-  [key: string]: unknown;
 }
 
 export interface ChannelShortUrlConfig {
+  [key: string]: unknown;
   ChannelId?: ChannelId;
   ShortUrl?: string;
   Url?: string;
-  [key: string]: unknown;
 }
 
 export interface AvailableChannelQuery {
+  [key: string]: unknown;
   ChannelType?: string;
   PackageConfigId?: ChannelId;
   Status?: number;
-  [key: string]: unknown;
 }
 
 export interface AvailableChannel {
+  [key: string]: unknown;
   ChannelId?: ChannelId;
   ChannelName?: string;
   Id?: ChannelId;
-  [key: string]: unknown;
 }
 
 export interface AvailableChannelsResult {
+  [key: string]: unknown;
   Item: AvailableChannel[];
   Items?: AvailableChannel[];
-  [key: string]: unknown;
 }
 
 export interface ChannelSiteOption {
+  [key: string]: unknown;
   Id: ChannelId;
   PackageId?: ChannelId;
   SiteName?: string;
-  [key: string]: unknown;
 }
 
 export interface ChannelSitePayload {
+  [key: string]: unknown;
   ChannelId: ChannelId;
   ConfigId: ChannelId;
   PackageId: ChannelId;
-  [key: string]: unknown;
 }
 
 export interface ChannelSiteTypePayload {
+  [key: string]: unknown;
   ChannelId: ChannelId;
   PackageId: ChannelId;
   SiteConfigType: string;
-  [key: string]: unknown;
 }
 
 export interface ChannelRegisterLoginConfig {
+  [key: string]: unknown;
   AutoLogoutTime?: number;
   ChannelId?: ChannelId;
   Id?: ChannelId;
   Params?: ChannelSerializedField;
-  [key: string]: unknown;
 }
 
 export interface ChannelRegisterLoginPayload {
@@ -414,6 +414,7 @@ export interface ChannelRegisterLoginPayload {
 }
 
 export interface ChannelAnalyticsConfig {
+  [key: string]: unknown;
   /** Serialized provider groups used by the PUT payload. */
   Adjust?: ChannelSerializedField;
   AdjustAppToken?: string;
@@ -443,20 +444,19 @@ export interface ChannelAnalyticsConfig {
   GoogleAnalyticsIosApiSecret?: string;
   GoogleAnalyticsIosMeasurementId?: string;
   GoogleAnalyticsMeasurementId?: string;
-  IsRoibestOpen?: boolean;
   H5Analytic?: ChannelSerializedField;
+  IsRoibestOpen?: boolean;
   MetaConversionApiAccessToken?: string;
   MetaConversionApiDataSourceId?: string;
-  OkSpinPixelId?: string;
   Okspin?: ChannelSerializedField;
+  OkSpinPixelId?: string;
   PackageAppNameId?: string;
   Riobest?: ChannelSerializedField;
-  [key: string]: unknown;
 }
 
 export interface ChannelUploadResponse {
+  [key: string]: unknown;
   FileName?: string;
   Path?: string;
   Url?: string;
-  [key: string]: unknown;
 }

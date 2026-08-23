@@ -24,6 +24,7 @@ const props = defineProps<{
 }>();
 
 interface RecordRow {
+  [key: string]: unknown;
   ActType?: number;
   AddScores?: number | string;
   AgentName?: string;
@@ -31,7 +32,6 @@ interface RecordRow {
   CreateTime?: number | string;
   Note?: string;
   OrderId?: string;
-  [key: string]: unknown;
 }
 
 const { checkPermission } = useCloudPermission();

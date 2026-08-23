@@ -5,10 +5,10 @@ export interface SummaryCardItem {
   label: string;
   /** 可点击筛选时传入 */
   onClick?: () => void;
-  /** 需要着色时传入，如输赢正负 */
-  valueClass?: string;
   /** 展示文案，金额请先格式化 */
   value: number | string;
+  /** 需要着色时传入，如输赢正负 */
+  valueClass?: string;
 }
 
 defineOptions({ name: 'SummaryCards' });

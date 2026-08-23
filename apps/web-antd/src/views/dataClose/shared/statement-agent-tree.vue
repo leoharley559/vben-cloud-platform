@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { AgentNode } from '../statement-helpers';
+import type { AgentNode } from './statement-helpers';
 
 import { Button, Space } from 'ant-design-vue';
 

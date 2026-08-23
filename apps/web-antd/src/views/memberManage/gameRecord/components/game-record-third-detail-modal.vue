@@ -21,6 +21,7 @@ const props = defineProps<{
 }>();
 
 interface BetRow {
+  [key: string]: unknown;
   Detail?: unknown;
   GameId?: number | string;
   GameType?: number | string;
@@ -28,7 +29,6 @@ interface BetRow {
   SubGameId?: number | string;
   TransactionId?: string;
   TransactionTime?: number | string;
-  [key: string]: unknown;
 }
 
 interface LegacyItem {
@@ -98,7 +98,7 @@ async function loadDetail() {
       const built = buildDetailSections(detail, { ...row, Detail: detail });
       displayMode.value = 'structured';
       detailMode.value = built.mode || 'default';
-      detailSections.value = (built.sections || []) as DetailSection[];
+      detailSections.value = (built.sections || []) as unknown as DetailSection[];
     } finally {
       loading.value = false;
     }
@@ -228,6 +228,8 @@ watch(open, (visible) => {
           >
             <template v-if="item.Type === 'html'">
               <div class="mb-1 text-xs text-gray-500">{{ item.Name }}</div>
+              <!-- 三方详情 HTML 字段，内容由接口返回 -->
+              <!-- eslint-disable-next-line vue/no-v-html -->
               <div v-html="String(item.Value || '')"></div>
             </template>
             <template v-else-if="item.Type === 'Iframe' || item.Type === 'url'">

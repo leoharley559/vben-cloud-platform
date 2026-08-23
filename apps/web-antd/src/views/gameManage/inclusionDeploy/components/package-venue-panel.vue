@@ -38,27 +38,27 @@ interface VenueGame extends GameInfo {
 }
 
 interface LocalizedVenue {
+  [key: string]: unknown;
   PcBannerThumbnail?: string;
   VenueOtherName?: string;
   VenueTitle1?: string;
   VenueTitle2?: string;
   VenueTitle3?: string;
-  [key: string]: unknown;
 }
 
 interface VenueImages {
+  [key: string]: unknown;
   AppThumbnail?: string;
   DayLogo?: string;
   NightLogo?: string;
   PcGreyLogo?: string;
   PcLogo?: string;
   PcThumbnail?: string;
-  [key: string]: unknown;
 }
 
 interface WalletSetting {
-  WalletAlias?: string;
   [key: string]: unknown;
+  WalletAlias?: string;
 }
 
 const { ensureGameConfig } = useGameConfig();

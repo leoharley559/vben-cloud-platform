@@ -266,7 +266,7 @@ function downloadBatchTemplate() {
   URL.revokeObjectURL(url);
 }
 
-function onBatchFileChange(event: Event) {
+async function onBatchFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) return;
@@ -275,22 +275,19 @@ function onBatchFileChange(event: Event) {
     input.value = '';
     return;
   }
-  const reader = new FileReader();
-  reader.addEventListener('load', () => {
-    const text = String(reader.result || '').replace(/^\uFEFF/, '');
-    const lines = text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    const body = /游戏账号|产品名称|account|package/i.test(lines[0] || '')
-      ? lines.slice(1)
-      : lines;
-    batchText.value = body.join('\n');
-    batchRows.value = [];
-    batchSelectedIds.value = [];
-    message.success(`已读取 ${body.length} 行，请检查匹配结果`);
-  });
-  reader.readAsText(file);
+  const rawText = await file.text();
+  const text = rawText.replace(/^\uFEFF/, '');
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const body = /游戏账号|产品名称|account|package/i.test(lines[0] || '')
+    ? lines.slice(1)
+    : lines;
+  batchText.value = body.join('\n');
+  batchRows.value = [];
+  batchSelectedIds.value = [];
+  message.success(`已读取 ${body.length} 行，请检查匹配结果`);
   input.value = '';
 }
 
@@ -633,7 +630,7 @@ onMounted(loadMain);
         <template v-if="column.key === 'Account'">
           <PlayerAccountLink
             :login-account="String(record.Account || '')"
-            :player-id="record.PlayerId as number | string | undefined"
+            :player-id="record.PlayerId"
           />
         </template>
         <template v-else-if="column.key === 'actions'">
@@ -722,7 +719,7 @@ onMounted(loadMain);
         <template v-if="column.key === 'Account'">
           <PlayerAccountLink
             :login-account="String(record.Account || '')"
-            :player-id="record.PlayerId as number | string | undefined"
+            :player-id="record.PlayerId"
           />
         </template>
         <template v-else>{{ text }}</template>

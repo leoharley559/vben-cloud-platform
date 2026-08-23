@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { EChartsOption } from 'echarts';
+
 import type { EchartsUIType } from '@vben/plugins/echarts';
 
 import { nextTick, onMounted, ref, watch } from 'vue';
@@ -16,6 +18,7 @@ export type BetMetric =
   | 'validBet';
 
 export interface BetAnalysisRow {
+  [key: string]: unknown;
   BetCount?: number;
   BetGold?: number;
   BetNumberOfPeople?: number;
@@ -25,7 +28,6 @@ export interface BetAnalysisRow {
   ReportDay?: string;
   ValidWater?: number;
   WinGold?: number;
-  [key: string]: unknown;
 }
 
 defineOptions({ name: 'BetAnalysisChart' });
@@ -155,7 +157,7 @@ function buildOption() {
     xAxis: {
       boundaryGap: !lineOnly,
       data: categories,
-      type: 'category',
+      type: 'category' as const,
     },
     yAxis: lineOnly
       ? [{ type: 'value' }]
@@ -165,7 +167,7 @@ function buildOption() {
 
 async function render() {
   await nextTick();
-  renderEcharts(buildOption());
+  renderEcharts(buildOption() as EChartsOption);
   resize();
 }
 

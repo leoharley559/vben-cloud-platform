@@ -11,13 +11,13 @@ defineOptions({ name: 'AgencyAccountLink' });
 
 const props = defineProps<{
   /** 代理 AdminId，有值才可跳转 */
-  adminId?: null | number | string;
+  adminId?: null | number | string | unknown;
   /** 详情页权限，默认 11251 */
   permissionId?: number;
   /** 透传到详情页的可选 query */
   query?: AgencyDetailQuery;
   /** 展示文案（代理账号） */
-  username?: null | number | string;
+  username?: null | number | string | unknown;
 }>();
 
 const router = useRouter();
@@ -53,7 +53,7 @@ function openDetail() {
     return;
   }
   router.push({
-    path: buildAgencyDetailPath(props.adminId!),
+    path: buildAgencyDetailPath(props.adminId as number | string),
     query: {
       ...(props.query?.CountBeginTime
         ? { CountBeginTime: String(props.query.CountBeginTime) }

@@ -35,14 +35,15 @@ import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
-import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 import { formatPlayerStatus } from '#/utils/player-status';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
 import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import {
+  amount,
   arrayToCsvParam,
   calcChargeExchangeRatio,
+  cents,
   formatOfflineDuration,
   formatOnlineDuration,
   formatReportDateTime,
@@ -235,7 +236,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     {
       align: 'center',
-      customRender: ({ record }) => formatAmount(record.Recharged),
+      customRender: ({ record }) => amount(record.Recharged),
       dataIndex: 'Recharged',
       key: 'Recharged',
       sorter: true,
@@ -244,7 +245,7 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     {
       align: 'center',
-      customRender: ({ record }) => formatAmount(record.WithdrawGold),
+      customRender: ({ record }) => amount(record.WithdrawGold),
       dataIndex: 'WithdrawGold',
       key: 'WithdrawGold',
       sorter: true,
@@ -457,7 +458,7 @@ async function handleExport() {
         row.LoginAccount,
         row.ChannelName || row.ChannelId,
         row.PackageName,
-        formatAmountFromCent(row.Profit),
+        cents(row.Profit),
         Number(row.Recharged || 0),
         Number(row.WithdrawGold || 0),
         calcChargeExchangeRatio(row.Recharged, row.WithdrawGold),
@@ -625,7 +626,7 @@ onMounted(() => {
                   v-if="canDetail"
                   :login-account="String(record.LoginAccount || '')"
                   :permission-id="10525"
-                  :player-id="record.PlayerId as number | string"
+                  :player-id="record.PlayerId"
                 />
                 <span v-else>{{ record.LoginAccount || '-' }}</span>
               </template>
@@ -633,7 +634,7 @@ onMounted(() => {
                 {{ record.ChannelName || record.ChannelId || '-' }}
               </template>
               <template v-else-if="column.key === 'Status'">
-                <PlayerStatusTag :status="record.Status as number | string" />
+                <PlayerStatusTag :status="record.Status" />
               </template>
               <template v-else-if="column.key === 'Profit'">
                 <span
@@ -641,7 +642,7 @@ onMounted(() => {
                     color: Number(record.Profit) < 0 ? '#f5222d' : '#52c41a',
                   }"
                 >
-                  {{ formatAmountFromCent(record.Profit) }}
+                  {{ cents(record.Profit) }}
                 </span>
               </template>
               <template v-else-if="column.key === 'actions'">

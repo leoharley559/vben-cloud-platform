@@ -365,7 +365,7 @@ async function handleSubmit() {
           :options="developerOptions"
           placeholder="请选择发展人"
           show-search
-          @change="(value) => selectDeveloper(value as number | string)"
+          @change="(value) => selectDeveloper(value as string | number)"
         />
       </Form.Item>
       <Form.Item label="维护人">

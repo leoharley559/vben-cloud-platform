@@ -3,10 +3,10 @@ import { trimSpace } from '#/utils/string';
 
 /** 广告/场馆返水模块列表响应 */
 export interface AdvertisementListResult<T = Record<string, unknown>> {
+  [key: string]: unknown;
   Data?: T[];
   Items?: T[];
   Pagination?: { MaxCount?: number };
-  [key: string]: unknown;
 }
 
 /**

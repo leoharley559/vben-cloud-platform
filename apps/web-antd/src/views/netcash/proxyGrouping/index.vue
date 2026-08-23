@@ -21,7 +21,6 @@ import {
   Table,
   Tree,
 } from 'ant-design-vue';
-import dayjs from 'dayjs';
 
 import {
   addAgentGroupApi,
@@ -95,24 +94,6 @@ const query = reactive({
   Username: '',
 });
 const dateRange = ref<[Dayjs, Dayjs]>();
-const rangeSelecting = ref<Dayjs>();
-
-/** 对齐旧站 SearchTypeFour limit-number=30 */
-function disabledDate(current: Dayjs) {
-  if (!rangeSelecting.value) return false;
-  const min = rangeSelecting.value.subtract(30, 'day');
-  const max = rangeSelecting.value.add(30, 'day');
-  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
-}
-
-function onCalendarChange(dates: [Dayjs, Dayjs] | [string, string] | null) {
-  const first = dates?.[0];
-  rangeSelecting.value = first
-    ? (dayjs.isDayjs(first)
-      ? first
-      : dayjs(first))
-    : undefined;
-}
 
 const columns = computed(() => [
   { key: 'index', title: '序号', width: 70 },
@@ -654,7 +635,7 @@ onMounted(async () => {
             <div class="query-filter-wide">
               <QueryDatetimeRangePicker
                 v-model="dateRange"
-                :disabled-date="disabledDate"
+                :max-range-days="30"
               />
             </div>
             <div class="query-filter-actions">

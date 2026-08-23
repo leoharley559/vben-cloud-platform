@@ -1,4 +1,5 @@
 export interface WithdrawWhiteItem {
+  [key: string]: unknown;
   CreateTime?: number | string;
   Id?: number | string;
   LoginAccount?: string;
@@ -6,10 +7,10 @@ export interface WithdrawWhiteItem {
   PlayerId?: number | string;
   Remark?: string;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface SendOrderManageItem {
+  [key: string]: unknown;
   AdminId?: number | string;
   AdminName?: string;
   ConfigLabel?: string | string[];
@@ -20,10 +21,10 @@ export interface SendOrderManageItem {
   Name?: string;
   Status?: number;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface WithdrawFinanceItem {
+  [key: string]: unknown;
   AccountType?: number | string;
   AgentWithdrawId?: number | string;
   Amount?: number | string;
@@ -38,10 +39,10 @@ export interface WithdrawFinanceItem {
   RealName?: string;
   RiskStatus?: number;
   Status?: number;
-  [key: string]: unknown;
 }
 
 export interface WithdrawOrderStatItem {
+  [key: string]: unknown;
   ApplyAmount?: number | string;
   AvgTime?: number | string;
   Count?: number | string;
@@ -57,10 +58,10 @@ export interface WithdrawOrderStatItem {
   RiskAuditorTime?: number | string;
   WithdrawAmount?: number | string;
   WithdrawCount?: number | string;
-  [key: string]: unknown;
 }
 
 export interface WithdrawRevertedItem {
+  [key: string]: unknown;
   Amount?: number | string;
   CreateTime?: number | string;
   HandlerName?: string;
@@ -69,10 +70,10 @@ export interface WithdrawRevertedItem {
   PackageName?: string;
   PlayerId?: number | string;
   Status?: number;
-  [key: string]: unknown;
 }
 
 export interface WithdrawWaterItem {
+  [key: string]: unknown;
   ChannelId?: number | string;
   CreateTime?: number | string;
   HandlerName?: string;
@@ -84,29 +85,28 @@ export interface WithdrawWaterItem {
   TotalFlow?: number | string;
   TotalWinloss?: number | string;
   VipLevel?: number | string;
-  [key: string]: unknown;
 }
 
 export interface WithdrawWaterStatusLogItem {
+  [key: string]: unknown;
   CreateTime?: number | string;
   HandlerInf?: string;
   HandlerName?: string;
   Status?: number;
-  [key: string]: unknown;
 }
 
 export interface WithdrawWaterFlowSettingItem {
+  [key: string]: unknown;
   BalanceAmount?: number;
   Id?: number | string;
   NegativeProfitAmount?: number;
-  [key: string]: unknown;
 }
 
 export interface SelfCheckActionRecord {
+  [key: string]: unknown;
   CreateTime?: number | string;
   Id?: number | string;
   Remark?: string;
   ReviewName?: string;
   Status?: number;
-  [key: string]: unknown;
 }

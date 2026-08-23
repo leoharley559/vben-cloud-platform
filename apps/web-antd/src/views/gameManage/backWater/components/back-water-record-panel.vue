@@ -51,6 +51,7 @@ const props = defineProps<{ playerId?: string }>();
 
 type RecordType = 'detail' | 'summary';
 interface BackWaterRow {
+  AdminId?: number | string;
   AdminName?: string;
   AwardDesc?: string;
   AwardStatus?: number;
@@ -64,9 +65,9 @@ interface BackWaterRow {
   DataFlag?: number | string;
   DataType?: number | string;
   Date?: number | string;
+  DayOfWeeks?: string;
   DaysDelay?: number;
   DaysOfCycle?: number;
-  DayOfWeeks?: string;
   GameType?: number | string;
   LevelName?: string;
   LoginAccount?: string;
@@ -738,7 +739,7 @@ onMounted(async () => {
         <template #loginAccount="{ row }">
           <PlayerAccountLink
             :login-account="String(row.LoginAccount || '')"
-            :player-id="row.PlayerId as number | string | undefined"
+            :player-id="row.PlayerId"
           />
         </template>
         <template #backWater="{ row }">

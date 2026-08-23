@@ -245,7 +245,7 @@ function openAddDeputy(row: Row) {
   deputyModalOpen.value = true;
   searchPrincipals();
 }
-function selectDeputy(adminId: number | string) {
+function selectDeputy(adminId: unknown) {
   deputyForm.Name = String(
     principalOptions.value.find(
       (item) => String(item.value) === String(adminId),
@@ -376,7 +376,7 @@ async function openTransfer() {
   }
   if (teamRows.value.length === 0) await loadTeams();
 }
-function selectTransferDeputy(adminId: number | string) {
+function selectTransferDeputy(adminId: unknown) {
   const row = deputyOptions.value.find(
     (item) => String(item.value) === String(adminId),
   )?.raw;
@@ -391,7 +391,7 @@ function selectTransferDeputy(adminId: number | string) {
     ToTeamId: undefined,
   });
 }
-function selectTransferTeam(teamId: number | string) {
+function selectTransferTeam(teamId: unknown) {
   transferForm.ToMainUsername = String(
     transferTeamOptions.value.find(
       (item) => String(item.value) === String(teamId),
@@ -638,12 +638,12 @@ onMounted(() => {
             style="width: 100%"
             @focus="searchPrincipals()"
             @search="remotePrincipalSearch"
-            @change="(value) => selectDeputy(value as number | string)"
+            @change="selectDeputy"
           />
         </Form.Item>
         <Form.Item label="副线姓名">
-<Input v-model:value="deputyForm.Name" disabled />
-</Form.Item>
+          <Input v-model:value="deputyForm.Name" disabled />
+        </Form.Item>
       </Form>
     </Modal>
 
@@ -701,7 +701,7 @@ onMounted(() => {
             placeholder="请选择副线"
             show-search
             style="width: 100%"
-            @change="(value) => selectTransferDeputy(value as number | string)"
+            @change="selectTransferDeputy"
           />
         </Form.Item>
         <Form.Item label="副线姓名">
@@ -723,7 +723,7 @@ onMounted(() => {
             placeholder="请选择转入团队"
             show-search
             style="width: 100%"
-            @change="(value) => selectTransferTeam(value as number | string)"
+            @change="selectTransferTeam"
           />
         </Form.Item>
         <Form.Item label="转入主线">

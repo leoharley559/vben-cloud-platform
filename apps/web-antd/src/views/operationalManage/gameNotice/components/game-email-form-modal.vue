@@ -31,7 +31,7 @@ const props = withDefaults(
     readonly?: boolean;
     rowId?: null | number | string;
   }>(),
-  { readonly: false },
+  { readonly: false, rowId: undefined },
 );
 
 const emit = defineEmits<{
@@ -249,7 +249,7 @@ async function handleSubmit() {
 <template>
   <Modal
     :confirm-loading="submitting"
-    :ok-button-props="isReadonly ? { style: { display: 'none' } } : undefined"
+    :ok-button-props="isReadonly ? ({ style: { display: 'none' } } as Record<string, unknown>) : undefined"
     :open="open"
     :title="modalTitle"
     :width="640"

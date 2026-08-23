@@ -33,7 +33,14 @@ export const overridesPreferences = defineOverridesPreferences({
   widget: {
     languageToggle: false,
     notification: false,
+    refresh: false,
     timezone: false,
+  },
+  tabbar: {
+    showMaximize: false,
+  },
+  breadcrumb: {
+    showIcon: false,
   },
   logo: {
     source: '/logo.png',

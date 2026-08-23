@@ -4,6 +4,9 @@ import { useCloudPlatformStore } from '#/store/cloud-platform';
 export namespace AuthApi {
   /** cloudPlatform 登录参数（对齐 loginWeb.vue） */
   export interface LoginParams {
+    [key: string]: unknown;
+    /** 密码（兼容字段） */
+    password?: string;
     /** 图形验证码内容 */
     PicNumber?: string;
     /** 密码（旧站字段） */
@@ -12,11 +15,8 @@ export namespace AuthApi {
     Timestamp?: string;
     /** 用户名（旧站字段） */
     UserName?: string;
-    /** 密码（兼容字段） */
-    password?: string;
     /** 用户名（兼容字段） */
     username?: string;
-    [key: string]: unknown;
   }
 
   /** 登录结果（含二次验证态） */

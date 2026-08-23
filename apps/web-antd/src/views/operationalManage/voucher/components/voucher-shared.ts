@@ -97,9 +97,9 @@ const defaultDrawWaterSrctp = (): DrawWaterSrctp => ({
 });
 
 export interface DrawWaterSrctp {
-  WithdrawWaterGameType: number;
   WithdrawWaterGames: number[];
   WithdrawWaterGamesPlatform: number[];
+  WithdrawWaterGameType: number;
 }
 
 export interface VoucherRuleLangItem {
@@ -163,8 +163,8 @@ export function formatVoucherType(value?: number | string) {
 
 export function getRewardTypeOptions(voucherType: number) {
   if (voucherType === VOUCHER_TYPE.GOLDEN_EGG) {
-    const excluded: number[] = [REWARD_TYPE.CASH, REWARD_TYPE.POINT];
-    return REWARD_TYPE_OPTIONS.filter((item) => !excluded.includes(item.value));
+    const excluded = new Set<number>([REWARD_TYPE.CASH, REWARD_TYPE.POINT]);
+    return REWARD_TYPE_OPTIONS.filter((item) => !excluded.has(item.value));
   }
   return REWARD_TYPE_OPTIONS.filter(
     (item) => item.value !== REWARD_TYPE.GENERAL,
@@ -401,7 +401,7 @@ function deepClone<T>(value: T): T {
   if (value === undefined) {
     return value;
   }
-  return JSON.parse(JSON.stringify(value)) as T;
+  return structuredClone(value);
 }
 
 function isPrimitiveValue(value: unknown) {
@@ -541,7 +541,7 @@ export function parseVoucherLangText(
   langGroupIds: number[],
   doubleParseKeys: string[] = [],
 ): Record<string, Record<string, unknown>> {
-  let lt: Record<string, Record<string, unknown>> = {};
+  let lt: Record<string, Record<string, unknown>>;
   try {
     if (raw === 'null' || raw === undefined || raw === null) {
       throw new Error('empty LangText');

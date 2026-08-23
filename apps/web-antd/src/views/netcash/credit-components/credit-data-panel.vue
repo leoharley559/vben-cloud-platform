@@ -287,7 +287,7 @@ defineExpose({
         <template v-for="filter in config.filters || []" :key="filter.label">
           <div v-if="(!filter.type || filter.type === 'input') && filter.field">
             <Input
-              v-model:value="filterValues[filter.field]"
+              v-model:value="filterValues[filter.field] as string | number | undefined"
               allow-clear
               @press-enter="gridApi.reload()"
               :placeholder="`请输入${filter.label}`"
@@ -304,14 +304,14 @@ defineExpose({
             <span class="query-field-addon">{{ filter.label }}</span>
             <Select
               v-if="filter.type === 'select'"
-              v-model:value="filterValues[filter.field]"
+              v-model:value="filterValues[filter.field] as string | number | undefined"
               allow-clear
               :options="filter.options"
               :placeholder="`请选择${filter.label}`"
             />
             <Select
               v-else
-              v-model:value="filterValues[filter.field]"
+              v-model:value="filterValues[filter.field] as Array<string | number> | undefined"
               allow-clear
               mode="multiple"
               :options="filter.options"
@@ -332,12 +332,12 @@ defineExpose({
           >
             <span class="query-field-addon">{{ filter.label }}</span>
             <InputNumber
-              v-model:value="rangeValues[filter.label][0]"
+              v-model:value="(rangeValues[filter.label] ??= [undefined, undefined])[0]"
               :min="0"
               placeholder="请输入起"
             />
             <InputNumber
-              v-model:value="rangeValues[filter.label][1]"
+              v-model:value="(rangeValues[filter.label] ??= [undefined, undefined])[1]"
               :min="0"
               placeholder="请输入止"
             />
@@ -374,7 +374,7 @@ defineExpose({
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"
-          :player-id="row.PlayerId as number | string | undefined"
+          :player-id="row.PlayerId"
         />
       </template>
       <template

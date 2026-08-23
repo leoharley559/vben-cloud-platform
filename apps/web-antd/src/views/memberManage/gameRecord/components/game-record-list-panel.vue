@@ -77,6 +77,8 @@ const props = withDefaults(
     scope?: 'global' | 'player';
   }>(),
   {
+    loginAccount: undefined,
+    playerId: undefined,
     scope: 'global',
   },
 );
@@ -141,8 +143,8 @@ const filterUsername = ref('');
 const filterTransactionId = ref('');
 const filterStatus = ref<string>();
 const filterRoundId = ref('');
-const filterBeginBetGold = ref<null | number>(null);
-const filterEndBetGold = ref<null | number>(null);
+const filterBeginBetGold = ref<number | undefined>(undefined);
+const filterEndBetGold = ref<number | undefined>(undefined);
 const filterIsBetTrade = ref(0);
 const filterSettleCount = ref(0);
 const filterInviteSite = ref<string[]>([]);
@@ -325,17 +327,12 @@ function getQueryParams(extra?: {
   return {
     AppUrl: filterAppUrl.value,
     BeginBetGold:
-      filterBeginBetGold.value === null ||
-      filterBeginBetGold.value === undefined
-        ? ''
-        : filterBeginBetGold.value,
+      filterBeginBetGold.value === undefined ? '' : filterBeginBetGold.value,
     BeginTime: beginTime,
     ChannelIds: filterChannelIds.value,
     DevicePlatform: filterDevicePlatform.value,
     EndBetGold:
-      filterEndBetGold.value === null || filterEndBetGold.value === undefined
-        ? ''
-        : filterEndBetGold.value,
+      filterEndBetGold.value === undefined ? '' : filterEndBetGold.value,
     EndTime: endTime,
     GameIds: gameIds,
     InviteSite: filterInviteSite.value,
@@ -366,6 +363,8 @@ function getQueryParams(extra?: {
     TransactionId: filterTransactionId.value.trim(),
     Username: filterUsername.value.trim(),
     VenueTypes: filterSiteTypes.value,
+    Page: extra?.Page ?? 1,
+    PageSize: extra?.PageSize ?? 20,
     ...extra,
   };
 }
@@ -594,8 +593,8 @@ function handleReset() {
   filterTransactionId.value = '';
   filterStatus.value = undefined;
   filterRoundId.value = '';
-  filterBeginBetGold.value = null;
-  filterEndBetGold.value = null;
+  filterBeginBetGold.value = undefined;
+  filterEndBetGold.value = undefined;
   filterIsBetTrade.value = 0;
   filterSettleCount.value = 0;
   filterInviteSite.value = [];
@@ -791,7 +790,7 @@ onMounted(async () => {
               mode="multiple"
               :max-tag-count="1"
               :options="gameGroupOptions"
-              @change="(v: string[]) => handleVenuesTempChange(v || [])"
+              @change="(v) => handleVenuesTempChange((v as string[]) || [])"
               placeholder="请选择场馆模版"
             />
           </Space.Compact>
@@ -871,7 +870,7 @@ onMounted(async () => {
               :max-tag-count="1"
               :options="venueTypeOptions"
               @change="
-                (v: Array<string | number>) => handleVenueTypeChange(v || [])
+                (v) => handleVenueTypeChange((v as Array<string | number>) || [])
               "
               placeholder="请选择场馆类型"
             />

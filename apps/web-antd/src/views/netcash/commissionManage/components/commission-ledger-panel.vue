@@ -43,8 +43,8 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatVenueName } from '#/utils/game-config';
-
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
+
 import {
   cent,
   currentMonth,

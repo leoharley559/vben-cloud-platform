@@ -35,7 +35,6 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 defineOptions({ name: 'CloneChannelPanel' });
 
 const { checkPermission } = useCloudPermission();
-const canAdd = computed(() => checkPermission(12_914));
 const canEdit = computed(() => checkPermission(12_915));
 const canDelete = computed(() => checkPermission(12_916));
 const packages = ref<ChannelPackageOption[]>([]);
@@ -125,16 +124,6 @@ const gridOptions: VxeTableGridOptions<CloneChannelPlanItem> = {
   rowConfig: { keyField: 'Id' },
 };
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
-
-function openCreate() {
-  if (rows.value.length >= 10)
-    return void message.warning('克隆方案最多 10 个');
-  editId.value = undefined;
-  form.PlanName = '';
-  form.ChannelIds = [];
-  modalOpen.value = true;
-  formRef.value?.clearValidate();
-}
 
 function openEdit(row: CloneChannelPlanItem) {
   editId.value = row.Id;

@@ -49,9 +49,9 @@ interface EditableGame {
   Checked: boolean;
   ClientClassify: Array<number | string>;
   GameId: number | string;
+  gameName: string;
   ParentId?: number | string;
   Percent?: number;
-  gameName: string;
   resType?: number;
 }
 
@@ -194,8 +194,8 @@ const filteredGames = computed(() => {
         game.ClientClassify.some(
           (item) => String(item) === String(appliedQuery.Category),
         )) &&
-      matchesPlatform(game, appliedQuery.Platform) &&
-      matchesPlatform(game, activePlatform.value),
+      matchesPlatform(game, appliedQuery.Platform ?? '') &&
+      matchesPlatform(game, activePlatform.value ?? ''),
   );
 });
 

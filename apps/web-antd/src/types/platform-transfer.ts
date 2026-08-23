@@ -1,4 +1,5 @@
 export interface PlatformTransferItem {
+  [key: string]: unknown;
   Amount?: number | string;
   ApproveName?: string;
   ApproveTime?: number | string;
@@ -9,5 +10,4 @@ export interface PlatformTransferItem {
   OrderId?: string;
   State?: number;
   Type?: number;
-  [key: string]: unknown;
 }

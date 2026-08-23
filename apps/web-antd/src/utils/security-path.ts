@@ -15,10 +15,11 @@ function translatePathSegment(
   if (!segment.params) {
     return label;
   }
-  return Object.entries(segment.params).reduce(
-    (result, [key, value]) => result.replace(`{${key}}`, value),
-    label,
-  );
+  let result = label;
+  for (const [key, value] of Object.entries(segment.params)) {
+    result = result.replace(`{${key}}`, value);
+  }
+  return result;
 }
 
 export function getSecurityPathName(pageId: number | string) {

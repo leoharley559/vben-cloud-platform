@@ -611,7 +611,7 @@ onMounted(() => {
         <div>
           <PlayerAccountLink
             :login-account="String(row.LoginAccount || '')"
-            :player-id="row.PlayerId as number | string | undefined"
+            :player-id="row.PlayerId"
           />
           <div class="mt-1">
             <PlayerStatusTag :status="row.PlayerStatus" hide-normal />

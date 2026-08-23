@@ -124,10 +124,10 @@ export function serializeAdminPayload(
     ...rest,
     // 对齐旧站：Role / CreateRole 以逗号串提交（表单多选为数组）
     CreateRole: Array.isArray(form.CreateRole)
-      ? form.CreateRole.filter((item) => item !== '' && item != null).join(',')
+      ? form.CreateRole.filter((item) => item != null && String(item) !== '').join(',')
       : form.CreateRole,
     Role: Array.isArray(form.Role)
-      ? form.Role.filter((item) => item !== '' && item != null).join(',')
+      ? form.Role.filter((item) => item != null && String(item) !== '').join(',')
       : form.Role,
     SonUserRoleDataField: serializeSonUserRoleDataField(
       form.SonUserRoleDataField,

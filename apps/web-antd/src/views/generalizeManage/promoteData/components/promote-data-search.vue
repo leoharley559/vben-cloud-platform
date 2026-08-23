@@ -10,7 +10,7 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 
 defineOptions({ name: 'PromoteDataSearch' });
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     landingOptions?: Array<{
       label: string;
@@ -53,26 +53,6 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   defaultBegin,
   defaultEnd,
 ]);
-const rangeSelecting = ref<dayjs.Dayjs>();
-
-function disabledDate(current: dayjs.Dayjs) {
-  if (!props.maxRangeDays || !rangeSelecting.value) return false;
-  const min = rangeSelecting.value.subtract(props.maxRangeDays, 'day');
-  const max = rangeSelecting.value.add(props.maxRangeDays, 'day');
-  return current.isBefore(min, 'day') || current.isAfter(max, 'day');
-}
-
-function onCalendarChange(
-  dates: [dayjs.Dayjs, dayjs.Dayjs] | [string, string] | null,
-) {
-  const first = dates?.[0];
-  rangeSelecting.value = first
-    ? (dayjs.isDayjs(first)
-      ? first
-      : dayjs(first))
-    : undefined;
-}
-
 function buildPayload() {
   const [begin, end] = filterDateRange.value || [];
   return {
@@ -129,8 +109,8 @@ defineExpose({
         <QueryDatetimeRangePicker
           v-model="filterDateRange"
           label="日期"
+          :max-range-days="maxRangeDays"
           precision="date"
-          :disabled-date="disabledDate"
         />
       </div>
       <slot></slot>

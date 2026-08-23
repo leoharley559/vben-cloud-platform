@@ -28,7 +28,7 @@ export function shouldUseFallbackAuthToken() {
   // hash 路由：`#/path?isH5=1` 不在 location.search 里
   const hash = window.location.hash || '';
   const qIndex = hash.indexOf('?');
-  return qIndex >= 0 && queryHasH5Flag(hash.slice(qIndex + 1));
+  return qIndex !== -1 && queryHasH5Flag(hash.slice(qIndex + 1));
 }
 
 export function hasRequiredAuthToken() {

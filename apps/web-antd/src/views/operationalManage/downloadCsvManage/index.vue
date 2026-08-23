@@ -209,7 +209,7 @@ const gridOptions: VxeTableGridOptions<DownloadRow> = {
     ajax: {
       query: async ({ page }) => {
         const result = await fetchDownloadCsvListApi(getQueryParams(page));
-        const items = (result.Items || []) as DownloadRow[];
+        const items = (result.Items || []) as unknown as DownloadRow[];
         const maxCount = result.Pagination?.MaxCount;
         return {
           items,

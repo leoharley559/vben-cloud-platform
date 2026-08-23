@@ -1,7 +1,7 @@
 export interface EWalletListQuery {
   AccountNum?: string;
-  BeginTime?: number;
-  EndTime?: number;
+  BeginTime?: number | string;
+  EndTime?: number | string;
   LoginAccount?: string;
   Page: number;
   PageSize: number;
@@ -9,6 +9,7 @@ export interface EWalletListQuery {
 }
 
 export interface EWalletListItem {
+  [key: string]: unknown;
   Account?: string;
   CreateTime?: number | string;
   Id?: number | string;
@@ -18,7 +19,6 @@ export interface EWalletListItem {
   PackageName?: string;
   PayType?: number;
   PlayerId?: number | string;
-  [key: string]: unknown;
 }
 
 export interface EWalletFormPayload {

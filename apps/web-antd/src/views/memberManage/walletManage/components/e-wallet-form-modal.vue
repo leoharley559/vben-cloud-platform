@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { SelectValue } from 'ant-design-vue/es/select';
+
 import type { EWalletListItem } from '#/types/e-wallet';
 
 import { computed, ref, watch } from 'vue';
@@ -79,8 +81,13 @@ function closeModal() {
   emit('update:open', false);
 }
 
-function onPackageChange(value: number | string) {
-  packageId.value = value;
+function onPackageChange(value: SelectValue) {
+  if (value === undefined || value === null) {
+    packageId.value = '';
+    packageName.value = '';
+    return;
+  }
+  packageId.value = value as number | string;
   packageName.value =
     packageSelectOptions.value.find((item) => item.PackageId === value)
       ?.PackageName || '';

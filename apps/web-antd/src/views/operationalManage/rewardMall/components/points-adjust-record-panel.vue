@@ -45,9 +45,11 @@ defineOptions({ name: 'PointsAdjustRecordPanel' });
 
 interface AdjustRecordRow {
   AdjustType?: number;
+  AdminId?: number | string;
   AdminUserName?: string;
   Amount?: number | string;
   ApplyName?: string;
+  ApplyRemark?: string;
   Approve?: number;
   ApproveName?: string;
   ApproveRemark?: string;
@@ -61,7 +63,6 @@ interface AdjustRecordRow {
   OrderId?: string;
   PackageName?: string;
   PlayerId?: number | string;
-  ApplyRemark?: string;
 }
 
 const { checkPermission } = useCloudPermission();
@@ -498,7 +499,7 @@ onMounted(() => {
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"
-          :player-id="row.PlayerId as number | string | undefined"
+          :player-id="row.PlayerId"
         />
       </template>
       <template #handleType="{ row }">

@@ -276,7 +276,7 @@ onMounted(() => {
           />
           <Input
             v-else
-            v-model:value="adminIds"
+            v-model:value="adminIds as string | number"
             style="width: 180px"
             allow-clear
             placeholder="请输入代理账号"
@@ -300,7 +300,7 @@ onMounted(() => {
           />
           <Input
             v-else
-            v-model:value="channelIds"
+            v-model:value="channelIds as string | number"
             style="width: 180px"
             allow-clear
             placeholder="请输入渠道"

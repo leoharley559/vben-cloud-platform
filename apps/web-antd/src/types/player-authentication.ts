@@ -15,6 +15,7 @@ export interface PlayerAuthRiskInfoItem {
 }
 
 export interface PlayerAuthListItem {
+  [key: string]: unknown;
   AgentId?: number | string;
   ApproveStatus?: number;
   AuthId?: string;
@@ -42,7 +43,6 @@ export interface PlayerAuthListItem {
   SourceOfIncome?: string;
   UploadTime?: number | string;
   Username?: string;
-  [key: string]: unknown;
 }
 
 export interface PlayerAuthApprovePayload {
@@ -83,11 +83,11 @@ export interface PlayerAuthSettingConfig {
 }
 
 export interface PlayerAuthSettingItem {
+  [key: string]: unknown;
   Config: PlayerAuthSettingConfig | string;
   EnableEvent?: string;
   LangText?: Record<string, unknown> | string;
   SubType: number;
-  [key: string]: unknown;
 }
 
 export interface PlayerAuthSwitchPayload {

@@ -8,7 +8,6 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import {
   Button,
-  Card,
   DatePicker,
   Input,
   Pagination,
@@ -36,9 +35,9 @@ import {
 import { normalizeSearchValue } from '#/utils/everyday-report-format';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 import ChannelReportTable from './channel-report-table.vue';
-import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 defineOptions({ name: 'ChannelReportPanel' });
 

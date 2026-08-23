@@ -132,7 +132,6 @@ function matchStatusFilter(row: HelpOrderRow) {
 }
 
 function buildQuery(page: { currentPage: number; pageSize: number }) {
-  const fallback = getTodayRangeSeconds();
   const [begin, end] = filterDateRange.value || [];
   const query: Record<string, unknown> = {
     // 对齐旧站 SearchTypeTwo：保留 RangePicker 时分秒
@@ -224,7 +223,7 @@ const gridOptions: VxeTableGridOptions<HelpOrderRow> = {
         const result = await fetchHelpOrderListApi(buildQuery(page));
         const items = (
           (result.Items || []) as unknown as HelpOrderRow[]
-        ).filter(matchStatusFilter);
+        ).filter((row) => matchStatusFilter(row));
         return {
           items,
           total: Number(result.Pagination?.MaxCount || items.length),

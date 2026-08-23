@@ -3,7 +3,6 @@ import type { Dayjs } from 'dayjs';
 
 import type { IosAppStoreItem } from '#/api/operationalData/everyday-data';
 import type { DailyReportRow } from '#/utils/everyday-data-calc';
-import type { CsvColumn } from '#/utils/export-csv';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
@@ -18,7 +17,7 @@ import {
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
-import { fetchIosAppStoreDataApi, fetchIosAppStoreListApi, fetchIosAppStoreTodayExportApi } from '#/api/operationalData/everyday-data';
+import { fetchIosAppStoreDataApi, fetchIosAppStoreListApi } from '#/api/operationalData/everyday-data';
 import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -30,11 +29,9 @@ import {
   toDateStrings,
 } from '#/utils/everyday-data-date';
 import {
-  buildPackageStyleExportColumns,
   joinMultiValue,
   normalizeSearchValue,
 } from '#/utils/everyday-report-format';
-import { exportRowsToCsv } from '#/utils/export-csv';
 
 import DailyReportTable from './daily-report-table.vue';
 
@@ -45,8 +42,6 @@ const { memberTypeOptions, packageOptions } = useOperationOptions();
 
 const canRealtime = computed(() => checkPermission(10_696));
 const canHistory = computed(() => checkPermission(10_697));
-const canExport = computed(() => checkPermission(10_698));
-const canExportToday = computed(() => checkPermission(12_021));
 
 const reportType = ref(1);
 const packageId = ref<number | string>('');
@@ -59,7 +54,6 @@ const dataSearchType = ref(0);
 const dateRange = ref<[Dayjs, Dayjs]>();
 
 const loading = ref(false);
-const todayExportLoading = ref(false);
 const appUrlOptions = ref<Array<{ label: string; value: string }>>([]);
 const realTimeData = ref<DailyReportRow[]>([]);
 const historyData = ref<DailyReportRow[]>([]);
@@ -68,16 +62,6 @@ const dateFormat = computed(() =>
   reportType.value === 2 ? 'YYYY-MM' : 'YYYY-MM-DD',
 );
 const pickerMode = computed(() => (reportType.value === 2 ? 'month' : 'date'));
-
-const exportColumns = buildPackageStyleExportColumns('推广收入');
-
-const todayExportColumns: CsvColumn<DailyReportRow>[] = [
-  {
-    header: '上架包',
-    value: (row) => String(row.AppStoreKeyName || ''),
-  },
-  ...exportColumns,
-];
 
 function initDateRange(type = reportType.value) {
   const range =
@@ -170,26 +154,6 @@ function handleReset() {
   dataSearchType.value = 0;
   initDateRange(1);
   void handleSearch();
-}
-
-function handleExportHistory() {
-  exportRowsToCsv(historyData.value, exportColumns, '上架包日报-历史数据');
-}
-
-async function handleExportToday() {
-  todayExportLoading.value = true;
-  try {
-    const { endTime } = toDateStrings(dateRange.value, dateFormat.value);
-    const data = await fetchIosAppStoreTodayExportApi({
-      BeginTime: endTime,
-      EndTime: endTime,
-      IsExp: true,
-    });
-    const rows = calcDailyReportRows((data.Items || []) as DailyReportRow[]);
-    exportRowsToCsv(rows, todayExportColumns, '上架包今日数据');
-  } finally {
-    todayExportLoading.value = false;
-  }
 }
 
 watch(reportType, (value) => {

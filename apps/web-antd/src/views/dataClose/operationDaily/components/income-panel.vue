@@ -20,12 +20,7 @@ import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useReportOptions } from '#/composables/use-report-options';
-import { formatAmountFromCent } from '#/utils/format-amount';
-import ReportLineChart from '#/views/dataClose/shared/report-line-chart.vue';
-import ReportPieChart from '#/views/dataClose/shared/report-pie-chart.vue';
-import ReportQueryCard from '#/views/dataClose/shared/report-query-card.vue';
-import ReportSummaryCards from '#/views/dataClose/shared/report-summary-cards.vue';
-import { arrayToCsvParam } from '#/views/dataClose/shared/report-utils';
+import { arrayToCsvParam, cents } from '#/views/dataClose/shared/report-utils';
 
 import {
   disabledBeforeToday,
@@ -58,8 +53,10 @@ const packageSelectOptions = computed(() => [
 ]);
 
 const dateRange = computed<[Dayjs, Dayjs] | undefined>({
-  get: () => [filters.beginDate, filters.endDate],
-  set: (value) => {
+  get(): [Dayjs, Dayjs] {
+    return [filters.beginDate, filters.endDate];
+  },
+  set(value: [Dayjs, Dayjs] | null | undefined) {
     if (value?.[0] && value[1]) {
       filters.beginDate = value[0];
       filters.endDate = value[1];
@@ -191,31 +188,31 @@ const summaryItems = computed(() => {
     },
     {
       title: `充值(环比${deltaPct(recharge, yRecharge)})`,
-      value: formatAmountFromCent(recharge),
+      value: cents(recharge),
     },
     {
       title: '兑换',
-      value: formatAmountFromCent(withdraw),
+      value: cents(withdraw),
     },
     {
       title: '充兑差',
-      value: formatAmountFromCent(recharge - withdraw),
+      value: cents(recharge - withdraw),
     },
     {
       title: '新用户充值',
-      value: formatAmountFromCent(newPay),
+      value: cents(newPay),
     },
     {
       title: '老用户充值',
-      value: formatAmountFromCent(recharge - newPay),
+      value: cents(recharge - newPay),
     },
     {
       title: '官方充值',
-      value: formatAmountFromCent(t.SumPayMoney || t.officialPayMoney),
+      value: cents(t.SumPayMoney || t.officialPayMoney),
     },
     {
       title: '币商充值',
-      value: formatAmountFromCent(t.SumAgentPayMoney || t.agentPayMoney),
+      value: cents(t.SumAgentPayMoney || t.agentPayMoney),
     },
     {
       title: `充值成功率(环比${deltaPct(todayOrder.value.ok / (todayOrder.value.all || 1), yesterdayOrder.value.ok / (yesterdayOrder.value.all || 1))})`,
@@ -340,9 +337,9 @@ const channelRows = computed(() => {
     return {
       ...item,
       ChannelName: item.ChannelName || item.ChannelId || '-',
-      PayMoneyText: formatAmountFromCent(pay),
-      WithdrawText: formatAmountFromCent(withdraw),
-      DiffText: formatAmountFromCent(pay - withdraw),
+      PayMoneyText: cents(pay),
+      WithdrawText: cents(withdraw),
+      DiffText: cents(pay - withdraw),
       PayNum: num(item.PayNum) + num(item.AgentPayNum) || num(item.SumPayNum),
     };
   });

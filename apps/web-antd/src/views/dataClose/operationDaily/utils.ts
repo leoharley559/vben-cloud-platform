@@ -166,38 +166,41 @@ export function applyCompareFormulas(data: Record<string, CompareBucket>) {
   const result: Record<string, CompareBucket> = {};
   for (const [key, bucket] of Object.entries(data || {})) {
     if (key === 'LastMonthExist' || !bucket) continue;
-    const next: CompareBucket = { ...bucket };
-    next.PerCapita = num(bucket.SumFirstPayMoney)
-      ? (num(bucket.SumFirstPayMoney) / num(bucket.SumFirstPayNum)).toFixed(2)
-      : '0.00';
-    next.PercentConversion = num(bucket.SumReg)
-      ? ((num(bucket.SumFirstPayNum) / num(bucket.SumReg)) * 100).toFixed(2)
-      : '0.00';
-    next.SufficientExchange = num(bucket.SumWithdrawMoney)
-      ? (
-          (num(bucket.SumWithdrawMoney) /
-            (num(bucket.SumPayMoney) + num(bucket.SumAgentPayMoney) || 1)) *
-          100
-        ).toFixed(2)
-      : '0.00';
     const firm = num(bucket.SumTransBetMoney1) - num(bucket.SumTransWinMoney1);
-    next.FirmBunko = firm.toFixed(2);
-    next.Surplus = num(bucket.SumTransBetMoney1)
-      ? ((firm / num(bucket.SumTransBetMoney1)) * 100).toFixed(2)
-      : '0.00';
-    next.FullBring = (
-      num(bucket.SumPayMergerMoney) - num(bucket.SumWithdrawMoney)
-    ).toFixed(2);
-    next.Income = (
+    const income = (
       firm +
       num(bucket.SumAccountChangeSumNum) -
       num(bucket.SumRedSumNum) -
       num(bucket.SumBetWaterMoney) -
       num(bucket.SumAgentCommissionSumNum)
     ).toFixed(2);
-    next.GrossMargin = num(bucket.SumTransBetMoney1)
-      ? ((num(next.Income) / num(bucket.SumTransBetMoney1)) * 100).toFixed(2)
-      : '0.00';
+    const next: CompareBucket = {
+      ...bucket,
+      PerCapita: num(bucket.SumFirstPayMoney)
+        ? (num(bucket.SumFirstPayMoney) / num(bucket.SumFirstPayNum)).toFixed(2)
+        : '0.00',
+      PercentConversion: num(bucket.SumReg)
+        ? ((num(bucket.SumFirstPayNum) / num(bucket.SumReg)) * 100).toFixed(2)
+        : '0.00',
+      SufficientExchange: num(bucket.SumWithdrawMoney)
+        ? (
+            (num(bucket.SumWithdrawMoney) /
+              (num(bucket.SumPayMoney) + num(bucket.SumAgentPayMoney) || 1)) *
+            100
+          ).toFixed(2)
+        : '0.00',
+      FirmBunko: firm.toFixed(2),
+      Surplus: num(bucket.SumTransBetMoney1)
+        ? ((firm / num(bucket.SumTransBetMoney1)) * 100).toFixed(2)
+        : '0.00',
+      FullBring: (
+        num(bucket.SumPayMergerMoney) - num(bucket.SumWithdrawMoney)
+      ).toFixed(2),
+      Income: income,
+      GrossMargin: num(bucket.SumTransBetMoney1)
+        ? ((num(income) / num(bucket.SumTransBetMoney1)) * 100).toFixed(2)
+        : '0.00',
+    };
     result[key] = next;
   }
   return result;

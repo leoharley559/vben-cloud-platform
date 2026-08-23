@@ -164,7 +164,7 @@ async function handleOk() {
   }
   saving.value = true;
   try {
-    const info =
+    const info: Array<Record<string, unknown>> =
       previewRows.value.length > 0
         ? previewRows.value
         : importedValues.value.map((value) => ({ RiskValue: value }));
