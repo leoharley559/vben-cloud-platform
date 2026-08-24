@@ -263,6 +263,35 @@ function resolveVenueLabel(gameId: number, typeCode: string, fallback = '') {
   return resolveVenueMeta(gameId, typeCode).venueLabel;
 }
 
+/** 与「查看返水配置」弹窗一致：按 fanDianCategories → gameIdList 排序 */
+function venueConfigSortIndex(gameId: number, typeCode: string) {
+  const normalizedType = String(typeCode || '')
+    .trim()
+    .toLowerCase();
+  const categoryIndex = venueConfig.fanDianCategories.findIndex((category) => {
+    if (gameId > 0 && category.gameIdList.map(Number).includes(gameId)) {
+      return true;
+    }
+    const type = String(category.type || '')
+      .trim()
+      .toLowerCase();
+    const name = String(category.name || '')
+      .trim()
+      .toLowerCase();
+    return (
+      !!normalizedType &&
+      (type === normalizedType ||
+        name === normalizedType ||
+        normalizedType.endsWith(`_${type}`))
+    );
+  });
+  const category = venueConfig.fanDianCategories[categoryIndex];
+  if (categoryIndex === -1 || !category) return Number.MAX_SAFE_INTEGER;
+  const gameIndex =
+    gameId > 0 ? category.gameIdList.map(Number).indexOf(gameId) : -1;
+  return categoryIndex * 1000 + (gameIndex === -1 ? 999 : gameIndex);
+}
+
 const venueDetailRows = computed(() => {
   const self = personal.value[0];
   if (!self) return [];
@@ -277,6 +306,12 @@ const venueDetailRows = computed(() => {
   return stats
     .filter(
       (item) => item.bet !== 0 || item.validBet !== 0 || item.winGold !== 0,
+    )
+    .toSorted(
+      (a, b) =>
+        venueConfigSortIndex(a.gameId, a.typeCode) -
+          venueConfigSortIndex(b.gameId, b.typeCode) ||
+        a.venueLabel.localeCompare(b.venueLabel, 'zh-CN'),
     )
     .map((item, index) => {
       const line = grade
