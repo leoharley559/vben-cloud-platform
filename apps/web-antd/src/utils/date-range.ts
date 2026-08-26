@@ -22,7 +22,7 @@ export function getTodayRangeSeconds() {
 }
 
 /**
- * 游戏记录默认：昨天 00:00:00 ～ 今天 23:59:59（unix 秒）。
+ * 昨天 00:00:00 ～ 今天 23:59:59（unix 秒）。
  * 对齐旧站 `getBeforeDateTimestamp(2, false)` ～ `getBeforeDateTimestamp(1)`。
  */
 export function getYesterdayToTodayRangeSeconds() {

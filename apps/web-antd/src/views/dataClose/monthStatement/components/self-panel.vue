@@ -301,7 +301,7 @@ onMounted(() => {
       </template>
       <template #extra>
         <div class="text-xs text-muted-foreground">
-          默认近三月（整月），最长约 180 天
+          默认近两月，最长约 180 天
         </div>
       </template>
     </ReportQueryCard>

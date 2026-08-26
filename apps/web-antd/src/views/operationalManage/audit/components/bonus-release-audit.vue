@@ -36,7 +36,7 @@ import {
   formatBonusWaterType,
   getBonusApproveColor,
 } from '#/utils/bonus-audit';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -55,7 +55,7 @@ const canBatchApprove = computed(() => checkPermission(10_160));
 const canBatchReject = computed(() => checkPermission(10_161));
 const canExport = computed(() => checkPermission(10_118));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const selectedRows = ref<BonusAuditListItem[]>([]);
 const rejectOpen = ref(false);
 const rejectRow = ref<BonusAuditListItem | null>(null);

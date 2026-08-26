@@ -24,6 +24,7 @@ import {
 } from '#/api/operationalData/channel-data';
 import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { calcChannelRow, calcChannelRows } from '#/utils/channel-data-calc';
@@ -67,7 +68,7 @@ const adminSearch = ref<Array<number | string> | number | string>([]);
 const channelSearch = ref<Array<number | string> | number | string>([]);
 const agentType = ref<number | string>('');
 const dataSearchType = ref(0);
-const dateRange = ref<[Dayjs, Dayjs]>();
+const dateRange = ref<[Dayjs, Dayjs] | undefined>();
 
 const page = ref(1);
 const pageSize = ref(20);
@@ -79,7 +80,35 @@ const tableData = ref<ChannelRow[]>([]);
 const dateFormat = computed(() =>
   reportType.value === 2 ? 'YYYY-MM' : 'YYYY-MM-DD',
 );
-const pickerMode = computed(() => (reportType.value === 2 ? 'month' : 'date'));
+
+/** 月报快捷区间（日报/区间走 QueryDatetimeRangePicker 自带今日/昨日/本月/上月） */
+const monthRangePresets = computed(() => [
+  {
+    label: '本月',
+    value: [dayjs().startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs],
+  },
+  {
+    label: '上月',
+    value: (() => {
+      const last = dayjs().subtract(1, 'month');
+      return [last.startOf('month'), last.endOf('month')] as [Dayjs, Dayjs];
+    })(),
+  },
+  {
+    label: '近3个月',
+    value: [
+      dayjs().subtract(2, 'month').startOf('month'),
+      dayjs().endOf('month'),
+    ] as [Dayjs, Dayjs],
+  },
+  {
+    label: '近6个月',
+    value: [
+      dayjs().subtract(5, 'month').startOf('month'),
+      dayjs().endOf('month'),
+    ] as [Dayjs, Dayjs],
+  },
+]);
 
 /** 区间报日期列：查询起止，对齐旧站 param.BeginTime~param.EndTime */
 const queryDateLabel = computed(() => {
@@ -105,9 +134,9 @@ function initDateRange(type = reportType.value) {
     dateRange.value = [dayjs(range[0]), dayjs(range[1])];
     return;
   }
-  // 历史日报默认：昨天～昨天（对齐旧站常见区间；旧站搜索组件默认会带回区间）
-  const yesterday = dayjs().subtract(1, 'day');
-  dateRange.value = [yesterday, yesterday];
+  // 历史日报/区间默认：本月 1 号～今天
+  const range = defaultDailyReportRange();
+  dateRange.value = [dayjs(range[0]), dayjs(range[1])];
 }
 
 function resolveDimDefault() {
@@ -499,12 +528,18 @@ onMounted(() => {
             />
           </Space.Compact>
           <div class="query-filter-wide">
-            <Space.Compact>
-              <span class="query-field-addon">日期</span>
+            <QueryDatetimeRangePicker
+              v-if="reportType !== 2"
+              v-model="dateRange"
+              precision="date"
+            />
+            <Space.Compact v-else>
+              <span class="query-field-addon">时间范围</span>
               <DatePicker.RangePicker
                 v-model:value="dateRange"
                 :format="dateFormat"
-                :picker="pickerMode"
+                :presets="monthRangePresets"
+                picker="month"
               />
             </Space.Compact>
           </div>

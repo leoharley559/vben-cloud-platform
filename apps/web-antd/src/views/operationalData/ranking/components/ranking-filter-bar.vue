@@ -108,7 +108,10 @@ const exportDisabled = computed(() => props.loading || props.exportLoading);
   <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
       <div class="query-filter-wide">
-        <QueryDatetimeRangePicker v-model="dateRange" precision="date" />
+        <QueryDatetimeRangePicker
+          v-model="dateRange"
+          precision="date"
+        />
       </div>
 
       <Space.Compact>

@@ -40,6 +40,7 @@ import {
   BONUS_EVENT_RISK_STATUS_OPTIONS,
   VIP_LEVEL_OPTIONS,
 } from '#/utils/bonus-reward';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -88,7 +89,11 @@ const filterVipLevel = ref(-1);
 const filterApproveStatus = ref(1);
 const filterRiskStatus = ref('');
 const filterAppUrl = ref('');
-const filterApplyDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+const defaultRange = getTodayRangeSeconds();
+const filterApplyDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
+  dayjs.unix(defaultRange.BeginTime),
+  dayjs.unix(defaultRange.EndTime),
+]);
 const filterApproveDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 
 const appUrlOptions = computed(() => {
@@ -409,7 +414,10 @@ function resetFilters() {
   filterApproveStatus.value = 1;
   filterRiskStatus.value = '';
   filterAppUrl.value = '';
-  filterApplyDateRange.value = null;
+  filterApplyDateRange.value = [
+    dayjs.unix(defaultRange.BeginTime),
+    dayjs.unix(defaultRange.EndTime),
+  ];
   filterApproveDateRange.value = null;
   gridApi.reload();
 }

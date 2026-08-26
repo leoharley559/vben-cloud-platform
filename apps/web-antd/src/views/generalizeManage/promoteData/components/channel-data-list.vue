@@ -251,7 +251,7 @@ onMounted(async () => {
 
 <template>
   <div v-if="canViewTable">
-    <PromoteDataSearch ref="searchRef" :max-range-days="6" @search="loadData">
+    <PromoteDataSearch ref="searchRef" :max-range-days="30" @search="loadData">
       <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">汇率</span>

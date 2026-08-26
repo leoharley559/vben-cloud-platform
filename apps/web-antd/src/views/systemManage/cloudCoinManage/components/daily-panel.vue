@@ -10,7 +10,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchCloudCoinDailyListApi } from '#/api/systemManage/extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 
 defineOptions({ name: 'CloudCoinDailyPanel' });
 
@@ -29,8 +29,8 @@ interface DailyRow {
 const { checkPermission } = useCloudPermission();
 const canViewTable = computed(() => checkPermission(11_430));
 
-/** 对齐旧站：近 7 个自然日含今天 */
-const defaultRange = getLast7CalendarDaysRangeSeconds();
+/** 默认当月：月初 ～ 今天 */
+const defaultRange = getCurrentMonthRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
@@ -111,7 +111,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  const range = getLast7CalendarDaysRangeSeconds();
+  const range = getCurrentMonthRangeSeconds();
   filterDateRange.value = [
     dayjs.unix(range.BeginTime),
     dayjs.unix(range.EndTime),
@@ -133,7 +133,6 @@ onMounted(() => {
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker
             v-model="filterDateRange"
-            label="云币日报"
             precision="date"
           />
         </div>

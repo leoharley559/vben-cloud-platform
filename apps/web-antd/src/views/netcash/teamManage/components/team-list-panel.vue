@@ -31,6 +31,7 @@ import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatNetcashDateTime } from '#/utils/netcash';
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
@@ -47,12 +48,18 @@ const canDissolve = computed(() => checkPermission(11_493));
 const canRemoveDeputy = computed(() => checkPermission(11_494));
 const canAddDeputy = computed(() => checkPermission(11_495));
 
+function currentMonthRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  const range = getCurrentMonthRangeSeconds();
+  return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+}
+
 const teamLoading = ref(false);
 const teamRows = ref<Row[]>([]);
 const teamTotal = ref(0);
+const defaultMonth = getCurrentMonthRangeSeconds();
 const teamQuery = reactive({
-  BeginTime: dayjs().subtract(1, 'month').startOf('day').unix(),
-  EndTime: dayjs().endOf('day').unix(),
+  BeginTime: defaultMonth.BeginTime,
+  EndTime: defaultMonth.EndTime,
   Keyword: '',
   Page: 1,
   PageSize: 20,
@@ -62,10 +69,7 @@ const teamQuery = reactive({
   Type: -1,
   Username: '',
 });
-const teamDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs().subtract(1, 'month'),
-  dayjs(),
-]);
+const teamDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(currentMonthRange());
 const teamColumns = [
   { key: 'index', title: '序号', width: 65 },
   { dataIndex: 'CreateTime', key: 'CreateTime', title: '创建时间', width: 170 },
@@ -113,7 +117,7 @@ function resetTeams() {
     Type: -1,
     Username: '',
   });
-  teamDateRange.value = [dayjs().subtract(1, 'month'), dayjs()];
+  teamDateRange.value = currentMonthRange();
   loadTeams();
 }
 

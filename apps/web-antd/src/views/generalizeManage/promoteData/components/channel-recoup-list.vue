@@ -46,11 +46,11 @@ const filterAdminSearchType = ref(0);
 const filterChannelIds = ref<Array<number | string>>([]);
 const filterChannelSearch = ref('');
 const filterChannelSearchType = ref(0);
-const filterReportType = ref(3);
+const filterReportType = ref(4);
 const filterType = ref(1);
 const filterIsTotal = ref(0);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(currentWeek());
-const currentDateNum = ref(getWeekNumber(new Date()));
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(currentMonth());
+const currentDateNum = ref(new Date().getMonth() + 1);
 const currentYear = ref(new Date().getFullYear());
 
 function currentWeek(): [dayjs.Dayjs, dayjs.Dayjs] {
@@ -58,6 +58,12 @@ function currentWeek(): [dayjs.Dayjs, dayjs.Dayjs] {
   const daysFromMonday = (now.day() + 6) % 7;
   const monday = now.subtract(daysFromMonday, 'day').startOf('day');
   return [monday, monday.add(6, 'day')];
+}
+
+/** 默认当月（月报模式下两端均为当月） */
+function currentMonth(): [dayjs.Dayjs, dayjs.Dayjs] {
+  const month = dayjs().startOf('month');
+  return [month, month];
 }
 
 /** 对齐旧站 getWeekNumber（ISO 周） */
@@ -152,11 +158,11 @@ function reset() {
   filterChannelIds.value = [];
   filterChannelSearch.value = '';
   filterChannelSearchType.value = 0;
-  filterReportType.value = 3;
+  filterReportType.value = 4;
   filterType.value = 1;
   filterIsTotal.value = 0;
-  filterDateRange.value = currentWeek();
-  currentDateNum.value = getWeekNumber(new Date());
+  filterDateRange.value = currentMonth();
+  currentDateNum.value = new Date().getMonth() + 1;
   currentYear.value = new Date().getFullYear();
   loadData();
 }
@@ -358,7 +364,7 @@ onMounted(() => {
         </Space.Compact>
         <div class="query-filter-wide">
           <Space.Compact>
-            <span class="query-field-addon">日期</span>
+            <span class="query-field-addon">时间范围</span>
             <DatePicker.RangePicker
               v-model:value="filterDateRange"
               :picker="datePickerMode"

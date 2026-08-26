@@ -27,7 +27,7 @@ import { arrayToCsvParam, cents } from '#/views/dataClose/shared/report-utils';
 import {
   applyVenueFee,
   buildCommonQuery,
-  defaultTodayRange,
+  defaultMonthRange,
   disabledDateBeyond90,
   getGameCategoryName,
   parseMyPlatformGameTypes,
@@ -67,7 +67,7 @@ const gamePlatformType = ref<Array<number | string>>([]);
 const gameType = ref<Array<number | string>>([]);
 const templateId = ref<number | string>('');
 const appUrl = ref<Array<number | string>>([]);
-const dateRange = ref<[Dayjs, Dayjs]>(defaultTodayRange());
+const dateRange = ref<[Dayjs, Dayjs]>(defaultMonthRange());
 
 const adminGroupOptions = computed(() =>
   (
@@ -215,7 +215,7 @@ function handleReset() {
   gameType.value = [];
   templateId.value = '';
   appUrl.value = [];
-  dateRange.value = defaultTodayRange();
+  dateRange.value = defaultMonthRange();
   venueRates.value = [];
   void loadList();
 }

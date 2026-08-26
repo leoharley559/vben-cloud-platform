@@ -70,8 +70,8 @@ function handleSearch() {
     return;
   }
   const days = range[1].startOf('day').diff(range[0].startOf('day'), 'day');
-  if (days > 29) {
-    message.warning('查询区间最长 30 天');
+  if (days > 30) {
+    message.warning('查询区间最长 31 天');
     return;
   }
   emit('search', buildQuery());
@@ -143,7 +143,7 @@ defineExpose({ buildQuery, handleSearch });
       <QueryDatetimeRangePicker
         v-model="filters.dateRange"
         :disabled-date="(current) => disabledKeepDate(current)"
-        :max-range-days="29"
+        :max-range-days="30"
         precision="date"
       />
     </div>
@@ -152,7 +152,7 @@ defineExpose({ buildQuery, handleSearch });
       <Button @click="handleReset">重置</Button>
     </template>
     <template #extra>
-      <div class="text-xs text-gray-500">默认近 7 天至今天，最长 30 天</div>
+      <div class="text-xs text-gray-500">默认当月，最长 31 天</div>
     </template>
   </ReportQueryCard>
 </template>

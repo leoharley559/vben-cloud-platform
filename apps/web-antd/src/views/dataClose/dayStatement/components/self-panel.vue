@@ -41,7 +41,7 @@ const channelIds = ref<Array<number | string>>([]);
 const appUrls = ref<string[]>([]);
 const venueTypes = ref<Array<number | string>>([]);
 /** 对齐旧站 getBeforeDateStr(2)：昨天全日 */
-const dateRange = ref<[Dayjs, Dayjs]>(resolveReportRange('yesterday'));
+const dateRange = ref<[Dayjs, Dayjs]>(resolveReportRange('currentMonth'));
 
 const canList = computed(() => checkPermission(10_499));
 const canExport = computed(() => checkPermission(10_500));
@@ -94,7 +94,7 @@ function buildQuery() {
 
 async function loadList() {
   if (!canList.value) return;
-  if (!ensureDaySpan(dateRange.value, 30)) return;
+  if (!ensureDaySpan(dateRange.value, 31)) return;
   loading.value = true;
   try {
     await ensureGameConfig();
@@ -118,7 +118,7 @@ function reset() {
   channelIds.value = [];
   appUrls.value = [];
   venueTypes.value = [];
-  dateRange.value = resolveReportRange('yesterday');
+  dateRange.value = resolveReportRange('currentMonth');
   void loadList();
 }
 
@@ -219,7 +219,7 @@ onMounted(() => {
         </Button>
       </template>
       <template #extra>
-        <div class="text-xs text-muted-foreground">默认昨天，最长 30 天</div>
+        <div class="text-xs text-muted-foreground">默认当月，最长 31 天</div>
       </template>
     </ReportQueryCard>
 

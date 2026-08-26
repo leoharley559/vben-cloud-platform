@@ -18,6 +18,7 @@ import {
 } from '#/api/operationManage/game-risk-control';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 import RiskRecordCreateModal from './risk-record-create-modal.vue';
@@ -53,9 +54,10 @@ const canDelete = computed(() => checkPermission(permissionMap.value.delete));
 
 const filterKeyword = ref('');
 const filterLoginAccount = ref('');
+const defaultRange = getCurrentMonthRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
-  dayjs().subtract(1, 'month').startOf('day'),
-  dayjs().endOf('day'),
+  dayjs.unix(defaultRange.BeginTime),
+  dayjs.unix(defaultRange.EndTime),
 ]);
 
 const createOpen = ref(false);
@@ -178,9 +180,10 @@ function handleSearch() {
 function resetFilters() {
   filterKeyword.value = '';
   filterLoginAccount.value = '';
+  const range = getCurrentMonthRangeSeconds();
   filterDateRange.value = [
-    dayjs().subtract(1, 'month').startOf('day'),
-    dayjs().endOf('day'),
+    dayjs.unix(range.BeginTime),
+    dayjs.unix(range.EndTime),
   ];
   gridApi.reload();
 }

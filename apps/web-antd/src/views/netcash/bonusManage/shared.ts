@@ -41,6 +41,16 @@ export function todayRange(): [Dayjs, Dayjs] {
   return [dayjs().startOf('day'), dayjs().endOf('day')];
 }
 
+/** 近 3 个自然日（含今天）：今天−2 日 00:00 ～ 今天 23:59 */
+export function last3DaysRange(): [Dayjs, Dayjs] {
+  return [dayjs().subtract(2, 'day').startOf('day'), dayjs().endOf('day')];
+}
+
+/** 当月：月初 00:00 ～ 今天 23:59 */
+export function monthRange(): [Dayjs, Dayjs] {
+  return [dayjs().startOf('month'), dayjs().endOf('day')];
+}
+
 export const walletOptions = [
   { label: '全部钱包', value: '' },
   { label: '佣金钱包', value: 1 },

@@ -320,7 +320,7 @@ async function handleExport(payload: Record<string, unknown>) {
       <div class="query-filter-wide">
         <QueryDatetimeRangePicker
           v-model="filterVisitRange"
-          label="访问时间（最多 7 天）"
+          label="访问时间"
           :disabled-date="visitRangeLimit.disabledDate"
         />
       </div>
@@ -368,6 +368,7 @@ async function handleExport(payload: Record<string, unknown>) {
         >
           导出 Excel
         </Button>
+        <span class="text-xs text-gray-500">访问时间最多 7 天</span>
       </div>
     </template>
 

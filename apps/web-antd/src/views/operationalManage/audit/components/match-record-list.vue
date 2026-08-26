@@ -30,7 +30,7 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import {
   formatMatchAuditStatus,
@@ -52,7 +52,7 @@ const canBatchReject = computed(() => checkPermission(11_661));
 const canExport = computed(() => checkPermission(11_941));
 const canEditRemark = computed(() => checkPermission(11_662));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const selectedRows = ref<ActivityMatchBonusItem[]>([]);
 const exportLoading = ref(false);
 

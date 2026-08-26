@@ -175,7 +175,7 @@ onMounted(() => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" label="日期" />
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>

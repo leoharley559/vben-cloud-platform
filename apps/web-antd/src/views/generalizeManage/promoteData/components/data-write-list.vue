@@ -315,7 +315,7 @@ onMounted(async () => {
             placeholder="请选择"
           />
         </Form.Item>
-        <Form.Item label="日期" required>
+        <Form.Item label="报表日期" required>
           <DatePicker v-model:value="formReportDate" class="w-full" />
         </Form.Item>
         <Form.Item label="落地页" required>

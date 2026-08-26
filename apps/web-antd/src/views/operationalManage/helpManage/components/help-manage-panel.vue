@@ -24,7 +24,7 @@ import {
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getTodayRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import {
   formatOperationDateTime,
   HELP_RECORD_STATUS_MAP,
@@ -48,18 +48,14 @@ const canAgree = computed(() => checkPermission(10_231));
 const canReject = computed(() => checkPermission(10_232));
 const canClose = computed(() => checkPermission(10_233));
 
-/**
- * 对齐旧站 listQuery / SearchTypeTwo：
- * getBeforeDateStr(1)～getBeforeDateStr(1,false) 与 getBeforeDateTimestamp(1,false)～今天结束
- * （GLOBAL 内 days-1，参数 1 实际为今天）
- */
-function todayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
-  const range = getTodayRangeSeconds();
+/** 默认当月：月初 00:00:00 ～ 今天 23:59:59 */
+function monthRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  const range = getCurrentMonthRangeSeconds();
   return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
 }
 
 const filterHelperAccount = ref('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(todayRange());
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>(monthRange());
 /** 对齐旧站 el-table 列筛选：客户端过滤当前页 */
 const filterStatus = ref<number | string>('');
 const sortValue = ref('');
@@ -210,7 +206,7 @@ function handleReset() {
   filterHelperAccount.value = '';
   filterStatus.value = '';
   sortValue.value = '';
-  filterDateRange.value = todayRange();
+  filterDateRange.value = monthRange();
   gridApi.reload();
 }
 

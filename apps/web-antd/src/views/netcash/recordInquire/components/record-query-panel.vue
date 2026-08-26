@@ -14,6 +14,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useProjectConfig } from '#/composables/use-project-config';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 
 type QueryKind = 'bonus' | 'standard' | 'transaction';
 type SelectOption = { label: string; value: number | string };
@@ -67,13 +68,11 @@ const query = reactive<RecordQueryBaseQuery>({
 });
 
 const kind = computed<QueryKind>(() => props.config.kind || 'standard');
-/** 与旧站 listQuery 对齐：标准 Tab 近 7 日～今日；红利/账变 昨日～今日 */
+
+/** 各子页默认当月：月初 ～ 今天 */
 const defaultRange = (): [dayjs.Dayjs, dayjs.Dayjs] => {
-  const end = dayjs().endOf('day');
-  if (kind.value === 'standard') {
-    return [dayjs().subtract(7, 'day').startOf('day'), end];
-  }
-  return [dayjs().subtract(1, 'day').startOf('day'), end];
+  const range = getCurrentMonthRangeSeconds();
+  return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
 };
 const primaryRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | undefined>(
   defaultRange(),
@@ -265,14 +264,14 @@ function validateRange() {
     message.warning('结束时间不能早于开始时间');
     return false;
   }
-  // 标准 Tab：对齐旧站 SearchTypeTwo limit-number=7；允许查到今日（对齐 listQuery EndTime）
+  // 标准 Tab：禁止未来日期；跨度放宽到 31 天以支持当月查询
   if (kind.value === 'standard') {
     if (begin.isAfter(dayjs(), 'day') || end.isAfter(dayjs(), 'day')) {
       message.warning('不能查询未来日期');
       return false;
     }
-    if (end.startOf('day').diff(begin.startOf('day'), 'day') > 7) {
-      message.warning('查询日期范围不能超过 7 天');
+    if (end.startOf('day').diff(begin.startOf('day'), 'day') > 31) {
+      message.warning('查询日期范围不能超过 31 天');
       return false;
     }
   }
@@ -587,7 +586,7 @@ onMounted(() => {
                 ? '申请时间'
                 : kind === 'transaction'
                   ? '账变时间'
-                  : '日期'
+                  : '时间范围'
             "
           />
         </div>

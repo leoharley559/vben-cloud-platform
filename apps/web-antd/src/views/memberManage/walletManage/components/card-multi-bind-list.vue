@@ -24,14 +24,9 @@ defineOptions({ name: 'CardMultiBindList' });
 const { checkPermission } = useCloudPermission();
 const canView = computed(() => checkPermission(12_702));
 
-const defaultBegin = dayjs().subtract(1, 'month').startOf('day');
-const defaultEnd = dayjs().endOf('day');
-
 const filterBankAccount = ref('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  defaultBegin,
-  defaultEnd,
-]);
+/** 首屏/重置不传日期 */
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 
 const formOpen = ref(false);
 
@@ -112,7 +107,7 @@ function handleSearch() {
 
 function handleReset() {
   filterBankAccount.value = '';
-  filterDateRange.value = [defaultBegin, defaultEnd];
+  filterDateRange.value = undefined;
   gridApi.reload();
 }
 

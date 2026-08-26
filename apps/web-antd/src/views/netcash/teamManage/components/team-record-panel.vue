@@ -16,6 +16,7 @@ import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatNetcashDateTime } from '#/utils/netcash';
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
@@ -26,12 +27,18 @@ const { checkPermission } = useCloudPermission();
 /** 操作记录列表数据权：旧站 getList 用 11497；勿再绑 serviceWorkTime(11821，客服工时误挂) */
 const canViewRecordList = computed(() => checkPermission(11_497));
 
+function currentMonthRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  const range = getCurrentMonthRangeSeconds();
+  return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+}
+
 const recordLoading = ref(false);
 const recordRows = ref<Row[]>([]);
 const recordTotal = ref(0);
+const defaultMonth = getCurrentMonthRangeSeconds();
 const recordQuery = reactive({
-  BeginTime: dayjs().subtract(1, 'month').startOf('day').unix(),
-  EndTime: dayjs().endOf('day').unix(),
+  BeginTime: defaultMonth.BeginTime,
+  EndTime: defaultMonth.EndTime,
   Operate: 0,
   Page: 1,
   PageSize: 20,
@@ -40,10 +47,7 @@ const recordQuery = reactive({
   TeamName: '',
   Username: '',
 });
-const recordDates = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs().subtract(1, 'month'),
-  dayjs(),
-]);
+const recordDates = ref<[dayjs.Dayjs, dayjs.Dayjs]>(currentMonthRange());
 const recordColumns = [
   { dataIndex: 'TeamName', key: 'TeamName', title: '团队名称' },
   { dataIndex: 'Username', key: 'Username', title: '主线账号' },
@@ -104,7 +108,7 @@ function resetRecords() {
     TeamName: '',
     Username: '',
   });
-  recordDates.value = [dayjs().subtract(1, 'month'), dayjs()];
+  recordDates.value = currentMonthRange();
   loadRecords();
 }
 

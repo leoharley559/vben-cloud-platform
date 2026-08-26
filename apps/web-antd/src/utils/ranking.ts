@@ -23,10 +23,9 @@ export type RankGameRow = Record<string, unknown> & {
   SumWin?: number;
 };
 
-/** 昨日 00:00～23:59:59（对齐旧站默认区间） */
+/** 本月 1 号 00:00～今天 23:59:59 */
 export function defaultRankingDateRange(): [Dayjs, Dayjs] {
-  const yesterday = dayjs().subtract(1, 'day');
-  return [yesterday.startOf('day'), yesterday.endOf('day')];
+  return [dayjs().startOf('month'), dayjs().endOf('day')];
 }
 
 export function toUnixRange(range?: [Dayjs, Dayjs] | null) {

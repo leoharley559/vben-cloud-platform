@@ -20,6 +20,7 @@ import {
 import dayjs from 'dayjs';
 
 import { fetchAgentGroupDailyReportApi, fetchAgentGroupListApi } from '#/api/operationalData/group-daily';
+import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { calcDailyReportRow } from '#/utils/everyday-data-calc';
@@ -39,7 +40,7 @@ const canExport = computed(() => checkPermission(10_687));
 
 const reportType = ref(1);
 const dataSearchType = ref(0);
-const dateRange = ref<[Dayjs, Dayjs]>();
+const dateRange = ref<[Dayjs, Dayjs] | undefined>();
 const groupTemp = ref<Array<Array<number | string>>>([]);
 const groupOptions = ref<AgentGroupNode[]>([]);
 const level = ref(0);
@@ -57,7 +58,35 @@ const tableData = ref<GroupDailyRow[]>([]);
 const dateFormat = computed(() =>
   reportType.value === 2 ? 'YYYY-MM' : 'YYYY-MM-DD',
 );
-const pickerMode = computed(() => (reportType.value === 2 ? 'month' : 'date'));
+
+/** 月报快捷区间（日报走 QueryDatetimeRangePicker 自带今日/昨日/本月/上月） */
+const monthRangePresets = computed(() => [
+  {
+    label: '本月',
+    value: [dayjs().startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs],
+  },
+  {
+    label: '上月',
+    value: (() => {
+      const last = dayjs().subtract(1, 'month');
+      return [last.startOf('month'), last.endOf('month')] as [Dayjs, Dayjs];
+    })(),
+  },
+  {
+    label: '近3个月',
+    value: [
+      dayjs().subtract(2, 'month').startOf('month'),
+      dayjs().endOf('month'),
+    ] as [Dayjs, Dayjs],
+  },
+  {
+    label: '近6个月',
+    value: [
+      dayjs().subtract(5, 'month').startOf('month'),
+      dayjs().endOf('month'),
+    ] as [Dayjs, Dayjs],
+  },
+]);
 
 function initDateRange(type = reportType.value) {
   const range =
@@ -396,12 +425,18 @@ onMounted(async () => {
         </Space.Compact>
 
         <div class="query-filter-wide">
-          <Space.Compact>
-            <span class="query-field-addon">日期</span>
+          <QueryDatetimeRangePicker
+            v-if="reportType === 1"
+            v-model="dateRange"
+            precision="date"
+          />
+          <Space.Compact v-else>
+            <span class="query-field-addon">时间范围</span>
             <DatePicker.RangePicker
               v-model:value="dateRange"
               :format="dateFormat"
-              :picker="pickerMode"
+              :presets="monthRangePresets"
+              picker="month"
             />
           </Space.Compact>
         </div>

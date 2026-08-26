@@ -49,7 +49,7 @@ const appUrls = ref<string[]>([]);
 const dataSearchType = ref<number>(0);
 const platformGameTypes = ref<Array<number | string>>([]);
 /** 对齐旧站 getBeforeDateStr(1)：今天全日 */
-const dateRange = ref<[Dayjs, Dayjs]>(resolveReportRange('today'));
+const dateRange = ref<[Dayjs, Dayjs]>(resolveReportRange('currentMonth'));
 const detailOpen = ref(false);
 const detailRow = ref<null | StatementRow>(null);
 
@@ -141,7 +141,7 @@ function buildQuery() {
 
 async function loadList() {
   if (!canList.value) return;
-  if (!ensureDaySpan(dateRange.value, 7)) return;
+  if (!ensureDaySpan(dateRange.value, 31)) return;
   loading.value = true;
   sumPositiveProfit.value = 0;
   agencyList.value = [];
@@ -192,7 +192,7 @@ function reset() {
   appUrls.value = [];
   dataSearchType.value = 0;
   platformGameTypes.value = [];
-  dateRange.value = resolveReportRange('today');
+  dateRange.value = resolveReportRange('currentMonth');
   adminPath.value = [];
   agencyList.value = [];
   inquireId.value = rootAccount.value.Id;
@@ -342,7 +342,7 @@ onMounted(() => {
         </Button>
       </template>
       <template #extra>
-        <div class="text-xs text-muted-foreground">默认今天，最长 7 天</div>
+        <div class="text-xs text-muted-foreground">默认当月，最长 31 天</div>
       </template>
     </ReportQueryCard>
 

@@ -193,7 +193,6 @@ onMounted(() => {
           <div class="query-filter-wide">
             <QueryDatetimeRangePicker
               v-model="filterDateRange"
-              label="日期"
               precision="date"
             />
           </div>

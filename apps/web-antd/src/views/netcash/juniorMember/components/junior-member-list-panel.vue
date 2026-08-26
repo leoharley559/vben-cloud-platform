@@ -36,6 +36,7 @@ import {
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
 import { buildPlayerDetailPath } from '#/utils/player-detail-route';
@@ -60,10 +61,11 @@ const totals = ref<Record<string, number>>({});
 const page = ref(1);
 const pageSize = ref(20);
 
-const defaultStatisticsRange = (): [Dayjs, Dayjs] => [
-  dayjs().subtract(1, 'day').startOf('day'),
-  dayjs().subtract(1, 'day').endOf('day'),
-];
+/** 统计时间默认当月：月初 ～ 今天 */
+const defaultStatisticsRange = (): [Dayjs, Dayjs] => {
+  const range = getCurrentMonthRangeSeconds();
+  return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+};
 
 const filters = reactive({
   ActiveStatus: undefined as number | undefined,
@@ -615,13 +617,19 @@ onMounted(async () => {
           />
         </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.RegTime" />
+          <QueryDatetimeRangePicker v-model="filters.RegTime" label="注册时间" />
         </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.FirstPayTime" />
+          <QueryDatetimeRangePicker
+            v-model="filters.FirstPayTime"
+            label="首存时间"
+          />
         </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filters.StatisticsTime" />
+          <QueryDatetimeRangePicker
+            v-model="filters.StatisticsTime"
+            label="统计时间"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="searchMembers">查询</Button>

@@ -223,7 +223,7 @@ onMounted(() => {
         </Input>
       </div>
       <div class="query-filter-wide">
-        <QueryDatetimeRangePicker v-model="dateRange" label="日期" />
+        <QueryDatetimeRangePicker v-model="dateRange" />
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>

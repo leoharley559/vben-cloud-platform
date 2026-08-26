@@ -1,4 +1,5 @@
 export interface AdminAccountOption {
+  AdminType?: number | string;
   Id: number;
   Name?: string;
   Username: string;

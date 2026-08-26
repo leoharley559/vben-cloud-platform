@@ -42,26 +42,25 @@ const emit = defineEmits<{
   ];
 }>();
 
-// 对齐旧站 getBeforeDateStr(7)：内部 days-1 → 近 7 个自然日（含今天）
-const defaultBegin = dayjs().subtract(6, 'day');
-const defaultEnd = dayjs();
+// 默认当月：月初 ～ 今天
+function currentMonthRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  return [dayjs().startOf('month'), dayjs()];
+}
 
 const filterAdminIds = ref<Array<number | string>>([]);
 const filterChannelIds = ref<Array<number | string>>([]);
 const filterTemplateId = ref('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  defaultBegin,
-  defaultEnd,
-]);
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(currentMonthRange());
 function buildPayload() {
   const [begin, end] = filterDateRange.value || [];
+  const fallback = currentMonthRange();
   return {
     AdminIds: filterAdminIds.value,
     BeginTime: begin
       ? begin.format('YYYY-MM-DD')
-      : defaultBegin.format('YYYY-MM-DD'),
+      : fallback[0].format('YYYY-MM-DD'),
     ChannelIds: filterChannelIds.value,
-    EndTime: end ? end.format('YYYY-MM-DD') : defaultEnd.format('YYYY-MM-DD'),
+    EndTime: end ? end.format('YYYY-MM-DD') : fallback[1].format('YYYY-MM-DD'),
     TemplateId: filterTemplateId.value,
   };
 }
@@ -74,7 +73,7 @@ function handleReset() {
   filterAdminIds.value = [];
   filterChannelIds.value = [];
   filterTemplateId.value = '';
-  filterDateRange.value = [defaultBegin, defaultEnd];
+  filterDateRange.value = currentMonthRange();
   emit('reset');
   emit('search', buildPayload());
 }
@@ -108,7 +107,6 @@ defineExpose({
       <div class="query-filter-wide">
         <QueryDatetimeRangePicker
           v-model="filterDateRange"
-          label="日期"
           :max-range-days="maxRangeDays"
           precision="date"
         />

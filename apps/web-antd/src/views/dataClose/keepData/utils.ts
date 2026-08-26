@@ -57,17 +57,17 @@ export const ONE_TIME_FIELDS = [
   'SevenOrMore',
 ] as const;
 
+/** 默认当月：月初 ～ 今天 */
 export function defaultKeepDateRange(): [Dayjs, Dayjs] {
-  const today = dayjs().startOf('day');
-  return [today.subtract(6, 'day'), today.endOf('day')];
+  return [dayjs().startOf('month'), dayjs().endOf('day')];
 }
 
 export function disabledKeepDate(current: Dayjs, picking?: Dayjs | null) {
   if (!current) return false;
   if (current.isAfter(dayjs().endOf('day'))) return true;
   if (!picking) return false;
-  const min = picking.subtract(29, 'day').startOf('day');
-  const max = picking.add(29, 'day').endOf('day');
+  const min = picking.subtract(30, 'day').startOf('day');
+  const max = picking.add(30, 'day').endOf('day');
   return current.isBefore(min) || current.isAfter(max);
 }
 

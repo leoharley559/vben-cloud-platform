@@ -49,7 +49,7 @@ import {
   VIP_LEVEL_OPTIONS,
   WATER_TYPE_FILTER_OPTIONS,
 } from '#/utils/bonus-reward';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -65,7 +65,7 @@ const { packageOptions } = useOperationOptions();
 const canViewTable = computed(() => checkPermission(10_127));
 const canExport = computed(() => checkPermission(11_967));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const exportLoading = ref(false);
 const sumBonus = ref(0);
 

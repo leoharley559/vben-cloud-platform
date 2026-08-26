@@ -172,7 +172,6 @@ watch(visibleTabs, (tabs) => {
           <div class="query-filter-wide">
             <QueryDatetimeRangePicker
               v-model="filterDateRange"
-              label="日期"
               precision="date"
               :max-range-days="MAX_RANGE_DAYS"
             />

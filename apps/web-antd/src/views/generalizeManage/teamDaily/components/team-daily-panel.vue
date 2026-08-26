@@ -37,14 +37,15 @@ const canViewHistory = computed(() =>
   props.teamType === 1 ? checkPermission(10_873) : checkPermission(10_875),
 );
 const isProfitMode = computed(() => props.teamType === 2);
-const defaultBegin = dayjs().subtract(30, 'day').startOf('day');
-const defaultEnd = dayjs().endOf('day');
+
+/** 默认当月：月初 ～ 今天 */
+function currentMonthRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  return [dayjs().startOf('month'), dayjs().endOf('day')];
+}
+
 const loading = ref(false);
 const filterAdminId = ref<number | string | undefined>('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  defaultBegin,
-  defaultEnd,
-]);
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(currentMonthRange());
 const todayData = ref<TeamDailySummary>({});
 const historySummary = ref<TeamDailySummary>({});
 const rows = ref<TeamDailyHistoryItem[]>([]);
@@ -224,7 +225,7 @@ async function loadData() {
 
 function reset() {
   filterAdminId.value = '';
-  filterDateRange.value = [defaultBegin, defaultEnd];
+  filterDateRange.value = currentMonthRange();
   loadData();
 }
 

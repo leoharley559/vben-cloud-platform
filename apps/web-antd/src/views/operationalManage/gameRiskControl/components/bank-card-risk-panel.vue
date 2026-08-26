@@ -29,6 +29,7 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatBankCode } from '#/utils/bank-card';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 import BankCardRiskImportModal from './bank-card-risk-import-modal.vue';
@@ -46,9 +47,10 @@ const canWrite = computed(() => checkPermission(10_048));
 const filterLoginAccount = ref('');
 const filterKeyword = ref('');
 const filterSourceType = ref<number | string>('');
+const defaultRange = getCurrentMonthRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
-  dayjs().subtract(1, 'month').startOf('day'),
-  dayjs().endOf('day'),
+  dayjs.unix(defaultRange.BeginTime),
+  dayjs.unix(defaultRange.EndTime),
 ]);
 
 const sourceTypeOptions = [
@@ -195,9 +197,10 @@ function resetFilters() {
   filterLoginAccount.value = '';
   filterKeyword.value = '';
   filterSourceType.value = '';
+  const range = getCurrentMonthRangeSeconds();
   filterDateRange.value = [
-    dayjs().subtract(1, 'month').startOf('day'),
-    dayjs().endOf('day'),
+    dayjs.unix(range.BeginTime),
+    dayjs.unix(range.EndTime),
   ];
   gridApi.reload();
 }

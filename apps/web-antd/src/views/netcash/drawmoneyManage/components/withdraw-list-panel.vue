@@ -43,6 +43,7 @@ import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatNetcashDateTime } from '#/utils/netcash';
 
@@ -77,12 +78,15 @@ const defaultQuery = () => ({
   WithdrawStatus: [] as Array<number | string>,
 });
 
+/** 默认当月：月初 ～ 今天 */
+function defaultWithdrawRange(): [Dayjs, Dayjs] {
+  const range = getCurrentMonthRangeSeconds();
+  return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+}
+
 const withdrawQuery = reactive(defaultQuery());
 /** allowClear 后可能为 null，需与 RangePicker 类型对齐，避免面板更新异常 */
-const withdrawRange = ref<[Dayjs, Dayjs] | null>([
-  dayjs().subtract(1, 'day').startOf('day'),
-  dayjs().endOf('day'),
-]);
+const withdrawRange = ref<[Dayjs, Dayjs] | null>(defaultWithdrawRange());
 const withdrawRangeOpen = ref(false);
 const withdrawTotal = reactive<Record<string, number>>({});
 const selected = ref<Record<string, unknown>[]>([]);
@@ -556,10 +560,7 @@ async function toggleAutoRefresh(checked: boolean) {
 function resetWithdraw() {
   Object.assign(withdrawQuery, defaultQuery());
   withdrawRangeOpen.value = false;
-  withdrawRange.value = [
-    dayjs().subtract(1, 'day').startOf('day'),
-    dayjs().endOf('day'),
-  ];
+  withdrawRange.value = defaultWithdrawRange();
   withdrawGridApi.reload();
 }
 

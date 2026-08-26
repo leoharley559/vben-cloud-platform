@@ -37,7 +37,7 @@ const props = withDefaults(
   }>(),
   {
     addText: '新增',
-    dateLabel: '时间',
+    dateLabel: '时间范围',
     dateTimeType: 'daterange',
     keywordPlaceholder: '请输入',
     loading: false,

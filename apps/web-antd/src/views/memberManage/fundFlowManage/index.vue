@@ -28,7 +28,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
-import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { enrichFundFlowItems, formatFundFlowRemark } from '#/utils/fund-flow';
 import { formatGoldReason } from '#/utils/game-config';
@@ -48,7 +48,11 @@ const { projectConfig } = useProjectConfig();
 const canViewPage = computed(() => checkPermission(12_208));
 const canOpenPlayer = computed(() => checkPermission(12_209));
 
-const defaultRange = getLast7CalendarDaysRangeSeconds();
+function todayRange(): [dayjs.Dayjs, dayjs.Dayjs] {
+  const range = getTodayRangeSeconds();
+  return [dayjs.unix(range.BeginTime), dayjs.unix(range.EndTime)];
+}
+
 const summary = ref({ SumAddGold: 0 });
 const hasQueried = ref(false);
 
@@ -65,10 +69,7 @@ const filterPackageId = ref<number | string>('');
 const filterReason = ref<Array<number | string>>([]);
 /** 对齐旧站：0 正式 / 2 全部 */
 const filterDataSearchType = ref(0);
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  dayjs.unix(defaultRange.BeginTime),
-  dayjs.unix(defaultRange.EndTime),
-]);
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>(todayRange());
 
 const reasonOptions = computed(() =>
   gameConfig.value.goldSource.map((item) => ({
@@ -242,10 +243,7 @@ function handleReset() {
   filterPackageId.value = '';
   filterReason.value = [];
   filterDataSearchType.value = 0;
-  filterDateRange.value = [
-    dayjs.unix(defaultRange.BeginTime),
-    dayjs.unix(defaultRange.EndTime),
-  ];
+  filterDateRange.value = todayRange();
   hasQueried.value = false;
   summary.value = { SumAddGold: 0 };
   try {

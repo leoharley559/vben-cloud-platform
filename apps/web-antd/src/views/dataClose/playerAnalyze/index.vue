@@ -126,7 +126,7 @@ const filters = reactive({
   Recharged: '-1' as string,
   ProfitStatus: '-1' as string,
   Offline: '-1' as string,
-  dateRange: [...resolveReportRange('last7ToToday')] as [Dayjs, Dayjs],
+  dateRange: [...resolveReportRange('currentMonth')] as [Dayjs, Dayjs],
 });
 
 const page = reactive({ current: 1, pageSize: 20 });
@@ -163,8 +163,8 @@ function validateDateRange(range: [Dayjs, Dayjs] | null | undefined) {
     return false;
   }
   const days = range[1].startOf('day').diff(range[0].startOf('day'), 'day');
-  if (days > 6) {
-    message.warning('查询区间最长 7 天');
+  if (days > 30) {
+    message.warning('查询区间最长 31 天');
     return false;
   }
   return true;
@@ -366,7 +366,7 @@ function handleReset() {
   filters.Recharged = '-1';
   filters.ProfitStatus = '-1';
   filters.Offline = '-1';
-  filters.dateRange = [...resolveReportRange('last7ToToday')] as [Dayjs, Dayjs];
+  filters.dateRange = [...resolveReportRange('currentMonth')] as [Dayjs, Dayjs];
   sort.value = '';
   handleSearch();
 }
@@ -569,7 +569,7 @@ onMounted(() => {
           </Button>
         </template>
         <template #extra>
-          <div class="text-xs text-gray-500">默认近 7 天至今天，最长 7 天</div>
+          <div class="text-xs text-gray-500">默认当月，最长 31 天</div>
         </template>
       </ReportQueryCard>
 

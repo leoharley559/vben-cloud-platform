@@ -120,6 +120,18 @@ export function fetchGameEmailDetailApi(id: number | string) {
 }
 
 /**
+ * 按代理/推广账号查询可用产品包（对齐旧站 searchPackages）
+ * @param query AdminId / AdminType
+ * @returns 产品包列表
+ * @see views/operationalManage/gameNotice/components/game-email-form-modal.vue
+ */
+export function fetchGameEmailPackagesApi(query: Record<string, unknown>) {
+  return requestClient.get<
+    Array<{ Id?: number | string; PackageId?: number | string; PackageName?: string }>
+  >('/backend/package/menu', { params: trimSpace(query) });
+}
+
+/**
  * 新建游戏邮件
  * @param data 邮件表单（标题、内容、收件范围等）
  * @returns 接口操作结果

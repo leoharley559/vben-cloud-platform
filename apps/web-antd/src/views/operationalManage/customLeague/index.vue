@@ -308,7 +308,7 @@ function handlePreview(path?: string) {
             </Input>
           </div>
           <div class="query-filter-wide">
-            <QueryDatetimeRangePicker v-model="filterDateRange" label="时间" />
+            <QueryDatetimeRangePicker v-model="filterDateRange" />
           </div>
           <div class="query-filter-actions">
             <Button type="primary" @click="handleSearch">查询</Button>

@@ -42,15 +42,10 @@ const canAdd = computed(() => checkPermission(11_470));
 const canDelete = computed(() => checkPermission(11_471));
 const canEdit = computed(() => checkPermission(11_472));
 
-const defaultBegin = dayjs().subtract(1, 'month').startOf('day');
-const defaultEnd = dayjs().endOf('day');
-
 const filterLoginAccount = ref('');
 const filterBankCardNum = ref('');
-const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
-  defaultBegin,
-  defaultEnd,
-]);
+/** 首屏/重置不传日期 */
+const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 
 const formOpen = ref(false);
 const formMode = ref<'create' | 'edit'>('create');
@@ -161,7 +156,7 @@ function handleSearch() {
 function handleReset() {
   filterLoginAccount.value = '';
   filterBankCardNum.value = '';
-  filterDateRange.value = [defaultBegin, defaultEnd];
+  filterDateRange.value = undefined;
   gridApi.reload();
 }
 

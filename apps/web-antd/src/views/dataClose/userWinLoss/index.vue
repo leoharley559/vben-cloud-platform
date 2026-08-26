@@ -73,7 +73,7 @@ const filters = reactive({
   PackageId: undefined as number | string | undefined,
   AppUrl: [] as Array<string>,
   ViewBy: 'game' as string,
-  dateRange: [...resolveReportRange('today')] as [Dayjs, Dayjs],
+  dateRange: [...resolveReportRange('currentMonth')] as [Dayjs, Dayjs],
 });
 
 const page = reactive({ current: 1, pageSize: 20 });
@@ -150,8 +150,8 @@ function validateDateRange(range: [Dayjs, Dayjs] | null | undefined) {
     return false;
   }
   const days = range[1].startOf('day').diff(range[0].startOf('day'), 'day');
-  if (days > 29) {
-    message.warning('查询区间最长 30 天');
+  if (days > 30) {
+    message.warning('查询区间最长 31 天');
     return false;
   }
   return true;
@@ -313,7 +313,7 @@ function handleReset() {
   filters.PackageId = undefined;
   filters.AppUrl = [];
   filters.ViewBy = 'game';
-  filters.dateRange = [...resolveReportRange('today')] as [Dayjs, Dayjs];
+  filters.dateRange = [...resolveReportRange('currentMonth')] as [Dayjs, Dayjs];
   sort.value = '';
   handleSearch();
 }
@@ -512,7 +512,7 @@ onMounted(async () => {
         </template>
         <template #extra>
           <div class="text-xs text-gray-500">
-            默认今天，最长 30 天；今天的数据将每小时更新一次
+            默认当月，最长 31 天；今天的数据将每小时更新一次
           </div>
         </template>
       </ReportQueryCard>

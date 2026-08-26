@@ -37,7 +37,7 @@ import {
   bonusOptions,
   statusColor,
   statusText,
-  todayRange,
+  last3DaysRange,
   validAmount,
   validRemark,
   walletOptions,
@@ -69,7 +69,7 @@ const auditFilters = reactive({
   Username: '',
   WalletType: '' as number | string,
 });
-const auditRange = ref(todayRange());
+const auditRange = ref(last3DaysRange());
 const auditTotalAmount = ref(0);
 const selectedAuditRows = ref<BonusManageItem[]>([]);
 
@@ -227,7 +227,7 @@ function resetAudit() {
     Username: '',
     WalletType: '',
   });
-  auditRange.value = todayRange();
+  auditRange.value = last3DaysRange();
   gridApi.reload();
 }
 

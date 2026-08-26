@@ -32,6 +32,11 @@ export interface GameStatementRow extends Record<string, unknown> {
   SumWin?: number;
 }
 
+/** 默认当月：月初 00:00～今天 23:59 */
+export function defaultMonthRange(): [Dayjs, Dayjs] {
+  return [dayjs().startOf('month'), dayjs().endOf('day')];
+}
+
 /** 对齐旧站 getBeforeDateTimestamp(1,false)～getBeforeDateTimestamp()：今天 00:00～23:59 */
 export function defaultTodayRange(): [Dayjs, Dayjs] {
   const today = dayjs().startOf('day');

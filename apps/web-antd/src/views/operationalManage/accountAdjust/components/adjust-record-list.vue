@@ -43,7 +43,7 @@ import {
   normalizeMultiFilterParam,
 } from '#/utils/account-adjust';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
@@ -55,7 +55,7 @@ const { packageOptions } = useOperationOptions();
 const canViewTable = computed(() => checkPermission(10_097));
 const canExport = computed(() => checkPermission(10_098));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const totalAmount = ref(0);
 const exportLoading = ref(false);
 

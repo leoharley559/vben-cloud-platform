@@ -20,10 +20,10 @@ import { formatNetcashDateTime } from '#/utils/netcash';
 import {
   bonusOptions,
   exportWorkbook,
+  monthRange,
   statusColor,
   statusOptions,
   statusText,
-  todayRange,
   walletOptions,
 } from '../shared';
 
@@ -42,8 +42,8 @@ const historyFilters = reactive({
   Username: '',
   WalletType: '' as number | string,
 });
-const historyApplyRange = ref(todayRange());
-const historyApproveRange = ref(todayRange());
+const historyApplyRange = ref(monthRange());
+const historyApproveRange = ref(monthRange());
 const historyTotalAmount = ref(0);
 const historyTotalRealAmount = ref(0);
 const exportLoading = ref(false);
@@ -200,8 +200,8 @@ function resetHistory() {
     Username: '',
     WalletType: '',
   });
-  historyApplyRange.value = todayRange();
-  historyApproveRange.value = todayRange();
+  historyApplyRange.value = monthRange();
+  historyApproveRange.value = monthRange();
   gridApi.reload();
 }
 

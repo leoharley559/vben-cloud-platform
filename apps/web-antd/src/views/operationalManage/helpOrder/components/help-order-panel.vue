@@ -337,7 +337,7 @@ function handleHelp(row: HelpOrderRow) {
         </Space.Compact>
       </div>
       <div class="query-filter-wide">
-        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建日期" />
+        <QueryDatetimeRangePicker v-model="filterDateRange" label="创建时间" />
       </div>
       <div class="query-filter-actions query-filter-actions-single">
         <Button type="primary" @click="handleSearch">查询</Button>

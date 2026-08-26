@@ -421,7 +421,7 @@ onMounted(() => {
           <div v-if="isHistory">
             <div class="query-filter-wide">
               <Space.Compact>
-                <span class="query-field-addon">日期</span>
+                <span class="query-field-addon">时间范围</span>
                 <DatePicker.RangePicker
                   v-model:value="dateRange"
                   :format="dateFormat"

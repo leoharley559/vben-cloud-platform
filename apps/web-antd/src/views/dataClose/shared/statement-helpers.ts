@@ -124,20 +124,17 @@ export function ensureMonthSpan(
   return true;
 }
 
+/** 默认对比近两个自然月：上月 ～ 本月 */
 export function defaultMonthRange(): [Dayjs, Dayjs] {
-  // 对齐旧站 getBeforeDateStr(61)～今天：落到整月（约近 3 个自然月）
-  return [
-    dayjs().subtract(61, 'day').startOf('month'),
-    dayjs().subtract(1, 'day').startOf('month'),
-  ];
-}
-
-/** 子包网月报：limit≈62 天，最多两个自然月（整月展开后仍 ≤62） */
-export function defaultSonMonthRange(): [Dayjs, Dayjs] {
   return [
     dayjs().subtract(1, 'month').startOf('month'),
     dayjs().startOf('month'),
   ];
+}
+
+/** 子包网月报：与总/自营一致，近两月（整月展开后仍 ≤62） */
+export function defaultSonMonthRange(): [Dayjs, Dayjs] {
+  return defaultMonthRange();
 }
 
 export function dayDetailUnix(reportDay: unknown) {

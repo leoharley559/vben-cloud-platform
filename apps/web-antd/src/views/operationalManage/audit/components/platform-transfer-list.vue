@@ -26,7 +26,7 @@ import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
-import { getYesterdayRangeSeconds } from '#/utils/date-range';
+import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatVenueName } from '#/utils/game-config';
@@ -45,7 +45,7 @@ const canExport = computed(() => checkPermission(10_133));
 const canManual = computed(() => checkPermission(10_137));
 const canChangeState = computed(() => checkPermission(10_138));
 
-const defaultRange = getYesterdayRangeSeconds();
+const defaultRange = getTodayRangeSeconds();
 const exportLoading = ref(false);
 
 const filterLoginAccount = ref('');

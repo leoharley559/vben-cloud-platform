@@ -11,7 +11,7 @@ import { fetchCloudCoinDetailListApi } from '#/api/systemManage/extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatReportDateTime } from '#/views/dataClose/shared/report-utils';
 
 defineOptions({ name: 'CloudCoinDetailPanel' });
@@ -29,8 +29,8 @@ const { checkPermission } = useCloudPermission();
 const canViewTable = computed(() => checkPermission(11_431));
 
 const totalCloudCoin = ref(0);
-/** 对齐旧站：近 7 个自然日含今天 */
-const defaultRange = getLast7CalendarDaysRangeSeconds();
+/** 默认当月：月初 ～ 今天 */
+const defaultRange = getCurrentMonthRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
@@ -164,7 +164,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  const range = getLast7CalendarDaysRangeSeconds();
+  const range = getCurrentMonthRangeSeconds();
   filterDateRange.value = [
     dayjs.unix(range.BeginTime),
     dayjs.unix(range.EndTime),
