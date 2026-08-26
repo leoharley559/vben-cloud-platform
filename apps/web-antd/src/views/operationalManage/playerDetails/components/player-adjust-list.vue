@@ -23,7 +23,7 @@ import {
   getAdjustDoneColor,
   getAdjustHandleTypeColor,
 } from '#/utils/account-adjust';
-import { getTodayRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 defineOptions({ name: 'PlayerAdjustListPanel' });
@@ -37,7 +37,7 @@ const { checkPermission } = useCloudPermission();
 const canViewTable = computed(() => checkPermission(12_098));
 const canExport = computed(() => checkPermission(12_099));
 
-const defaultRange = getTodayRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 const totalAmount = ref(0);
 
 const filterReason = ref<number>(-1);

@@ -12,7 +12,7 @@ import { fetchEasyRechargeListApi } from '#/api/operationManage/easy-recharge';
 import EasyRechargeVoucherCell from '#/components/easy-recharge/easy-recharge-voucher-cell.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   EASY_RECHARGE_STATUS_OPTIONS,
@@ -26,7 +26,7 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
-const defaultRange = getLast7CalendarDaysRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 const totalAmount = ref(0);
 
 const filterOrderId = ref('');

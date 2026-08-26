@@ -44,7 +44,7 @@ defineOptions({ name: 'WithdrawRiskPanel' });
 type OptionValue = number | string;
 type RiskEditRule = Omit<WithdrawRiskRule, 'Setting' | 'Str'> & {
   Setting: WithdrawRiskSetting[];
-  Str: OptionValue[] | string;
+  Str: OptionValue[] | number | string | undefined;
 };
 
 const { checkPermission } = useCloudPermission();
@@ -221,11 +221,14 @@ const usesMultiSelect = computed(() =>
 );
 
 function clone<T>(value: T): T {
-  return structuredClone(value);
+  // Setting 在 loadRules 后已是对象数组（含 Vue Proxy），structuredClone 会失败
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
-function parseSettings(value: WithdrawRiskRule['Setting']) {
-  if (Array.isArray(value)) return clone(value);
+function parseSettings(value: WithdrawRiskRule['Setting']): WithdrawRiskSetting[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => ({ ...item }));
+  }
   if (!value) return [];
   try {
     const parsed = JSON.parse(value);
@@ -273,13 +276,13 @@ function buildDetailTemplateValues(
     return [
       currencyName(setting.DepositCurrency),
       currencyName(setting.WithdrawCurrency),
-      setting.Number,
+      formatUnlimited(setting.Number),
       setting.Trigger,
     ];
   }
   if (row.Name === 'CumulativeWithdraw') {
     return [
-      row.Number,
+      formatUnlimited(row.Number),
       currencyName(setting.WithdrawCurrency),
       setting.WithdrawAmount,
     ];
@@ -290,23 +293,33 @@ function buildDetailTemplateValues(
   if (['FirstWithdraw', 'FirstWithdrawToday'].includes(row.Name)) {
     return [currencyName(setting.WithdrawCurrency), setting.WithdrawAmount];
   }
-  return [row.Number, row.Str];
+  if (
+    ['SameDeviceAccount', 'MultipleAccountsWithSameIP'].includes(row.Name)
+  ) {
+    return [formatUnlimited(row.Number), formatUnlimited(row.Str)];
+  }
+  return [formatUnlimited(row.Number), formatUnlimited(row.Str)];
+}
+
+function formatUnlimited(value: unknown) {
+  if (value === -1 || value === '-1') return '不限';
+  return value ?? '-';
 }
 
 function formatRuleValue(row: WithdrawRiskRule) {
   if (['AfterNameChanged', 'AfterPhoneChanged'].includes(row.Name)) {
-    return `${row.Number ?? '-'} 次提现`;
+    return `${formatUnlimited(row.Number)} 次提现`;
   }
   if (row.Name === 'PaymentWithdrawRate') {
-    return `${row.Number ?? '-'}%`;
+    return `${formatUnlimited(row.Number)}%`;
   }
   if (timeRuleNames.has(row.Name)) {
-    return `${row.Number ?? '-'} 小时；参数 ${row.Str || '-'}`;
+    return `${formatUnlimited(row.Number)} 小时；参数 ${row.Str || '-'}`;
   }
   if (row.Name === 'IpLimit') {
     return row.Str;
   }
-  return row.Number;
+  return formatUnlimited(row.Number);
 }
 
 function formatRule(row: WithdrawRiskRule) {
@@ -315,7 +328,15 @@ function formatRule(row: WithdrawRiskRule) {
   const detailTemplate = detailTemplates[row.Name];
   if (detailTemplate) {
     const values = buildDetailTemplateValues(row, setting);
-    return formatTemplate(detailTemplate, values);
+    let text = formatTemplate(detailTemplate, values);
+    // 对齐旧站：小时为 -1（不限）时去掉前缀「不限 小时」类文案
+    if (
+      ['SameDeviceAccount', 'MultipleAccountsWithSameIP'].includes(row.Name) &&
+      Number(row.Number) === -1
+    ) {
+      text = text.replace(/^不限\s*小时内/, '').trim();
+    }
+    return text;
   }
   const name = ruleNameMap[row.Name] || row.Name;
   if (['RiskLabel', 'WhiteLabel'].includes(row.Name)) {
@@ -325,7 +346,7 @@ function formatRule(row: WithdrawRiskRule) {
     return `${name}（${optionNames(row.Str, vipOptions.value)}）`;
   }
   if (row.Name === 'RiskPaymentAccountType') {
-    return `${name}（${optionNames(row.Str, rechargeOptions.value)}）`;
+    return `${name}（${formatUnlimited(row.Number)} 小时；${optionNames(row.Str, rechargeOptions.value)}）`;
   }
   if (noParameterRuleNames.has(row.Name)) return name;
   const value = formatRuleValue(row);
@@ -454,6 +475,10 @@ function openEditor(row: WithdrawRiskRule) {
     'VIPLimit',
     'WhiteLabel',
   ].includes(copy.Name);
+  const deviceOrIp = [
+    'SameDeviceAccount',
+    'MultipleAccountsWithSameIP',
+  ].includes(copy.Name);
   editingRule.value = {
     ...copy,
     Setting: parseSettings(copy.Setting),
@@ -462,10 +487,18 @@ function openEditor(row: WithdrawRiskRule) {
           .split(',')
           .filter(Boolean)
           .map((value) => (Number.isNaN(Number(value)) ? value : Number(value)))
-      : String(copy.Str ?? ''),
+      : deviceOrIp
+        ? copy.Str === '' || copy.Str == null
+          ? undefined
+          : Number(copy.Str)
+        : String(copy.Str ?? ''),
   };
   ensureSetting(editingRule.value!);
   editorOpen.value = true;
+}
+
+function isEmptyNumber(value: unknown) {
+  return value === undefined || value === null || value === '';
 }
 
 function validateRule(rule: RiskEditRule) {
@@ -475,17 +508,52 @@ function validateRule(rule: RiskEditRule) {
     return '请至少选择一个条件参数';
   }
   if (
+    ['SameDeviceAccount', 'MultipleAccountsWithSameIP'].includes(rule.Name)
+  ) {
+    if (isEmptyNumber(rule.Str)) return '请输入账号数量';
+    if (isEmptyNumber(rule.Number)) return '请输入时间（小时）';
+  }
+  if (rule.Name === 'DepositWithdrawBehavior') {
+    const setting = rule.Setting[0] || {};
+    if (isEmptyNumber(setting.Number)) return '请输入天数';
+    if (isEmptyNumber(setting.Trigger)) return '请输入阈值';
+  }
+  if (['FirstWithdraw', 'FirstWithdrawToday'].includes(rule.Name)) {
+    const setting = rule.Setting[0] || {};
+    if (isEmptyNumber(setting.WithdrawAmount)) return '请输入提现金额';
+  }
+  if (rule.Name === 'CumulativeWithdraw') {
+    if (isEmptyNumber(rule.Number)) return '请输入天数';
+    const setting = rule.Setting[0] || {};
+    if (isEmptyNumber(setting.WithdrawAmount)) return '请输入提现金额';
+  }
+  if (rule.Name === 'RegisterTime') {
+    const setting = rule.Setting[0] || {};
+    if (isEmptyNumber(setting.Number)) return '请输入天数';
+  }
+  if (
     ['IpLimit', ...timeRuleNames].includes(rule.Name) &&
-    !String(rule.Str).trim()
+    !String(rule.Str ?? '').trim()
   ) {
     return '请输入条件参数';
+  }
+  if (
+    timeRuleNames.has(rule.Name) &&
+    isEmptyNumber(rule.Number) &&
+    rule.Name !== 'RiskPaymentAccountType'
+  ) {
+    return '请输入时间（小时）';
+  }
+  if (rule.Name === 'RiskPaymentAccountType' && isEmptyNumber(rule.Number)) {
+    return '请输入时间（小时）';
   }
   if (
     !noParameterRuleNames.has(rule.Name) &&
     !usesMultiSelect.value &&
     !detailTemplates[rule.Name] &&
+    !['IpLimit', ...timeRuleNames].includes(rule.Name) &&
     rule.Number !== 0 &&
-    !String(rule.Number ?? '').trim()
+    isEmptyNumber(rule.Number)
   ) {
     return '请输入条件参数';
   }
@@ -496,7 +564,11 @@ function serializeRule(rule: RiskEditRule): WithdrawRiskRule {
   return {
     ...clone(rule),
     Setting: rule.Setting.length > 0 ? JSON.stringify(rule.Setting) : '',
-    Str: Array.isArray(rule.Str) ? rule.Str.join(',') : rule.Str,
+    Str: Array.isArray(rule.Str)
+      ? rule.Str.join(',')
+      : rule.Str === undefined || rule.Str === null
+        ? ''
+        : String(rule.Str),
   };
 }
 
@@ -707,7 +779,7 @@ onMounted(async () => {
           <div class="grid grid-cols-2 gap-3">
             <Form.Item label="账号数量" required>
               <InputNumber
-                v-model:value="editingRule.Str as string"
+                v-model:value="editingRule.Str as number"
                 :max="999999"
                 :min="-1"
                 class="!w-full"

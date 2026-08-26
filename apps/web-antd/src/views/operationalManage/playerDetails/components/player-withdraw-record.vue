@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchWithdrawListApi } from '#/api/operationManage/withdraw';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   calcWithdrawStatusText,
@@ -25,7 +25,7 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
-const defaultRange = getLast7CalendarDaysRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 const totalAmount = ref(0);
 
 const filterOrderId = ref('');

@@ -16,7 +16,7 @@ import {
   BET_TIME_TYPE_OPTIONS,
   calcBetWinLoss,
 } from '#/utils/bet-detail';
-import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatVenueName } from '#/utils/game-config';
 
@@ -29,7 +29,7 @@ const props = defineProps<{
 
 const { ensureGameConfig, gameConfig } = useGameConfig();
 
-const defaultRange = getLast7CalendarDaysRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 const summary = ref({
   Count: 0,
   SumBetGold: 0,

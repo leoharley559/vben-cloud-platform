@@ -22,6 +22,7 @@ import {
   updateWithdrawCustomTipApi,
 } from '#/api/gameManage/withdraw-rules';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
+import { formatOperationDateTime } from '#/utils/operation-status';
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 interface LangTip {
@@ -237,6 +238,9 @@ void load();
         </template>
         <template v-else-if="column.key === 'content'">
           {{ displayContent(record) }}
+        </template>
+        <template v-else-if="column.key === 'UpdateTime'">
+          {{ formatOperationDateTime(record.UpdateTime as number | string) }}
         </template>
         <template v-else-if="column.key === 'actions'">
           <Space :size="0">

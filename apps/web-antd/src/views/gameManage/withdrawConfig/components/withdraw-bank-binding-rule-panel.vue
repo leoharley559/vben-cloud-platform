@@ -27,6 +27,7 @@ import {
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { formatOperationDateTime } from '#/utils/operation-status';
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const { checkPermission } = useCloudPermission();
@@ -247,8 +248,11 @@ onMounted(loadConfig);
       size="small"
     >
       <template #bodyCell="{ column, record }">
+        <template v-if="column.key === 'CreateTime'">
+          {{ formatOperationDateTime(record.CreateTime as number | string) }}
+        </template>
         <PlayerAccountLink
-          v-if="column.key === 'LoginAccount'"
+          v-else-if="column.key === 'LoginAccount'"
           :login-account="String(record.LoginAccount || '')"
           :player-id="record.PlayerId"
         />

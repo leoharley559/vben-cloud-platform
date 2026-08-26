@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerPointsRecordApi } from '#/api/operationManage/player-detail-extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { getTodayRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { POINT_TYPE_MAP, POINT_TYPE_OPTIONS } from '#/utils/player-detail-maps';
 
 defineOptions({ name: 'PlayerPointsPanel' });
@@ -19,7 +19,7 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
-const defaultRange = getTodayRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 
 const filterPointType = ref(-1);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([

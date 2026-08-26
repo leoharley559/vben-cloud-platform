@@ -11,7 +11,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerActionLogsApi } from '#/api/operationManage/player-detail-extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getTodayRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 
 defineOptions({ name: 'PlayerLogsPanel' });
 
@@ -23,7 +23,7 @@ const { checkPermission } = useCloudPermission();
 
 const canViewTable = computed(() => checkPermission(13_313));
 
-const defaultRange = getTodayRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 
 const filterType = ref('');
 const filterUsername = ref('');

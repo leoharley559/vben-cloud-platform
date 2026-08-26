@@ -21,7 +21,7 @@ import {
   formatBonusType,
   formatBonusWaterType,
 } from '#/utils/bonus-reward';
-import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 defineOptions({ name: 'PlayerBonusRewardPanel' });
@@ -34,7 +34,7 @@ const { checkPermission } = useCloudPermission();
 
 const canViewTable = computed(() => checkPermission(10_423));
 
-const defaultRange = getLast7CalendarDaysRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 const totalReward = ref(0);
 
 const filterBonusTypes = ref<number[]>([]);

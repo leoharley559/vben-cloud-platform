@@ -13,12 +13,12 @@ import {
   message,
   Modal,
   Pagination,
+  Radio,
   Select,
   Space,
   Spin,
   Table,
-  Tabs,
-  TimePicker,
+  TimeRangePicker,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -132,7 +132,7 @@ const detailPageSize = ref(20);
 const detailSort = ref('');
 const playerId = ref('');
 const detailKey = ref<number | string>('');
-const visitRange = ref<[Dayjs, Dayjs]>(defaultRange());
+const visitRange = ref<[Dayjs, Dayjs] | null>(defaultRange());
 const leaveRange = ref<[Dayjs, Dayjs] | undefined>();
 const durationRange = ref<[Dayjs, Dayjs] | undefined>();
 const appType = ref<number | string>('');
@@ -198,6 +198,10 @@ function detailQuery(withPage = true) {
 }
 
 function validateVisitRange() {
+  if (!visitRange.value?.[0] || !visitRange.value?.[1]) {
+    message.warning('请选择访问时间');
+    return false;
+  }
   if (visitRange.value[1].diff(visitRange.value[0], 'day', true) > 7) {
     message.warning('访问时间范围不能超过 7 天');
     return false;
@@ -294,7 +298,7 @@ async function exportDetail(payload: Record<string, unknown>) {
 const statisticsLoading = ref(false);
 const statisticsLoaded = ref(false);
 const statisticsKey = ref<number | string>('');
-const statisticsRange = ref<[Dayjs, Dayjs]>(defaultRange());
+const statisticsRange = ref<[Dayjs, Dayjs] | null>(defaultRange());
 const deviceList = ref<StatisticsRow[]>([]);
 const userTypeList = ref<StatisticsRow[]>([]);
 const vipList = ref<StatisticsRow[]>([]);
@@ -350,6 +354,10 @@ function vipSum(id: number | string, index: number) {
 
 async function loadStatistics() {
   if (!canStatistics.value) return;
+  if (!statisticsRange.value?.[0] || !statisticsRange.value?.[1]) {
+    message.warning('请选择统计时间');
+    return;
+  }
   if (
     statisticsRange.value[1].diff(statisticsRange.value[0], 'day', true) > 7
   ) {
@@ -395,10 +403,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="canView">
-    <Tabs v-model:active-key="activeTab" type="line" size="small">
-      <Tabs.TabPane v-if="canDetail" key="detail" tab="明细">
-        <OpsListPanel>
+  <div v-if="canView" class="flex flex-col">
+    <div v-if="canDetail && canStatistics" class="mb-3">
+      <Radio.Group v-model:value="activeTab" button-style="solid">
+        <Radio.Button value="detail">明细</Radio.Button>
+        <Radio.Button value="statistics">统计</Radio.Button>
+      </Radio.Group>
+    </div>
+
+    <OpsListPanel v-if="activeTab === 'detail' && canDetail">
           <template #filters>
             <div class="flex flex-col gap-1">
               <Input
@@ -429,7 +442,7 @@ onMounted(() => {
             <div class="flex flex-col gap-1">
               <Space.Compact>
                 <span class="query-field-addon">访问时长</span>
-                <TimePicker.RangePicker
+                <TimeRangePicker
                   v-model:value="durationRange"
                   allow-clear
                   format="HH:mm:ss"
@@ -517,11 +530,9 @@ onMounted(() => {
       />
             </div>
           </Spin>
-        </OpsListPanel>
-      </Tabs.TabPane>
+    </OpsListPanel>
 
-      <Tabs.TabPane v-if="canStatistics" key="statistics" tab="统计">
-        <OpsListPanel>
+    <OpsListPanel v-else-if="activeTab === 'statistics' && canStatistics">
           <template #filters>
             <div class="flex flex-col gap-1">
               <Space.Compact>
@@ -662,9 +673,7 @@ onMounted(() => {
               </Table>
             </Card>
           </Spin>
-        </OpsListPanel>
-      </Tabs.TabPane>
-    </Tabs>
+    </OpsListPanel>
 
     <PassPopup ref="passPopupRef" type="csv" @confirm="exportDetail" />
   </div>

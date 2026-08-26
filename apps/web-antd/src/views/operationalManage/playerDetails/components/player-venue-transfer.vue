@@ -26,7 +26,7 @@ import { fetchPlayerVenueTransferListApi } from '#/api/operationManage/player-de
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
-import { getTodayRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatVenueName } from '#/utils/game-config';
@@ -49,7 +49,7 @@ const canExport = computed(() => checkPermission(12_094));
 const canManual = computed(() => checkPermission(12_095));
 const canChangeState = computed(() => checkPermission(12_096));
 
-const defaultRange = getTodayRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 const totalAmount = ref(0);
 const exportLoading = ref(false);
 const stateSaving = ref(false);

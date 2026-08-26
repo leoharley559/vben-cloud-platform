@@ -11,7 +11,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerRebateListApi } from '#/api/operationManage/player-detail-extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { getTodayRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
   REBATE_AWARD_STATUS_MAP,
@@ -29,7 +29,7 @@ const { checkPermission } = useCloudPermission();
 
 const canViewTable = computed(() => checkPermission(11_610));
 
-const defaultRange = getTodayRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 const sumBackWater = ref(0);
 
 const filterOrderId = ref('');

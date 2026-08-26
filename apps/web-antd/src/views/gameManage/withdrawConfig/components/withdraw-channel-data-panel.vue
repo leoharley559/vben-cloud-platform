@@ -8,6 +8,7 @@ import {
   Button,
   Empty,
   Input,
+  message,
   Pagination,
   Select,
   Space,
@@ -53,11 +54,18 @@ const pageSize = ref(20);
 const sort = ref('');
 const account = ref('');
 const dataSearchType = ref(0);
-const dateRange = ref<[Dayjs, Dayjs]>([
+const dateRange = ref<[Dayjs, Dayjs] | null>([
   // 对齐旧站 getBeforeDateTimestamp(31, false) → days-1=30，即近 30 天 0 点～今日结束
   dayjs().subtract(30, 'day').startOf('day'),
   dayjs().endOf('day'),
 ]);
+
+function defaultChannelRange(): [Dayjs, Dayjs] {
+  return [
+    dayjs().subtract(30, 'day').startOf('day'),
+    dayjs().endOf('day'),
+  ];
+}
 
 const withdrawTypeMap = computed(() => {
   const source = projectConfig.value?.WithdrawTypeList as
@@ -142,6 +150,10 @@ function buildQuery() {
 
 async function loadData() {
   if (!canView.value) return;
+  if (!dateRange.value?.[0] || !dateRange.value?.[1]) {
+    message.warning('请选择时间范围');
+    return;
+  }
   loading.value = true;
   try {
     const result = await fetchWithdrawChannelDataApi(buildQuery());
@@ -162,10 +174,7 @@ function handleReset() {
   dataSearchType.value = 0;
   sort.value = '';
   page.value = 1;
-  dateRange.value = [
-    dayjs().subtract(30, 'day').startOf('day'),
-    dayjs().endOf('day'),
-  ];
+  dateRange.value = defaultChannelRange();
   void loadData();
 }
 
@@ -255,8 +264,8 @@ onMounted(() => {
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'time'">
-            {{ dateRange[0].format('YYYY-MM-DD HH:mm:ss') }} -
-            {{ dateRange[1].format('YYYY-MM-DD HH:mm:ss') }}
+            {{ dateRange?.[0]?.format('YYYY-MM-DD HH:mm:ss') || '-' }} -
+            {{ dateRange?.[1]?.format('YYYY-MM-DD HH:mm:ss') || '-' }}
           </template>
           <template v-else-if="column.key === 'AccountType'">
             {{ withdrawTypeMap.get(String(record.AccountType ?? '')) || '-' }}

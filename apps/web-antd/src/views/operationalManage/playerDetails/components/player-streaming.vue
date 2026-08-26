@@ -18,7 +18,7 @@ import {
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
-import { getTodayRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import {
@@ -43,7 +43,7 @@ const canViewTable = computed(() => checkPermission(12_940));
 const canExport = computed(() => checkPermission(12_939));
 const canResetRollover = computed(() => checkPermission(13_163));
 
-const defaultRange = getTodayRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 const waterDetail = ref<PlayerDrawWaterSummary>({});
 const selectedOrderIds = ref<string[]>([]);
 const addModalOpen = ref(false);

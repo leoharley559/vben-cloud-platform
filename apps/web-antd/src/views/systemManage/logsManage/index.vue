@@ -100,7 +100,25 @@ function renderLogContent(row: LogListItem) {
   });
 }
 
-const gridOptions: VxeTableGridOptions<LogListItem> = {
+function ensureRowKeys(
+  items: LogListItem[],
+  page: number,
+  pageSize: number,
+): Array<LogListItem & { _rowKey: string }> {
+  return items.map((item, index) => ({
+    ...item,
+    _rowKey: [
+      item.Id && Number(item.Id) !== 0 ? item.Id : 'r',
+      item.CreateTime ?? '',
+      item.Username ?? '',
+      item.Ip ?? '',
+      item.LogType ?? '',
+      (page - 1) * pageSize + index,
+    ].join('|'),
+  }));
+}
+
+const gridOptions: VxeTableGridOptions<LogListItem & { _rowKey: string }> = {
   columns: [
     {
       field: 'CreateTime',
@@ -139,9 +157,10 @@ const gridOptions: VxeTableGridOptions<LogListItem> = {
             PageSize: page.pageSize,
             Sort: toCloudSort(sort),
           });
+          const items = result?.Items || [];
 
           return {
-            items: result?.Items || [],
+            items: ensureRowKeys(items, page.currentPage, page.pageSize),
             total: result?.Pagination?.MaxCount || 0,
           };
         } catch {
@@ -151,7 +170,8 @@ const gridOptions: VxeTableGridOptions<LogListItem> = {
     },
   },
   rowConfig: {
-    keyField: 'Id',
+    // 接口大量返回 Id=0，不能当主键
+    keyField: '_rowKey',
   },
   sortConfig: {
     remote: true,

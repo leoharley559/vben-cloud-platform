@@ -44,8 +44,8 @@ function renderChart() {
       {
         bottom: 0,
         data: props.data,
-        itemStyle: {
-          emphasis: { areaColor: '#eee' },
+        emphasis: {
+          itemStyle: { areaColor: '#eee' },
         },
         left: 0,
         map: 'world',

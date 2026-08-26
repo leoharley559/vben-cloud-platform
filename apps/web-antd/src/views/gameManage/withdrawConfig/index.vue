@@ -1,5 +1,7 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
+import type { Component } from 'vue';
+
+import { computed, ref, watchEffect } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -18,7 +20,17 @@ import WithdrawRiskPanel from './components/withdraw-risk-panel.vue';
 defineOptions({ name: 'WithdrawConfig' });
 
 const { checkPermission } = useCloudPermission();
-const activeTab = ref('account');
+const activeTab = ref('');
+
+const panelMap: Record<string, Component> = {
+  access: WithdrawAccessPanel,
+  account: WithdrawAccountPanel,
+  bank: WithdrawBankPanel,
+  data: WithdrawChannelDataPanel,
+  risk: WithdrawRiskPanel,
+  rule: WithdrawCommonRulePanel,
+  third: ThirdWithdrawPanel,
+};
 
 const tabs = computed(() =>
   [
@@ -62,8 +74,10 @@ const tabs = computed(() =>
 
 const canViewPage = computed(() => tabs.value.length > 0);
 
-onMounted(() => {
-  activeTab.value = tabs.value[0]?.key || 'account';
+watchEffect(() => {
+  if (!tabs.value.some((item) => item.key === activeTab.value)) {
+    activeTab.value = tabs.value[0]?.key || '';
+  }
 });
 </script>
 
@@ -75,29 +89,14 @@ onMounted(() => {
     title="提现配置"
   >
     <Card>
-      <Tabs v-model:active-key="activeTab" type="line" size="small">
+      <Tabs
+        v-model:active-key="activeTab"
+        destroy-inactive-tab-pane
+        type="line"
+        size="small"
+      >
         <Tabs.TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          <WithdrawAccountPanel
-            v-if="item.key === 'account' && activeTab === 'account'"
-          />
-          <ThirdWithdrawPanel
-            v-else-if="item.key === 'third' && activeTab === 'third'"
-          />
-          <WithdrawRiskPanel
-            v-else-if="item.key === 'risk' && activeTab === 'risk'"
-          />
-          <WithdrawBankPanel
-            v-else-if="item.key === 'bank' && activeTab === 'bank'"
-          />
-          <WithdrawChannelDataPanel
-            v-else-if="item.key === 'data' && activeTab === 'data'"
-          />
-          <WithdrawCommonRulePanel
-            v-else-if="item.key === 'rule' && activeTab === 'rule'"
-          />
-          <WithdrawAccessPanel
-            v-else-if="item.key === 'access' && activeTab === 'access'"
-          />
+          <component :is="panelMap[item.key]" />
         </Tabs.TabPane>
       </Tabs>
     </Card>

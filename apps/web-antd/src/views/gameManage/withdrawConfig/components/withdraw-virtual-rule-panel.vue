@@ -35,6 +35,7 @@ import {
 } from '#/api/gameManage/withdraw-rules';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { formatOperationDateTime } from '#/utils/operation-status';
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const { packageOptions } = useOperationOptions();
@@ -632,6 +633,9 @@ onMounted(loadMain);
             :login-account="String(record.Account || '')"
             :player-id="record.PlayerId"
           />
+        </template>
+        <template v-else-if="column.key === 'CreateTimestamp'">
+          {{ formatOperationDateTime(record.CreateTimestamp as number | string) }}
         </template>
         <template v-else-if="column.key === 'actions'">
           <Button danger type="link" @click="removeWhitelist(record)">

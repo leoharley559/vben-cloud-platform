@@ -21,6 +21,7 @@ import {
 } from '#/api/gameManage/withdraw-rules';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
+import { formatOperationDateTime } from '#/utils/operation-status';
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 
 const props = defineProps<{ mode: 'forced' | 'wallet' }>();
@@ -165,6 +166,9 @@ onMounted(load);
       <template #bodyCell="{ column, index, record }">
         <template v-if="column.key === 'index'">
           {{ (query.Page - 1) * query.PageSize + index + 1 }}
+        </template>
+        <template v-else-if="column.key === 'UpdateTime'">
+          {{ formatOperationDateTime(record.UpdateTime as number | string) }}
         </template>
         <template v-else-if="column.key === 'actions'">
           <Button v-if="canDelete" danger type="link" @click="remove(record)">

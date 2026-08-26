@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   Button,
@@ -22,10 +22,15 @@ import {
   updateWithdrawTimesApi,
   updateWithdrawTipConfigApi,
 } from '#/api/gameManage/withdraw-rules';
+import { useProjectConfig } from '#/composables/use-project-config';
 
 import WithdrawCustomTipsPanel from './withdraw-custom-tips-panel.vue';
 
 const props = defineProps<{ mode: 'params' | 'prompt' }>();
+const { projectConfig } = useProjectConfig();
+const isAgentV2 = computed(
+  () => String(projectConfig.value?.AgentVersion || '') === 'v2',
+);
 const loading = ref(false);
 const saving = ref('');
 const snapshot = ref<Record<string, unknown>>({});
@@ -201,7 +206,7 @@ onMounted(load);
             </Button>
           </Space>
         </Form.Item>
-        <Form.Item label="同时最多提现笔数">
+        <Form.Item v-if="isAgentV2" label="同时最多提现笔数">
           <Space>
             <InputNumber
               v-model:value="paramForm.MaxWithdrawInTimeCount"

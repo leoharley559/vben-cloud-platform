@@ -492,14 +492,15 @@ async function selectPromoter(
   await reloadFirstPage();
 }
 
-/** 链路展示优先账号：leying/A/B */
+/** 链路展示：账号 + 名称，便于辨认 */
 function formatHierarchyLabel(item: ChannelAdminOption | ChannelRow) {
   const node = toHierarchyNode(item);
-  return (
-    String(node.Username || '').trim() ||
-    String(node.Name || '').trim() ||
-    String(node.Id ?? '-')
-  );
+  const username = String(node.Username || '').trim();
+  const name = String(node.Name || '').trim();
+  if (username && name && username !== name) {
+    return `${username}—${name}`;
+  }
+  return username || name || String(node.Id ?? '-');
 }
 
 /** 下级代理：账号 + 姓名，便于辨认 */
@@ -508,7 +509,7 @@ function formatSubordinateLabel(item: ChannelAdminOption | ChannelRow) {
   const username = String(node.Username || '').trim();
   const name = String(node.Name || '').trim();
   if (username && name && username !== name) {
-    return `${username}（${name}）`;
+    return `${username}—${name}`;
   }
   return username || name || String(node.Id ?? '-');
 }
@@ -755,19 +756,25 @@ onBeforeUnmount(() => {
         </template>
         <span v-else class="text-gray-400">暂无层级</span>
       </div>
-      <div class="flex flex-wrap items-start gap-2">
-        <span class="mt-1 shrink-0 text-sm text-gray-600">下级代理：</span>
-        <Space v-if="subordinates.length > 0" wrap>
+      <div class="ops-subordinate-agents-scope  items-start gap-2"> 
+        <div class="mb-2 ">
+          <b>下级代理</b> 
+        </div>
+        <div v-if="subordinates.length > 0" class="ops-subordinate-agents">
           <Button
             v-for="item in subordinates"
             :key="String(item.Id)"
+            class="ops-subordinate-agent-btn"
             size="small"
             :danger="Number(item.Status) === 2"
+            :title="formatSubordinateLabel(item)"
             @click="selectPromoter(item)"
           >
-            {{ formatSubordinateLabel(item) }}
+            <span class="ops-subordinate-agent-text">{{
+              formatSubordinateLabel(item)
+            }}</span>
           </Button>
-        </Space>
+        </div>
         <span v-else class="mt-1 text-sm text-gray-400">当前层级暂无下级代理</span>
       </div>
     </div>

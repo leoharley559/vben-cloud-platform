@@ -26,6 +26,7 @@ import {
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'ThirdWithdrawPanel' });
 
@@ -39,6 +40,7 @@ interface ThirdWithdrawRow {
   AisleBalance?: number;
   Category?: number;
   ChannelName?: string;
+  ConfigId?: number | string;
   CreateTime?: number | string;
   CustomRate?: number;
   Description?: string;
@@ -50,6 +52,7 @@ interface ThirdWithdrawRow {
   NickName?: string;
   OnShelf?: number;
   Params?: string;
+  PayType?: number | string;
   Rate?: number | string;
   RateType?: number;
   ShowName?: string;
@@ -81,6 +84,30 @@ const bankOptions = computed(() => {
     }));
 });
 
+const withdrawTypeMap = computed(() => {
+  const source = projectConfig.value?.WithdrawTypeList as
+    | Array<{
+        I18nKey?: string;
+        Key?: number | string;
+        Name?: string;
+        ShowName?: string;
+      }>
+    | undefined;
+  return new Map(
+    (source ?? []).map((item) => [
+      String(item.Key ?? ''),
+      item.ShowName || item.Name || item.I18nKey || String(item.Key ?? ''),
+    ]),
+  );
+});
+
+function payTypeName(row: ThirdWithdrawRow) {
+  if (row.TypeName) return row.TypeName;
+  const key = String(row.PayType ?? '');
+  if (!key) return '-';
+  return withdrawTypeMap.value.get(key) || key;
+}
+
 const rateTypeOptions = [
   { label: '百分比', value: 0 },
   { label: '固定', value: 1 },
@@ -97,6 +124,7 @@ const queryForm = reactive({
 });
 
 const secretForm = reactive({
+  Description: '',
   Id: '' as number | string,
   NickName: '',
   Paramss: {} as Record<string, string>,
@@ -122,8 +150,19 @@ const editForm = reactive({
 const gridOptions: VxeTableGridOptions<ThirdWithdrawRow> = {
   columns: [
     { field: 'ShowName', minWidth: 140, title: '第三方支付名称' },
-    { field: 'CreateTime', minWidth: 160, title: '创建时间' },
-    { field: 'TypeName', minWidth: 120, title: '支付类型' },
+    {
+      field: 'CreateTime',
+      formatter: ({ cellValue }) =>
+        formatOperationDateTime(cellValue as number | string),
+      minWidth: 160,
+      title: '创建时间',
+    },
+    {
+      field: 'PayType',
+      formatter: ({ row }) => payTypeName(row),
+      minWidth: 120,
+      title: '支付类型',
+    },
     {
       field: 'Rate',
       formatter: ({ row }) => formatRate(row),
@@ -263,6 +302,7 @@ function openSecret(row: ThirdWithdrawRow) {
 
   secretForm.Id = row.Id;
   secretForm.NickName = displayName(row);
+  secretForm.Description = String(row.Description || '');
   secretForm.fields = fields.filter((item) => item.key);
   secretForm.Paramss = {};
   for (const field of secretForm.fields) {
@@ -278,7 +318,7 @@ function openEdit(row: ThirdWithdrawRow) {
   }
   editForm.Id = row.Id;
   editForm.ShowName = String(row.ShowName || row.NickName || '');
-  editForm.TypeName = String(row.TypeName || '');
+  editForm.TypeName = payTypeName(row);
   editForm.RateType = Number(row.RateType || 0);
   editForm.Rate =
     row.Rate === undefined || row.Rate === '' ? undefined : Number(row.Rate);
@@ -533,6 +573,9 @@ function resetSearch() {
       <Form layout="vertical" class="pt-2">
         <Form.Item label="通道">
           <Input :value="secretForm.NickName" disabled />
+        </Form.Item>
+        <Form.Item label="通道说明">
+          <Input :value="secretForm.Description" disabled />
         </Form.Item>
         <Form.Item
           v-for="field in secretForm.fields"

@@ -178,6 +178,91 @@
   color: hsl(var(--primary) / 78%);
 }
 
+/* 代理渠道 · 下级代理按钮栅格（比合计卡片更密） */
+.ops-subordinate-agents-scope {
+  container-name: ops-subordinate;
+  container-type: inline-size;
+}
+
+.ops-subordinate-agents {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+}
+
+.ops-subordinate-agents > * {
+  width: 100%;
+  min-width: 0;
+}
+
+.ops-subordinate-agent-btn.ant-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ops-subordinate-agent-btn .ops-subordinate-agent-text {
+  display: block;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .ops-subordinate-agents {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ops-subordinate-agents {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .ops-subordinate-agents {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1536px) {
+  .ops-subordinate-agents {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+}
+
+@container ops-subordinate (min-width: 520px) {
+  .ops-subordinate-agents {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container ops-subordinate (min-width: 776px) {
+  .ops-subordinate-agents {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@container ops-subordinate (min-width: 1032px) {
+  .ops-subordinate-agents {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
+@container ops-subordinate (min-width: 1288px) {
+  .ops-subordinate-agents {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+}
+
 .ops-summary-card .ops-summary-value {
   font-weight: 600;
 }

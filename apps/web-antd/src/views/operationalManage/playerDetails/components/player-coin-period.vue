@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerGoldTotalApi } from '#/api/operationManage/player';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
-import { getLast7CalendarDaysRangeSeconds } from '#/utils/date-range';
+import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 
 import PlayerCoinSettlePanel from './player-coin-settle.vue';
@@ -28,7 +28,7 @@ const emit = defineEmits<{
   dateChange: [beginTime: number, endTime: number];
 }>();
 
-const defaultRange = getLast7CalendarDaysRangeSeconds();
+const defaultRange = getCurrentMonthRangeSeconds();
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
@@ -187,7 +187,6 @@ onMounted(() => {
 
 <template>
   <div>
-    <Card size="small" title="周期数据">
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
           <div class="query-filter-wide">
@@ -247,6 +246,5 @@ onMounted(() => {
         :end-time="endTime"
         :player-id="playerId"
       />
-    </Card>
   </div>
 </template>
