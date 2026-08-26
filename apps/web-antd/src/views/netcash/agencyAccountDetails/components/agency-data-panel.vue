@@ -626,8 +626,8 @@ watch(
         </template>
       </Table>
     </section>
-    <!-- 场馆明细 -->
-    <section v-if="venueDetailRows.length > 0">
+    <!-- 场馆明细：无数据时仍展示区块，提示当前时间无数据 -->
+    <section>
       <h3 class="mb-2 font-medium">场馆明细</h3>
       <Table
         bordered
@@ -635,6 +635,7 @@ watch(
         :columns="venueDetailColumns"
         :data-source="venueDetailRows"
         :loading="loading"
+        :locale="{ emptyText: '当前时间范围无数据' }"
         :pagination="false"
         row-key="key"
         size="small"
@@ -656,7 +657,7 @@ watch(
           </template>
         </template>
         <template #summary>
-          <Table.Summary fixed>
+          <Table.Summary v-if="venueDetailRows.length > 0" fixed>
             <Table.Summary.Row>
               <Table.Summary.Cell :index="0">合计</Table.Summary.Cell>
               <Table.Summary.Cell :index="1" />
