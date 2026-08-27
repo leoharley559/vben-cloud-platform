@@ -51,6 +51,7 @@ import { formatMemberType } from '#/utils/player-status';
 
 import PlayerAlipayList from './player-alipay-list.vue';
 import PlayerBankCardList from './player-bank-card-list.vue';
+import PlayerWechatList from './player-wechat-list.vue';
 import PlayerPayAcctList from './player-pay-acct-list.vue';
 import PlayerRemarkList from './player-remark-list.vue';
 import PlayerVirtualAddressList from './player-virtual-address-list.vue';
@@ -1255,6 +1256,14 @@ onMounted(() => {
     />
 
     <PlayerAlipayList
+      v-if="info.PlayerId"
+      :device-id="String(info.DeviceId || '')"
+      :login-account="String(info.LoginAccount || '')"
+      :package-name="String(info.PackageName || '')"
+      :player-id="info.PlayerId"
+    />
+
+    <PlayerWechatList
       v-if="info.PlayerId"
       :device-id="String(info.DeviceId || '')"
       :login-account="String(info.LoginAccount || '')"

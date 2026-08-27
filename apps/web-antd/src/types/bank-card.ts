@@ -8,6 +8,18 @@ export interface BankCardListQuery {
   PlayerId?: number | string;
 }
 
+/** 支付宝 / 微信账号（接口 AlipayAccounts / WechatAccounts） */
+export interface PlayerPayAccountItem {
+  Account?: string;
+  AccountType?: number;
+  CreateTime?: number | string;
+  HasQrCode?: boolean;
+  Id?: number | string;
+  IsDefault?: boolean;
+  Name?: string;
+  QrCodeUrl?: string;
+}
+
 export interface BankCardListItem {
   [key: string]: unknown;
   AlipayAccount?: string;
@@ -21,8 +33,23 @@ export interface BankCardListItem {
   MerchantOrderNo?: string;
   PackageName?: string;
   PlayerId?: number | string;
+  QrCodeUrl?: string;
   RealName?: string;
   ThirdPartyUserId?: string;
+  WechatAccount?: string;
+  WechatName?: string;
+}
+
+export interface BankCardListResult {
+  AlipayAccounts?: PlayerPayAccountItem[];
+  Items?: BankCardListItem[];
+  Pagination?: {
+    CurrPage?: number;
+    MaxCount?: number;
+    MaxPageCount?: number;
+    PageSize?: number;
+  };
+  WechatAccounts?: PlayerPayAccountItem[];
 }
 
 export interface BankCardFormPayload {
@@ -39,6 +66,8 @@ export interface BankCardFormPayload {
   PackageName?: string;
   PlayerId?: number | string;
   ValidCode?: string;
+  WechatAccount?: string;
+  WechatName?: string;
 }
 
 export interface ResolvePlayerByAccountPayload {

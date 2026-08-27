@@ -1,7 +1,7 @@
 import type {
   BankCardFormPayload,
-  BankCardListItem,
   BankCardListQuery,
+  BankCardListResult,
   ResolvePlayerByAccountPayload,
 } from '#/types/bank-card';
 import type { CloudListResult } from '#/types/operation-manage';
@@ -9,28 +9,29 @@ import type { CloudListResult } from '#/types/operation-manage';
 import { requestClient } from '#/api/request';
 import { trimSpace } from '#/utils/string';
 
-function normalizeList<T>(result: CloudListResult<T> | null | undefined) {
-  return {
-    Items: result?.Items || [],
-    Pagination: result?.Pagination,
-  };
-}
-
 /**
- * 银行卡列表（钱包管理 · 银行卡 Tab）。
+ * 银行卡列表（钱包管理 · 银行卡 Tab / 玩家详情银行卡·支付宝·微信）。
  *
  * @param query 查询参数（玩家、卡号、状态等筛选及分页）
- * @returns 银行卡行 Items 及 Pagination
+ * @returns Items（银行卡）及 AlipayAccounts / WechatAccounts
  * @see views/memberManage/walletManage/components/card-manage-list.vue
+ * @see views/operationalManage/playerDetails/components/player-bank-card-list.vue
+ * @see views/operationalManage/playerDetails/components/player-alipay-list.vue
+ * @see views/operationalManage/playerDetails/components/player-wechat-list.vue
  */
 export async function fetchBankCardListApi(query: BankCardListQuery) {
-  const result = await requestClient.get<CloudListResult<BankCardListItem>>(
+  const result = await requestClient.get<BankCardListResult>(
     '/backend/playerbankcard/list',
     {
       params: trimSpace({ ...query }),
     },
   );
-  return normalizeList(result);
+  return {
+    AlipayAccounts: result?.AlipayAccounts || [],
+    Items: result?.Items || [],
+    Pagination: result?.Pagination,
+    WechatAccounts: result?.WechatAccounts || [],
+  };
 }
 
 /**

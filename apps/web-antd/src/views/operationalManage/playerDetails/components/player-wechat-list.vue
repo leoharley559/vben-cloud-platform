@@ -25,7 +25,7 @@ import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
-defineOptions({ name: 'PlayerAlipayList' });
+defineOptions({ name: 'PlayerWechatList' });
 
 const props = defineProps<{
   deviceId?: string;
@@ -34,8 +34,8 @@ const props = defineProps<{
   playerId: number | string;
 }>();
 
-/** 与银行卡一致，PageId=8 */
-const ALIPAY_SECURITY_PAGE_ID = 8;
+/** 与银行卡 / 支付宝一致，PageId=8 */
+const WECHAT_SECURITY_PAGE_ID = 8;
 
 const { checkPermission } = useCloudPermission();
 
@@ -62,17 +62,17 @@ const qrPreview = reactive({
 });
 
 const form = reactive({
-  AlipayAccount: '',
-  AlipayName: '',
   Id: '' as number | string,
+  WechatAccount: '',
+  WechatName: '',
 });
 
 const columns = [
-  { dataIndex: 'AlipayName', key: 'AlipayName', title: '支付宝名', width: 140 },
+  { dataIndex: 'WechatName', key: 'WechatName', title: '微信名', width: 140 },
   {
-    dataIndex: 'AlipayAccount',
-    key: 'AlipayAccount',
-    title: '支付宝账号',
+    dataIndex: 'WechatAccount',
+    key: 'WechatAccount',
+    title: '微信账号',
     width: 180,
   },
   {
@@ -107,18 +107,17 @@ async function loadList() {
       PageSize: 50,
       PlayerId: props.playerId,
     });
-    // 新接口：AlipayAccounts；兼容旧数据从 Items 过滤
-    const accounts = result?.AlipayAccounts || [];
+    const accounts = result?.WechatAccounts || [];
     list.value =
       accounts.length > 0
         ? accounts.map((item) => ({
-            AlipayAccount: String(item.Account || ''),
-            AlipayName: String(item.Name || ''),
             BankCardTime: item.CreateTime,
             Id: item.Id,
             QrCodeUrl: String(item.QrCodeUrl || ''),
+            WechatAccount: String(item.Account || ''),
+            WechatName: String(item.Name || ''),
           }))
-        : (result?.Items || []).filter((item) => !!item.AlipayAccount);
+        : (result?.Items || []).filter((item) => !!item.WechatAccount);
   } finally {
     loading.value = false;
   }
@@ -127,45 +126,45 @@ async function loadList() {
 function openCreate() {
   formMode.value = 'create';
   form.Id = '';
-  form.AlipayName = '';
-  form.AlipayAccount = '';
+  form.WechatName = '';
+  form.WechatAccount = '';
   formOpen.value = true;
 }
 
 function openEdit(row: BankCardListItem) {
   formMode.value = 'edit';
   form.Id = row.Id ?? '';
-  form.AlipayName = String(row.AlipayName || '');
-  form.AlipayAccount = String(row.AlipayAccount || '');
+  form.WechatName = String(row.WechatName || '');
+  form.WechatAccount = String(row.WechatAccount || '');
   formOpen.value = true;
 }
 
 function openQrPreview(row: BankCardListItem) {
-  qrPreview.name = String(row.AlipayName || '');
-  qrPreview.account = String(row.AlipayAccount || '');
+  qrPreview.name = String(row.WechatName || '');
+  qrPreview.account = String(row.WechatAccount || '');
   qrPreview.url = String(row.QrCodeUrl || '').trim();
   qrPreviewOpen.value = true;
 }
 
 function requestSave() {
-  if (!form.AlipayName.trim() || !form.AlipayAccount.trim()) {
-    message.warning('请填写支付宝名和账号');
+  if (!form.WechatName.trim() || !form.WechatAccount.trim()) {
+    message.warning('请填写微信名和账号');
     return;
   }
   passAction.value = 'save';
-  passPopupRef.value?.validate(ALIPAY_SECURITY_PAGE_ID);
+  passPopupRef.value?.validate(WECHAT_SECURITY_PAGE_ID);
 }
 
 async function doSave(extra: Record<string, unknown> = {}) {
   saving.value = true;
   try {
     const payload = {
-      AlipayAccount: form.AlipayAccount.trim(),
-      AlipayName: form.AlipayName.trim(),
       DeviceId: props.deviceId || '',
       LoginAccount: props.loginAccount || '',
       PackageName: props.packageName || '',
       PlayerId: props.playerId,
+      WechatAccount: form.WechatAccount.trim(),
+      WechatName: form.WechatName.trim(),
       ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
     };
     if (formMode.value === 'create') {
@@ -174,13 +173,13 @@ async function doSave(extra: Record<string, unknown> = {}) {
         Hash: createRequestHash(),
         OperationType: 1,
       });
-      message.success('支付宝已添加');
+      message.success('微信已添加');
     } else {
       await updateBankCardApi({
         ...payload,
         Id: form.Id,
       });
-      message.success('支付宝已更新');
+      message.success('微信已更新');
     }
     formOpen.value = false;
     await loadList();
@@ -196,7 +195,7 @@ function requestDelete(row: BankCardListItem) {
   pendingDeleteId.value = row.Id;
   deleteIsBlack.value = false;
   passAction.value = 'delete';
-  passPopupRef.value?.prompt(ALIPAY_SECURITY_PAGE_ID);
+  passPopupRef.value?.prompt(WECHAT_SECURITY_PAGE_ID);
 }
 
 async function doDelete(extra: Record<string, unknown> = {}) {
@@ -241,9 +240,9 @@ onMounted(() => {
 <template>
   <div v-if="canSection" class="mt-4">
     <div class="mb-2 flex items-center justify-between">
-      <div class="text-sm font-medium">支付宝</div>
+      <div class="text-sm font-medium">微信</div>
       <Button v-if="canCreate" size="small" type="primary" @click="openCreate">
-        新增支付宝
+        新增微信
       </Button>
     </div>
 
@@ -254,7 +253,7 @@ onMounted(() => {
       :data-source="list"
       :loading="loading"
       :pagination="false"
-      :row-key="(record) => String(record.Id ?? record.AlipayAccount)"
+      :row-key="(record) => String(record.Id ?? record.WechatAccount)"
       size="small"
     >
       <template #bodyCell="{ column, record }">
@@ -294,7 +293,7 @@ onMounted(() => {
       v-model:open="qrPreviewOpen"
       :footer="null"
       destroy-on-close
-      title="支付宝收款码"
+      title="微信收款码"
       width="420px"
     >
       <div class="space-y-3 pt-1">
@@ -305,7 +304,7 @@ onMounted(() => {
         <div class="flex min-h-[200px] items-center justify-center rounded border border-dashed border-gray-200 bg-gray-50 p-4">
           <img
             v-if="qrPreview.url"
-            :alt="`${qrPreview.name || '支付宝'}收款码`"
+            :alt="`${qrPreview.name || '微信'}收款码`"
             class="max-h-[280px] max-w-full object-contain"
             :src="qrPreview.url"
           />
@@ -318,22 +317,22 @@ onMounted(() => {
       v-model:open="formOpen"
       :confirm-loading="saving"
       destroy-on-close
-      :title="formMode === 'create' ? '新增支付宝' : '编辑支付宝'"
+      :title="formMode === 'create' ? '新增微信' : '编辑微信'"
       @ok="requestSave"
     >
       <Form layout="vertical" class="pt-2">
-        <Form.Item label="支付宝名" required>
+        <Form.Item label="微信名" required>
           <Input
-            v-model:value="form.AlipayName"
+            v-model:value="form.WechatName"
             allow-clear
-            placeholder="请输入支付宝名"
+            placeholder="请输入微信名"
           />
         </Form.Item>
-        <Form.Item label="支付宝账号" required>
+        <Form.Item label="微信账号" required>
           <Input
-            v-model:value="form.AlipayAccount"
+            v-model:value="form.WechatAccount"
             allow-clear
-            placeholder="请输入支付宝账号"
+            placeholder="请输入微信账号"
           />
         </Form.Item>
       </Form>
@@ -341,8 +340,8 @@ onMounted(() => {
 
     <PassPopup
       ref="passPopupRef"
-      :prompt-msg="passAction === 'delete' ? '确认删除该支付宝？' : ''"
-      :title="passAction === 'delete' ? '删除支付宝' : '安全验证'"
+      :prompt-msg="passAction === 'delete' ? '确认删除该微信？' : ''"
+      :title="passAction === 'delete' ? '删除微信' : '安全验证'"
       @confirm="handlePassConfirm"
     >
       <template v-if="passAction === 'delete'" #extra>
