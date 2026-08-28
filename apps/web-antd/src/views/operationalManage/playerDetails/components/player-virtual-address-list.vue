@@ -45,7 +45,8 @@ const { checkPermission } = useCloudPermission();
 
 const canSection = computed(() => checkPermission(11_181));
 const canView = computed(() => checkPermission(11_301));
-const canCreate = computed(() => checkPermission(11_299));
+/** 后台暂不代玩家新增，仅保留编辑/删除 */
+const canCreate = computed(() => false);
 const canEdit = computed(() => checkPermission(11_302));
 const canDelete = computed(() => checkPermission(11_303));
 

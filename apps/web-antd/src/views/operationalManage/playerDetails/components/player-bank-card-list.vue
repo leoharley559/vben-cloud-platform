@@ -4,6 +4,7 @@ import type { BankCardListItem } from '#/types/bank-card';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import {
+  Alert,
   Button,
   Checkbox,
   Form,
@@ -22,7 +23,8 @@ import {
   fetchBankCardListApi,
   updateBankCardApi,
 } from '#/api/memberManage/bank-card';
-import PassPopup from '#/components/security/pass-popup.vue';
+import GoogleCodeField from '#/components/security/google-code-field.vue';
+import { checkSecured } from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatBankCode } from '#/utils/bank-card';
@@ -44,25 +46,28 @@ const { projectConfig } = useProjectConfig();
 
 const canSection = computed(() => checkPermission(11_180));
 const canView = computed(() => checkPermission(11_298));
-const canCreate = computed(() => checkPermission(11_299));
+/** 后台暂不代玩家新增，仅保留编辑/删除 */
+const canCreate = computed(() => false);
 const canEdit = computed(() => checkPermission(11_405));
 const canDelete = computed(() => checkPermission(11_300));
 
 const loading = ref(false);
 const saving = ref(false);
+const deleting = ref(false);
 const list = ref<BankCardListItem[]>([]);
 const formOpen = ref(false);
+const deleteOpen = ref(false);
 const formMode = ref<'create' | 'edit'>('create');
 const deleteIsBlack = ref(false);
-const pendingDeleteId = ref<number | string>('');
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
-const passAction = ref<'delete' | 'save'>('save');
+const deleteValidCode = ref('');
+const pendingDeleteRow = ref<BankCardListItem | null>(null);
 
 const form = reactive({
   BankCardNum: '',
   BankCode: '',
   BankRealName: '',
   Id: '' as number | string,
+  ValidCode: '',
 });
 
 const bankOptions = computed(() => {
@@ -132,6 +137,7 @@ function openCreate() {
   form.BankCode = '';
   form.BankRealName = '';
   form.BankCardNum = '';
+  form.ValidCode = '';
   formOpen.value = true;
 }
 
@@ -141,6 +147,7 @@ function openEdit(row: BankCardListItem) {
   form.BankCode = String(row.BankCode || '');
   form.BankRealName = String(row.RealName || row.BankRealName || '');
   form.BankCardNum = String(row.BankCardNum || '');
+  form.ValidCode = '';
   formOpen.value = true;
 }
 
@@ -149,8 +156,18 @@ function requestSave() {
     message.warning('请填写完整银行卡信息');
     return;
   }
-  passAction.value = 'save';
-  passPopupRef.value?.validate(BANK_CARD_SECURITY_PAGE_ID);
+  if (
+    checkSecured(BANK_CARD_SECURITY_PAGE_ID) &&
+    !/^\d{6}$/.test(form.ValidCode.trim())
+  ) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doSave(
+    form.ValidCode.trim()
+      ? { ValidCode: form.ValidCode.trim() }
+      : {},
+  );
 }
 
 async function doSave(extra: Record<string, unknown> = {}) {
@@ -189,36 +206,47 @@ function requestDelete(row: BankCardListItem) {
   if (row.Id === undefined || row.Id === null || row.Id === '') {
     return;
   }
-  pendingDeleteId.value = row.Id;
+  pendingDeleteRow.value = row;
   deleteIsBlack.value = false;
-  passAction.value = 'delete';
-  passPopupRef.value?.prompt(BANK_CARD_SECURITY_PAGE_ID);
+  deleteValidCode.value = '';
+  deleteOpen.value = true;
+}
+
+function requestDeleteConfirm() {
+  if (
+    checkSecured(BANK_CARD_SECURITY_PAGE_ID) &&
+    !/^\d{6}$/.test(deleteValidCode.value.trim())
+  ) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doDelete(
+    deleteValidCode.value.trim()
+      ? { ValidCode: deleteValidCode.value.trim() }
+      : {},
+  );
 }
 
 async function doDelete(extra: Record<string, unknown> = {}) {
-  if (pendingDeleteId.value === '') {
+  const row = pendingDeleteRow.value;
+  if (!row?.Id) {
     return;
   }
-  loading.value = true;
+  deleting.value = true;
   try {
-    await deleteBankCardApi(pendingDeleteId.value, {
+    await deleteBankCardApi({
+      Id: row.Id,
       IsBlack: deleteIsBlack.value,
+      ResourceType: 'bank_card',
       ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
     });
     message.success('已删除');
+    deleteOpen.value = false;
     await loadList();
   } finally {
-    loading.value = false;
-    pendingDeleteId.value = '';
+    deleting.value = false;
+    pendingDeleteRow.value = null;
   }
-}
-
-function handlePassConfirm(data: Record<string, unknown>) {
-  if (passAction.value === 'delete') {
-    void doDelete(data);
-    return;
-  }
-  void doSave(data);
 }
 
 watch(
@@ -319,20 +347,57 @@ onMounted(() => {
             placeholder="请输入卡号"
           />
         </Form.Item>
+        <GoogleCodeField
+          :page-id="BANK_CARD_SECURITY_PAGE_ID"
+          v-model:value="form.ValidCode"
+        />
       </Form>
     </Modal>
 
-    <PassPopup
-      ref="passPopupRef"
-      :prompt-msg="passAction === 'delete' ? '确认删除该银行卡？' : ''"
-      :title="passAction === 'delete' ? '删除银行卡' : '安全验证'"
-      @confirm="handlePassConfirm"
+    <Modal
+      v-model:open="deleteOpen"
+      :confirm-loading="deleting"
+      destroy-on-close
+      title="删除银行卡"
+      @ok="requestDeleteConfirm"
     >
-      <template v-if="passAction === 'delete'" #extra>
-        <Checkbox v-model:checked="deleteIsBlack" class="mt-3">
-          删除同时加入黑名单
-        </Checkbox>
-      </template>
-    </PassPopup>
+      <div class="mb-3">
+        <Alert
+          message="删除数据则会删除玩家绑定，是否继续？"
+          show-icon
+          type="warning"
+        />
+      </div>
+      <div v-if="pendingDeleteRow" class="mb-3 space-y-1 text-sm text-gray-700">
+        <div>
+          银行：{{
+            formatBankCode(
+              pendingDeleteRow.BankCode,
+              bankListForFormat,
+            ) || '-'
+          }}
+        </div>
+        <div>
+          开户姓名：{{
+            pendingDeleteRow.RealName ||
+            pendingDeleteRow.BankRealName ||
+            '-'
+          }}
+        </div>
+        <div>卡号：{{ pendingDeleteRow.BankCardNum || '-' }}</div>
+      </div>
+      <Form layout="vertical" class="pt-2">
+        <GoogleCodeField
+          compact
+          :page-id="BANK_CARD_SECURITY_PAGE_ID"
+          v-model:value="deleteValidCode"
+        />
+        <Form.Item class="!mb-0">
+          <Checkbox v-model:checked="deleteIsBlack">
+            删除同时加入黑名单
+          </Checkbox>
+        </Form.Item>
+      </Form>
+    </Modal>
   </div>
 </template>

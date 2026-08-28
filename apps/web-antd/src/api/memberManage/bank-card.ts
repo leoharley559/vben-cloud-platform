@@ -2,6 +2,7 @@ import type {
   BankCardFormPayload,
   BankCardListQuery,
   BankCardListResult,
+  DeletePlayerPayResourceParams,
   ResolvePlayerByAccountPayload,
 } from '#/types/bank-card';
 import type { CloudListResult } from '#/types/operation-manage';
@@ -57,25 +58,15 @@ export function updateBankCardApi(data: BankCardFormPayload) {
 }
 
 /**
- * 删除银行卡（钱包管理 / 玩家详情 · 银行卡或支付宝列表删除操作）。
+ * 删除玩家银行卡或提款账号（支付宝 / 微信等）。
  *
- * @param id 银行卡记录 Id
- * @param params 可选删除参数（IsBlack 拉黑、OperationType 操作类型、ValidCode 验证码）
+ * @param params ResourceType、Id 及可选 IsBlack、ValidCode、AccountType
  * @returns 接口操作结果
- * @see views/memberManage/walletManage/components/card-manage-list.vue
- * @see views/operationalManage/playerDetails/components/player-bank-card-list.vue
- * @see views/operationalManage/playerDetails/components/player-alipay-list.vue
  */
-export function deleteBankCardApi(
-  id: number | string,
-  params?: {
-    IsBlack?: boolean | number;
-    OperationType?: number;
-    ValidCode?: string;
-  },
-) {
-  return requestClient.delete(`/backend/playerbankcard/${id}`, {
-    params,
+export function deleteBankCardApi(params: DeletePlayerPayResourceParams) {
+  const { Id, ...rest } = params;
+  return requestClient.delete(`/backend/playerbankcard/${Id}`, {
+    params: trimSpace({ ...rest, Id }),
   });
 }
 

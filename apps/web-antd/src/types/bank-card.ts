@@ -53,6 +53,8 @@ export interface BankCardListResult {
 }
 
 export interface BankCardFormPayload {
+  Account?: string;
+  AccountType?: number;
   AlipayAccount?: string;
   AlipayName?: string;
   BankCardNum?: string;
@@ -62,9 +64,11 @@ export interface BankCardFormPayload {
   Hash?: string;
   Id?: number | string;
   LoginAccount?: string;
+  Name?: string;
   OperationType?: number;
   PackageName?: string;
   PlayerId?: number | string;
+  ResourceType?: 'bank_card' | 'withdrawal_account';
   ValidCode?: string;
   WechatAccount?: string;
   WechatName?: string;
@@ -73,4 +77,13 @@ export interface BankCardFormPayload {
 export interface ResolvePlayerByAccountPayload {
   LoginAccount: string;
   PackageName: string;
+}
+
+/** 删除玩家绑定支付资源（银行卡 / 提款账号） */
+export interface DeletePlayerPayResourceParams {
+  AccountType?: number;
+  Id: number | string;
+  IsBlack?: boolean | number;
+  ResourceType: 'bank_card' | 'withdrawal_account';
+  ValidCode?: string;
 }

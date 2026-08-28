@@ -23,19 +23,36 @@ export function canShowWithdrawManualPay(row: WithdrawListItem) {
   );
 }
 
+/**
+ * 处理中等非标准状态下是否显示人工出款（对齐旧站 withdrawList/list isShowPayMoneyBtn）
+ * 仅当落入「处理中」且 SendTime 已过 180 秒时返回 true
+ */
 export function isShowPayMoneyBtn(
   status: number,
   process: number,
   refundScore: number,
   sendTime?: number | string,
 ) {
-  if (status === 2 && process === 7 && refundScore === 0) {
-    return true;
+  if (status === 1 && process <= 4) {
+    return false;
   }
-  if (status === 4 && process === 8 && sendTime) {
-    return true;
+  if (status === 1 && (process === 5 || process === 6)) {
+    return false;
   }
-  return false;
+  if ((status === 2 || status === 4) && process === 7) {
+    return false;
+  }
+  if (status === 3 && process === 8 && refundScore === 1) {
+    return false;
+  }
+  if (status === 3 && process === 8 && refundScore === 2) {
+    return false;
+  }
+  const sent = Number(sendTime || 0);
+  if (!sent) {
+    return false;
+  }
+  return sent + 180 < Date.now() / 1000;
 }
 
 export function canShowWithdrawAutoPay(row: WithdrawListItem) {

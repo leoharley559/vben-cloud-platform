@@ -53,11 +53,18 @@ import {
   calcWithdrawStatusText,
   formatReceivedStatus,
   formatRiskStatus,
+  formatRiskWarnLevel,
   getReceivedStatusColor,
   getRiskStatusColor,
+  getRiskWarnLevelColor,
+  getWithdrawStatusColor,
   WITHDRAW_STATUS_OPTIONS,
   WITHDRAW_TIME_TYPE_OPTIONS,
 } from '#/utils/withdraw-status';
+import {
+  formatDuration,
+  payTypeLabel,
+} from '#/views/netcash/drawmoneyManage/shared';
 
 import WithdrawActionModal from './withdraw-action-modal.vue';
 
@@ -167,6 +174,57 @@ function formatDateTime(value?: number | string) {
     : String(value);
 }
 
+function formatYesNo(value: unknown) {
+  return Number(value) === 1 ? '是' : '否';
+}
+
+function formatRiskAuditTime(row: WithdrawListItem) {
+  const time = formatDateTime(row.RiskAuditorUpdateTime as number | string);
+  const update = Number(row.RiskAuditorUpdateTime || 0);
+  const start = Number(row.RiskAuditorTime || 0);
+  if (update && start && update - start !== 0) {
+    return `${time} (${update - start}秒)`;
+  }
+  return time;
+}
+
+function formatFinishTime(row: WithdrawListItem) {
+  const finish = Number(row.FinishTime || 0);
+  const create = Number(row.CreateTime || 0);
+  const time = formatDateTime(row.FinishTime as number | string);
+  if (finish && create) {
+    return `${time} (${finish - create}秒)`;
+  }
+  return time;
+}
+
+function formatRechargeRatio(row: WithdrawListItem) {
+  const withdraw = Number(row.WithdrawGold || 0);
+  const recharged = Number(row.Recharged || 0);
+  if (!recharged) {
+    return '-';
+  }
+  const ratio = withdraw / recharged;
+  return `${(ratio * 100).toFixed(2)}%`;
+}
+
+function isRechargeRatioHealthy(row: WithdrawListItem) {
+  const withdraw = Number(row.WithdrawGold || 0);
+  const recharged = Number(row.Recharged || 0);
+  if (!recharged) {
+    return true;
+  }
+  return withdraw / recharged <= 1;
+}
+
+function formatPercentFromCent(value: unknown) {
+  const num = Number(value || 0);
+  if (!num) {
+    return '0.00%';
+  }
+  return `${(num / 100).toFixed(2)}%`;
+}
+
 function getQueryParams() {
   const [begin, end] = filterDateRange.value || [];
   return {
@@ -202,9 +260,13 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
       title: '游戏账号',
     },
     {
-      field: 'PlayerId',
-      minWidth: 100,
-      title: '玩家ID',
+      field: 'VipLevel',
+      formatter: ({ cellValue }) =>
+        cellValue === undefined || cellValue === null || cellValue === ''
+          ? '-'
+          : `VIP ${cellValue}`,
+      minWidth: 90,
+      title: 'VIP等级',
     },
     {
       field: 'Status',
@@ -213,10 +275,21 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
       title: '状态',
     },
     {
+      field: 'RiskWarnLevel',
+      minWidth: 100,
+      slots: { default: 'riskWarnLevel' },
+      title: '风控分析',
+    },
+    {
       field: 'RiskStatus',
       minWidth: 100,
       slots: { default: 'riskStatus' },
       title: '风控状态',
+    },
+    {
+      field: 'RiskAuditorName',
+      minWidth: 110,
+      title: '风控人员',
     },
     {
       field: 'ReceivedStatus',
@@ -232,10 +305,34 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
       title: '申请时间',
     },
     {
+      field: 'RiskAuditorUpdateTime',
+      formatter: ({ row }) => formatRiskAuditTime(row),
+      minWidth: 190,
+      sortable: true,
+      title: '风控时间',
+    },
+    {
       field: 'OrderId',
       minWidth: 180,
-      showOverflow: 'tooltip',
+      showOverflow: false,
       title: '订单编号',
+    },
+    {
+      field: 'AccountType',
+      formatter: ({ cellValue }) => payTypeLabel(cellValue),
+      minWidth: 100,
+      title: '提现方式',
+    },
+    {
+      field: 'AccountNum',
+      minWidth: 180,
+      showOverflow: 'tooltip',
+      title: '玩家出款账号',
+    },
+    {
+      field: 'RealName',
+      minWidth: 100,
+      title: '真实姓名',
     },
     {
       field: 'Amount',
@@ -244,45 +341,82 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
       sortable: true,
       title: '申请金额',
     },
+    // {
+    //   field: 'DigitalNum',
+    //   formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+    //   minWidth: 110,
+    //   title: '虚拟货币数量',
+    // },
+    {
+      field: 'RateAmount',
+      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+      minWidth: 100,
+      title: '通道费率',
+    },
+    {
+      field: 'RealAmount',
+      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+      minWidth: 110,
+      title: '实际出款',
+    },
+    {
+      field: 'Water',
+      formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
+      minWidth: 110,
+      title: '提款要求流水',
+    },
+    // {
+    //   field: 'Reserve',
+    //   formatter: ({ cellValue }) => formatYesNo(cellValue),
+    //   minWidth: 110,
+    //   title: '是否预约取款',
+    // },
+    // {
+    //   field: 'CountdownTime',
+    //   formatter: ({ cellValue }) => formatDuration(cellValue),
+    //   minWidth: 110,
+    //   sortable: true,
+    //   title: '预约倒计时',
+    // },
+    // {
+    //   field: 'ReserveRatio',
+    //   formatter: ({ cellValue }) => formatPercentFromCent(cellValue),
+    //   minWidth: 90,
+    //   title: '加送比例',
+    // },
     {
       field: 'ShowName',
       minWidth: 140,
       title: '出款通道',
     },
-    {
-      field: 'AccountNum',
-      minWidth: 160,
-      showOverflow: 'tooltip',
-      title: '出款账号',
-    },
-    {
-      field: 'RealName',
-      minWidth: 100,
-      title: '真实姓名',
-    },
+    // {
+    //   field: 'FinanceTime',
+    //   formatter: ({ cellValue }) => formatDateTime(cellValue),
+    //   minWidth: 170,
+    //   sortable: true,
+    //   title: '财务出款时间',
+    // },
+    // {
+    //   field: 'FinishTime',
+    //   formatter: ({ row }) => formatFinishTime(row),
+    //   minWidth: 190,
+    //   title: '结束时间',
+    // },
+    // {
+    //   field: 'ChannelId',
+    //   minWidth: 100,
+    //   title: '渠道号',
+    // },
     {
       field: 'ChannelName',
       minWidth: 120,
       title: '渠道名称',
     },
     {
-      field: 'PackageName',
+      field: 'HandlerInf',
       minWidth: 120,
-      title: '所属产品',
-    },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP ${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
-    {
-      field: 'RiskAuditorName',
-      minWidth: 110,
-      title: '风控人员',
+      showOverflow: 'tooltip',
+      title: '操作说明',
     },
     {
       field: 'HandlerName',
@@ -295,16 +429,28 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
       slots: { default: 'remark' },
       title: '备注',
     },
+    // {
+    //   field: 'TagName',
+    //   minWidth: 100,
+    //   title: '玩家标签',
+    // },
     {
-      field: 'FinishTime',
-      formatter: ({ cellValue }) => formatDateTime(cellValue),
-      minWidth: 170,
-      title: '结束时间',
+      field: 'IsFirstWithdraw',
+      formatter: ({ cellValue }) => formatYesNo(cellValue),
+      minWidth: 90,
+      title: '是否首提',
     },
+    // {
+    //   field: 'InviteSite',
+    //   minWidth: 100,
+    //   showOverflow: 'tooltip',
+    //   title: '邀请站点',
+    // },
     {
       field: 'actions',
       fixed: 'right',
-      minWidth: 360,
+      minWidth: 250,
+      showOverflow: false,
       slots: { default: 'actions' },
       title: '操作',
     },
@@ -359,6 +505,7 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
 };
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  gridClass: 'redeem-list-grid',
   gridEvents: {
     checkboxAll: ({ records }: { records: WithdrawListItem[] }) => {
       selectedRows.value = records;
@@ -767,7 +914,23 @@ onMounted(() => {
         />
       </template>
       <template #withdrawStatus="{ row }">
-        {{ calcWithdrawStatusText(row.Status, row.Process, row.RefundScore) }}
+        <Tag
+          :color="
+            getWithdrawStatusColor(
+              Number(row.Status),
+              Number(row.Process),
+              Number(row.RefundScore),
+              Boolean(row.Exception),
+            )
+          "
+        >
+          {{ calcWithdrawStatusText(row.Status, row.Process, row.RefundScore) }}
+        </Tag>
+      </template>
+      <template #riskWarnLevel="{ row }">
+        <Tag :color="getRiskWarnLevelColor(row.RiskWarnLevel as number | string)">
+          {{ formatRiskWarnLevel(row.RiskWarnLevel as number | string) }}
+        </Tag>
       </template>
       <template #riskStatus="{ row }">
         <Tag :color="getRiskStatusColor(row.RiskStatus)">
@@ -775,9 +938,29 @@ onMounted(() => {
         </Tag>
       </template>
       <template #receivedStatus="{ row }">
-        <Tag :color="getReceivedStatusColor(row.ReceivedStatus)">
-          {{ formatReceivedStatus(row.ReceivedStatus) }}
+        <Tag
+          :bordered="false"
+          :color="
+            getReceivedStatusColor(row.ReceivedStatus as number | string)
+          "
+        >
+          {{
+            formatReceivedStatus(row.ReceivedStatus as number | string)
+          }}
         </Tag>
+      </template>
+      <template #rechargeRatio="{ row }">
+        <div class="text-xs leading-relaxed">
+          <div>{{ formatAmountFromCent(row.WithdrawGold as number | string) }}</div>
+          <div>{{ formatAmountFromCent(row.Recharged as number | string) }}</div>
+          <div
+            :class="
+              isRechargeRatioHealthy(row) ? 'text-green-600' : 'text-red-500'
+            "
+          >
+            {{ formatRechargeRatio(row) }}
+          </div>
+        </div>
       </template>
       <template #remark="{ row }">
         <Button
@@ -791,9 +974,10 @@ onMounted(() => {
         <span v-else>{{ row.Remark || '-' }}</span>
       </template>
       <template #actions="{ row }">
-        <Space wrap size="small">
+        <div class="redeem-action-space">
           <Button
             v-if="canManualPay && canShowWithdrawManualPay(row)"
+            class="redeem-action-btn redeem-action-btn--manual"
             :disabled="
               isSameAcctActionRestricted(
                 WITHDRAW_RISK_SECURITY_PAGE_ID,
@@ -801,13 +985,13 @@ onMounted(() => {
               )
             "
             size="small"
-            type="primary"
             @click="openWithdrawAction(row, 'manual')"
           >
             人工出款
           </Button>
           <Button
             v-if="canAutoPay && canShowWithdrawAutoPay(row)"
+            class="redeem-action-btn redeem-action-btn--agree"
             :disabled="
               isSameAcctActionRestricted(
                 WITHDRAW_RISK_SECURITY_PAGE_ID,
@@ -821,15 +1005,15 @@ onMounted(() => {
           </Button>
           <Button
             v-if="canRiskApprove && canShowWithdrawRiskApprove(row)"
+            class="redeem-action-btn redeem-action-btn--risk"
             size="small"
-            type="primary"
             @click="handleRiskApprove(row)"
           >
             审核通过
           </Button>
           <Button
             v-if="canRejectPay && canShowWithdrawReject(row)"
-            danger
+            class="redeem-action-btn redeem-action-btn--reject"
             size="small"
             @click="openWithdrawAction(row, 'reject')"
           >
@@ -837,6 +1021,7 @@ onMounted(() => {
           </Button>
           <Button
             v-if="canWithdrawNotice && canShowWithdrawNotice(row)"
+            class="redeem-action-btn redeem-action-btn--notice"
             size="small"
             @click="handleWithdrawNotice(row)"
           >
@@ -844,6 +1029,7 @@ onMounted(() => {
           </Button>
           <Button
             v-if="canCheckThirdParty && canShowWithdrawCheckThirdParty(row)"
+            class="redeem-action-btn redeem-action-btn--third"
             size="small"
             @click="handleCheckThirdParty(row)"
           >
@@ -851,6 +1037,7 @@ onMounted(() => {
           </Button>
           <Button
             v-if="canTransitionPending && canShowWithdrawTransitionPending(row)"
+            class="redeem-action-btn redeem-action-btn--pending"
             size="small"
             @click="handleTransitionPending(row)"
           >
@@ -858,12 +1045,13 @@ onMounted(() => {
           </Button>
           <Button
             v-if="canShowWithdrawReceivedFix(row)"
+            class="redeem-action-btn redeem-action-btn--fix"
             size="small"
             @click="handleReceivedStatusFix(row)"
           >
             处理异常
           </Button>
-        </Space>
+        </div>
       </template>
     </Grid>
 
@@ -898,3 +1086,109 @@ onMounted(() => {
     title="无权限"
   />
 </template>
+
+<style scoped>
+.redeem-action-space {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+:deep(.redeem-list-grid .col--actions .vxe-cell) {
+  align-items: center;
+  height: auto !important;
+  line-height: normal;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 8px 4px;
+  text-overflow: clip !important;
+  white-space: normal !important;
+}
+
+:deep(.redeem-list-grid .col--actions .vxe-cell--wrapper) {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+:deep(.redeem-list-grid .vxe-body--column.col--actions) {
+  height: auto !important;
+  max-height: none !important;
+}
+
+.redeem-action-btn {
+  border: none;
+  color: #fff;
+}
+
+.redeem-action-btn:not(:disabled):hover,
+.redeem-action-btn:not(:disabled):focus {
+  color: #fff;
+}
+
+.redeem-action-btn--manual {
+  background: #fa8c16;
+}
+
+.redeem-action-btn--manual:not(:disabled):hover {
+  background: #d46b08;
+}
+
+.redeem-action-btn--agree {
+  background: #52c41a;
+}
+
+.redeem-action-btn--agree:not(:disabled):hover {
+  background: #389e0d;
+}
+
+.redeem-action-btn--risk {
+  background: #1677ff;
+}
+
+.redeem-action-btn--risk:not(:disabled):hover {
+  background: #0958d9;
+}
+
+.redeem-action-btn--reject {
+  background: #ff4d4f;
+}
+
+.redeem-action-btn--reject:not(:disabled):hover {
+  background: #cf1322;
+}
+
+.redeem-action-btn--notice {
+  background: #722ed1;
+}
+
+.redeem-action-btn--notice:not(:disabled):hover {
+  background: #531dab;
+}
+
+.redeem-action-btn--third {
+  background: #faad14;
+}
+
+.redeem-action-btn--third:not(:disabled):hover {
+  background: #d48806;
+}
+
+.redeem-action-btn--pending {
+  background: #2f54eb;
+}
+
+.redeem-action-btn--pending:not(:disabled):hover {
+  background: #1d39c4;
+}
+
+.redeem-action-btn--fix {
+  background: #eb2f96;
+}
+
+.redeem-action-btn--fix:not(:disabled):hover {
+  background: #c41d7f;
+}
+</style>

@@ -8,6 +8,7 @@ import { Form, Modal, Select } from 'ant-design-vue';
 import {
   batchApproveWithdrawApi,
   fetchWithdrawChannelOptionsApi,
+  mapWithdrawChannelOptions,
 } from '#/api/operationManage/withdraw';
 
 defineOptions({ name: 'WithdrawBatchApproveModal' });
@@ -66,10 +67,7 @@ watch(
         Ids: selectedIds.value,
         Type: accountTypes.value[0] ?? '',
       });
-      channelOptions.value = (result?.Items || []).map((item) => ({
-        label: String(item.ShowName || item.NickName || item.Id || '-'),
-        value: item.Id as number | string,
-      }));
+      channelOptions.value = mapWithdrawChannelOptions(result?.Items);
       withdrawAccountId.value = channelOptions.value[0]?.value;
     } finally {
       channelLoading.value = false;

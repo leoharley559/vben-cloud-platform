@@ -158,6 +158,7 @@ export interface WithdrawListQuery {
 
 export interface WithdrawListItem {
   [key: string]: unknown;
+  AccountBank?: string;
   AccountNum?: string;
   AccountType?: number | string;
   AgentWithdrawId?: number | string;

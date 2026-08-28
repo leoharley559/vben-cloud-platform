@@ -4,6 +4,7 @@ import type { BankCardListItem } from '#/types/bank-card';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import {
+  Alert,
   Button,
   Checkbox,
   Form,
@@ -21,7 +22,8 @@ import {
   fetchBankCardListApi,
   updateBankCardApi,
 } from '#/api/memberManage/bank-card';
-import PassPopup from '#/components/security/pass-popup.vue';
+import GoogleCodeField from '#/components/security/google-code-field.vue';
+import { checkSecured } from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
 
@@ -41,19 +43,21 @@ const { checkPermission } = useCloudPermission();
 
 const canSection = computed(() => checkPermission(11_180));
 const canView = computed(() => checkPermission(11_298));
-const canCreate = computed(() => checkPermission(11_299));
+/** 后台暂不代玩家新增，仅保留编辑/删除 */
+const canCreate = computed(() => false);
 const canEdit = computed(() => checkPermission(11_405));
 const canDelete = computed(() => checkPermission(11_300));
 
 const loading = ref(false);
 const saving = ref(false);
+const deleting = ref(false);
 const list = ref<BankCardListItem[]>([]);
 const formOpen = ref(false);
+const deleteOpen = ref(false);
 const formMode = ref<'create' | 'edit'>('create');
 const deleteIsBlack = ref(false);
-const pendingDeleteId = ref<number | string>('');
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
-const passAction = ref<'delete' | 'save'>('save');
+const deleteValidCode = ref('');
+const pendingDeleteRow = ref<BankCardListItem | null>(null);
 const qrPreviewOpen = ref(false);
 const qrPreview = reactive({
   account: '',
@@ -65,6 +69,7 @@ const form = reactive({
   AlipayAccount: '',
   AlipayName: '',
   Id: '' as number | string,
+  ValidCode: '',
 });
 
 const columns = [
@@ -129,6 +134,7 @@ function openCreate() {
   form.Id = '';
   form.AlipayName = '';
   form.AlipayAccount = '';
+  form.ValidCode = '';
   formOpen.value = true;
 }
 
@@ -137,6 +143,7 @@ function openEdit(row: BankCardListItem) {
   form.Id = row.Id ?? '';
   form.AlipayName = String(row.AlipayName || '');
   form.AlipayAccount = String(row.AlipayAccount || '');
+  form.ValidCode = '';
   formOpen.value = true;
 }
 
@@ -152,20 +159,30 @@ function requestSave() {
     message.warning('请填写支付宝名和账号');
     return;
   }
-  passAction.value = 'save';
-  passPopupRef.value?.validate(ALIPAY_SECURITY_PAGE_ID);
+  if (
+    checkSecured(ALIPAY_SECURITY_PAGE_ID) &&
+    !/^\d{6}$/.test(form.ValidCode.trim())
+  ) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doSave(
+    form.ValidCode.trim()
+      ? { ValidCode: form.ValidCode.trim() }
+      : {},
+  );
 }
 
 async function doSave(extra: Record<string, unknown> = {}) {
   saving.value = true;
   try {
     const payload = {
-      AlipayAccount: form.AlipayAccount.trim(),
-      AlipayName: form.AlipayName.trim(),
+      Account: form.AlipayAccount.trim(),
+      AccountType: 1,
       DeviceId: props.deviceId || '',
-      LoginAccount: props.loginAccount || '',
-      PackageName: props.packageName || '',
+      Name: form.AlipayName.trim(),
       PlayerId: props.playerId,
+      ResourceType: 'withdrawal_account' as const,
       ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
     };
     if (formMode.value === 'create') {
@@ -193,37 +210,48 @@ function requestDelete(row: BankCardListItem) {
   if (row.Id === undefined || row.Id === null || row.Id === '') {
     return;
   }
-  pendingDeleteId.value = row.Id;
+  pendingDeleteRow.value = row;
   deleteIsBlack.value = false;
-  passAction.value = 'delete';
-  passPopupRef.value?.prompt(ALIPAY_SECURITY_PAGE_ID);
+  deleteValidCode.value = '';
+  deleteOpen.value = true;
+}
+
+function requestDeleteConfirm() {
+  if (
+    checkSecured(ALIPAY_SECURITY_PAGE_ID) &&
+    !/^\d{6}$/.test(deleteValidCode.value.trim())
+  ) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doDelete(
+    deleteValidCode.value.trim()
+      ? { ValidCode: deleteValidCode.value.trim() }
+      : {},
+  );
 }
 
 async function doDelete(extra: Record<string, unknown> = {}) {
-  if (pendingDeleteId.value === '') {
+  const row = pendingDeleteRow.value;
+  if (!row?.Id) {
     return;
   }
-  loading.value = true;
+  deleting.value = true;
   try {
-    await deleteBankCardApi(pendingDeleteId.value, {
+    await deleteBankCardApi({
+      AccountType: 1,
+      Id: row.Id,
       IsBlack: deleteIsBlack.value,
-      OperationType: 2,
+      ResourceType: 'withdrawal_account',
       ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
     });
     message.success('已删除');
+    deleteOpen.value = false;
     await loadList();
   } finally {
-    loading.value = false;
-    pendingDeleteId.value = '';
+    deleting.value = false;
+    pendingDeleteRow.value = null;
   }
-}
-
-function handlePassConfirm(data: Record<string, unknown>) {
-  if (passAction.value === 'delete') {
-    void doDelete(data);
-    return;
-  }
-  void doSave(data);
 }
 
 watch(
@@ -336,20 +364,43 @@ onMounted(() => {
             placeholder="请输入支付宝账号"
           />
         </Form.Item>
+        <GoogleCodeField
+          :page-id="ALIPAY_SECURITY_PAGE_ID"
+          v-model:value="form.ValidCode"
+        />
       </Form>
     </Modal>
 
-    <PassPopup
-      ref="passPopupRef"
-      :prompt-msg="passAction === 'delete' ? '确认删除该支付宝？' : ''"
-      :title="passAction === 'delete' ? '删除支付宝' : '安全验证'"
-      @confirm="handlePassConfirm"
+    <Modal
+      v-model:open="deleteOpen"
+      :confirm-loading="deleting"
+      destroy-on-close
+      title="删除支付宝"
+      @ok="requestDeleteConfirm"
     >
-      <template v-if="passAction === 'delete'" #extra>
-        <Checkbox v-model:checked="deleteIsBlack" class="mt-3">
-          删除同时加入黑名单
-        </Checkbox>
-      </template>
-    </PassPopup>
+      <div class="mb-3">
+        <Alert
+          message="删除数据则会删除玩家绑定，是否继续？"
+          show-icon
+          type="warning"
+        />
+      </div>
+      <div v-if="pendingDeleteRow" class="mb-3 space-y-1 text-sm text-gray-700">
+        <div>支付宝名：{{ pendingDeleteRow.AlipayName || '-' }}</div>
+        <div>支付宝账号：{{ pendingDeleteRow.AlipayAccount || '-' }}</div>
+      </div>
+      <Form layout="vertical" class="pt-2">
+        <GoogleCodeField
+          compact
+          :page-id="ALIPAY_SECURITY_PAGE_ID"
+          v-model:value="deleteValidCode"
+        />
+        <Form.Item class="!mb-0">
+          <Checkbox v-model:checked="deleteIsBlack">
+            删除同时加入黑名单
+          </Checkbox>
+        </Form.Item>
+      </Form>
+    </Modal>
   </div>
 </template>

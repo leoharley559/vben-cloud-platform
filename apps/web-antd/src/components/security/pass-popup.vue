@@ -105,7 +105,7 @@ function handleOk() {
     if (props.type === 'private') {
       payload.PrivatePassword = privatePassword.value.trim();
     } else if (props.type === 'gcode') {
-      payload.GoogleCode = validCode.value;
+      payload.ValidCode = validCode.value;
     } else {
       payload.PrivatePassword = filePassword.value.trim();
     }
@@ -145,6 +145,7 @@ defineExpose({
       class="mb-3"
       show-icon
     />
+    <slot name="description" />
     <div v-if="showPassForm" class="space-y-3">
       <template v-if="type === 'private'">
         <div class="text-sm text-muted-foreground">请输入私人密码</div>
@@ -172,5 +173,6 @@ defineExpose({
         />
       </template>
     </div>
+    <slot name="extra" />
   </Modal>
 </template>

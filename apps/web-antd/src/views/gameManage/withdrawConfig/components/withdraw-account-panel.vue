@@ -5,8 +5,8 @@ import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 
 import {
   Button,
-  Card,
   Checkbox,
+  Empty,
   Form,
   Input,
   InputNumber,
@@ -825,77 +825,94 @@ function handleDelete(row: WithdrawAccountRow) {
 </script>
 
 <template>
-  <div>
-    <div
-      v-if="canViewPayTypes"
-      class="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3"
-    >
-      <Card
-        v-for="(item, index) in payTypes"
-        :key="item.Id"
-        hoverable
-        size="small"
-        class="cursor-pointer border transition-all" :class="[
-          currentPayType === item.PayType
-            ? '!border-primary shadow-sm'
-            : 'border-transparent',
-        ]"
-        @click="selectPayType(item)"
-      >
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <div class="text-base font-medium">
+  <div class="withdraw-manager">
+    <div class="manager-layout">
+      <aside v-if="canViewPayTypes" class="type-nav">
+        <div
+          v-for="(item, index) in payTypes"
+          :key="item.Id"
+          class="type-card"
+          :class="{
+            active: String(currentPayType) === String(item.PayType),
+            disabled: Number(item.Status) !== 1,
+          }"
+          @click="selectPayType(item)"
+        >
+          <div class="type-card-head">
+            <div class="type-card-title">
               {{ payTypeName(item.PayType) }}
             </div>
-            <div class="mt-2 text-xs text-gray-500">
-              手续费 {{ item.ServiceRate || 0 }}% · 区间
-              {{ item.MinAmount || 0 }} - {{ item.MaxAmount || 0 }}
+            <div class="type-card-actions" @click.stop>
+              <span class="switch-label">开关</span>
+              <Switch
+                v-if="canManagePayTypes"
+                :checked="Number(item.Status) === 1"
+                checked-children="开"
+                size="small"
+                un-checked-children="关"
+                @change="(checked) => handlePayTypeSwitch(item, !!checked)"
+              />
+              <Tag
+                v-else
+                :color="Number(item.Status) === 1 ? 'success' : 'default'"
+              >
+                {{ Number(item.Status) === 1 ? '开' : '关' }}
+              </Tag>
+              <Button
+                v-if="canEditPayType"
+                class="type-edit-btn"
+                size="small"
+                type="link"
+                @click="openPayType(item)"
+              >
+                设置
+              </Button>
             </div>
           </div>
-          <Switch
+          <div class="type-card-body">
+            <div class="type-meta-row">
+              <span>手续费</span>
+              <span class="meta-value premium">{{ item.ServiceRate || 0 }}%</span>
+            </div>
+            <div class="type-meta-row">
+              <span>出款区间</span>
+              <span class="meta-value range">
+                {{ item.MinAmount || 0 }}-{{ item.MaxAmount || 0 }}
+              </span>
+            </div>
+          </div>
+          <div
             v-if="canManagePayTypes"
-            :checked="Number(item.Status) === 1"
-            checked-children="开"
-            un-checked-children="关"
+            class="type-card-sort"
             @click.stop
-            @change="(checked) => handlePayTypeSwitch(item, !!checked)"
-          />
-          <Tag
-            v-else
-            :color="Number(item.Status) === 1 ? 'success' : 'default'"
           >
-            {{ Number(item.Status) === 1 ? '开启' : '关闭' }}
-          </Tag>
+            <Button
+              :disabled="index === 0"
+              size="small"
+              type="link"
+              @click="movePayType(index, -1)"
+            >
+              上移
+            </Button>
+            <Button
+              :disabled="index === payTypes.length - 1"
+              size="small"
+              type="link"
+              @click="movePayType(index, 1)"
+            >
+              下移
+            </Button>
+          </div>
         </div>
-        <div class="mt-3 flex justify-end gap-1">
-          <Button
-            v-if="canManagePayTypes"
-            :disabled="index === 0"
-            size="small"
-            @click.stop="movePayType(index, -1)"
-          >
-            上移
-          </Button>
-          <Button
-            v-if="canManagePayTypes"
-            :disabled="index === payTypes.length - 1"
-            size="small"
-            @click.stop="movePayType(index, 1)"
-          >
-            下移
-          </Button>
-          <Button
-            v-if="canEditPayType"
-            size="small"
-            type="link"
-            @click.stop="openPayType(item)"
-          >
-            配置
-          </Button>
-        </div>
-      </Card>
-    </div>
+        <Empty
+          v-if="payTypes.length === 0"
+          class="py-6"
+          description="暂无提款类型"
+          :image="Empty.PRESENTED_IMAGE_SIMPLE"
+        />
+      </aside>
 
+      <main class="min-w-0 flex-1">
     <div
       v-if="canViewStrategy"
       class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 p-3"
@@ -1050,6 +1067,8 @@ function handleDelete(row: WithdrawAccountRow) {
         </Space>
       </template>
     </Grid>
+      </main>
+    </div>
 
     <WithdrawAccountFormModal
       v-if="canCreate || canEdit"
@@ -1256,3 +1275,110 @@ function handleDelete(row: WithdrawAccountRow) {
     </Modal>
   </div>
 </template>
+
+<style scoped>
+.manager-layout {
+  display: flex;
+  gap: 20px;
+}
+
+.type-nav {
+  flex: 0 0 260px;
+  align-self: flex-start;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+  border-right: 2px dashed var(--ant-color-border, #e5e7eb);
+}
+
+.type-card {
+  cursor: pointer;
+  border: 1px solid var(--ant-color-border, #e5e7eb);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.type-card:hover {
+  border-color: hsl(var(--primary) / 40%);
+}
+
+.type-card.active {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 20%);
+}
+
+.type-card.disabled {
+  background: #f6eced;
+}
+
+.type-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 12px 8px;
+}
+
+.type-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.type-card-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.switch-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.type-edit-btn {
+  padding: 0 4px;
+  height: auto;
+}
+
+.type-card-body {
+  padding: 0 12px 10px;
+}
+
+.type-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #666;
+}
+
+.meta-value {
+  font-weight: 600;
+}
+
+.meta-value.premium {
+  color: #52ab34;
+}
+
+.meta-value.range {
+  color: #ff6d00;
+}
+
+.type-card-sort {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 0 8px 6px;
+  border-top: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+}
+</style>

@@ -117,23 +117,56 @@ export function batchManualWithdrawApi(data: Record<string, unknown>) {
 }
 
 /**
+ * 将出款通道列表项映射为 Select 选项（对齐旧站 ShowName + Id）。
+ */
+export function mapWithdrawChannelOptions(
+  items?: Array<Record<string, unknown>>,
+): Array<{ label: string; value: number | string }> {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+  const options: Array<{ label: string; value: number | string }> = [];
+  for (const item of items) {
+    const value = item.Id ?? item.WithdrawAccountId ?? item.AgentWithdrawId;
+    if (value === undefined || value === null || value === '') {
+      continue;
+    }
+    const label =
+      item.ShowName ??
+      item.NickName ??
+      item.Name ??
+      item.Account ??
+      value;
+    options.push({
+      label: String(label),
+      value: value as number | string,
+    });
+  }
+  return options;
+}
+
+/**
  * 获取批量提现可用渠道选项。
  *
  * @param params Ids 订单 ID；Batch、Type 可选
  * @returns 可用提现渠道 Items
  * @see views/operationalManage/withdrawList/components/withdraw-batch-approve-modal.vue
  */
-export function fetchWithdrawChannelOptionsApi(params: {
+export async function fetchWithdrawChannelOptionsApi(params: {
   Batch?: number;
   Ids: number | string;
   Type?: number | string;
 }) {
-  return requestClient.get<CloudListResult<Record<string, unknown>>>(
+  const result = await requestClient.get<CloudListResult<Record<string, unknown>>>(
     '/backend/playerwithdraw/withdrawlist',
     {
       params: trimSpace(params),
     },
   );
+  return {
+    ...result,
+    Items: Array.isArray(result?.Items) ? result.Items : [],
+  };
 }
 
 /**

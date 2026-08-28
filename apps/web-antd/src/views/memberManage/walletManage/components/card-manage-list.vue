@@ -184,8 +184,10 @@ async function confirmDelete(extra: Record<string, unknown> = {}) {
   }
   deleting.value = true;
   try {
-    await deleteBankCardApi(deletingRow.value.Id, {
+    await deleteBankCardApi({
+      Id: deletingRow.value.Id,
       IsBlack: deleteAddBlacklist.value,
+      ResourceType: 'bank_card',
       ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
     });
     message.success('删除成功');
