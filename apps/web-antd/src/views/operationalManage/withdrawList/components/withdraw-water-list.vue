@@ -30,11 +30,14 @@ import {
   updateWithdrawWaterStatusApi,
 } from '#/api/operationManage/withdraw-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 import { buildPlayerDetailPath } from '#/utils/player-detail-route';
 
 import WithdrawWaterSettingModal from './withdraw-water-setting-modal.vue';
@@ -201,7 +204,7 @@ const gridOptions: VxeTableGridOptions<WithdrawWaterItem> = {
     },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '渠道号' },
-    { field: 'VipLevel', minWidth: 90, title: 'VIP等级' },
+    { ...vipLevelGridColumn },
     {
       field: 'TotalFlow',
       formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
@@ -376,6 +379,9 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="row.LoginAccount"

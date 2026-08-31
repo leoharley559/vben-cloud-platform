@@ -124,6 +124,7 @@ async function loadList() {
       Page: 1,
       PageSize: 50,
       PlayerId: props.playerId,
+      ResourceType: 'bank_card',
     });
     list.value = result?.Items || [];
   } finally {

@@ -24,6 +24,7 @@ import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -33,6 +34,8 @@ import { formatActivityType } from '#/utils/bonus-reward';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { formatOperationDateTime } from '#/utils/operation-status';
 import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 import { REWARD_POINT_RECORD_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import {
@@ -171,15 +174,7 @@ const gridOptions: VxeTableGridOptions<PointsRecordRow> = {
       slots: { default: 'username' },
       title: '代理账号',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     {
       field: 'RewardType',
       formatter: () => '积分',
@@ -446,6 +441,9 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #username="{ row }">
         <AgencyAccountLink
           :admin-id="resolveAgencyAdminId(row)"

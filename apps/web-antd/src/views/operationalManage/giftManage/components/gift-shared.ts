@@ -96,12 +96,7 @@ export function giftNameText(value: unknown) {
   return names.length > 0 ? names.join(',') : '-';
 }
 
-export function formatVipLevel(value?: number | string) {
-  if (value === undefined || value === null || value === '') {
-    return '-';
-  }
-  return `VIP${value}`;
-}
+export { formatVipLevelLabel as formatVipLevel } from '#/utils/vip-level';
 
 export function formatGiftType(value?: number | string) {
   if (value === undefined || value === null || value === '') {

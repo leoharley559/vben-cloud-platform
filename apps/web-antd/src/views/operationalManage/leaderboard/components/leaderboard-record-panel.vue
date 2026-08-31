@@ -8,12 +8,15 @@ import { Button, Input, message, Modal, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 import {
   exportLeaderboardRecordApi,
   fetchLeaderboardRecordApi,
 } from '#/api/operationManage/leaderboard';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -124,15 +127,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       slots: { default: 'loginAccount' },
       title: '游戏账号',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP ${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     { field: 'Ranking', minWidth: 80, title: '排名', sortable: true },
     {
       field: 'LangText',
@@ -381,6 +376,9 @@ onMounted(() => {
       </div>
     </div>
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"

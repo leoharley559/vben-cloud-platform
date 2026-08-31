@@ -31,11 +31,13 @@ import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { vipLevelGridColumn } from '#/utils/vip-level';
 import { formatOperationDateTime } from '#/utils/operation-status';
 
 defineOptions({ name: 'BackWaterReviewPanel' });
@@ -212,10 +214,9 @@ const systemColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
     title: '游戏账号',
   },
   {
-    field: 'VipLevel',
-    formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
-    width: 90,
+    ...vipLevelGridColumn,
     title: 'VIP 等级',
+    width: 90,
   },
   { field: 'LevelName', minWidth: 110, title: '玩家层级' },
   {
@@ -280,10 +281,9 @@ const manualColumns: VxeTableGridOptions<ReviewRow>['columns'] = [
     title: '所属渠道',
   },
   {
-    field: 'VipLevel',
-    formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
-    width: 90,
+    ...vipLevelGridColumn,
     title: 'VIP 等级',
+    width: 90,
   },
   {
     field: 'ApplyBackWater',
@@ -684,6 +684,9 @@ onMounted(async () => {
     </div>
 
       <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
         <template #adminName="{ row }">
           <AgencyAccountLink
             :admin-id="resolveAgencyAdminId(row)"

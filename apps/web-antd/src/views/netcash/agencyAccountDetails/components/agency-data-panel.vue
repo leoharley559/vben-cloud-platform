@@ -418,15 +418,26 @@ const amountFields = [
   { dataIndex: 'SumWinMoney', title: '派奖金额' },
   { dataIndex: 'SumRedGold', title: '红利' },
   { dataIndex: 'SumBackWaterMoney', title: '返水' },
-  /** 平台盈亏：SumWinMoney 的相反数 */
+  /** 平台盈亏：-派奖金额 - 红利 - 返水（场馆明细不适用） */
   { dataIndex: 'SumProfit', title: '平台盈亏' },
 ];
 
-/** 金额列取值；平台盈亏取派奖金额相反数（避免 -0） */
+function normalizeSignedAmount(value: number) {
+  return value === 0 ? 0 : value;
+}
+
+/** 主表平台盈亏：-SumWinMoney - SumRedGold - SumBackWaterMoney */
+function calcMainPlatformProfit(row: Row) {
+  const win = Number(row.SumWinMoney || 0);
+  const red = Number(row.SumRedGold || 0);
+  const backWater = Number(row.SumBackWaterMoney || 0);
+  return normalizeSignedAmount(-win - red - backWater);
+}
+
+/** 金额列取值 */
 function amountValue(row: Row, dataIndex: string) {
   if (dataIndex === 'SumProfit') {
-    const win = Number(row.SumWinMoney || 0);
-    return win === 0 ? 0 : -win;
+    return calcMainPlatformProfit(row);
   }
   return Number(row[dataIndex] || 0);
 }

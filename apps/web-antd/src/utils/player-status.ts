@@ -59,3 +59,37 @@ export function formatMemberType(dataFlag?: number | string) {
   }
   return Number(dataFlag) ? '测试' : '正式';
 }
+
+/** 注册方式（对齐旧站 accountTypeFilter） */
+const ACCOUNT_TYPE_MAP: Record<number, string> = {
+  0: 'Facebook',
+  1: 'Google',
+  2: 'Telegram',
+  3: '账号注册',
+  4: '手机号注册',
+  5: '邮箱注册',
+  6: 'Maya注册',
+  99: '-',
+};
+
+export const ACCOUNT_TYPE_OPTIONS = Object.entries(ACCOUNT_TYPE_MAP)
+  .filter(([value]) => Number(value) !== 99)
+  .map(([value, label]) => ({
+    label,
+    value: Number(value),
+  }));
+
+export function formatAccountType(accountType?: null | number | string) {
+  if (
+    accountType === undefined ||
+    accountType === null ||
+    accountType === ''
+  ) {
+    return '=';
+  }
+  const num = Number(accountType);
+  if (Number.isNaN(num)) {
+    return String(accountType);
+  }
+  return ACCOUNT_TYPE_MAP[num] ?? '=';
+}

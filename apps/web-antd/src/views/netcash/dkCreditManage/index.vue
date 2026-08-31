@@ -115,7 +115,7 @@ const playerConfig: CreditPanelConfig = {
     { field: 'Gold', formatter: amount, title: '主钱包（元）' },
     {
       field: 'VipLevel',
-      formatter: (value) => `VIP ${value ?? '-'}`,
+      slot: 'vipLevel',
       title: '会员等级',
     },
     {

@@ -21,6 +21,7 @@ import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -56,6 +57,7 @@ import {
   formatPlayerStatus,
   PLAYER_STATUS_OPTIONS,
 } from '#/utils/player-status';
+import { vipLevelGridColumn, formatVipLevelLabel } from '#/utils/vip-level';
 
 defineOptions({ name: 'BonusRecordList' });
 
@@ -197,10 +199,7 @@ const exportColumns = [
   },
   {
     header: '会员等级',
-    value: (row: BonusRecordListItem) =>
-      row.VipLevel === undefined || row.VipLevel === null || row.VipLevel === ''
-        ? '-'
-        : `VIP${row.VipLevel}`,
+    value: (row: BonusRecordListItem) => formatVipLevelLabel(row.VipLevel),
   },
   {
     header: '红利类型',
@@ -309,15 +308,7 @@ const gridOptions: VxeTableGridOptions<BonusRecordListItem> = {
       slots: { default: 'username' },
       title: '代理账号',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP${cellValue}`,
-      minWidth: 90,
-      title: '会员等级',
-    },
+    { ...vipLevelGridColumn, title: '会员等级' },
     {
       field: 'BonusType',
       formatter: ({ cellValue, row }) =>
@@ -663,6 +654,9 @@ onMounted(() => {
     <SummaryCards :items="summaryItems" />
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #username="{ row }">
         <AgencyAccountLink
           :admin-id="resolveAgencyAdminId(row)"

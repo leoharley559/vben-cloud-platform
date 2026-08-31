@@ -17,6 +17,7 @@ import {
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { formatOperationDateTime } from '#/utils/operation-status';
+import { vipLevelOpsColumn } from '#/utils/vip-level';
 
 import OperationListPanel from '../components/operation-list-panel.vue';
 
@@ -51,7 +52,7 @@ const visitDetailConfig = computed(
       },
       { field: 'EntranceName', title: '访问入口' },
       { field: 'DevicePlatformName', title: '设备类型' },
-      { field: 'VipLevel', title: 'VIP等级' },
+      vipLevelOpsColumn,
     ],
     extraQuery: baseExtraQuery.value,
     fetchApi: fetchActivityVisitListApi,

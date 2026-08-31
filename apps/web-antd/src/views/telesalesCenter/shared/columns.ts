@@ -3,6 +3,7 @@ import type { OperationListConfig } from '#/views/operationalManage/components/o
 import { TASK_STATUS_MAP } from '#/types/telesales-center';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatOperationDateTime } from '#/utils/operation-status';
+import { vipLevelOpsColumn } from '#/utils/vip-level';
 
 export const taskListColumns: OperationListConfig['columns'] = [
   { field: 'TaskName', minWidth: 140, title: '任务名称' },
@@ -146,7 +147,7 @@ export const telesalesPlayerColumns: OperationListConfig['columns'] = [
 
 export const vipPlayerColumns: OperationListConfig['columns'] = [
   ...telesalesPlayerColumns.slice(0, 4),
-  { field: 'VipLevel', minWidth: 90, title: 'VIP等级' },
+  vipLevelOpsColumn,
   ...telesalesPlayerColumns.slice(4),
   {
     field: 'FirstDepositAmount',

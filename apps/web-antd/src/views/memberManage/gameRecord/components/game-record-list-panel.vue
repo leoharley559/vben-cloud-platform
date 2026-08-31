@@ -32,6 +32,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
@@ -57,10 +58,13 @@ import {
 } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
 import { formatVenueName } from '#/utils/game-config';
+import { getGameCategoryName } from '#/views/dataClose/gameStatement/utils';
 import {
   formatPlayerStatus,
   PLAYER_STATUS_OPTIONS,
 } from '#/utils/player-status';
+import { vipLevelGridColumn, formatVipLevelLabel } from '#/utils/vip-level';
+
 import { GAME_RECORD_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import PlayerBulkAccountModal from '../../../operationalManage/playerList/components/player-bulk-account-modal.vue';
@@ -198,18 +202,45 @@ const platformGameOptions = computed(() =>
       ([, game]) =>
         Number((game as { IsVirtualGame?: number }).IsVirtualGame) === 0,
     )
-    .map(([value]) => ({
-      label: formatVenueName(value, gameConfig.value),
-      value,
-    })),
+    .map(([value, game]) => {
+      const shortName = String(game.gameName || value);
+      const fullName = formatVenueName(value, gameConfig.value);
+      const label =
+        fullName &&
+        fullName !== '-' &&
+        fullName !== shortName &&
+        (fullName.includes(shortName) || shortName.includes(fullName))
+          ? fullName
+          : shortName;
+      return { label, value };
+    }),
 );
 
 const venueTypeOptions = computed(() =>
-  Object.entries(gameConfig.value.platformGameType).map(([value]) => ({
-    label: formatVenueName(value, gameConfig.value),
+  Object.entries(gameConfig.value.GameTypeLangGroup).map(([value]) => ({
+    label: getGameCategoryName(value, gameConfig.value.GameTypeLangGroup),
     value,
   })),
 );
+
+function normalizeClientClassify(raw: unknown): Array<number | string> {
+  if (Array.isArray(raw)) {
+    return raw;
+  }
+  return String(raw || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function classifyIncludes(
+  classify: Array<number | string>,
+  type: number | string,
+) {
+  return classify.some(
+    (item) => String(item) === String(type) || Number(item) === Number(type),
+  );
+}
 
 const subGameOptions = computed(() =>
   Object.entries(gameConfig.value.games).map(([id, game]) => {
@@ -423,13 +454,7 @@ const gridOptions: VxeTableGridOptions<PlayerBetRecordItem> = {
       showOverflow: 'tooltip',
       title: '玩家标签',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === '' ? '-' : `VIP ${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     {
       field: 'Username',
       minWidth: 110,
@@ -561,11 +586,10 @@ function handleVenueTypeChange(values: Array<number | string>) {
   }
   const next: string[] = [];
   for (const [key, game] of Object.entries(gameConfig.value.platformGameList)) {
-    const classify = (game as { ClientClassify?: number[] }).ClientClassify;
-    if (!Array.isArray(classify)) {
-      continue;
-    }
-    if (values.some((v) => classify.includes(Number(v)))) {
+    const classify = normalizeClientClassify(
+      (game as { ClientClassify?: unknown }).ClientClassify,
+    );
+    if (values.some((v) => classifyIncludes(classify, v))) {
       next.push(key);
     }
   }
@@ -724,7 +748,7 @@ async function handleCopy() {
         item.LoginAccount,
         formatPlayerStatus(item.PlayerStatus),
         item.TagName || '',
-        `VIP ${item.VipLevel ?? ''}`,
+        formatVipLevelLabel(item.VipLevel as number | string | undefined),
         item.Username,
         item.PackageName,
         formatVenueName(item.GameId, gameConfig.value),
@@ -801,6 +825,8 @@ onMounted(async () => {
             <Select
               v-model:value="filterGameIds"
               allow-clear
+              show-search
+              option-filter-prop="label"
               mode="multiple"
               :max-tag-count="1"
               :options="platformGameOptions"
@@ -866,6 +892,8 @@ onMounted(async () => {
             <Select
               :value="filterVenueTypes"
               allow-clear
+              show-search
+              option-filter-prop="label"
               mode="multiple"
               :max-tag-count="1"
               :options="venueTypeOptions"
@@ -1067,6 +1095,9 @@ onMounted(async () => {
       </template>
 
       <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
         <template #username="{ row }">
           <AgencyAccountLink
             :admin-id="resolveAgencyAdminId(row)"

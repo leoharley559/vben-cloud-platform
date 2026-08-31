@@ -26,6 +26,7 @@ import GoogleCodeField from '#/components/security/google-code-field.vue';
 import { checkSecured } from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
+import { parsePlayerPayAccountList } from '#/utils/bank-card';
 
 defineOptions({ name: 'PlayerWechatList' });
 
@@ -111,18 +112,9 @@ async function loadList() {
       Page: 1,
       PageSize: 50,
       PlayerId: props.playerId,
+      ResourceType: 'wechat',
     });
-    const accounts = result?.WechatAccounts || [];
-    list.value =
-      accounts.length > 0
-        ? accounts.map((item) => ({
-            BankCardTime: item.CreateTime,
-            Id: item.Id,
-            QrCodeUrl: String(item.QrCodeUrl || ''),
-            WechatAccount: String(item.Account || ''),
-            WechatName: String(item.Name || ''),
-          }))
-        : (result?.Items || []).filter((item) => !!item.WechatAccount);
+    list.value = parsePlayerPayAccountList(result, 'wechat');
   } finally {
     loading.value = false;
   }

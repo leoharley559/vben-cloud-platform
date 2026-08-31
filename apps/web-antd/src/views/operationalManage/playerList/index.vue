@@ -36,6 +36,7 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
@@ -44,10 +45,12 @@ import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { formatAmount, formatAmountFromCent } from '#/utils/format-amount';
 import {
+  formatAccountType,
   formatMemberType,
   formatPlayerStatus,
   PLAYER_STATUS_OPTIONS,
 } from '#/utils/player-status';
+import { vipLevelGridColumn } from '#/utils/vip-level';
 import { PLAYER_LIST_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import PlayerAdvancedSearchModal from './components/player-advanced-search-modal.vue';
@@ -63,23 +66,22 @@ defineOptions({ name: 'OperationalPlayerList' });
 const COLUMN_STORAGE_KEY = 'playerListMore';
 const DEFAULT_COLUMNS = [
   'LoginAccount',
-  'ApiLoginAccount',
   'PlayerId',
-  'ChannelId',
+  'VipLevel',
+  'PlayerStatus',
   'PromoterUserName',
-  'PackageName',
-  'FirstPayTime',
+  'ChannelId',
+  'ChannelName',
   'CreateTime',
-  'InviteSite',
   'WalletBalance',
+  'Recharged',
+  'WithdrawGold',
   'DevicePlatform',
-  'AccountType',
-  'LastIp',
+  'LastTime',
 ];
 
 const COLUMN_OPTIONS = [
   { label: '游戏账号', value: 'LoginAccount' },
-  { label: 'API账号', value: 'ApiLoginAccount' },
   { label: '玩家ID', value: 'PlayerId' },
   { label: '玩家状态', value: 'PlayerStatus' },
   { label: '会员类型', value: 'DataFlag' },
@@ -281,6 +283,11 @@ function persistColumns() {
     COLUMN_STORAGE_KEY,
     JSON.stringify(visibleColumns.value),
   );
+  try {
+    gridApi.setGridOptions?.({ columns: buildDynamicColumns() });
+  } catch {
+    // 适配器差异时忽略
+  }
 }
 
 function getQueryParams() {
@@ -339,8 +346,8 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
       slots: { default: 'loginAccount' },
       title: '游戏账号',
     },
-    { field: 'ApiLoginAccount', minWidth: 120, title: 'API账号' },
     { field: 'PlayerId', minWidth: 100, title: '玩家ID' },
+    { ...vipLevelGridColumn },
     {
       field: 'PlayerStatus',
       minWidth: 90,
@@ -358,15 +365,6 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
     { field: 'PromoterUserName', minWidth: 120, title: '推广账号' },
     { field: 'ChannelId', minWidth: 90, title: '渠道号' },
     { field: 'ChannelName', minWidth: 120, title: '渠道名称' },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP ${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
     {
       field: 'PlayerLevelName',
       formatter: ({ cellValue }) => String(cellValue || '未分层'),
@@ -438,7 +436,8 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
     },
     {
       field: 'AccountType',
-      formatter: ({ cellValue }) => String(cellValue ?? '-'),
+      formatter: ({ cellValue }) =>
+        formatAccountType(cellValue as number | string | undefined),
       minWidth: 100,
       title: '注册方式',
     },
@@ -770,6 +769,9 @@ async function handleCopy() {
           if (field === 'DataFlag') {
             return formatMemberType(row.DataFlag);
           }
+          if (field === 'AccountType') {
+            return formatAccountType(row.AccountType);
+          }
           return String(row[field] ?? '');
         })
         .join('\t'),
@@ -780,8 +782,24 @@ async function handleCopy() {
 }
 
 onMounted(async () => {
+  let columnsChanged = false;
+  const prevColumns = [...visibleColumns.value];
+  visibleColumns.value = visibleColumns.value.filter(
+    (col) => col !== 'ApiLoginAccount',
+  );
+  if (visibleColumns.value.length !== prevColumns.length) {
+    columnsChanged = true;
+  }
   if (!visibleColumns.value.includes('PlayerStatus')) {
-    visibleColumns.value = [...visibleColumns.value, 'PlayerStatus', 'Gold'];
+    visibleColumns.value = [...visibleColumns.value, 'PlayerStatus'];
+    columnsChanged = true;
+  }
+  if (!visibleColumns.value.includes('VipLevel')) {
+    visibleColumns.value = [...visibleColumns.value, 'VipLevel'];
+    columnsChanged = true;
+  }
+  if (columnsChanged) {
+    persistColumns();
   }
   try {
     const result = await fetchPlayerLevelListApi({ Page: 1, PageSize: 200 });
@@ -1121,6 +1139,9 @@ onMounted(async () => {
               :player-id="row.PlayerId"
             />
             <span v-else>-</span>
+          </template>
+          <template #vipLevel="{ row }">
+            <VipLevelTag :level="row.VipLevel" />
           </template>
           <template #status="{ row }">
             <PlayerStatusTag :status="row.Status" />

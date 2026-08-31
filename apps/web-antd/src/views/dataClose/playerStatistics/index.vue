@@ -28,10 +28,12 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import OpsListPanel from '#/components/global/ops-list-panel.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
+import { formatVipLevelLabel } from '#/utils/vip-level';
 import { formatDevicePlatform } from '#/utils/everyday-report-format';
 import { formatPlayerStatus } from '#/utils/player-status';
 import { PLAYER_STATISTICS_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
@@ -386,7 +388,7 @@ function cellText(field: string, row: Row): string {
       return formatUserSource(row.UserSource);
     }
     case 'VipLevel': {
-      return `VIP ${row.VipLevel ?? ''}`;
+      return formatVipLevelLabel(row.VipLevel as number | string | undefined);
     }
     case 'WinLose': {
       return cents(winLose(row));
@@ -572,7 +574,8 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     VipLevel: {
       align: 'center',
-      customRender: ({ record }) => `VIP ${record.VipLevel ?? ''}`,
+      customRender: ({ record }) =>
+        h(VipLevelTag, { level: record.VipLevel as number | string | undefined }),
       key: 'VipLevel',
       title: 'VIP等级',
       width: 90,

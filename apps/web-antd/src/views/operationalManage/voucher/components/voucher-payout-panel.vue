@@ -18,6 +18,8 @@ import {
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 import { queryPlayerByAccountApi } from '#/api/operationManage/player';
 import {
   batchIssueVoucherApi,
@@ -244,15 +246,7 @@ const issueGridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
     { type: 'seq', minWidth: 60, title: '序号' },
     { field: 'PlayerInfo', minWidth: 140, title: '玩家账号' },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP ${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     {
       field: 'RegTime',
       formatter: ({ cellValue, row }) =>

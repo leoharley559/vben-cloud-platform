@@ -1,11 +1,16 @@
+export type BankCardResourceType = 'alipay' | 'bank_card' | 'wechat';
+
 export interface BankCardListQuery {
+  Account?: string;
   BankCardNum?: string;
   BeginTime?: number | string;
   EndTime?: number | string;
   LoginAccount?: string;
+  Name?: string;
   Page: number;
   PageSize: number;
   PlayerId?: number | string;
+  ResourceType: BankCardResourceType;
 }
 
 /** 支付宝 / 微信账号（接口 AlipayAccounts / WechatAccounts） */
@@ -22,6 +27,7 @@ export interface PlayerPayAccountItem {
 
 export interface BankCardListItem {
   [key: string]: unknown;
+  Account?: string;
   AlipayAccount?: string;
   AlipayName?: string;
   BankCardNum?: string;
@@ -31,6 +37,7 @@ export interface BankCardListItem {
   Id?: number | string;
   LoginAccount?: string;
   MerchantOrderNo?: string;
+  Name?: string;
   PackageName?: string;
   PlayerId?: number | string;
   QrCodeUrl?: string;

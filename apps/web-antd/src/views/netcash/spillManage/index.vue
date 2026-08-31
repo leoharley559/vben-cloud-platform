@@ -26,9 +26,12 @@ import {
   fetchSpillManageListApi,
 } from '#/api/netcash/spill-manage';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { getServiceImageUrl } from '#/utils/media';
@@ -153,13 +156,7 @@ const gridOptions: VxeTableGridOptions<SpillManageItem> = {
       title: '注册时间',
     },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined ? '-' : `VIP${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     { field: 'OwnerAccount', minWidth: 120, title: '当前归属代理' },
     { field: 'OwnerChannelId', minWidth: 110, title: '安装渠道' },
     { field: 'RealPlatform', minWidth: 120, title: '安装终端类型' },
@@ -341,6 +338,9 @@ onMounted(() => {
       <SummaryCards :items="summaryItems" />
 
       <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
         <template #loginAccount="{ row }">
           <PlayerAccountLink
             :login-account="String(row.LoginAccount || '')"

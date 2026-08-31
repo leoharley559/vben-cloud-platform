@@ -28,6 +28,7 @@ import {
   updatePlayerExtApi,
 } from '#/api/operationManage/player';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { PLAYER_DETAIL_TABS } from '#/types/player-detail';
@@ -382,7 +383,7 @@ onMounted(async () => {
               {{ playerInfo?.LoginAccount || '-' }}
             </span>
           </div>
-          <Tag color="gold"> VIP {{ playerInfo?.VipLevel ?? '-' }} </Tag>
+          <VipLevelTag :level="playerInfo?.VipLevel" />
           <div class="flex items-center gap-1.5">
             <span class="text-gray-500">在线状态</span>
             <Tag :color="playerInfo?.Online ? 'success' : 'default'">

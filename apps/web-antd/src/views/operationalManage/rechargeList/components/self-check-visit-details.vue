@@ -8,8 +8,11 @@ import { Button, Input, Result } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 import { fetchSelfReviewVisitListApi } from '#/api/operationManage/recharge-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
@@ -70,7 +73,7 @@ const gridOptions: VxeTableGridOptions<SelfReviewVisitItem> = {
     },
     { field: 'PlayerId', minWidth: 120, title: '玩家ID' },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
-    { field: 'VipLevel', minWidth: 90, title: 'VIP等级' },
+    { ...vipLevelGridColumn },
     { field: 'AppType', minWidth: 120, title: '访问设备' },
   ],
   height: 'auto',
@@ -152,6 +155,9 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"

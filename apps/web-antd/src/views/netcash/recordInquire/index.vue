@@ -251,7 +251,7 @@ const tabs = computed(() =>
           { field: 'Username', slot: 'agencyAccount', title: '代理账号' },
           {
             field: 'VipLevel',
-            formatter: (value: unknown) => `VIP ${value ?? '-'}`,
+            slot: 'vipLevel',
             title: '会员等级',
           },
           { field: 'BonusTitle', title: '红利标题' },

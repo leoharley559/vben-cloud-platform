@@ -23,12 +23,15 @@ import {
 } from '#/api/operationManage/gift-manage';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { GIFT_AUDIT_STATUS_MAP } from '#/utils/operation-status';
 import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 
 import {
   ACTIVITY_TYPE_LUCKY_DRAW,
@@ -211,12 +214,7 @@ const gridOptions: VxeTableGridOptions<LuckyAuditRow> = {
       slots: { default: 'loginAccount' },
       title: '游戏账号',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) => formatVipLevel(cellValue),
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     { field: 'PackageName', minWidth: 100, title: '产品名称' },
     { field: 'ChannelId', minWidth: 90, title: '渠道号' },
     {
@@ -629,6 +627,9 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #loginAccount="{ row }">
         <div>
           <PlayerAccountLink

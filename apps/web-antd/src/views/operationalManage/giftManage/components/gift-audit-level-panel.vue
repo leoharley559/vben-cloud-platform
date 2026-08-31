@@ -27,6 +27,7 @@ import {
 import { queryPlayerByAccountApi } from '#/api/operationManage/player';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -34,6 +35,8 @@ import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { GIFT_AUDIT_STATUS_MAP } from '#/utils/operation-status';
 import { PLAYER_STATUS_OPTIONS } from '#/utils/player-status';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 
 import {
   formatAmountFromCent,
@@ -219,16 +222,11 @@ const gridOptions: VxeTableGridOptions<GiftRow> = {
     },
     {
       field: 'GiftVipLevel',
-      formatter: ({ cellValue }) => formatVipLevel(cellValue),
       minWidth: 90,
+      slots: { default: 'giftVipLevel' },
       title: '礼品等级',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) => formatVipLevel(cellValue),
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     {
       field: 'CreateTime',
       formatter: ({ cellValue }) => formatGiftDateTime(cellValue),
@@ -646,6 +644,12 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #giftVipLevel="{ row }">
+        <VipLevelTag :level="row.GiftVipLevel" />
+      </template>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #loginAccount="{ row }">
         <div>
           <PlayerAccountLink

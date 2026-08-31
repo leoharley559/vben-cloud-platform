@@ -2,7 +2,7 @@
 import type { TableColumnType, TableProps } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, h, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -32,9 +32,11 @@ import AccountSelect from '#/components/global/account-select.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useReportOptions } from '#/composables/use-report-options';
+import { formatVipLevelLabel } from '#/utils/vip-level';
 import { formatPlayerStatus } from '#/utils/player-status';
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
 import { exportReportXlsx } from '#/views/dataClose/shared/report-export';
@@ -287,7 +289,10 @@ const columns = computed<TableColumnType<Row>[]>(() => {
     },
     {
       align: 'center',
-      customRender: ({ record }) => `VIP ${record.VipLevel ?? ''}`,
+      customRender: ({ record }) =>
+        h(VipLevelTag, {
+          level: record.VipLevel as number | string | undefined,
+        }),
       key: 'VipLevel',
       title: 'VIP',
       width: 80,
@@ -465,7 +470,7 @@ async function handleExport() {
         formatOnlineDuration(row.OnlineTime),
         offlineText(row),
         stripPhonePrefix(row.BindPhone),
-        `VIP${row.VipLevel ?? ''}`,
+        formatVipLevelLabel(row.VipLevel as number | string | undefined),
         row.RealName,
         formatReportDateTime(row.CreateTime),
         formatReportDateTime(row.LastOfflineTime),

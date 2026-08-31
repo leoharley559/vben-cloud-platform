@@ -17,6 +17,8 @@ import {
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 import {
   exportRewardExchangeRecordApi,
   fetchRewardExchangeRecordApi,
@@ -25,6 +27,7 @@ import {
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -187,15 +190,7 @@ const gridOptions: VxeTableGridOptions<ExchangeRecordRow> = {
     },
     { field: 'PackageName', minWidth: 110, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '所属渠道' },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     {
       field: 'ProductType',
       formatter: ({ cellValue }) =>
@@ -441,6 +436,9 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #loginAccount="{ row }">
         <div class="whitespace-pre-line">
           <PlayerAccountLink

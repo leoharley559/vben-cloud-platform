@@ -25,6 +25,7 @@ import {
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -47,6 +48,8 @@ import {
   formatPlayerStatus,
   PLAYER_STATUS_OPTIONS,
 } from '#/utils/player-status';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 
 import BonusAuditActionModal from './bonus-audit-action-modal.vue';
 
@@ -243,15 +246,7 @@ const gridOptions: VxeTableGridOptions<BonusAuditListItem> = {
       slots: { default: 'playerStatus' },
       title: '玩家状态',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     { field: 'PackageName', minWidth: 120, title: '产品名称' },
     {
       field: 'ChannelName',
@@ -664,6 +659,9 @@ onMounted(() => {
     <SummaryCards :items="summaryItems" />
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #approve="{ row }">
         <Tag :color="getBonusApproveColor(row.Approve)">
           {{ formatBonusApprove(row.Approve) }}

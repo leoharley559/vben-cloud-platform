@@ -8,10 +8,13 @@ import { Button, Input, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import { fetchRechargeListApi } from '#/api/operationManage/recharge';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 import {
   formatRechargeHandleType,
   formatRechargeStatus,
@@ -110,15 +113,7 @@ const gridOptions: VxeTableGridOptions<RechargeListItem> = {
       minWidth: 160,
       title: '通道名称',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP ${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     {
       field: 'RealAmount',
       formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
@@ -254,6 +249,9 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #status="{ row }">
         <Tag :color="getRechargeStatusColor(row.Status)">
           {{ formatRechargeStatus(row.Status) }}

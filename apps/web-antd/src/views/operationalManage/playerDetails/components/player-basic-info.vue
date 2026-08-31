@@ -43,6 +43,7 @@ import {
 } from '#/api/operationManage/player';
 import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
@@ -911,7 +912,8 @@ onMounted(() => {
       </Descriptions.Item>
       <Descriptions.Item label="VIP 等级">
         <Space>
-          <span>{{ canViewVip ? (info.VipLevel ?? '-') : '***' }}</span>
+          <VipLevelTag v-if="canViewVip" :level="info.VipLevel" />
+          <span v-else>***</span>
         </Space>
       </Descriptions.Item>
       <Descriptions.Item label="会员层级">

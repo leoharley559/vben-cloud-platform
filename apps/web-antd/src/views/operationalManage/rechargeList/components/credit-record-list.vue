@@ -16,6 +16,7 @@ import {
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import { fetchPlayerCreditRecordListApi } from '#/api/operationManage/player-detail-extra';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -23,6 +24,7 @@ import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { vipLevelGridColumn, formatVipLevelLabel } from '#/utils/vip-level';
 import {
   CREDIT_WALLET_TYPE_OPTIONS,
   formatCreditStatus,
@@ -104,11 +106,7 @@ const gridOptions: VxeTableGridOptions<PlayerCreditRecordItem> = {
       minWidth: 120,
       title: '游戏账号',
     },
-    {
-      field: 'VipLevel',
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     {
       field: 'PackageName',
       minWidth: 120,
@@ -217,7 +215,7 @@ async function handleExport() {
           header: '游戏账号',
           value: (row) => String(row.ReferenceAccount || '-'),
         },
-        { header: 'VIP等级', value: (row) => String(row.VipLevel ?? '-') },
+        { header: 'VIP等级', value: (row) => formatVipLevelLabel(row.VipLevel) },
         { header: '所属产品', value: (row) => String(row.PackageName || '-') },
         { header: '渠道名称', value: (row) => String(row.ChannelName || '-') },
         {
@@ -344,6 +342,9 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #status="{ row }">
         <Tag :color="getCreditStatusColor(row.Status)">
           {{ formatCreditStatus(row.Status) }}

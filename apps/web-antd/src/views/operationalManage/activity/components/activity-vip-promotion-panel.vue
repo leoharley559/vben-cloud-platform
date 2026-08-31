@@ -6,6 +6,8 @@ import { onMounted, ref } from 'vue';
 import { Spin } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
+import { vipLevelGridColumn } from '#/utils/vip-level';
 import { fetchVipGiftListApi } from '#/api/operationManage/exclusive-activity';
 
 defineOptions({ name: 'ActivityVipPromotionPanel' });
@@ -14,13 +16,7 @@ const loading = ref(false);
 
 const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
   columns: [
-    {
-      // 接口字段为 VipLevel（旧站编辑态才映射为 Vip）
-      field: 'VipLevel',
-      formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     { field: 'Title', minWidth: 160, title: '标题' },
     {
       field: 'BackgroundImgPath',
@@ -81,6 +77,10 @@ onMounted(() => {
     <div class="mb-3 text-xs text-gray-400">
       晋级好礼列表来自 listprize；图片/多语言编辑待后续迭代。
     </div>
-    <Grid />
+    <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
+    </Grid>
   </Spin>
 </template>

@@ -11,6 +11,7 @@ import CardManageList from './components/card-manage-list.vue';
 import CardMultiBindList from './components/card-multi-bind-list.vue';
 import CryptoAddressList from './components/crypto-address-list.vue';
 import EWalletList from './components/e-wallet-list.vue';
+import PayAccountManageList from './components/pay-account-manage-list.vue';
 
 defineOptions({ name: 'WalletManage' });
 
@@ -33,6 +34,8 @@ const activeTab = ref('card');
 function resolveDefaultTab() {
   const tabs = [
     { key: 'card', visible: canCard.value },
+    { key: 'alipay', visible: canCard.value },
+    { key: 'wechat', visible: canCard.value },
     { key: 'eWallet', visible: canEWallet.value },
     { key: 'crypto', visible: canCrypto.value },
     { key: 'multiBind', visible: canMultiBind.value },
@@ -56,6 +59,18 @@ onMounted(() => {
       <Tabs v-model:active-key="activeTab" type="line" size="small">
         <Tabs.TabPane v-if="canCard" key="card" tab="银行卡管理">
           <CardManageList v-if="activeTab === 'card'" />
+        </Tabs.TabPane>
+        <Tabs.TabPane v-if="canCard" key="alipay" tab="支付宝管理">
+          <PayAccountManageList
+            v-if="activeTab === 'alipay'"
+            resource-type="alipay"
+          />
+        </Tabs.TabPane>
+        <Tabs.TabPane v-if="canCard" key="wechat" tab="微信管理">
+          <PayAccountManageList
+            v-if="activeTab === 'wechat'"
+            resource-type="wechat"
+          />
         </Tabs.TabPane>
         <Tabs.TabPane v-if="canEWallet" key="eWallet" tab="电子钱包">
           <EWalletList v-if="activeTab === 'eWallet'" />

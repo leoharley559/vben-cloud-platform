@@ -9,11 +9,14 @@ import dayjs from 'dayjs';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchRechargeFailListApi } from '#/api/operationManage/recharge-extra';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { getYesterdayRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 
 defineOptions({ name: 'RechargeErrorRecordList' });
 
@@ -76,7 +79,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       title: '游戏账号',
     },
     { field: 'RealName', minWidth: 100, title: '真实姓名' },
-    { field: 'VipLevel', minWidth: 80, title: 'VIP' },
+    { ...vipLevelGridColumn },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     {
       field: 'OrderId',
@@ -203,6 +206,9 @@ onMounted(() => {
       </div>
     </div>
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"

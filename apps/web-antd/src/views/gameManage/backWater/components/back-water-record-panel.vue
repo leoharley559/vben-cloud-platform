@@ -31,6 +31,7 @@ import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 import AgencyAccountLink from '#/components/global/agency-account-link.vue';
 import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
@@ -38,6 +39,7 @@ import { useGameConfig } from '#/composables/use-game-config';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { resolveAgencyAdminId } from '#/utils/agency-detail-route';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { vipLevelGridColumn } from '#/utils/vip-level';
 import {
   formatGameName,
   formatPercentFromStorage,
@@ -284,10 +286,9 @@ const summaryColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
     title: '游戏账号',
   },
   {
-    field: 'VipLevel',
-    formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
-    width: 90,
+    ...vipLevelGridColumn,
     title: 'VIP 等级',
+    width: 90,
   },
   { field: 'LevelName', minWidth: 110, title: '玩家层级' },
   {
@@ -377,10 +378,9 @@ const detailColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
     title: '游戏账号',
   },
   {
-    field: 'VipLevel',
-    formatter: ({ cellValue }) => `VIP${cellValue ?? '-'}`,
-    width: 90,
+    ...vipLevelGridColumn,
     title: 'VIP 等级',
+    width: 90,
   },
   { field: 'LevelName', minWidth: 110, title: '玩家层级' },
   { field: 'PackageName', minWidth: 120, title: '所属产品' },
@@ -730,6 +730,9 @@ onMounted(async () => {
     <SummaryCards :items="summaryItems" />
 
       <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
         <template #adminName="{ row }">
           <AgencyAccountLink
             :admin-id="resolveAgencyAdminId(row)"

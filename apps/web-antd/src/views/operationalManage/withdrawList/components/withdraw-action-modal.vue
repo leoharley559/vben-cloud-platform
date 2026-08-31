@@ -25,6 +25,7 @@ import {
   refuseWithdrawApi,
 } from '#/api/operationManage/withdraw';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import { mergePlayerPayAccountListResult } from '#/utils/bank-card';
 import {
   matchWithdrawPayAccount,
   resolveWithdrawPayAccountKind,
@@ -176,11 +177,31 @@ async function loadManualPayAccount() {
   payAccountLoading.value = true;
   matchedPayAccount.value = null;
   try {
-    const result = await fetchBankCardListApi({
-      Page: 1,
-      PageSize: 50,
-      PlayerId: playerId,
-    });
+    const [bankResult, alipayResult, wechatResult] = await Promise.all([
+      fetchBankCardListApi({
+        Page: 1,
+        PageSize: 50,
+        PlayerId: playerId,
+        ResourceType: 'bank_card',
+      }),
+      fetchBankCardListApi({
+        Page: 1,
+        PageSize: 50,
+        PlayerId: playerId,
+        ResourceType: 'alipay',
+      }),
+      fetchBankCardListApi({
+        Page: 1,
+        PageSize: 50,
+        PlayerId: playerId,
+        ResourceType: 'wechat',
+      }),
+    ]);
+    const result = mergePlayerPayAccountListResult(
+      bankResult,
+      alipayResult,
+      wechatResult,
+    );
     matchedPayAccount.value =
       matchWithdrawPayAccount(
         props.row?.AccountType,

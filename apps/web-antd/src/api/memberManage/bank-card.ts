@@ -8,6 +8,7 @@ import type {
 import type { CloudListResult } from '#/types/operation-manage';
 
 import { requestClient } from '#/api/request';
+import { normalizeBankCardListQuery } from '#/utils/bank-card';
 import { trimSpace } from '#/utils/string';
 
 /**
@@ -24,7 +25,7 @@ export async function fetchBankCardListApi(query: BankCardListQuery) {
   const result = await requestClient.get<BankCardListResult>(
     '/backend/playerbankcard/list',
     {
-      params: trimSpace({ ...query }),
+      params: normalizeBankCardListQuery(query),
     },
   );
   return {

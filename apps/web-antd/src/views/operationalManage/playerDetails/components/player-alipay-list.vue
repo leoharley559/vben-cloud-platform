@@ -26,6 +26,7 @@ import GoogleCodeField from '#/components/security/google-code-field.vue';
 import { checkSecured } from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { createRequestHash } from '#/utils/crypto';
+import { parsePlayerPayAccountList } from '#/utils/bank-card';
 
 defineOptions({ name: 'PlayerAlipayList' });
 
@@ -111,19 +112,9 @@ async function loadList() {
       Page: 1,
       PageSize: 50,
       PlayerId: props.playerId,
+      ResourceType: 'alipay',
     });
-    // 新接口：AlipayAccounts；兼容旧数据从 Items 过滤
-    const accounts = result?.AlipayAccounts || [];
-    list.value =
-      accounts.length > 0
-        ? accounts.map((item) => ({
-            AlipayAccount: String(item.Account || ''),
-            AlipayName: String(item.Name || ''),
-            BankCardTime: item.CreateTime,
-            Id: item.Id,
-            QrCodeUrl: String(item.QrCodeUrl || ''),
-          }))
-        : (result?.Items || []).filter((item) => !!item.AlipayAccount);
+    list.value = parsePlayerPayAccountList(result, 'alipay');
   } finally {
     loading.value = false;
   }

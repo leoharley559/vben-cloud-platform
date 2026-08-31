@@ -11,6 +11,7 @@ import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
@@ -384,7 +385,11 @@ defineExpose({
         :key="column.slot"
         #[column.slot!]="{ row }"
       >
-        <slot :name="column.slot" :row="row"></slot>
+        <VipLevelTag
+          v-if="column.slot === 'vipLevel'"
+          :level="row.VipLevel as number | string | undefined"
+        />
+        <slot v-else :name="column.slot" :row="row"></slot>
       </template>
       <template v-if="config.showActions" #actions="{ row }">
         <slot name="actions" :row="row"></slot>

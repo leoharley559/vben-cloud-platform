@@ -38,6 +38,8 @@ import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
+import { formatVipLevelLabel } from '#/utils/vip-level';
 import { formatNetcashDateTime } from '#/utils/netcash';
 import { buildPlayerDetailPath } from '#/utils/player-detail-route';
 import { TABLE_ANT_PAGE_SIZE_OPTIONS } from '#/utils/table-height';
@@ -233,7 +235,7 @@ function displayCell(field: string, value: unknown, row?: Row) {
   if (field === 'ActiveStatus') return Number(value) === 1 ? '活跃' : '不活跃';
   if (field === 'DataFlag') return Number(value) === 0 ? '正式' : '测试';
   if (field === 'VipLevel')
-    return value === null || value === undefined ? '-' : `VIP${value}`;
+    return formatVipLevelLabel(value as number | string | undefined);
   if (field === 'Status')
     return statusMap[Number(value)] || String(value ?? '-');
   if (field === 'LoginAccount') return String(row?.LoginAccount ?? '-');
@@ -691,6 +693,9 @@ onMounted(async () => {
           <Tag v-if="Number(record.Status) !== 0" class="ml-1">
             {{ statusMap[Number(record.Status)] || record.Status }}
           </Tag>
+        </template>
+        <template v-else-if="column.dataIndex === 'VipLevel'">
+          <VipLevelTag :level="record.VipLevel as number | string | undefined" />
         </template>
         <template v-else-if="column.dataIndex === 'action'">
           <Button type="link" size="small" @click="openChangeModal(record)">

@@ -26,6 +26,7 @@ import {
 } from '#/api/operationManage/activity-match-bonus';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
@@ -40,6 +41,8 @@ import {
   formatPlayerStatus,
   PLAYER_STATUS_OPTIONS,
 } from '#/utils/player-status';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 
 defineOptions({ name: 'MatchRecordList' });
 
@@ -183,15 +186,7 @@ const gridOptions: VxeTableGridOptions<ActivityMatchBonusItem> = {
       slots: { default: 'loginAccount' },
       title: '游戏账号(状态)',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     {
       field: 'BonusTitle',
       minWidth: 160,
@@ -602,6 +597,9 @@ onMounted(() => {
     </div>
 
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #auditStatus="{ row }">
         <Tag :color="getMatchAuditStatusColor(row.AuditStatus)">
           {{ formatMatchAuditStatus(row.AuditStatus) }}

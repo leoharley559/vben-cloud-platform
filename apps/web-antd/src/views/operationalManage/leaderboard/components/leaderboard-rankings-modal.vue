@@ -6,8 +6,11 @@ import { computed, ref, watch } from 'vue';
 import { Button, Input, Modal, Select, Space } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { vipLevelGridColumn } from '#/utils/vip-level';
+
 import { fetchLeaderboardRecordApi } from '#/api/operationManage/leaderboard';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
+import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 
 import {
@@ -70,15 +73,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       slots: { default: 'loginAccount' },
       title: '游戏账号',
     },
-    {
-      field: 'VipLevel',
-      formatter: ({ cellValue }) =>
-        cellValue === undefined || cellValue === null || cellValue === ''
-          ? '-'
-          : `VIP ${cellValue}`,
-      minWidth: 90,
-      title: 'VIP等级',
-    },
+    { ...vipLevelGridColumn },
     {
       field: 'ActivityType',
       formatter: ({ cellValue }) => formatLeaderboardType(cellValue),
@@ -172,6 +167,9 @@ watch(
       </div>
     </div>
     <Grid>
+      <template #vipLevel="{ row }">
+        <VipLevelTag :level="row.VipLevel" />
+      </template>
       <template #loginAccount="{ row }">
         <PlayerAccountLink
           :login-account="String(row.LoginAccount || '')"

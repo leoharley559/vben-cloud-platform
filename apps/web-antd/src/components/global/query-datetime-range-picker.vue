@@ -3,7 +3,7 @@ import type { Dayjs } from 'dayjs';
 
 import { computed, nextTick, ref, watch } from 'vue';
 
-import { onClickOutside } from '@vueuse/core';
+import { onClickOutside, useEventListener } from '@vueuse/core';
 import { Button, Input, Space, TimePicker } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -67,13 +67,41 @@ const panelRef = ref<HTMLElement>();
 const overlayStyle = ref<Record<string, string>>({});
 
 function updateOverlayPosition() {
-  const rect = triggerRef.value?.getBoundingClientRect();
-  if (!rect) {
+  const trigger = triggerRef.value?.getBoundingClientRect();
+  const panel = panelRef.value;
+  if (!trigger) {
     return;
   }
+
+  const margin = 8;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const width = panel?.offsetWidth || 680;
+  const height = panel?.offsetHeight || 420;
+
+  let left = trigger.left;
+  if (left + width + margin > vw) {
+    left = vw - width - margin;
+  }
+  left = Math.max(margin, left);
+
+  const belowTop = trigger.bottom + 4;
+  const aboveTop = trigger.top - height - 4;
+  const fitsBelow = belowTop + height + margin <= vh;
+  const fitsAbove = aboveTop >= margin;
+
+  let top = belowTop;
+  if (!fitsBelow && fitsAbove) {
+    top = aboveTop;
+  } else if (!fitsBelow) {
+    top = Math.max(margin, vh - height - margin);
+  }
+
   overlayStyle.value = {
-    left: `${rect.left}px`,
-    top: `${rect.bottom + 4}px`,
+    left: `${left}px`,
+    maxHeight: `${Math.max(240, vh - margin * 2)}px`,
+    maxWidth: `${Math.max(280, vw - margin * 2)}px`,
+    top: `${top}px`,
   };
 }
 
@@ -82,8 +110,26 @@ watch(open, async (visible) => {
     syncDraftFromModel();
     await nextTick();
     updateOverlayPosition();
+    requestAnimationFrame(updateOverlayPosition);
   }
 });
+
+useEventListener(window, 'resize', () => {
+  if (open.value) {
+    updateOverlayPosition();
+  }
+});
+
+useEventListener(
+  window,
+  'scroll',
+  () => {
+    if (open.value) {
+      updateOverlayPosition();
+    }
+  },
+  true,
+);
 
 onClickOutside(
   panelRef,
@@ -504,7 +550,7 @@ function getPopupContainer(node: HTMLElement): HTMLElement {
 .query-datetime-range-dropdown {
   position: fixed;
   z-index: 1050;
-  overflow: visible;
+  overflow: auto;
   color: hsl(var(--foreground));
   background: hsl(var(--popover));
   border: 1px solid hsl(var(--border));
