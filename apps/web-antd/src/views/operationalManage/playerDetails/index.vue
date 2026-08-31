@@ -138,7 +138,15 @@ function resolveDefaultTab() {
   activeTab.value = first?.key || 'profile';
 }
 
+function isPlayerDetailsRoute() {
+  return String(route.path).includes('/operationalManage/playerDetails');
+}
+
 async function loadPlayerInfo(playerId?: string) {
+  // keep-alive 下 useRoute 是当前激活路由；切到代理详情等 :id 页时不能当玩家 ID 去查
+  if (!isPlayerDetailsRoute()) {
+    return;
+  }
   const id = playerId || routePlayer.value.playerId;
   if (!id) {
     playerInfo.value = null;
@@ -302,8 +310,11 @@ async function submitKick() {
 }
 
 watch(
-  () => route.params.id,
+  () => [route.path, route.params.id] as const,
   async () => {
+    if (!isPlayerDetailsRoute()) {
+      return;
+    }
     cancelEditStatus();
     resolveDefaultTab();
     await loadPlayerInfo();

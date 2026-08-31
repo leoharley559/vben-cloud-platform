@@ -22,7 +22,16 @@ defineOptions({ name: 'AgencyAccountDetails' });
 const route = useRoute();
 const { checkPermission } = useCloudPermission();
 
-const adminId = computed(() => String(route.params.id || route.query.id || ''));
+function isAgencyDetailsRoute() {
+  return String(route.path).includes('/netcash/agencyAccountDetails');
+}
+
+const adminId = computed(() => {
+  if (!isAgencyDetailsRoute()) {
+    return '';
+  }
+  return String(route.params.id || route.query.id || '');
+});
 
 const canAgentData = computed(() => checkPermission(13_449));
 const canOverview = computed(() => checkPermission(11_252));
@@ -94,6 +103,9 @@ onMounted(() => {
 });
 
 watch(adminId, () => {
+  if (!isAgencyDetailsRoute() || !adminId.value) {
+    return;
+  }
   summaryName.value = '';
   summaryUsername.value = '';
   void prefetchSummary();

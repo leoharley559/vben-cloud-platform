@@ -603,6 +603,9 @@ watch(
           </div>
         </div>
       </div>
+      <p class="mb-0 text-xs leading-5 text-gray-500">
+        统计说明：当日数据需次日零点后才计入；查询范围包含当天时，当天数据不计入统计。
+      </p>
     </div>
     <AgencyFanDianModal v-model:open="fanDianOpen" :row="fanDianRow" />
 
