@@ -130,13 +130,13 @@ const memberColumns = computed<Column[]>(() => [
   { dataIndex: 'CreateTime', title: '注册时间', width: 170 },
   ...(canChangeChannel.value
     ? [
-        {
-          dataIndex: 'action',
-          fixed: 'right' as const,
-          title: '操作',
-          width: 90,
-        },
-      ]
+      {
+        dataIndex: 'action',
+        fixed: 'right' as const,
+        title: '操作',
+        width: 90,
+      },
+    ]
     : []),
 ]);
 
@@ -255,7 +255,7 @@ function totalValue(field: string) {
   if (field === 'WinLoss') {
     return formatAmountFromCent(
       Number(totals.value.TotalWinGold || 0) -
-        Number(totals.value.TotalBetGold || 0),
+      Number(totals.value.TotalBetGold || 0),
     );
   }
   return map[field]
@@ -346,7 +346,9 @@ async function loadChangeChannels() {
       label: `${item.Name || '-'} (${item.ChannelName || item.ChannelId || '-'})`,
       value: item.ChannelId as number | string,
     }));
-  changeForm.ToChannelId = changeChannelOptions.value[0]?.value;
+  changeForm.ToChannelId = changeForm.AdminId
+    ? changeChannelOptions.value[0]?.value
+    : undefined;
 }
 
 async function openChangeModal(row: Row) {
@@ -366,6 +368,10 @@ async function openChangeModal(row: Row) {
 }
 
 async function submitChangeModal() {
+  if (!changeForm.AdminId) {
+    message.warning('请选择目标代理');
+    return;
+  }
   if (!changeForm.ToChannelId) {
     message.warning('请选择变更渠道');
     return;
@@ -546,92 +552,51 @@ onMounted(async () => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.LoginAccount"
-            allow-clear
-            @press-enter="searchMembers"
-            placeholder="请输入游戏账号"
-          >
+          <Input v-model:value="filters.LoginAccount" allow-clear @press-enter="searchMembers" placeholder="请输入游戏账号">
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filters.Promoter"
-            allow-clear
-            @press-enter="searchMembers"
-            placeholder="请输入归属代理"
-          >
+          <Input v-model:value="filters.Promoter" allow-clear @press-enter="searchMembers" placeholder="请输入归属代理">
             <template #addonBefore>归属代理</template>
           </Input>
         </div>
         <Space.Compact>
           <span class="query-field-addon">产品包</span>
-          <Select
-            v-model:value="filters.PackageId"
-            allow-clear
-            :options="packageOptions"
-            placeholder="请选择产品包"
-          />
+          <Select v-model:value="filters.PackageId" allow-clear :options="packageOptions" placeholder="请选择产品包" />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">玩家状态</span>
-          <Select
-            v-model:value="filters.Status"
-            allow-clear
-            :options="
-              Object.entries(statusMap).map(([value, label]) => ({
-                label,
-                value: Number(value),
-              }))
-            "
-            placeholder="请选择玩家状态"
-          />
+          <Select v-model:value="filters.Status" allow-clear :options="Object.entries(statusMap).map(([value, label]) => ({
+            label,
+            value: Number(value),
+          }))
+            " placeholder="请选择玩家状态" />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">活跃状态</span>
-          <Select
-            v-model:value="filters.ActiveStatus"
-            allow-clear
-            :options="[
-              { label: '不活跃', value: 0 },
-              { label: '活跃', value: 1 },
-            ]"
-            placeholder="请选择活跃状态"
-          />
+          <Select v-model:value="filters.ActiveStatus" allow-clear :options="[
+            { label: '不活跃', value: 0 },
+            { label: '活跃', value: 1 },
+          ]" placeholder="请选择活跃状态" />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">VIP等级</span>
-          <Select
-            v-model:value="filters.VipLevel"
-            allow-clear
-            :options="vipOptions"
-            placeholder="请选择VIP等级"
-          />
+          <Select v-model:value="filters.VipLevel" allow-clear :options="vipOptions" placeholder="请选择VIP等级" />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">佣金算法</span>
-          <Select
-            v-model:value="filters.AlgorithmTemplateId"
-            allow-clear
-            :options="algorithmOptions"
-            placeholder="请选择佣金算法"
-          />
+          <Select v-model:value="filters.AlgorithmTemplateId" allow-clear :options="algorithmOptions"
+            placeholder="请选择佣金算法" />
         </Space.Compact>
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filters.RegTime" label="注册时间" />
         </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker
-            v-model="filters.FirstPayTime"
-            label="首存时间"
-          />
+          <QueryDatetimeRangePicker v-model="filters.FirstPayTime" label="首存时间" />
         </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker
-            v-model="filters.StatisticsTime"
-            label="统计时间"
-          />
+          <QueryDatetimeRangePicker v-model="filters.StatisticsTime" label="统计时间" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="searchMembers">查询</Button>
@@ -643,37 +608,23 @@ onMounted(async () => {
       <Button v-if="canBatchImport" type="primary" @click="importOpen = true">
         批量转代理
       </Button>
-      <Button
-        v-if="canBatchImport"
-        :loading="exportLoading"
-        @click="exportMembers"
-      >
+      <Button v-if="canBatchImport" :loading="exportLoading" @click="exportMembers">
         导出 Excel
       </Button>
     </div>
-    <Table
-      :columns="memberColumns"
-      :data-source="rows"
-      :loading="loading"
-      :pagination="{
-        current: page,
-        pageSize,
-        showSizeChanger: true,
-        pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
-        total,
-      }"
-      row-key="PlayerId"
-      :scroll="{ x: 2300 }"
-      size="small"
-      bordered
-      @change="
+    <Table :columns="memberColumns" :data-source="rows" :loading="loading" :pagination="{
+      current: page,
+      pageSize,
+      showSizeChanger: true,
+      pageSizeOptions: [...TABLE_ANT_PAGE_SIZE_OPTIONS],
+      total,
+    }" row-key="PlayerId" :scroll="{ x: 2300 }" size="small" bordered @change="
         (pagination) => {
           page = pagination.current || 1;
           pageSize = pagination.pageSize || 20;
           loadMembers();
         }
-      "
-    >
+      ">
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'ActiveStatus'">
           <Tag :color="Number(record.ActiveStatus) === 1 ? 'green' : 'red'">
@@ -681,12 +632,7 @@ onMounted(async () => {
           </Tag>
         </template>
         <template v-else-if="column.dataIndex === 'LoginAccount'">
-          <Button
-            v-if="canViewDetail"
-            type="link"
-            size="small"
-            @click="openDetail(record)"
-          >
+          <Button v-if="canViewDetail" type="link" size="small" @click="openDetail(record)">
             {{ record.LoginAccount || '-' }}
           </Button>
           <span v-else>{{ record.LoginAccount || '-' }}</span>
@@ -715,11 +661,7 @@ onMounted(async () => {
       <template #summary>
         <Table.Summary fixed>
           <Table.Summary.Row>
-            <Table.Summary.Cell
-              v-for="(column, index) in memberColumns"
-              :key="String(column.dataIndex)"
-              :index="index"
-            >
+            <Table.Summary.Cell v-for="(column, index) in memberColumns" :key="String(column.dataIndex)" :index="index">
               <strong v-if="index === 0">合计</strong>
               <strong v-else-if="amountFields.has(String(column.dataIndex))">
                 {{ totalValue(String(column.dataIndex)) }}
@@ -733,12 +675,10 @@ onMounted(async () => {
   </template>
   <Result v-else status="403" sub-title="无成员列表权限（11422）" title="403" />
 
-  <Modal
-    v-model:open="changeModalOpen"
-    :confirm-loading="changeSubmitting"
-    title="改代理与渠道"
-    @ok="submitChangeModal"
-  >
+  <Modal v-model:open="changeModalOpen" :confirm-loading="changeSubmitting" title="改代理与渠道" @ok="submitChangeModal">
+    <div class="mb-2 text-xs text-red-500">
+      注意：变更后玩家数据将归属新代理及渠道，变更前数据依旧归属原代理及渠道
+    </div>
     <Form layout="vertical">
       <Form.Item label="游戏账号">
         <Input v-model:value="changeForm.LoginAccount" disabled />
@@ -746,70 +686,41 @@ onMounted(async () => {
       <Form.Item label="当前归属代理">
         <Input v-model:value="changeForm.PromoterUserName" disabled />
       </Form.Item>
-      <Form.Item label="目标代理">
+      <Form.Item label="当前归属渠道">
+        <Input v-model:value="changeForm.FromChannelId" disabled />
+      </Form.Item>
+      <Form.Item label="目标代理" required>
         <Select
           v-model:value="changeForm.AdminId"
-          allow-clear
           :options="agentOptions"
-          placeholder="请选择目标代理（可选）"
+          placeholder="请选择目标代理"
           show-search
           style="width: 100%"
           @change="loadChangeChannels"
         />
       </Form.Item>
       <Form.Item label="目标渠道" required>
-        <Select
-          v-model:value="changeForm.ToChannelId"
-          :options="changeChannelOptions"
-          placeholder="请选择目标渠道"
-          show-search
-          style="width: 100%"
-        />
+        <Select v-model:value="changeForm.ToChannelId" :options="changeChannelOptions" placeholder="请选择目标渠道" show-search
+          style="width: 100%" />
       </Form.Item>
       <Form.Item label="备注">
-        <Input.TextArea
-          v-model:value="changeForm.Note"
-          :maxlength="400"
-          placeholder="请输入备注"
-          show-count
-        />
-        <p class="mt-1 text-xs text-red-500">
-          变更后玩家将归属新代理及渠道，请确认后再提交
-        </p>
+        <Input.TextArea v-model:value="changeForm.Note" :maxlength="400" placeholder="请输入备注" show-count />
       </Form.Item>
     </Form>
   </Modal>
 
-  <Modal
-    v-model:open="importOpen"
-    :confirm-loading="importSubmitting"
-    title="批量转代理"
-    width="850px"
-    @ok="submitImport"
-    @cancel="importRows = []"
-  >
+  <Modal v-model:open="importOpen" :confirm-loading="importSubmitting" title="批量转代理" width="850px" @ok="submitImport"
+    @cancel="importRows = []">
     <Space class="mb-4" wrap>
-      <Upload
-        accept=".xlsx,.xls,.csv"
-        :before-upload="beforeImportUpload"
-        :show-upload-list="false"
-      >
+      <Upload accept=".xlsx,.xls,.csv" :before-upload="beforeImportUpload" :show-upload-list="false">
         <Button :loading="importLoading" type="primary">上传 Excel</Button>
       </Upload>
       <Button @click="downloadTemplate">下载模板</Button>
       <span class="text-gray-500">最多 1000 条，文件不超过 1MB</span>
     </Space>
     <SummaryCards :items="importSummaryItems" />
-    <Table
-      class="mb-4"
-      :columns="importColumns"
-      :data-source="importRows"
-      :pagination="false"
-      row-key="PlayerAccount"
-      :scroll="{ y: 220 }"
-      size="small"
-      bordered
-    >
+    <Table class="mb-4" :columns="importColumns" :data-source="importRows" :pagination="false" row-key="PlayerAccount"
+      :scroll="{ y: 220 }" size="small" bordered>
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'OriginalAdmin'">
           {{ record.OriginalAdmin || '玩家不存在' }}
@@ -823,31 +734,15 @@ onMounted(async () => {
     </Table>
     <Form layout="vertical">
       <Form.Item label="目标代理" required>
-        <Select
-          v-model:value="importForm.AdminId"
-          :options="agentOptions"
-          placeholder="请选择目标代理"
-          show-search
-          style="width: 100%"
-          @change="loadImportChannels"
-        />
+        <Select v-model:value="importForm.AdminId" :options="agentOptions" placeholder="请选择目标代理" show-search
+          style="width: 100%" @change="loadImportChannels" />
       </Form.Item>
       <Form.Item label="目标渠道" required>
-        <Select
-          v-model:value="importForm.ToChannel"
-          :options="importChannelOptions"
-          placeholder="请选择目标渠道"
-          show-search
-          style="width: 100%"
-        />
+        <Select v-model:value="importForm.ToChannel" :options="importChannelOptions" placeholder="请选择目标渠道" show-search
+          style="width: 100%" />
       </Form.Item>
       <Form.Item label="备注">
-        <Input.TextArea
-          v-model:value="importForm.BulkNotes"
-          :maxlength="400"
-          placeholder="请输入备注"
-          show-count
-        />
+        <Input.TextArea v-model:value="importForm.BulkNotes" :maxlength="400" placeholder="请输入备注" show-count />
       </Form.Item>
     </Form>
   </Modal>

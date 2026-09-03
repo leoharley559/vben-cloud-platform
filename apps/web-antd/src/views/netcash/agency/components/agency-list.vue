@@ -6,6 +6,7 @@ import { computed, onMounted, ref } from 'vue';
 
 import {
   Button,
+  Form,
   Input,
   message,
   Modal,
@@ -243,7 +244,7 @@ function getQueryParams(page: { currentPage: number; pageSize: number }) {
     RegistIP: filterRegistIP.value,
     Status: filterStatus.value || '',
     TeamName: filterTeamName.value,
-    // 对齐旧站：多选 Type；空选默认传 1,2,3（普通/特殊/测试）
+    // 对齐旧站：多选 Type；空选默认传 1,2,3（普通/官方/测试）
     Type: filterType.value.length > 0
       ? filterType.value.map(String).join(',')
       : '1,2,3',
@@ -511,16 +512,27 @@ const statusModalOpen = ref(false);
 const statusRow = ref<AgencyListItem>();
 const statusRemark = ref('');
 const statusSubmitting = ref(false);
+const statusTarget = ref<1 | 2>(2);
 
-function handleSwitch(row: AgencyListItem) {
+function handleSwitch(row: AgencyListItem, targetStatus: 1 | 2) {
   statusRow.value = row;
+  statusTarget.value = targetStatus;
   statusRemark.value = '';
   statusModalOpen.value = true;
 }
 
+const statusModalTitle = computed(() =>
+  statusTarget.value === 2 ? '停用提示' : '启用提示',
+);
+
 async function submitStatus() {
-  if (!/^[^\r\n]{1,400}$/.test(statusRemark.value.trim())) {
-    message.warning('请输入 1-400 个字符的状态变更备注，不能包含换行');
+  const remark = statusRemark.value.trim();
+  if (!remark) {
+    message.warning('请输入备注');
+    return;
+  }
+  if (!/^.{1,400}$/.test(remark)) {
+    message.warning('备注长度为 1-400 个字符');
     return;
   }
   const row = statusRow.value;
@@ -533,8 +545,8 @@ async function submitStatus() {
     await switchAgencyStatusApi({
       AdminId: adminId,
       Name: String(row.Username || row.Name || ''),
-      RemarkOnDeactivation: statusRemark.value.trim(),
-      Status: Number(row.Status) === 1 ? 2 : 1,
+      RemarkOnDeactivation: remark,
+      Status: statusTarget.value,
     });
     message.success('操作成功');
     statusModalOpen.value = false;
@@ -746,9 +758,9 @@ onMounted(() => {
             mode="multiple"
             :max-tag-count="1"
             :options="[
-              { label: '普通代理', value: 1 },
-              { label: '特殊代理', value: 2 },
-              { label: '测试代理', value: 3 },
+              { label: '普通', value: 1 },
+              { label: '官方', value: 2 },
+              { label: '测试', value: 3 },
             ]"
             placeholder="请选择代理类型"
           />
@@ -955,12 +967,20 @@ onMounted(() => {
             编辑
           </Button>
           <Button
-            v-if="canSwitch"
+            v-if="canSwitch && Number(row.Status) === 2"
             size="small"
             type="link"
-            @click="handleSwitch(row)"
+            @click="handleSwitch(row, 1)"
           >
-            {{ row.Status === 1 ? '停用' : '启用' }}
+            启用
+          </Button>
+          <Button
+            v-if="canSwitch && Number(row.Status) === 1"
+            size="small"
+            type="link"
+            @click="handleSwitch(row, 2)"
+          >
+            停用
           </Button>
           <Button
             v-if="canAddMember && Number(row.Type) !== 3"
@@ -1006,18 +1026,24 @@ onMounted(() => {
     <Modal
       v-model:open="statusModalOpen"
       :confirm-loading="statusSubmitting"
-      title="状态变更"
+      :title="statusModalTitle"
       @ok="submitStatus"
     >
-      <p class="mb-3">
-        确认{{ Number(statusRow?.Status) === 1 ? '停用' : '启用' }}代理
-        {{ statusRow?.Username || '' }}？
+      <Form layout="vertical">
+        <Form.Item label="备注" required>
+          <Input
+            v-model:value="statusRemark"
+            :maxlength="400"
+            placeholder="请输入备注"
+            @press-enter="submitStatus"
+          />
+        </Form.Item>
+      </Form>
+      <p class="mt-1 text-sm text-gray-600">
+        确认{{ statusTarget === 2 ? '停用' : '启用' }}代理
+        <span class="text-orange-500">{{ statusRow?.Username || '' }}</span>
+        ？
       </p>
-      <Input
-        v-model:value="statusRemark"
-        :maxlength="200"
-        placeholder="请输入统计时间"
-      />
     </Modal>
   </div>
 </template>
