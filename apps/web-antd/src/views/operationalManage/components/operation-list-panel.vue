@@ -272,13 +272,13 @@ defineExpose({ reload: () => gridApi.reload() });
           </Input>
         </div>
         <Space.Compact>
-          <span class="query-field-addon">产品包</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-if="enabledFilters.has('package')"
             v-model:value="filterPackageId"
             allow-clear
             :options="packageOptions"
-            placeholder="请选择产品包"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Space.Compact>

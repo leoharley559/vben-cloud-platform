@@ -562,8 +562,8 @@ onMounted(async () => {
           </Input>
         </div>
         <Space.Compact>
-          <span class="query-field-addon">产品包</span>
-          <Select v-model:value="filters.PackageId" allow-clear :options="packageOptions" placeholder="请选择产品包" />
+          <span class="query-field-addon">所属产品</span>
+          <Select v-model:value="filters.PackageId" allow-clear :options="packageOptions" placeholder="请选择所属产品" />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">玩家状态</span>

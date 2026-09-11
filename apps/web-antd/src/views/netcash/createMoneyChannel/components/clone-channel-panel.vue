@@ -212,7 +212,7 @@ onMounted(() => void initialize());
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <Space.Compact>
-          <span class="query-field-addon">产品名称</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filters.PackageId"
             allow-clear
@@ -224,7 +224,7 @@ onMounted(() => void initialize());
                 value: packageId(item),
               }))
             "
-            placeholder="请选择产品名称"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Space.Compact>

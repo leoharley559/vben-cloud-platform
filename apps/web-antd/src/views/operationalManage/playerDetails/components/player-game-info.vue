@@ -78,7 +78,7 @@ const gridOptions: VxeTableGridOptions<PlayerGameDetailItem> = {
       title: '日期',
     },
     { field: 'LogId', minWidth: 180, title: '订单编号' },
-    { field: 'Username', minWidth: 100, title: '推广账号' },
+    { field: 'Username', minWidth: 100, title: '所属代理' },
     { field: 'PackageName', minWidth: 110, title: '所属产品' },
     { field: 'ChannelId', minWidth: 120, title: '渠道ID' },
     {

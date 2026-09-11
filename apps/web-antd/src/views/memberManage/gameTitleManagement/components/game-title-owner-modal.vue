@@ -409,17 +409,20 @@ watch(
               <template #addonBefore>游戏账号</template>
             </Input>
           </div>
-          <Select
-            v-model:value="filterPackageId"
-            allow-clear
-            :options="
-              packageOptions.map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-            "
-            placeholder="请选择产品"
-          />
+          <Space.Compact>
+            <span class="query-field-addon">所属产品</span>
+            <Select
+              v-model:value="filterPackageId"
+              allow-clear
+              :options="
+                packageOptions.map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+              "
+              placeholder="请选择所属产品"
+            />
+          </Space.Compact>
           <div class="query-filter-actions">
             <Space wrap>
               <Button type="primary" @click="handleSearch">查询</Button>

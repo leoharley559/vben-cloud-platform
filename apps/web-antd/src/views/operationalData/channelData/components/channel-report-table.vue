@@ -85,7 +85,7 @@ const columns = computed<ColumnsType<ChannelRow>>(() => {
           }),
         dataIndex: 'Username',
         fixed: 'left',
-        title: '代理账号',
+        title: '所属代理',
         width: 110,
       },
       {

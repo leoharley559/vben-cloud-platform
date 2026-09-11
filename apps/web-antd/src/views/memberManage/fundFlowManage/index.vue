@@ -42,7 +42,7 @@ const MAX_RANGE_DAYS = 180;
 
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
-const { packageOptions } = useOperationOptions();
+const { packageSelectOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
 const canViewPage = computed(() => checkPermission(12_208));
@@ -77,14 +77,6 @@ const reasonOptions = computed(() =>
     value: item.Key,
   })),
 );
-
-const packageSelectOptions = computed(() => [
-  { label: '全部', value: '' },
-  ...packageOptions.value.map((item) => ({
-    label: item.PackageName,
-    value: item.PackageId,
-  })),
-]);
 
 const dataSearchTypeOptions = [
   { label: '全部', value: 2 },
@@ -151,7 +143,7 @@ const gridOptions: VxeTableGridOptions<FundFlowListItem> = {
       title: '时间',
     },
     { field: 'LogId', minWidth: 180, title: '订单号' },
-    { field: 'Username', minWidth: 120, title: '推广账号' },
+    { field: 'Username', minWidth: 120, title: '所属代理' },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'ChannelName', minWidth: 120, title: '渠道名称' },
     {
@@ -271,6 +263,18 @@ onMounted(async () => {
       <OpsListPanel>
         <template #filters>
           <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">所属产品</span>
+              <Select
+                v-model:value="filterPackageId"
+                show-search
+                option-filter-prop="label"
+                :options="packageSelectOptions"
+                placeholder="请选择所属产品"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
             <Input
               v-model:value="filterLogId"
               allow-clear
@@ -290,18 +294,7 @@ onMounted(async () => {
               <template #addonBefore>游戏账号</template>
             </Input>
           </div>
-          <div class="flex flex-col gap-1">
-            <Space.Compact>
-              <span class="query-field-addon">所属产品</span>
-              <Select
-                v-model:value="filterPackageId"
-                show-search
-                option-filter-prop="label"
-                :options="packageSelectOptions"
-                placeholder="请选择所属产品"
-              />
-            </Space.Compact>
-          </div>
+          
           <div class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">账变类型</span>

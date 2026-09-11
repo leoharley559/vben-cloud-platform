@@ -295,7 +295,7 @@ const summaryColumns: VxeTableGridOptions<BackWaterRow>['columns'] = [
     field: 'AdminName',
     minWidth: 110,
     slots: { default: 'adminName' },
-    title: '代理账号',
+    title: '所属代理',
   },
   { field: 'PackageName', minWidth: 120, title: '所属产品' },
   {
@@ -626,19 +626,19 @@ onMounted(async () => {
           />
         </Space.Compact>
         <Space.Compact v-if="activeType === 'summary'">
-          <span class="query-field-addon">代理账号</span>
+          <span class="query-field-addon">所属代理</span>
           <Input
             v-model:value="filters.AdminName"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           />
         </Space.Compact>
         <Space.Compact>
-          <span class="query-field-addon">产品</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filters.PackId"
             :options="packageSelectOptions"
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
             show-search
           />
         </Space.Compact>

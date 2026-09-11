@@ -159,7 +159,7 @@ watch(visibleTabs, (tabs) => {
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
           <Space.Compact>
-            <span class="query-field-addon">代理账号</span>
+            <span class="query-field-addon">所属代理</span>
             <AccountSelect v-model="filterAdminIds" />
           </Space.Compact>
           <Space.Compact>

@@ -163,7 +163,7 @@ function restrictionConfig(type: number): CreditPanelConfig {
     baseQuery: { LimitType: type },
     checkbox: canRemove.value,
     columns: [
-      { field: 'AgentAccount', title: '代理账号' },
+      { field: 'AgentAccount', title: '所属代理' },
       {
         field: 'AccountType',
         formatter: (value) => accountTypeMap[Number(value)] || '-',
@@ -197,7 +197,7 @@ function restrictionConfig(type: number): CreditPanelConfig {
       : undefined,
     fetchApi: (query) => getAgentRestrictionListApi(query as never),
     filters: [
-      { field: 'AgentAccount', label: '代理账号' },
+      { field: 'AgentAccount', label: '所属代理' },
       {
         field: 'AccountType',
         label: '代理类型',
@@ -246,7 +246,7 @@ function validAccounts(value: string) {
 
 async function submitAdd() {
   if (!validAccounts(addForm.AgentAccounts)) {
-    message.warning('请输入以逗号分隔的代理账号');
+    message.warning('请输入以逗号分隔的所属代理');
     return;
   }
   if (
@@ -454,7 +454,7 @@ onMounted(() => {
         </Table>
       </Card>
 
-      <Card class="mt-4" size="small" title="按代理账号限制">
+      <Card class="mt-4" size="small" title="按所属代理限制">
         <CreditDataPanel
           :ref="(el) => el && (panelRefs[Number(tab.key) - 1] = el as never)"
           :config="restrictionConfig(Number(tab.key))"
@@ -492,11 +492,11 @@ onMounted(() => {
   <Modal
     v-model:open="addOpen"
     :confirm-loading="addSubmitting"
-    title="添加代理账号限制"
+    title="添加所属代理限制"
     @ok="submitAdd"
   >
     <Form layout="vertical">
-      <Form.Item label="代理账号（多个用逗号分隔）" required>
+      <Form.Item label="所属代理（多个用逗号分隔）" required>
         <Input.TextArea v-model:value="addForm.AgentAccounts" :rows="4" />
       </Form.Item>
       <template v-if="addForm.LimitType === 3">

@@ -125,12 +125,12 @@ onMounted(() => {
         </Input>
       </div>
       <Space.Compact>
-        <span class="query-field-addon">产品包</span>
+        <span class="query-field-addon">所属产品</span>
         <Select
           v-model:value="recordFilters.PackageId"
           allow-clear
           :options="packageOptions"
-          placeholder="请选择产品包"
+          placeholder="请选择所属产品"
         />
       </Space.Compact>
       <div class="query-filter-wide">

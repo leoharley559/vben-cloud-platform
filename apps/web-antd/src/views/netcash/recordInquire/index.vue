@@ -126,7 +126,7 @@ const base = [
   { field: 'CreateTime', formatter: dt, title: '日期' },
   { field: 'LoginAccount', slot: 'loginAccount', title: '游戏账号' },
   { field: 'PackageName', title: '所属产品' },
-  { field: 'AgentAccount', slot: 'agencyAccount', title: '代理账号' },
+  { field: 'AgentAccount', slot: 'agencyAccount', title: '所属代理' },
   { field: 'AgentName', title: '代理名称' },
 ];
 
@@ -248,7 +248,7 @@ const tabs = computed(() =>
             title: '游戏账号',
           },
           { field: 'PackageName', title: '所属产品' },
-          { field: 'Username', slot: 'agencyAccount', title: '代理账号' },
+          { field: 'Username', slot: 'agencyAccount', title: '所属代理' },
           {
             field: 'VipLevel',
             slot: 'vipLevel',
@@ -361,7 +361,7 @@ const tabs = computed(() =>
     {
       config: {
         columns: [
-          { field: 'AdminAccount', slot: 'agencyAccount', title: '代理账号' },
+          { field: 'AdminAccount', slot: 'agencyAccount', title: '所属代理' },
           { field: 'OrderId', title: '订单号' },
           {
             field: 'WalletType',

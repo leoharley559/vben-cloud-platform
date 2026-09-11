@@ -226,7 +226,7 @@ const gridOptions: VxeTableGridOptions<PlayerAdjustListItem> = {
       field: 'AdminUserName',
       minWidth: 110,
       slots: { default: 'adminUserName' },
-      title: '代理账号',
+      title: '所属代理',
     },
     {
       field: 'PackageName',
@@ -450,7 +450,7 @@ async function handleExport() {
           header: '玩家昵称',
           value: (row) => String(row.PlayerName || '-'),
         },
-        { header: '代理账号', value: (row) => row.AdminUserName || '-' },
+        { header: '所属代理', value: (row) => row.AdminUserName || '-' },
         { header: '产品名称', value: (row) => row.PackageName || '-' },
         { header: '所属渠道', value: (row) => formatChannel(row) },
         {
@@ -491,6 +491,38 @@ onMounted(() => {
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterAdminUserName"
+            allow-clear
+            placeholder="请输入所属代理"
+          >
+            <template #addonBefore>所属代理</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
@@ -519,44 +551,22 @@ onMounted(() => {
             <template #addonBefore>玩家昵称</template>
           </Input>
         </div>
-        <Space.Compact>
-          <span class="query-field-addon">产品名称</span>
-          <Select
-            v-model:value="filterPackageId"
-            allow-clear
-            :options="packageSelectOptions"
-            show-search
-            :filter-option="
-              (input, option) =>
-                String(option?.label ?? '')
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-            "
-            placeholder="请选择产品名称"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">渠道号</span>
-          <ChannelSelect
-            v-model="filterChannelIds"
-            placeholder="请输入渠道号"
-          />
-        </Space.Compact>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterAdminUserName"
-            allow-clear
-            placeholder="请输入代理账号"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
-        </div>
+        
+        
         <Space.Compact>
           <span class="query-field-addon">调整类型</span>
           <Select
             v-model:value="filterReason"
             :options="ADJUST_REASON_OPTIONS"
             placeholder="请选择调整类型"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">调整方式</span>
+          <Select
+            v-model:value="filterHandleType"
+            :options="ADJUST_AUDIT_HANDLE_TYPE_OPTIONS"
+            placeholder="请选择调整方式"
           />
         </Space.Compact>
         <div class="flex flex-col gap-1">
@@ -568,14 +578,7 @@ onMounted(() => {
             <template #addonBefore>订单编号</template>
           </Input>
         </div>
-        <Space.Compact>
-          <span class="query-field-addon">调整方式</span>
-          <Select
-            v-model:value="filterHandleType"
-            :options="ADJUST_AUDIT_HANDLE_TYPE_OPTIONS"
-            placeholder="请选择调整方式"
-          />
-        </Space.Compact>
+        
         <Space.Compact>
           <span class="query-field-addon">流水类型</span>
           <Select

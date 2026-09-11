@@ -146,7 +146,7 @@ function buildColumns() {
     });
   }
   columns.push(
-    { field: 'AdminUserName', minWidth: 120, title: '推广账号' },
+    { field: 'AdminUserName', minWidth: 120, title: '所属代理' },
     { field: 'AdminName', minWidth: 120, title: '推广名称' },
     { field: 'Money', minWidth: 100, title: '申请金额' },
     {
@@ -383,11 +383,11 @@ onMounted(() => {
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
           <Space.Compact>
-            <span class="query-field-addon">推广账号</span>
+            <span class="query-field-addon">所属代理</span>
             <Input
               v-model:value="filterAdminUserName"
               allow-clear
-              placeholder="请输入推广账号"
+              placeholder="请输入所属代理"
               @keydown.space.prevent
               @press-enter="reloadGrid"
             />

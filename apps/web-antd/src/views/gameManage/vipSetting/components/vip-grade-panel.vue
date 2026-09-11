@@ -136,13 +136,18 @@ async function loadData() {
   }
 }
 
+/** 表格行是 Vue Proxy，structuredClone 无法克隆 */
+function cloneRow(row: Row): Row {
+  return JSON.parse(JSON.stringify(row)) as Row;
+}
+
 function openForm(row?: Row) {
   Object.keys(form).forEach((key) => delete form[key]);
   editing.value = !!row;
   Object.assign(
     form,
     row
-      ? structuredClone(row)
+      ? cloneRow(row)
       : Object.fromEntries([
           ['Id', ''],
           [

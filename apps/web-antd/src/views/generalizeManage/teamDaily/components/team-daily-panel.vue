@@ -373,14 +373,14 @@ onMounted(() => {
           </div>
           <div class="query-bar">
             <Space.Compact>
-              <span class="query-field-addon">推广账号</span>
+              <span class="query-field-addon">所属代理</span>
               <Select
                 v-model:value="filterAdminId"
                 allow-clear
                 :options="teamAccountOptions"
                 show-search
                 style="width: 220px"
-                placeholder="请选择推广账号"
+                placeholder="请选择所属代理"
               />
             </Space.Compact>
             <div class="query-filter-wide">

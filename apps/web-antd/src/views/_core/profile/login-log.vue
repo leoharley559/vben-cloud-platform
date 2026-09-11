@@ -3,7 +3,7 @@ import type { AccountLoginLogItem } from '#/api/core/account-login';
 
 import { onMounted, ref } from 'vue';
 
-import { message, Pagination, Table } from 'ant-design-vue';
+import { message, Table } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { fetchAccountLoginLogListApi } from '#/api/core/account-login';
@@ -75,8 +75,10 @@ async function loadData(nextPage = page.value, nextSize = pageSize.value) {
   }
 }
 
-function handlePageChange(nextPage: number, nextSize: number) {
-  void loadData(nextPage, nextSize);
+function handleTableChange(
+  pagination: { current?: number; pageSize?: number },
+) {
+  void loadData(pagination.current || 1, pagination.pageSize || pageSize.value);
 }
 
 onMounted(() => {
@@ -85,27 +87,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-w-0 overflow-hidden">
+  <div class="flex min-h-0 flex-col">
     <Table
       :columns="columns"
       :data-source="tableData"
       :loading="loading"
-      :pagination="false"
-      :scroll="{ x: 'max-content' }"
+      :pagination="{
+        current: page,
+        pageSize,
+        pageSizeOptions: TABLE_ANT_PAGE_SIZE_OPTIONS,
+        showQuickJumper: true,
+        showSizeChanger: true,
+        showTotal: (count: number) => `共 ${count} 条`,
+        total,
+      }"
+      :scroll="{ x: 'max-content', y: 420 }"
       bordered
       row-key="_rowKey"
       size="small"
+      @change="handleTableChange"
     />
-    <div class="mt-4 flex justify-end">
-      <Pagination
-        :current="page"
-        :page-size="pageSize"
-        :page-size-options="TABLE_ANT_PAGE_SIZE_OPTIONS"
-        :total="total"
-        show-size-changer
-        @change="handlePageChange"
-        @show-size-change="handlePageChange"
-      />
-    </div>
   </div>
 </template>

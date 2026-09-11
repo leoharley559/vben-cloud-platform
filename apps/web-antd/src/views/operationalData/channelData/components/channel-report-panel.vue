@@ -269,7 +269,7 @@ function buildExportColumns(): CsvColumn<ChannelRow>[] {
   }
   if (dim.value === 'agent') {
     cols.push(
-      { header: '代理账号', value: (row) => String(row.Username || '') },
+      { header: '所属代理', value: (row) => String(row.Username || '') },
       { header: '代理名称', value: (row) => String(row.Agentname || '') },
       {
         header: '代理类型',
@@ -476,7 +476,7 @@ onMounted(() => {
         </Space.Compact>
 
         <Space.Compact>
-          <span class="query-field-addon">产品</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="packageId"
             :options="
@@ -486,7 +486,7 @@ onMounted(() => {
               }))
             "
             allow-clear
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
 

@@ -32,6 +32,7 @@ import {
   AGENCY_PHONE_AREA_CODE_OPTIONS,
   AGENCY_TYPE_FORM_OPTIONS,
   AGENCY_TYPE_FORM_OPTIONS_WITH_TEST,
+  getAgentFanDianLines,
   getAgentFanDianProjectConfig,
   getOrCreateAgencyDeviceId,
   initAgentFanDianFormFromAgent,
@@ -198,6 +199,32 @@ function failValidate(msg: string) {
   return false;
 }
 
+function hasValidDeveloperId(id: unknown) {
+  if (id === undefined || id === null || id === '') {
+    return false;
+  }
+  const numeric = Number(id);
+  return !Number.isNaN(numeric) && numeric !== 0;
+}
+
+/** 详情接口常把未填字段写成 0 / 空字符串，不能盖掉列表行上的发展人 */
+function mergeAgencyEditDetail(
+  row: AgencyListItem,
+  detail: AgencyListItem,
+): AgencyListItem {
+  const merged = { ...row, ...detail } as AgencyListItem;
+  if (!hasValidDeveloperId(merged.DeveloperId) && hasValidDeveloperId(row.DeveloperId)) {
+    merged.DeveloperId = row.DeveloperId;
+  }
+  if (
+    !String(merged.DeveloperName || '').trim() &&
+    String(row.DeveloperName || '').trim()
+  ) {
+    merged.DeveloperName = row.DeveloperName;
+  }
+  return merged;
+}
+
 async function resolveEditRow(row: AgencyListItem) {
   const adminId = row.AdminId ?? row.Id;
   if (!adminId) {
@@ -206,7 +233,7 @@ async function resolveEditRow(row: AgencyListItem) {
   try {
     const detail = await fetchAgentNetcashDetailApi(adminId);
     if (detail && typeof detail === 'object' && Object.keys(detail).length > 0) {
-      return { ...row, ...detail } as AgencyListItem;
+      return mergeAgencyEditDetail(row, detail as AgencyListItem);
     }
   } catch {
     // 详情接口失败时回退列表行数据
@@ -214,37 +241,57 @@ async function resolveEditRow(row: AgencyListItem) {
   return row;
 }
 
-function syncDeveloperFromRow(row: AgencyListItem) {
-  const rawId = row.DeveloperId;
-  if (rawId !== undefined && rawId !== null && rawId !== '' && rawId !== 0) {
-    const hit = developerOptions.value.find(
-      (item) => String(item.value) === String(rawId),
+function findDeveloperOption(id?: unknown, name?: string) {
+  if (hasValidDeveloperId(id)) {
+    const byId = developerOptions.value.find(
+      (item) => String(item.value) === String(id),
     );
-    if (hit) {
-      form.DeveloperId = hit.value;
-      form.DeveloperName = hit.developerName;
-      return;
+    if (byId) {
+      return byId;
     }
   }
-
-  const name = String(row.DeveloperName || '').trim();
-  if (!name) {
-    form.DeveloperId = undefined;
-    form.DeveloperName = '';
-    return;
+  const trimmed = String(name || '').trim().toLowerCase();
+  if (!trimmed) {
+    return undefined;
   }
-
-  const byName = developerOptions.value.find(
-    (item) => item.developerName === name,
+  return developerOptions.value.find(
+    (item) =>
+      item.developerName.toLowerCase() === trimmed ||
+      item.label.toLowerCase() === trimmed,
   );
-  if (byName) {
-    form.DeveloperId = byName.value;
-    form.DeveloperName = byName.developerName;
+}
+
+function ensureDeveloperOption(id: number | string, name: string) {
+  if (developerOptions.value.some((item) => String(item.value) === String(id))) {
     return;
   }
+  developerOptions.value = [
+    {
+      developerName: name || String(id),
+      label: name || String(id),
+      value: id,
+    },
+    ...developerOptions.value,
+  ];
+}
 
-  form.DeveloperName = name;
+function syncDeveloperFromRow(row: AgencyListItem) {
+  const name = String(row.DeveloperName || '').trim();
+  const hit = findDeveloperOption(row.DeveloperId, name);
+  if (hit) {
+    form.DeveloperId = hit.value;
+    form.DeveloperName = hit.developerName;
+    return;
+  }
+  if (hasValidDeveloperId(row.DeveloperId)) {
+    const id = row.DeveloperId as number | string;
+    ensureDeveloperOption(id, name);
+    form.DeveloperId = id;
+    form.DeveloperName = name;
+    return;
+  }
   form.DeveloperId = undefined;
+  form.DeveloperName = name;
 }
 
 function syncCloneChannelPlanFromRow(row: AgencyListItem) {
@@ -512,6 +559,29 @@ async function openCreateForm() {
   suppressTypeWatch.value = false;
 }
 
+function resetFanDianToDefault() {
+  agentFanDianForm.value = initAgentFanDianFormFromProject(
+    cloudStore.projectConfig,
+  );
+  message.success('已恢复为新建代理时的返水配置');
+}
+
+function applyNegativeProfitMode() {
+  if (!agentFanDianForm.value) {
+    return;
+  }
+  const next = JSON.parse(
+    JSON.stringify(agentFanDianForm.value),
+  ) as AgentFanDianConfig;
+  for (const grade of Object.values(next)) {
+    for (const line of getAgentFanDianLines(grade)) {
+      line.rebate = 0;
+    }
+  }
+  agentFanDianForm.value = next;
+  message.success('已切换为负盈利模式，各等级返水均为 0');
+}
+
 watch(
   () => props.open,
   async (open) => {
@@ -561,13 +631,13 @@ function validate() {
   validationMessage.value = '';
   const username = form.Username.trim();
   if (!username) {
-    return failValidate('请输入代理账号');
+    return failValidate('请输入所属代理');
   }
   if (
     props.mode === 'create' &&
     !/^[a-zA-Z][a-zA-Z0-9_]{7,11}$/.test(username)
   ) {
-    return failValidate('代理账号须以字母开头，8-12位字母数字下划线');
+    return failValidate('所属代理须以字母开头，8-12位字母数字下划线');
   }
   if (props.mode === 'create') {
     if (!form.Password || form.Password.length < 6) {
@@ -801,11 +871,11 @@ async function handleSubmit() {
     </div>
     <Form v-else layout="vertical">
       <div class="grid grid-cols-1 gap-x-4 md:grid-cols-2">
-        <Form.Item label="代理账号" required>
+        <Form.Item label="所属代理" required>
           <Input
             v-model:value="form.Username"
             :disabled="mode === 'edit'"
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
             @input="handleUsernameInput"
           />
         </Form.Item>
@@ -877,6 +947,7 @@ async function handleSubmit() {
           <Select
             v-model:value="form.DeveloperId"
             :loading="optionsLoading"
+            option-filter-prop="label"
             :options="developerOptions"
             placeholder="请选择发展人"
             show-search
@@ -1007,8 +1078,19 @@ async function handleSubmit() {
 
       <Form.Item
         v-if="hasAgentFanDianConfig && agentFanDianForm"
-        label="游戏返水配置"
+        :colon="false"
       >
+        <template #label>
+          <span class="inline-flex items-center gap-2">
+            游戏返水配置
+            <Button size="small" type="primary" @click.stop="resetFanDianToDefault">
+              重置默认值
+            </Button>
+            <Button size="small" danger @click.stop="applyNegativeProfitMode">
+              负盈利模式
+            </Button>
+          </span>
+        </template>
         <AgencyFanDianFormPanel v-model="agentFanDianForm" />
       </Form.Item>
 

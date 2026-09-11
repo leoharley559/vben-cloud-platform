@@ -51,7 +51,7 @@ const gridOptions: VxeTableGridOptions<ChannelRow> = {
       field: 'PromoterAdminUserName',
       minWidth: 120,
       slots: { default: 'promoterUsername' },
-      title: '代理账号',
+      title: '所属代理',
     },
     { field: 'PromoterAdminName', minWidth: 120, title: '代理名称' },
     { field: 'InvitationCode', minWidth: 120, title: '邀请码' },
@@ -145,9 +145,9 @@ function handleSearch() {
             v-model:value="filterUsername"
             allow-clear
             @press-enter="handleSearch"
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <div class="query-filter-actions query-filter-actions-single">

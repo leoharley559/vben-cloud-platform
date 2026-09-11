@@ -163,7 +163,7 @@ const gridOptions: VxeTableGridOptions<AdjustRow> = {
       field: 'AdminUserName',
       minWidth: 110,
       slots: { default: 'adminUserName' },
-      title: '代理账号',
+      title: '所属代理',
     },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'ChannelId', minWidth: 100, title: '所属渠道' },
@@ -349,7 +349,7 @@ async function handleExport() {
           value: (row) => formatRewardAdjustHandleType(row.HandleType),
         },
         { header: '游戏账号', value: (row) => row.LoginAccount || '-' },
-        { header: '代理账号', value: (row) => row.AdminUserName || '-' },
+        { header: '所属代理', value: (row) => row.AdminUserName || '-' },
         { header: '所属产品', value: (row) => row.PackageName || '-' },
         { header: '所属渠道', value: (row) => row.ChannelId || '-' },
         { header: '调整积分', value: (row) => row.Amount ?? '-' },
@@ -417,9 +417,9 @@ onMounted(() => {
           <Input
             v-model:value="filterAdminUserName"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <Space.Compact>

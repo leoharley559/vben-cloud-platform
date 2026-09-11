@@ -22,7 +22,11 @@ import {
   fetchCryptoAddressListApi,
   updateCryptoAddressApi,
 } from '#/api/memberManage/crypto-address';
-import PassPopup from '#/components/security/pass-popup.vue';
+import GoogleCodeField from '#/components/security/google-code-field.vue';
+import {
+  googleCodePayload,
+  needGoogleCode,
+} from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   CRYPTO_CONFIG_TYPE_OPTIONS,
@@ -55,10 +59,10 @@ const saving = ref(false);
 const list = ref<CryptoAddressListItem[]>([]);
 const formOpen = ref(false);
 const formMode = ref<'create' | 'edit'>('create');
+const deleteOpen = ref(false);
 const deleteIsBlack = ref(false);
 const pendingDeleteId = ref<number | string>('');
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
-const passAction = ref<'delete' | 'save'>('save');
+const deleteValidCode = ref('');
 
 const form = reactive({
   DigitalAddress: '',
@@ -66,6 +70,7 @@ const form = reactive({
   DigitalConfigType: 1,
   DigitalType: 'USDT',
   Id: '' as number | string,
+  ValidCode: '',
 });
 
 const columns = [
@@ -128,6 +133,7 @@ function openCreate() {
   form.DigitalConfigType = 1;
   form.DigitalAlias = '';
   form.DigitalAddress = '';
+  form.ValidCode = '';
   formOpen.value = true;
 }
 
@@ -138,6 +144,7 @@ function openEdit(row: CryptoAddressListItem) {
   form.DigitalConfigType = Number(row.DigitalConfigType || 1);
   form.DigitalAlias = String(row.DigitalAlias || '');
   form.DigitalAddress = String(row.DigitalAddress || '');
+  form.ValidCode = '';
   formOpen.value = true;
 }
 
@@ -154,11 +161,14 @@ function requestSave() {
     message.warning(addressError);
     return;
   }
-  passAction.value = 'save';
-  passPopupRef.value?.validate(CRYPTO_SECURITY_PAGE_ID);
+  if (needGoogleCode(CRYPTO_SECURITY_PAGE_ID, form.ValidCode)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doSave();
 }
 
-async function doSave(extra: Record<string, unknown> = {}) {
+async function doSave() {
   saving.value = true;
   try {
     const address = form.DigitalAddress.replaceAll(/\s/g, '');
@@ -171,7 +181,7 @@ async function doSave(extra: Record<string, unknown> = {}) {
       LoginAccount: props.loginAccount || '',
       PackageName: props.packageName || '',
       PlayerId: props.playerId,
-      ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
+      ...googleCodePayload(form.ValidCode),
     };
     if (formMode.value === 'create') {
       await createCryptoAddressApi({
@@ -199,11 +209,19 @@ function requestDelete(row: CryptoAddressListItem) {
   }
   pendingDeleteId.value = row.Id;
   deleteIsBlack.value = false;
-  passAction.value = 'delete';
-  passPopupRef.value?.prompt(CRYPTO_SECURITY_PAGE_ID);
+  deleteValidCode.value = '';
+  deleteOpen.value = true;
 }
 
-async function doDelete(extra: Record<string, unknown> = {}) {
+function requestDeleteConfirm() {
+  if (needGoogleCode(CRYPTO_SECURITY_PAGE_ID, deleteValidCode.value)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doDelete();
+}
+
+async function doDelete() {
   if (pendingDeleteId.value === '') {
     return;
   }
@@ -211,22 +229,15 @@ async function doDelete(extra: Record<string, unknown> = {}) {
   try {
     await deleteCryptoAddressApi(pendingDeleteId.value, {
       IsBlack: deleteIsBlack.value,
-      ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
+      ...googleCodePayload(deleteValidCode.value),
     });
     message.success('已删除');
+    deleteOpen.value = false;
     await loadList();
   } finally {
     loading.value = false;
     pendingDeleteId.value = '';
   }
-}
-
-function handlePassConfirm(data: Record<string, unknown>) {
-  if (passAction.value === 'delete') {
-    void doDelete(data);
-    return;
-  }
-  void doSave(data);
 }
 
 watch(
@@ -333,20 +344,33 @@ onMounted(() => {
             placeholder="请输入地址"
           />
         </Form.Item>
+        <GoogleCodeField
+          :page-id="CRYPTO_SECURITY_PAGE_ID"
+          v-model:value="form.ValidCode"
+        />
       </Form>
     </Modal>
 
-    <PassPopup
-      ref="passPopupRef"
-      :prompt-msg="passAction === 'delete' ? '确认删除该虚拟币地址？' : ''"
-      :title="passAction === 'delete' ? '删除虚拟币地址' : '安全验证'"
-      @confirm="handlePassConfirm"
+    <Modal
+      v-model:open="deleteOpen"
+      :confirm-loading="loading"
+      destroy-on-close
+      title="删除虚拟币地址"
+      @ok="requestDeleteConfirm"
     >
-      <template v-if="passAction === 'delete'" #extra>
-        <Checkbox v-model:checked="deleteIsBlack" class="mt-3">
-          删除同时加入黑名单
-        </Checkbox>
-      </template>
-    </PassPopup>
+      <div class="mb-3 text-sm text-gray-700">确认删除该虚拟币地址？</div>
+      <Form layout="vertical" class="pt-2">
+        <GoogleCodeField
+          compact
+          :page-id="CRYPTO_SECURITY_PAGE_ID"
+          v-model:value="deleteValidCode"
+        />
+        <Form.Item class="!mb-0">
+          <Checkbox v-model:checked="deleteIsBlack">
+            删除同时加入黑名单
+          </Checkbox>
+        </Form.Item>
+      </Form>
+    </Modal>
   </div>
 </template>

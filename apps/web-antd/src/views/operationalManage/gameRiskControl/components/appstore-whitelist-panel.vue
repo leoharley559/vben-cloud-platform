@@ -9,6 +9,7 @@ import {
   Modal,
   Result,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 
@@ -143,7 +144,14 @@ onMounted(() => {
   <div v-if="canView">
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
-        <Select v-model:value="filterKey" :options="APP_STORE_KEY_OPTIONS" />
+        <Space.Compact>
+          <span class="query-field-addon">应用标识</span>
+          <Select
+            v-model:value="filterKey"
+            :options="APP_STORE_KEY_OPTIONS"
+            placeholder="请选择应用标识"
+          />
+        </Space.Compact>
         <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="loadList">
             查询

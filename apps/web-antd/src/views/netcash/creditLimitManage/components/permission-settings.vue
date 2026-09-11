@@ -77,7 +77,7 @@ const currentTab = computed(() =>
 );
 const restrictionColumns = computed(() => [
   { key: 'seq', title: '序号', width: 70 },
-  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '代理账号' },
+  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '所属代理' },
   { dataIndex: 'AccountType', key: 'AccountType', title: '代理类型' },
   ...(activeType.value === 3
     ? [
@@ -283,7 +283,7 @@ async function submitAdd() {
     '',
   );
   if (!accounts || !/^[\w,]+$/.test(accounts)) {
-    message.warning('请输入以英文逗号分隔的代理账号');
+    message.warning('请输入以英文逗号分隔的所属代理');
     return;
   }
   const min = Number(addForm.MinDepositAmount || 0);
@@ -341,7 +341,7 @@ async function handleExport() {
       IsExp: true,
     });
     const exportColumns = [
-      { field: 'AgentAccount', title: '代理账号' },
+      { field: 'AgentAccount', title: '所属代理' },
       {
         field: 'AccountType',
         formatter: (value: unknown) => accountTypeMap[Number(value)] || '-',
@@ -484,12 +484,12 @@ v-model:checked="record.Status" :checked-value="1" :disabled="!record.editing"
       </Card>
     </div>
 
-    <Card class="mt-4" size="small" title="按代理账号限制">
+    <Card class="mt-4" size="small" title="按所属代理限制">
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
           <div class="flex flex-col gap-1">
-            <Input v-model:value="query.AgentAccount" allow-clear @press-enter="search" placeholder="请输入代理账号">
-              <template #addonBefore>代理账号</template>
+            <Input v-model:value="query.AgentAccount" allow-clear @press-enter="search" placeholder="请输入所属代理">
+              <template #addonBefore>所属代理</template>
             </Input>
           </div>
           <Space.Compact>
@@ -565,9 +565,9 @@ v-if="total" v-model:current="query.Page" v-model:page-size="query.PageSize"
     </Card>
   </div>
 
-  <Modal v-model:open="addOpen" :confirm-loading="addSubmitting" title="添加代理账号限制" @ok="submitAdd">
+  <Modal v-model:open="addOpen" :confirm-loading="addSubmitting" title="添加所属代理限制" @ok="submitAdd">
     <Form layout="vertical">
-      <Form.Item label="代理账号（多个用英文逗号分隔）" required>
+      <Form.Item label="所属代理（多个用英文逗号分隔）" required>
         <Input.TextArea v-model:value="addForm.AgentAccounts" :rows="4" />
       </Form.Item>
       <template v-if="activeType === 3">

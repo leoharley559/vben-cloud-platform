@@ -13,7 +13,11 @@ import {
   fetchPlayerBasicInfoApi,
   queryPlayerByAccountApi,
 } from '#/api/operationManage/player';
-import PassPopup from '#/components/security/pass-popup.vue';
+import GoogleCodeField from '#/components/security/google-code-field.vue';
+import {
+  googleCodePayload,
+  needGoogleCode,
+} from '#/components/security/security-utils';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { useProjectConfig } from '#/composables/use-project-config';
 import { createRequestHash } from '#/utils/crypto';
@@ -37,8 +41,8 @@ const BANK_CARD_SECURITY_PAGE_ID = 8;
 const { packageOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const submitting = ref(false);
+const validCode = ref('');
 const loginAccount = ref('');
 const packageName = ref('');
 const playerId = ref<number | string>('');
@@ -74,6 +78,7 @@ watch(
     if (!open) {
       return;
     }
+    validCode.value = '';
     if (props.mode === 'edit' && props.row) {
       cardId.value = props.row.Id || '';
       loginAccount.value = String(props.row.LoginAccount || '');
@@ -145,10 +150,14 @@ async function requestSubmit() {
       return;
     }
   }
-  passPopupRef.value?.validate(BANK_CARD_SECURITY_PAGE_ID);
+  if (needGoogleCode(BANK_CARD_SECURITY_PAGE_ID, validCode.value)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void handleSubmit();
 }
 
-async function handleSubmit(extra: Record<string, unknown> = {}) {
+async function handleSubmit() {
   submitting.value = true;
   try {
     const payload = {
@@ -158,7 +167,7 @@ async function handleSubmit(extra: Record<string, unknown> = {}) {
       LoginAccount: loginAccount.value,
       PackageName: packageName.value,
       PlayerId: playerId.value,
-      ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
+      ...googleCodePayload(validCode.value),
       ...(props.mode === 'edit' ? { Id: cardId.value } : {}),
     };
     if (props.mode === 'create') {
@@ -229,8 +238,10 @@ async function handleSubmit(extra: Record<string, unknown> = {}) {
           show-search
         />
       </Form.Item>
+      <GoogleCodeField
+        :page-id="BANK_CARD_SECURITY_PAGE_ID"
+        v-model:value="validCode"
+      />
     </Form>
   </Modal>
-
-  <PassPopup ref="passPopupRef" title="安全验证" @confirm="handleSubmit" />
 </template>

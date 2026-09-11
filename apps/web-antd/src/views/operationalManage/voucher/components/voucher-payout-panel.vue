@@ -364,13 +364,13 @@ async function handleIssueExport(payload: Record<string, unknown>) {
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
           <Space.Compact>
-            <span class="query-field-addon">产品包</span>
+            <span class="query-field-addon">所属产品</span>
             <Select
               v-model:value="singleForm.PackageId"
               allow-clear
               :field-names="{ label: 'PackageName', value: 'PackageId' }"
               :options="packageOptions"
-              placeholder="请选择产品包"
+              placeholder="请选择所属产品"
             />
           </Space.Compact>
           <Input

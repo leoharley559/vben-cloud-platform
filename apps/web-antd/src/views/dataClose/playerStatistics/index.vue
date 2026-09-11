@@ -1006,9 +1006,9 @@ onMounted(() => {
               v-model:value="filters.Promoter"
               allow-clear
               @press-enter="handleSearch"
-              placeholder="请输入代理账号"
+              placeholder="请输入所属代理"
             >
-              <template #addonBefore>代理账号</template>
+              <template #addonBefore>所属代理</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
@@ -1022,14 +1022,14 @@ onMounted(() => {
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
-              <span class="query-field-addon">产品名称</span>
+              <span class="query-field-addon">所属产品</span>
               <Select
                 v-model:value="filters.PackageId"
                 allow-clear
                 :options="packageSelectOptions"
                 show-search
                 option-filter-prop="label"
-                placeholder="请选择产品名称"
+                placeholder="请选择所属产品"
               />
             </Space.Compact>
           </div>

@@ -45,7 +45,7 @@ const statusOptions = [
 const columns = [
   { key: 'seq', title: '序号', width: 70 },
   { dataIndex: 'OrderId', key: 'OrderId', title: '订单号' },
-  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '代理账号' },
+  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '所属代理' },
   { dataIndex: 'AccountType', key: 'AccountType', title: '代理类型' },
   { dataIndex: 'TransferType', key: 'TransferType', title: '申请类型' },
   { dataIndex: 'AdjustAmount', key: 'AdjustAmount', title: '申请金额（元）' },
@@ -119,9 +119,9 @@ onMounted(load);
             v-model:value="query.AgentAccount"
             allow-clear
             @press-enter="search"
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <Space.Compact>

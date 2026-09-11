@@ -34,6 +34,7 @@ export interface AgencyListItem {
   CommissionRateDiff?: number;
   CommissionTemplateId?: number;
   CreateTime?: number | string;
+  DeveloperId?: number | string;
   DeveloperName?: string;
   Id?: number | string;
   LastLoginAddress?: string;

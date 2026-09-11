@@ -11,6 +11,7 @@ import type {
   PlayerGameDetailSummary,
   PlayerLogItem,
   PlayerLogQuery,
+  PlayerLogTypeOption,
   PlayerPointsRecordItem,
   PlayerPointsRecordQuery,
   PlayerRebateRecordItem,
@@ -247,10 +248,9 @@ export function fetchPlayerRiskAnalysisGameApi(playerId: number | string) {
  * @see views/operationalManage/playerDetails/components/player-logs.vue
  */
 export function fetchPlayerActionLogsApi(query: PlayerLogQuery) {
-  return requestClient.get<CloudListResult<PlayerLogItem>>(
-    '/backend/playerinfo/playerinfolog',
-    { params: trimSpace(query) },
-  );
+  return requestClient.get<
+    CloudListResult<PlayerLogItem> & { LogType?: PlayerLogTypeOption[] }
+  >('/backend/playerinfo/playerinfolog', { params: trimSpace(query) });
 }
 
 /**

@@ -44,11 +44,16 @@ import {
 import { fetchPlayerLevelListApi } from '#/api/operationManage/player-level';
 import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import VipLevelTag from '#/components/global/vip-level-tag.vue';
-import PassPopup from '#/components/security/pass-popup.vue';
+import GoogleCodeField from '#/components/security/google-code-field.vue';
+import {
+  googleCodePayload,
+  needGoogleCode,
+} from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
+import { formatDevicePlatform } from '#/utils/everyday-report-format';
 import { getServiceImageUrl, getUploadMd5ImageUrl } from '#/utils/media';
-import { formatMemberType } from '#/utils/player-status';
+import { formatAccountType, formatMemberType } from '#/utils/player-status';
 
 import PlayerAlipayList from './player-alipay-list.vue';
 import PlayerBankCardList from './player-bank-card-list.vue';
@@ -73,14 +78,6 @@ const UNBIND_PHONE_SECURITY_PAGE_ID = 5;
 const PASSWORD_SECURITY_PAGE_ID = 6;
 const ID_CARD_SECURITY_PAGE_ID = 7;
 const INVITE_SITE_SECURITY_PAGE_ID = 0;
-
-type PendingAction =
-  | 'card'
-  | 'inviteSite'
-  | 'other'
-  | 'password'
-  | 'social'
-  | 'unbindPhone';
 
 type SocialType = 'facebook' | 'telegram' | 'viber';
 
@@ -154,29 +151,31 @@ const tagOpen = ref(false);
 const socialOpen = ref(false);
 const inviteOpen = ref(false);
 const cardOpen = ref(false);
+const unbindOpen = ref(false);
 const saving = ref(false);
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
-const pendingAction = ref<PendingAction>('password');
+const unbindValidCode = ref('');
 const socialType = ref<SocialType>('viber');
 
 const vipForm = reactive({ VipLevel: 0 as number });
-const phoneForm = reactive({ BindPhone: '', DialingCode: '86' });
+const phoneForm = reactive({ BindPhone: '', DialingCode: '86', ValidCode: '' });
 const otherForm = reactive({
   Address: '',
   DateOfBirth: undefined as Dayjs | undefined,
   Email: '',
   RealName: '',
+  ValidCode: '',
 });
 const inviterForm = reactive({ InviterLoginAccount: '' });
-const passwordForm = reactive({ NewPassword: '' });
+const passwordForm = reactive({ NewPassword: '', ValidCode: '' });
 const levelForm = reactive({ PlayerLevelId: 0 as number | string });
 const tagForm = reactive({ TagIds: [] as string[] });
-const socialForm = reactive({ value: '' });
-const inviteForm = reactive({ InviteSite: '' });
+const socialForm = reactive({ ValidCode: '', value: '' });
+const inviteForm = reactive({ InviteSite: '', ValidCode: '' });
 const cardForm = reactive({
   BackIdNumCardImg: '',
   FrontIdNumCardImg: '',
   IdNum: '',
+  ValidCode: '',
 });
 
 const selectedLevel = computed(() =>
@@ -249,7 +248,12 @@ watch(
 );
 
 function formatDateTime(value?: number | string) {
-  if (!value) {
+  if (
+    value === undefined ||
+    value === null ||
+    value === '' ||
+    Number(value) === 0
+  ) {
     return '-';
   }
   const num = Number(value);
@@ -257,6 +261,15 @@ function formatDateTime(value?: number | string) {
   return parsed.isValid()
     ? parsed.format('YYYY-MM-DD HH:mm:ss')
     : String(value);
+}
+
+function formatRegIp(info: PlayerBasicInfo) {
+  const ip = String(info.RegIp || '').trim();
+  const name = String(info.RegIpName || '').trim();
+  if (!ip && !name) {
+    return '-';
+  }
+  return name ? `${ip || '-'} ${name}` : ip;
 }
 
 async function loadLevelOptions() {
@@ -341,6 +354,7 @@ function openPhone() {
     /^\+/,
     '',
   );
+  phoneForm.ValidCode = '';
   phoneOpen.value = true;
 }
 
@@ -351,6 +365,7 @@ function openOther() {
   otherForm.DateOfBirth = parseDateValue(
     props.info?.DateOfBirth as number | string,
   );
+  otherForm.ValidCode = '';
   otherOpen.value = true;
 }
 
@@ -363,6 +378,7 @@ function openInviter() {
 
 function openPassword() {
   passwordForm.NewPassword = '';
+  passwordForm.ValidCode = '';
   passwordOpen.value = true;
 }
 
@@ -397,6 +413,7 @@ function openSocial(type: SocialType) {
   socialForm.value = String(
     (props.info as null | Record<string, unknown>)?.[field] || '',
   );
+  socialForm.ValidCode = '';
   socialOpen.value = true;
 }
 
@@ -411,6 +428,7 @@ async function openInvite() {
   } catch {
     inviteSiteOptions.value = [];
   }
+  inviteForm.ValidCode = '';
   inviteOpen.value = true;
 }
 
@@ -419,6 +437,7 @@ async function openCard() {
   cardForm.IdNum = String(cardInfo.value?.IdNum || '');
   cardForm.FrontIdNumCardImg = '';
   cardForm.BackIdNumCardImg = '';
+  cardForm.ValidCode = '';
   cardOpen.value = true;
   try {
     const images = (await fetchPlayerIdCardImagesApi({
@@ -458,6 +477,10 @@ async function submitPhone() {
     message.warning('请输入手机号');
     return;
   }
+  if (needGoogleCode(UNBIND_PHONE_SECURITY_PAGE_ID, phoneForm.ValidCode)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
   saving.value = true;
   try {
     await updatePlayerBindPhoneApi({
@@ -465,6 +488,7 @@ async function submitPhone() {
       DialingCode: phoneForm.DialingCode.replace(/^\+/, ''),
       PlayerId: props.info.PlayerId,
       UpField: 'BindPhone',
+      ...googleCodePayload(phoneForm.ValidCode),
     });
     message.success('手机号已更新');
     phoneOpen.value = false;
@@ -496,13 +520,14 @@ function resolveOtherUpField() {
 
 function requestOtherSave() {
   if (!props.info?.PlayerId) return;
-  pendingAction.value = 'other';
-  passPopupRef.value?.validate(OTHER_SECURITY_PAGE_ID, {
-    PlayerId: props.info.PlayerId,
-  });
+  if (needGoogleCode(OTHER_SECURITY_PAGE_ID, otherForm.ValidCode)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doOtherSave();
 }
 
-async function doOtherSave(data: Record<string, unknown>) {
+async function doOtherSave() {
   if (!props.info?.PlayerId) return;
   saving.value = true;
   try {
@@ -515,7 +540,7 @@ async function doOtherSave(data: Record<string, unknown>) {
       PlayerId: props.info.PlayerId,
       RealName: otherForm.RealName.trim(),
       UpField: resolveOtherUpField(),
-      ...(data.ValidCode ? { ValidCode: String(data.ValidCode) } : {}),
+      ...googleCodePayload(otherForm.ValidCode),
     });
     message.success('资料已更新');
     otherOpen.value = false;
@@ -550,31 +575,51 @@ function validatePassword(value: string) {
   return /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{8,20}$/.test(value);
 }
 
+/** 对齐旧站 updateBasicInfo：只带可 urlencoded 的标量字段 */
+function pickPlayerFormPayload(info: null | PlayerBasicInfo) {
+  const payload: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(info || {})) {
+    if (value == null) continue;
+    const valueType = typeof value;
+    if (
+      valueType === 'string' ||
+      valueType === 'number' ||
+      valueType === 'boolean'
+    ) {
+      payload[key] = value;
+    }
+  }
+  return payload;
+}
+
 function requestPasswordSave() {
   if (!props.info?.PlayerId) return;
   if (!validatePassword(passwordForm.NewPassword)) {
     message.warning('密码需 8–20 位，且同时包含字母和数字');
     return;
   }
-  pendingAction.value = 'password';
-  passPopupRef.value?.validate(PASSWORD_SECURITY_PAGE_ID, {
-    NewPassword: passwordForm.NewPassword,
-    PlayerId: props.info.PlayerId,
-  });
+  if (needGoogleCode(PASSWORD_SECURITY_PAGE_ID, passwordForm.ValidCode)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doPasswordSave();
 }
 
-async function doPasswordSave(data: Record<string, unknown>) {
+async function doPasswordSave() {
+  if (!props.info?.PlayerId) return;
   saving.value = true;
   try {
     await updatePlayerPasswordApi({
-      NewPassword: String(data.NewPassword || passwordForm.NewPassword),
-      PlayerId: String(data.PlayerId || props.info?.PlayerId || ''),
+      ...pickPlayerFormPayload(props.info),
+      NewPassword: passwordForm.NewPassword,
+      PlayerId: props.info.PlayerId,
       UpField: 'ChangePassword',
-      ...(data.ValidCode ? { ValidCode: String(data.ValidCode) } : {}),
+      ...googleCodePayload(passwordForm.ValidCode),
     });
     message.success('密码已修改');
     passwordOpen.value = false;
     passwordForm.NewPassword = '';
+    passwordForm.ValidCode = '';
   } finally {
     saving.value = false;
   }
@@ -618,21 +663,28 @@ async function submitTag() {
 
 function requestUnbindPhone() {
   if (!props.info?.PlayerId) return;
-  pendingAction.value = 'unbindPhone';
-  passPopupRef.value?.validate(UNBIND_PHONE_SECURITY_PAGE_ID, {
-    PlayerId: props.info.PlayerId,
-  });
+  unbindValidCode.value = '';
+  unbindOpen.value = true;
 }
 
-async function doUnbindPhone(data: Record<string, unknown>) {
+function confirmUnbindPhone() {
+  if (needGoogleCode(UNBIND_PHONE_SECURITY_PAGE_ID, unbindValidCode.value)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doUnbindPhone();
+}
+
+async function doUnbindPhone() {
   if (!props.info?.PlayerId) return;
   saving.value = true;
   try {
     await unbindPlayerPhoneApi({
       PlayerId: props.info.PlayerId,
-      ...(data.ValidCode ? { ValidCode: String(data.ValidCode) } : {}),
+      ...googleCodePayload(unbindValidCode.value),
     });
     message.success('手机号已解绑');
+    unbindOpen.value = false;
     emit('refreshed');
   } finally {
     saving.value = false;
@@ -650,19 +702,18 @@ function requestSocialSave() {
     message.warning('Telegram 账号格式不正确，需 5 位以上字母/数字/下划线');
     return;
   }
-  pendingAction.value = 'social';
-  passPopupRef.value?.validate(SOCIAL_BIND_SECURITY_PAGE_ID, {
-    PlayerId: props.info.PlayerId,
-  });
+  if (needGoogleCode(SOCIAL_BIND_SECURITY_PAGE_ID, socialForm.ValidCode)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doSocialSave();
 }
 
-async function doSocialSave(data: Record<string, unknown>) {
+async function doSocialSave() {
   if (!props.info?.PlayerId) return;
   saving.value = true;
   try {
-    const validCode = data.ValidCode
-      ? { ValidCode: String(data.ValidCode) }
-      : {};
+    const validCode = googleCodePayload(socialForm.ValidCode);
     const value = socialForm.value.trim();
     if (socialType.value === 'facebook') {
       await updatePlayerBindFacebookApi({
@@ -699,20 +750,21 @@ function requestInviteSave() {
     message.warning('请选择邀请站点');
     return;
   }
-  pendingAction.value = 'inviteSite';
-  passPopupRef.value?.validate(INVITE_SITE_SECURITY_PAGE_ID, {
-    PlayerId: props.info.PlayerId,
-  });
+  if (needGoogleCode(INVITE_SITE_SECURITY_PAGE_ID, inviteForm.ValidCode)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doInviteSave();
 }
 
-async function doInviteSave(data: Record<string, unknown>) {
+async function doInviteSave() {
   if (!props.info?.PlayerId) return;
   saving.value = true;
   try {
     await updatePlayerInviteSiteApi({
       InviteSite: inviteForm.InviteSite.trim(),
       PlayerId: props.info.PlayerId,
-      ...(data.ValidCode ? { ValidCode: String(data.ValidCode) } : {}),
+      ...googleCodePayload(inviteForm.ValidCode),
     });
     message.success('邀请站点已更新');
     inviteOpen.value = false;
@@ -757,13 +809,14 @@ function requestCardSave() {
     message.warning('请输入证件号码');
     return;
   }
-  pendingAction.value = 'card';
-  passPopupRef.value?.validate(ID_CARD_SECURITY_PAGE_ID, {
-    PlayerId: props.info.PlayerId,
-  });
+  if (needGoogleCode(ID_CARD_SECURITY_PAGE_ID, cardForm.ValidCode)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doCardSave();
 }
 
-async function doCardSave(data: Record<string, unknown>) {
+async function doCardSave() {
   if (!props.info?.PlayerId) return;
   saving.value = true;
   try {
@@ -771,7 +824,7 @@ async function doCardSave(data: Record<string, unknown>) {
       ...cardInfo.value,
       IdNum: cardForm.IdNum.trim(),
       PlayerId: props.info.PlayerId,
-      ...(data.ValidCode ? { ValidCode: String(data.ValidCode) } : {}),
+      ...googleCodePayload(cardForm.ValidCode),
     });
     if (cardForm.FrontIdNumCardImg || cardForm.BackIdNumCardImg) {
       await uploadPlayerIdCardImagesApi({
@@ -786,34 +839,6 @@ async function doCardSave(data: Record<string, unknown>) {
     emit('refreshed');
   } finally {
     saving.value = false;
-  }
-}
-
-function handlePassConfirm(data: Record<string, unknown>) {
-  switch (pendingAction.value) {
-    case 'card': {
-      void doCardSave(data);
-      break;
-    }
-    case 'inviteSite': {
-      void doInviteSave(data);
-      break;
-    }
-    case 'other': {
-      void doOtherSave(data);
-      break;
-    }
-    case 'social': {
-      void doSocialSave(data);
-      break;
-    }
-    case 'unbindPhone': {
-      void doUnbindPhone(data);
-      break;
-    }
-    default: {
-      void doPasswordSave(data);
-    }
   }
 }
 
@@ -925,7 +950,7 @@ onMounted(() => {
       <Descriptions.Item label="上级账号">
         {{ info.InviterLoginAccount || '-' }}
       </Descriptions.Item>
-      <Descriptions.Item label="推广账号">
+      <Descriptions.Item label="所属代理">
         {{ info.PromoterUserName || '-' }}
       </Descriptions.Item>
       <Descriptions.Item label="邀请码">
@@ -948,13 +973,28 @@ onMounted(() => {
         {{ formatDateTime(info.CreateTime) }}
       </Descriptions.Item>
       <Descriptions.Item label="最后登录">
-        {{ formatDateTime(info.LastLoginTime) }}
+        {{ formatDateTime(info.LastTime ?? info.LastLoginTime) }}
       </Descriptions.Item>
       <Descriptions.Item label="注册 IP">
-        {{ info.RegIp || '-' }}
+        {{ formatRegIp(info) }}
       </Descriptions.Item>
-      <Descriptions.Item label="注册来源">
-        {{ info.DevicePlatform || '-' }}
+      <Descriptions.Item label="注册设备类型">
+        {{ formatDevicePlatform(info.DevicePlatform) }}
+      </Descriptions.Item>
+      <Descriptions.Item label="注册设备号">
+        {{ info.DeviceId || '-' }}
+      </Descriptions.Item>
+      <Descriptions.Item label="最后登录设备类型">
+        {{ formatDevicePlatform(info.LastLoginPlatform) }}
+      </Descriptions.Item>
+      <Descriptions.Item label="最后登录设备号">
+        {{ info.LastLoginDeviceId || '-' }}
+      </Descriptions.Item>
+      <Descriptions.Item label="注册方式">
+        {{ formatAccountType(info.AccountType) }}
+      </Descriptions.Item>
+      <Descriptions.Item label="旧账号名">
+        {{ info.OldLoginAccount || '-' }}
       </Descriptions.Item>
       <Descriptions.Item label="真实姓名">
         {{ info.RealName || '-' }}
@@ -969,20 +1009,20 @@ onMounted(() => {
       <Descriptions.Item label="邮箱">
         {{ info.Email || '-' }}
       </Descriptions.Item>
-      <Descriptions.Item v-if="info.Address" label="地址">
-        {{ info.Address }}
+      <Descriptions.Item label="地址">
+        {{ info.Address || '-' }}
       </Descriptions.Item>
-      <Descriptions.Item v-if="info.DateOfBirth" label="生日">
+      <Descriptions.Item label="生日">
         {{ formatDateOnly(info.DateOfBirth as string | number | undefined) }}
       </Descriptions.Item>
-      <Descriptions.Item v-if="info.BindQQ" label="Viber">
-        {{ canViewViber ? info.BindQQ : '***' }}
+      <Descriptions.Item label="Viber">
+        {{ canViewViber ? info.BindQQ || '-' : '***' }}
       </Descriptions.Item>
-      <Descriptions.Item v-if="info.BindWechat" label="Telegram">
-        {{ info.BindWechat }}
+      <Descriptions.Item label="Telegram">
+        {{ info.BindWechat || '-' }}
       </Descriptions.Item>
-      <Descriptions.Item v-if="info.BindFacebook" label="Facebook">
-        {{ info.BindFacebook }}
+      <Descriptions.Item label="Facebook">
+        {{ info.BindFacebook || '-' }}
       </Descriptions.Item>
       <Descriptions.Item v-if="canViewCard || canEditCard" label="证件号码">
         {{ canViewCard ? cardInfo?.IdNum || '-' : '***' }}
@@ -1021,6 +1061,10 @@ onMounted(() => {
         <Form.Item label="手机号" required>
           <Input v-model:value="phoneForm.BindPhone" />
         </Form.Item>
+        <GoogleCodeField
+          :page-id="UNBIND_PHONE_SECURITY_PAGE_ID"
+          v-model:value="phoneForm.ValidCode"
+        />
       </Form>
     </Modal>
 
@@ -1044,6 +1088,10 @@ onMounted(() => {
         <Form.Item v-if="canEditOther || canEditDob" label="生日">
           <DatePicker v-model:value="otherForm.DateOfBirth" class="w-full" />
         </Form.Item>
+        <GoogleCodeField
+          :page-id="OTHER_SECURITY_PAGE_ID"
+          v-model:value="otherForm.ValidCode"
+        />
       </Form>
     </Modal>
 
@@ -1082,9 +1130,10 @@ onMounted(() => {
             placeholder="8–20 位，字母+数字"
           />
         </Form.Item>
-        <div class="text-xs text-gray-400">
-          若已开启谷歌验证，提交时将要求输入验证码。
-        </div>
+        <GoogleCodeField
+          :page-id="PASSWORD_SECURITY_PAGE_ID"
+          v-model:value="passwordForm.ValidCode"
+        />
       </Form>
     </Modal>
 
@@ -1163,6 +1212,10 @@ onMounted(() => {
             :placeholder="`请输入${socialConfig.label}`"
           />
         </Form.Item>
+        <GoogleCodeField
+          :page-id="SOCIAL_BIND_SECURITY_PAGE_ID"
+          v-model:value="socialForm.ValidCode"
+        />
       </Form>
     </Modal>
 
@@ -1185,6 +1238,10 @@ onMounted(() => {
             show-search
           />
         </Form.Item>
+        <GoogleCodeField
+          :page-id="INVITE_SITE_SECURITY_PAGE_ID"
+          v-model:value="inviteForm.ValidCode"
+        />
       </Form>
     </Modal>
 
@@ -1243,10 +1300,28 @@ onMounted(() => {
             </Upload>
           </div>
         </Form.Item>
+        <GoogleCodeField
+          :page-id="ID_CARD_SECURITY_PAGE_ID"
+          v-model:value="cardForm.ValidCode"
+        />
       </Form>
     </Modal>
 
-    <PassPopup ref="passPopupRef" @confirm="handlePassConfirm" />
+    <Modal
+      v-model:open="unbindOpen"
+      :confirm-loading="saving"
+      destroy-on-close
+      title="解绑手机"
+      @ok="confirmUnbindPhone"
+    >
+      <Form layout="vertical" class="pt-2">
+        <div class="mb-2 text-sm text-gray-600">确认解绑该玩家的手机号？</div>
+        <GoogleCodeField
+          :page-id="UNBIND_PHONE_SECURITY_PAGE_ID"
+          v-model:value="unbindValidCode"
+        />
+      </Form>
+    </Modal>
 
     <PlayerRemarkList v-if="info.PlayerId" :player-id="info.PlayerId" />
 

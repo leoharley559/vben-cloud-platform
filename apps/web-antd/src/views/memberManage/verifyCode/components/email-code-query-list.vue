@@ -16,7 +16,7 @@ import { useOperationOptions } from '#/composables/use-operation-options';
 defineOptions({ name: 'EmailCodeQueryList' });
 
 const { checkPermission } = useCloudPermission();
-const { packageOptions } = useOperationOptions();
+const { packageOptions, packageSelectOptions } = useOperationOptions();
 
 const canView = computed(() => checkPermission(13_011));
 
@@ -24,14 +24,6 @@ const filterLoginAccount = ref('');
 const filterEmailAccount = ref('');
 const filterPackageId = ref<number | string>('');
 const loading = ref(false);
-
-const packageSelectOptions = computed(() => [
-  { label: '全部', value: '' as number | string },
-  ...packageOptions.value.map((item) => ({
-    label: item.PackageName,
-    value: item.PackageId,
-  })),
-]);
 
 const packageNameMap = computed(() => {
   const map = new Map<string, string>();
@@ -154,12 +146,12 @@ function handleReset() {
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
-          <span class="query-field-addon">产品</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
             :options="packageSelectOptions"
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
       </div>

@@ -534,13 +534,13 @@ void loadRedTitles();
             </Input>
           </div>
           <Space.Compact class="w-full max-w-xs sm:w-auto sm:max-w-none">
-            <span class="query-field-addon">产品</span>
+            <span class="query-field-addon">所属产品</span>
             <Select
               v-model:value="queryForm.PackageName"
               allow-clear
               class="min-w-0 flex-1 sm:w-48"
               :options="packageSelectOptions"
-              placeholder="请选择产品"
+              placeholder="请选择所属产品"
               show-search
               @change="
                 () => {

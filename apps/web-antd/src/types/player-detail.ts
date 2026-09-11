@@ -1,28 +1,43 @@
 export interface PlayerBasicInfo {
   [key: string]: unknown;
+  AccountType?: number | string;
   BanRemark?: string;
+  BindFacebook?: string;
   BindPhone?: string;
+  BindQQ?: string;
+  BindWechat?: string;
   ChannelId?: number | string;
   ChannelName?: string;
   CreateTime?: number | string;
   DataFlag?: number;
+  DeviceId?: string;
   DevicePlatform?: string;
   DialingCode?: string;
   Email?: string;
   Gold?: number | string;
   InviteCode?: string;
+  InviteSite?: string;
   InviterLoginAccount?: string;
+  IpName?: string;
+  LastIp?: string;
+  LastLoginDeviceId?: string;
+  LastLoginPlatform?: string;
   LastLoginTime?: number | string;
+  LastTime?: number | string;
   LoginAccount?: string;
+  OldLoginAccount?: string;
   Online?: boolean;
   PackageName?: string;
   PhoneNo?: string;
   PlayerId?: number | string;
+  PlayerLevelId?: number | string;
   PlayerLevelName?: string;
   PromoterUserName?: string;
   RealName?: string;
   RegIp?: string;
+  RegIpName?: string;
   Status?: number;
+  TagName?: string;
   VipLevel?: number | string;
 }
 
@@ -555,6 +570,11 @@ export interface PlayerLogQuery {
   Sort?: string;
   Type?: number | string;
   Username?: string;
+}
+
+export interface PlayerLogTypeOption {
+  ActionType?: number | string;
+  LogType?: string;
 }
 
 export interface PlayerLogItem {

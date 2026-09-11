@@ -37,6 +37,7 @@ import {
   parsePlayerDetailRouteId,
 } from '#/utils/player-detail-route';
 
+import PlayerBanModal from '../playerList/components/player-ban-modal.vue';
 import PlayerAdjustListPanel from './components/player-adjust-list.vue';
 import PlayerBasicInfoPanel from './components/player-basic-info.vue';
 import PlayerBetDetailPanel from './components/player-bet-detail.vue';
@@ -71,7 +72,6 @@ const statusEditing = ref(false);
 const nextStatus = ref<number>(0);
 const banRemarkOpen = ref(false);
 const kickOpen = ref(false);
-const banRemark = ref('');
 const kickMinutes = ref(0);
 
 const searchLoginAccount = ref('');
@@ -217,7 +217,6 @@ function cancelEditStatus() {
   statusEditing.value = false;
   banRemarkOpen.value = false;
   kickOpen.value = false;
-  banRemark.value = '';
   kickMinutes.value = 0;
 }
 
@@ -270,7 +269,6 @@ function handleSaveStatus() {
   }
 
   if (status === 3) {
-    banRemark.value = '';
     banRemarkOpen.value = true;
     return;
   }
@@ -282,16 +280,12 @@ function handleSaveStatus() {
   });
 }
 
-async function submitBanRemark() {
-  if (!banRemark.value.trim()) {
-    message.warning('封号必须填写原因');
-    return;
+async function handleBanSuccess() {
+  cancelEditStatus();
+  const playerId = currentPlayerId.value;
+  if (playerId) {
+    await loadPlayerInfo(String(playerId));
   }
-  await applyStatusChange({
-    Remark: banRemark.value.trim(),
-    Status: 3,
-  });
-  banRemarkOpen.value = false;
 }
 
 async function submitKick() {
@@ -346,7 +340,7 @@ onMounted(async () => {
             />
           </Space.Compact>
           <Space.Compact>
-            <span class="query-field-addon">产品</span>
+            <span class="query-field-addon">所属产品</span>
             <Select
               v-model:value="searchPackageId"
               :options="
@@ -357,7 +351,7 @@ onMounted(async () => {
                     value: item.PackageId,
                   }))
               "
-              placeholder="请选择产品"
+              placeholder="请选择所属产品"
             />
           </Space.Compact>
           <Space.Compact>
@@ -536,24 +530,18 @@ onMounted(async () => {
       />
     </Card>
 
-    <Modal
+    <PlayerBanModal
       v-model:open="banRemarkOpen"
-      :confirm-loading="statusSaving"
-      destroy-on-close
-      title="封号原因"
-      @ok="submitBanRemark"
-    >
-      <Form layout="vertical" class="pt-2">
-        <Form.Item label="原因" required>
-          <Input.TextArea
-            v-model:value="banRemark"
-            :rows="3"
-            allow-clear
-            placeholder="请填写封号原因"
-          />
-        </Form.Item>
-      </Form>
-    </Modal>
+      :player-id="currentPlayerId"
+      :player-name="
+        String(
+          playerInfo?.LoginAccount ||
+            playerInfo?.PlayerName ||
+            currentPlayerId,
+        )
+      "
+      @success="handleBanSuccess"
+    />
 
     <Modal
       v-model:open="kickOpen"

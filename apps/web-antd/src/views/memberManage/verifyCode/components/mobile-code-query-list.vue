@@ -20,7 +20,7 @@ import MobileVerifyWhitelistModal from './mobile-verify-whitelist-modal.vue';
 defineOptions({ name: 'MobileCodeQueryList' });
 
 const { checkPermission } = useCloudPermission();
-const { packageOptions } = useOperationOptions();
+const { packageSelectOptions } = useOperationOptions();
 
 const canWhitelist = computed(() => checkPermission(12_565));
 
@@ -31,14 +31,6 @@ const hasSearched = ref(false);
 const filterLoginAccount = ref('');
 const filterPhoneNum = ref('');
 const filterPackageId = ref<number | string>('');
-
-const packageSelectOptions = computed(() => [
-  { label: '全部', value: '' as number | string },
-  ...packageOptions.value.map((item) => ({
-    label: item.PackageName,
-    value: item.PackageId,
-  })),
-]);
 
 function normalizeLoginAccount(value: string) {
   return value.toLowerCase().replaceAll(/\s/g, '');
@@ -143,12 +135,12 @@ function handleReset() {
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
-          <span class="query-field-addon">产品</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
             :options="packageSelectOptions"
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
       </div>

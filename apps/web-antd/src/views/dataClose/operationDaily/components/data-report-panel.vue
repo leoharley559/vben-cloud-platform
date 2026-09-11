@@ -77,7 +77,7 @@ const form = reactive({
 });
 
 const typeOptions = [
-  { label: '代理账号', value: 1 },
+  { label: '所属代理', value: 1 },
   { label: '产品', value: 2 },
   { label: '渠道', value: 3 },
   { label: '上架包', value: 4 },

@@ -58,7 +58,7 @@ const settlementMap: Record<number, string> = {
 };
 const columns = [
   { key: 'seq', title: '序号', width: 70 },
-  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '代理账号' },
+  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '所属代理' },
   { dataIndex: 'Type', key: 'Type', title: '代理类型' },
   { dataIndex: 'AccountType', key: 'AccountType', title: '代理模式' },
   { dataIndex: 'SettlementType', key: 'SettlementType', title: '佣金周期' },
@@ -73,7 +73,7 @@ const columns = [
   { key: 'actions', title: '操作', width: 150 },
 ];
 const exportColumns = [
-  { field: 'AgentAccount', title: '代理账号' },
+  { field: 'AgentAccount', title: '所属代理' },
   {
     field: 'Type',
     formatter: (value: unknown) => accountTypeMap[Number(value)] || '-',
@@ -204,7 +204,7 @@ function openAdjust(row?: Row, mode: typeof adjustForm.mode = 'batch') {
 async function submitAdjust() {
   const accounts = adjustForm.AgentAccounts.replaceAll('，', ',').trim();
   if (!accounts || !/^[\w,]+$/.test(accounts)) {
-    message.warning('请输入以英文逗号分隔的代理账号');
+    message.warning('请输入以英文逗号分隔的所属代理');
     return;
   }
   if (!adjustForm.AdjustAmount || !Number.isFinite(adjustForm.AdjustAmount)) {
@@ -304,9 +304,9 @@ onMounted(load);
             v-model:value="query.AgentAccount"
             allow-clear
             @press-enter="search"
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <div class="query-filter-wide">
@@ -452,7 +452,7 @@ onMounted(load);
       @ok="submitAdjust"
     >
       <Form layout="vertical">
-        <Form.Item label="代理账号（多个用英文逗号分隔）" required>
+        <Form.Item label="所属代理（多个用英文逗号分隔）" required>
 <Input
             v-model:value="adjustForm.AgentAccounts"
             :disabled="adjustForm.mode !== 'batch'"

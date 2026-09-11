@@ -118,7 +118,7 @@ watch(adminId, () => {
       v-if="canViewPage"
       auto-content-height
       :description="`代理网赚 · 代理详情 ${summaryUsername || agencyName}`"
-      :title="`代理账号详情-${agencyName}`"
+      :title="`所属代理详情-${agencyName}`"
     >
       <Card>
         <Tabs

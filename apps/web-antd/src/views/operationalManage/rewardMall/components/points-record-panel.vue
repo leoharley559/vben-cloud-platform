@@ -172,7 +172,7 @@ const gridOptions: VxeTableGridOptions<PointsRecordRow> = {
       field: 'Username',
       minWidth: 110,
       slots: { default: 'username' },
-      title: '代理账号',
+      title: '所属代理',
     },
     { ...vipLevelGridColumn },
     {
@@ -353,9 +353,9 @@ onMounted(() => {
           <Input
             v-model:value="filterUsername"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <Space.Compact>
@@ -375,7 +375,7 @@ onMounted(() => {
           />
         </Space.Compact>
         <Space.Compact>
-          <span class="query-field-addon">产品名称</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
@@ -386,7 +386,7 @@ onMounted(() => {
               }))
             "
             show-search
-            placeholder="请选择产品名称"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Space.Compact>

@@ -296,13 +296,13 @@ onMounted(() => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <Space.Compact>
-          <span class="query-field-addon">产品包</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
             :field-names="{ label: 'PackageName', value: 'PackageId' }"
             :options="packageOptions"
-            placeholder="请选择产品包"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Space.Compact>
@@ -335,14 +335,18 @@ onMounted(() => {
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterStatus"
-          :options="[
-            { label: '全部', value: -1 },
-            { label: '未领取', value: 0 },
-            { label: '已领取', value: 1 },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">领取状态</span>
+          <Select
+            v-model:value="filterStatus"
+            :options="[
+              { label: '全部', value: -1 },
+              { label: '未领取', value: 0 },
+              { label: '已领取', value: 1 },
+            ]"
+            placeholder="请选择领取状态"
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">活动类型</span>
           <Select
@@ -352,11 +356,19 @@ onMounted(() => {
             placeholder="请选择活动类型"
           />
         </Space.Compact>
-        <Select v-model:value="filterVipLevel" :options="VIP_LEVEL_OPTIONS" />
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            :options="VIP_LEVEL_OPTIONS"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker
             v-model="filterDateRange"
             precision="date"
+            label="领取时间"
           />
         </div>
         <div class="query-filter-actions">

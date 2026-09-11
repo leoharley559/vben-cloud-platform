@@ -163,7 +163,7 @@ async function loadRows() {
 }
 function openEdit(row: IconRow) {
   Object.keys(form).forEach((key) => delete form[key]);
-  Object.assign(form, structuredClone(row));
+  Object.assign(form, JSON.parse(JSON.stringify(row)) as IconRow);
   form.ColorCode ||= '#999999';
   editVisible.value = true;
 }

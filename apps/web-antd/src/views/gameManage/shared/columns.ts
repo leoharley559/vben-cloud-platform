@@ -272,7 +272,7 @@ export const depositRecallColumns: OperationListConfig['columns'] = [
 export const sonPromoterChannelColumns: OperationListConfig['columns'] = [
   { field: 'ChannelId', minWidth: 100, title: '渠道号' },
   { field: 'ChannelName', minWidth: 140, title: '渠道名称' },
-  { field: 'PromoterAdminUserName', minWidth: 120, title: '代理账号' },
+  { field: 'PromoterAdminUserName', minWidth: 120, title: '所属代理' },
   { field: 'PromoterAdminName', minWidth: 120, title: '代理名称' },
   { field: 'InvitationCode', minWidth: 120, title: '邀请码' },
 ];

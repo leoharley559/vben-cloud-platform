@@ -10,7 +10,11 @@ import {
   updateCryptoAddressApi,
 } from '#/api/memberManage/crypto-address';
 import { queryPlayerByAccountApi } from '#/api/operationManage/player';
-import PassPopup from '#/components/security/pass-popup.vue';
+import GoogleCodeField from '#/components/security/google-code-field.vue';
+import {
+  googleCodePayload,
+  needGoogleCode,
+} from '#/components/security/security-utils';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { CRYPTO_CONFIG_TYPE_OPTIONS } from '#/types/crypto-address';
 import { createRequestHash } from '#/utils/crypto';
@@ -33,8 +37,8 @@ const CRYPTO_SECURITY_PAGE_ID = 18;
 
 const { packageOptions } = useOperationOptions();
 
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const submitting = ref(false);
+const validCode = ref('');
 const loginAccount = ref('');
 const packageName = ref('');
 const playerId = ref<number | string>('');
@@ -59,6 +63,7 @@ watch(
     if (!open) {
       return;
     }
+    validCode.value = '';
     if (props.mode === 'edit' && props.row) {
       addressId.value = props.row.Id || '';
       loginAccount.value = String(props.row.LoginAccount || '');
@@ -138,10 +143,14 @@ async function requestSubmit() {
     }
   }
   digitalAddress.value = cleaned;
-  passPopupRef.value?.validate(CRYPTO_SECURITY_PAGE_ID);
+  if (needGoogleCode(CRYPTO_SECURITY_PAGE_ID, validCode.value)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void handleSubmit();
 }
 
-async function handleSubmit(extra: Record<string, unknown> = {}) {
+async function handleSubmit() {
   submitting.value = true;
   try {
     const payload = {
@@ -152,7 +161,7 @@ async function handleSubmit(extra: Record<string, unknown> = {}) {
       LoginAccount: loginAccount.value,
       PackageName: packageName.value,
       PlayerId: playerId.value,
-      ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
+      ...googleCodePayload(validCode.value),
       ...(props.mode === 'edit' ? { Id: addressId.value } : {}),
     };
     if (props.mode === 'create') {
@@ -197,7 +206,7 @@ async function handleSubmit(extra: Record<string, unknown> = {}) {
         <Select
           v-model:value="packageName"
           :options="productNameOptions"
-          placeholder="请选择产品"
+          placeholder="请选择所属产品"
           show-search
           @change="resolvePlayer"
         />
@@ -233,8 +242,10 @@ async function handleSubmit(extra: Record<string, unknown> = {}) {
           placeholder="请输入别名"
         />
       </Form.Item>
+      <GoogleCodeField
+        :page-id="CRYPTO_SECURITY_PAGE_ID"
+        v-model:value="validCode"
+      />
     </Form>
   </Modal>
-
-  <PassPopup ref="passPopupRef" title="安全验证" @confirm="handleSubmit" />
 </template>

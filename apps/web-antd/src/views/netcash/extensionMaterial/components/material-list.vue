@@ -492,12 +492,12 @@ onMounted(async () => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <Space.Compact>
-          <span class="query-field-addon">产品包</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="query.PackageId"
             allow-clear
             :options="packages"
-            placeholder="请选择产品包"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Space.Compact>

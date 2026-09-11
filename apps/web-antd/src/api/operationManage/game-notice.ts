@@ -120,7 +120,7 @@ export function fetchGameEmailDetailApi(id: number | string) {
 }
 
 /**
- * 按代理/推广账号查询可用产品包（对齐旧站 searchPackages）
+ * 按所属代理查询可用产品包（对齐旧站 searchPackages）
  * @param query AdminId / AdminType
  * @returns 产品包列表
  * @see views/operationalManage/gameNotice/components/game-email-form-modal.vue

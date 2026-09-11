@@ -29,6 +29,7 @@ import PlayerStatusTag from '#/components/global/player-status-tag.vue';
 import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { VIP_LEVEL_OPTIONS } from '#/utils/bonus-reward';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { GIFT_DELIVER_STATUS_MAP } from '#/utils/operation-status';
@@ -71,6 +72,7 @@ interface DeliverRow {
 }
 
 const { checkPermission } = useCloudPermission();
+const { packageOptions, packageSelectOptions } = useOperationOptions();
 
 const canViewTable = computed(() => checkPermission(10_188));
 const canExport = computed(() => checkPermission(10_189));
@@ -81,7 +83,7 @@ const canDeliver = computed(() => checkPermission(10_195));
 const canRefuse = computed(() => checkPermission(10_196));
 
 const filterLoginAccount = ref('');
-const filterPackageName = ref('');
+const filterPackageId = ref<number | string>('');
 const filterOrderId = ref('');
 const filterGiftName = ref('');
 const filterContact = ref('');
@@ -167,7 +169,13 @@ function getQueryParams(page?: { currentPage: number; pageSize: number }) {
     LoginAccount: filterLoginAccount.value.trim().toLowerCase(),
     Mobile: filterMobile.value.trim(),
     OrderId: filterOrderId.value.trim(),
-    PackageName: filterPackageName.value.trim(),
+    PackageId: filterPackageId.value || '',
+    PackageName:
+      packageOptions.value.find(
+        (item) =>
+          item.PackageId !== '' &&
+          String(item.PackageId) === String(filterPackageId.value),
+      )?.PackageName || '',
     Page: page?.currentPage ?? 1,
     PageSize: page?.pageSize ?? 20,
     PlayerStatus: filterPlayerStatus.value,
@@ -390,7 +398,7 @@ async function submitRemark() {
 
 function resetFilters() {
   filterLoginAccount.value = '';
-  filterPackageName.value = '';
+  filterPackageId.value = '';
   filterOrderId.value = '';
   filterGiftName.value = '';
   filterContact.value = '';
@@ -479,15 +487,22 @@ onMounted(() => {
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterPackageName"
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
             allow-clear
-            placeholder="请输入产品名称"
-          >
-            <template #addonBefore>产品名称</template>
-          </Input>
-        </div>
+            :options="packageSelectOptions"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterOrderId"
@@ -506,11 +521,22 @@ onMounted(() => {
             <template #addonBefore>奖品名称</template>
           </Input>
         </div>
-        <Select v-model:value="filterVipLevel" :options="VIP_LEVEL_OPTIONS" />
-        <Select
-          v-model:value="filterPlayerStatus"
-          :options="playerStatusOptions"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            :options="VIP_LEVEL_OPTIONS"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">玩家状态</span>
+          <Select
+            v-model:value="filterPlayerStatus"
+            :options="playerStatusOptions"
+            placeholder="请选择玩家状态"
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">发货状态</span>
           <Select

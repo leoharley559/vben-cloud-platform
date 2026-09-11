@@ -4,7 +4,7 @@ import type { WithdrawRevertedItem } from '#/types/withdraw-extra';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Input, Result, Select, Tag } from 'ant-design-vue';
+import { Button, Input, Result, Select, Space, Tag } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -134,17 +134,21 @@ onMounted(() => {
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterPackageId"
-          :options="
-            packageOptions
-              .filter((item) => item.PackageId !== '')
-              .map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-          "
-        />
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="
+              packageOptions
+                .filter((item) => item.PackageId !== '')
+                .map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterOrderId"
@@ -155,7 +159,10 @@ onMounted(() => {
           </Input>
         </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="冲正时间"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">

@@ -201,17 +201,21 @@ onMounted(() => {
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterPackageId"
-          :options="
-            packageOptions
-              .filter((item) => item.PackageId !== '')
-              .map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-          "
-        />
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="
+              packageOptions
+                .filter((item) => item.PackageId !== '')
+                .map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterOrderId"
@@ -221,18 +225,25 @@ onMounted(() => {
             <template #addonBefore>订单编号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterRiskStatus"
-          :options="[
-            { label: '未处理', value: -1 },
-            { label: '通过', value: 1 },
-            { label: '不通过', value: 2 },
-            { label: '挂起', value: 3 },
-            { label: '全部', value: '' },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">风控状态</span>
+          <Select
+            v-model:value="filterRiskStatus"
+            :options="[
+              { label: '未处理', value: -1 },
+              { label: '通过', value: 1 },
+              { label: '不通过', value: 2 },
+              { label: '挂起', value: 3 },
+              { label: '全部', value: '' },
+            ]"
+            placeholder="请选择风控状态"
+          />
+        </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="申请时间"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">

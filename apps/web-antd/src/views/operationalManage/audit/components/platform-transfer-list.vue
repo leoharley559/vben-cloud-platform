@@ -348,14 +348,18 @@ onMounted(async () => {
             <template #addonBefore>流水号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterType"
-          :options="[
-            { label: '全部', value: '' },
-            { label: '转入', value: 1 },
-            { label: '转出', value: 2 },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">转账类型</span>
+          <Select
+            v-model:value="filterType"
+            :options="[
+              { label: '全部', value: '' },
+              { label: '转入', value: 1 },
+              { label: '转出', value: 2 },
+            ]"
+            placeholder="请选择转账类型"
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">转出账户</span>
           <Select
@@ -388,18 +392,25 @@ onMounted(async () => {
             placeholder="请选择转入账户"
           />
         </Space.Compact>
-        <Select
-          v-model:value="filterState"
-          :options="[
-            { label: '全部', value: -2 },
-            { label: '处理中', value: -1 },
-            { label: '成功', value: 0 },
-            { label: '转人工处理', value: 5 },
-            { label: '失败', value: 18 },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterState"
+            :options="[
+              { label: '全部', value: -2 },
+              { label: '处理中', value: -1 },
+              { label: '成功', value: 0 },
+              { label: '转人工处理', value: 5 },
+              { label: '失败', value: 18 },
+            ]"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="转账时间"
+          />
         </div>
         <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">

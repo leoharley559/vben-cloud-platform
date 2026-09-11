@@ -99,12 +99,14 @@ export function buildRolePermissionTree(
 export function splitCheckedRoleKeys(keys: Array<number | string>) {
   const menuIds: number[] = [];
   const subMenuIds: number[] = [];
+  const seen = new Set<number>();
 
   for (const key of keys) {
     const id = Number(key);
-    if (Number.isNaN(id)) {
+    if (Number.isNaN(id) || seen.has(id)) {
       continue;
     }
+    seen.add(id);
     if (id >= 10_000) {
       subMenuIds.push(id);
     } else {
@@ -133,6 +135,90 @@ export function mergeRoleCheckedKeys(
   return [...menuList, ...subMenuList]
     .map(Number)
     .filter((item) => !Number.isNaN(item) && item !== 0);
+}
+
+/**
+ * 编辑回显：全选子树进 checked，部分授权进 halfChecked。
+ * 父节点（日常运营 / 玩家详情 / 充值列表等）绝不能在子孙未齐时放进 checked，
+ * 否则 checkStrictly=false 时 Tree 会把未授权子孙全部勾上。
+ */
+export function echoRoleTreeCheckState(
+  tree: RoleTreeNode[],
+  savedIds: Array<number | string>,
+) {
+  const saved = new Set(
+    savedIds.map(Number).filter((item) => !Number.isNaN(item) && item !== 0),
+  );
+  const checked: number[] = [];
+  const halfChecked: number[] = [];
+
+  function walk(node: RoleTreeNode): { selected: number; total: number } {
+    const children = node.children ?? [];
+    const id = Number(node.key);
+
+    if (children.length === 0) {
+      const selected = saved.has(id) ? 1 : 0;
+      if (selected) {
+        checked.push(id);
+      }
+      return { selected, total: 1 };
+    }
+
+    let selected = 0;
+    let total = 0;
+    for (const child of children) {
+      const result = walk(child);
+      selected += result.selected;
+      total += result.total;
+    }
+
+    if (total > 0 && selected === total) {
+      checked.push(id);
+    } else if (selected > 0 || saved.has(id)) {
+      // 半选父节点不能进 checked，否则级联会把未授权子孙全部勾上
+      halfChecked.push(id);
+    }
+
+    return { selected, total };
+  }
+
+  for (const node of tree) {
+    walk(node);
+  }
+
+  return { checked, halfChecked };
+}
+
+/** 把已勾选节点的祖先补进保存列表（半选父菜单仍要写入 MenuIds） */
+export function collectRoleTreeAncestorKeys(
+  tree: RoleTreeNode[],
+  checkedKeys: Array<number | string>,
+) {
+  const checked = new Set(
+    checkedKeys.map(Number).filter((item) => !Number.isNaN(item) && item !== 0),
+  );
+  const ancestors: number[] = [];
+
+  function walk(node: RoleTreeNode): boolean {
+    const selfChecked = checked.has(Number(node.key));
+    let childChecked = false;
+    for (const child of node.children ?? []) {
+      if (walk(child)) {
+        childChecked = true;
+      }
+    }
+    if (!selfChecked && childChecked) {
+      ancestors.push(Number(node.key));
+      return true;
+    }
+    return selfChecked || childChecked;
+  }
+
+  for (const node of tree) {
+    walk(node);
+  }
+
+  return ancestors;
 }
 
 export function isSystemBuiltinRole(row: {

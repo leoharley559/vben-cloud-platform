@@ -89,7 +89,7 @@ function validateProvideCommon() {
 async function submitSingleProvide() {
   const username = provideForm.AdminName.trim();
   if (!username) {
-    message.warning('请输入代理账号');
+    message.warning('请输入所属代理');
     return;
   }
   if (!validAmount(provideForm.Amount)) {
@@ -103,11 +103,11 @@ async function submitSingleProvide() {
     const result = await queryBonusAdminIdApi({ Username: username });
     const account = result.Items?.[0];
     if (!account || Number(account.AdminId) === 0) {
-      message.error('未找到有效代理账号');
+      message.error('未找到有效所属代理');
       return;
     }
     if (Number(account.Type) === 3) {
-      message.error('测试代理账号不可发放红利');
+      message.error('测试所属代理不可发放红利');
       return;
     }
     Modal.confirm({
@@ -145,7 +145,7 @@ async function submitSingleProvide() {
 function downloadBatchTemplate() {
   exportWorkbook(
     [['agent01', 100]],
-    ['代理账号', '申请金额'],
+    ['所属代理', '申请金额'],
     '红利批量发放模板.xlsx',
   );
 }
@@ -173,11 +173,16 @@ async function handleBatchFile(event: Event) {
     const parsed: Array<{ amount: number; username: string }> = [];
     for (const [index, row] of rows.entries()) {
       const username = String(
-        row['代理账号'] ?? row.Username ?? row.username ?? '',
+        row['所属代理'] ??
+          row['推广代理'] ??
+          row['代理账号'] ??
+          row.Username ??
+          row.username ??
+          '',
       ).trim();
       const rawAmount = row['申请金额'] ?? row.Amount ?? row.amount ?? '';
       if (!username || !validAmount(String(rawAmount))) {
-        message.error(`第 ${index + 2} 行格式错误，请检查代理账号和申请金额`);
+        message.error(`第 ${index + 2} 行格式错误，请检查所属代理和申请金额`);
         return;
       }
       parsed.push({ amount: Number(rawAmount), username });
@@ -308,7 +313,7 @@ function exportBatchFailures() {
       Number((Number(row.Amount || 0) / 100).toFixed(2)),
       String(row.Msg || ''),
     ]),
-    ['代理账号', '代理ID', '申请金额', '失败原因'],
+    ['所属代理', '代理ID', '申请金额', '失败原因'],
     '红利批量发放失败结果.xlsx',
   );
 }
@@ -337,9 +342,9 @@ function exportBatchFailures() {
               allow-clear
               class="w-full"
               :maxlength="100"
-              placeholder="请输入代理账号"
+              placeholder="请输入所属代理"
             >
-              <template #addonBefore>代理账号</template>
+              <template #addonBefore>所属代理</template>
             </Input>
           </div>
         </div>
@@ -373,7 +378,7 @@ function exportBatchFailures() {
           </span>
         </div>
         <div class="mb-2 text-sm text-gray-500">
-          文件不超过 1MB；表头必须包含「代理账号、申请金额」
+          文件不超过 1MB；表头必须包含「所属代理、申请金额」
         </div>
       </template>
     </div>
@@ -455,7 +460,7 @@ function exportBatchFailures() {
       </div>
       <Table
         :columns="[
-          { title: '代理账号', dataIndex: 'Username' },
+          { title: '所属代理', dataIndex: 'Username' },
           { title: '代理ID', dataIndex: 'AdminId' },
           { title: '代理类型', dataIndex: 'Type' },
           { title: '申请金额', dataIndex: 'AmountYuan' },
@@ -497,7 +502,7 @@ function exportBatchFailures() {
       </div>
       <Table
         :columns="[
-          { title: '代理账号', dataIndex: 'Username' },
+          { title: '所属代理', dataIndex: 'Username' },
           { title: '代理ID', dataIndex: 'AdminId' },
           { title: '申请金额', dataIndex: 'Amount' },
           { title: '失败原因', dataIndex: 'Msg' },

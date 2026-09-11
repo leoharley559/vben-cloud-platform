@@ -7,6 +7,7 @@ import {
   Pagination,
   Result,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -148,20 +149,27 @@ onMounted(() => {
             <template #addonBefore>副线账号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="recordQuery.Operate"
-          :options="[
-            { label: '全部操作', value: 0 },
-            { label: '新增团队', value: 1 },
-            { label: '添加副线', value: 2 },
-            { label: '移除副线', value: 3 },
-            { label: '转移副线', value: 4 },
-            { label: '编辑团队', value: 5 },
-            { label: '解散团队', value: 6 },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">操作类型</span>
+          <Select
+            v-model:value="recordQuery.Operate"
+            :options="[
+              { label: '全部操作', value: 0 },
+              { label: '新增团队', value: 1 },
+              { label: '添加副线', value: 2 },
+              { label: '移除副线', value: 3 },
+              { label: '转移副线', value: 4 },
+              { label: '编辑团队', value: 5 },
+              { label: '解散团队', value: 6 },
+            ]"
+            placeholder="请选择操作类型"
+          />
+        </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="recordDates" />
+          <QueryDatetimeRangePicker
+            v-model="recordDates"
+            label="操作时间"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="searchRecords">查询</Button>

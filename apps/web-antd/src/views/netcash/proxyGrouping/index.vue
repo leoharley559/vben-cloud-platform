@@ -98,7 +98,7 @@ const dateRange = ref<[Dayjs, Dayjs]>();
 const columns = computed(() => [
   { key: 'index', title: '序号', width: 70 },
   { dataIndex: 'grouping', key: 'grouping', title: '分组名称' },
-  { dataIndex: 'Username', key: 'Username', title: '代理账号' },
+  { dataIndex: 'Username', key: 'Username', title: '所属代理' },
   { dataIndex: 'Name', key: 'Name', title: '代理名称' },
   { dataIndex: 'DeveloperName', key: 'DeveloperName', title: '发展人编码' },
   {
@@ -514,7 +514,7 @@ async function exportExcel() {
     const XLSX = await import('xlsx');
     const exportRows = result.Items.map((item, index) => ({
       代理名称: item.Name || '',
-      代理账号: item.Username || '',
+      所属代理: item.Username || '',
       入组时间: formatNetcashDateTime(item.GroupCreateTime),
       分组名称: groupNameFor(item.Group ?? query.Group),
       发展人编码: item.DeveloperName || '',
@@ -524,7 +524,7 @@ async function exportExcel() {
       header: [
         '序号',
         '分组名称',
-        '代理账号',
+        '所属代理',
         '代理名称',
         '发展人编码',
         '入组时间',
@@ -617,9 +617,9 @@ onMounted(async () => {
                 v-model:value="query.Username"
                 allow-clear
                 @press-enter="search"
-                placeholder="请输入代理账号"
+                placeholder="请输入所属代理"
               >
-                <template #addonBefore>代理账号</template>
+                <template #addonBefore>所属代理</template>
               </Input>
             </div>
             <div class="flex flex-col gap-1">

@@ -369,9 +369,19 @@ onUnmounted(() => {
               <template #addonBefore>文件名称</template>
             </Input>
           </div>
-          <Select v-model:value="filterStatus" :options="statusOptions" />
+          <Space.Compact>
+            <span class="query-field-addon">状态</span>
+            <Select
+              v-model:value="filterStatus"
+              :options="statusOptions"
+              placeholder="请选择状态"
+            />
+          </Space.Compact>
           <div class="query-filter-wide">
-            <QueryDatetimeRangePicker v-model="filterDateRange" />
+            <QueryDatetimeRangePicker
+              v-model="filterDateRange"
+              label="发起时间"
+            />
           </div>
           <div class="query-filter-actions query-filter-actions-single">
             <Button type="primary" @click="handleSearch">查询</Button>

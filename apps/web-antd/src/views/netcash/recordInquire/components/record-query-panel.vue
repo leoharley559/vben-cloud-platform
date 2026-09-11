@@ -381,9 +381,9 @@ onMounted(() => {
               v-model:value="query.AgentAccount"
               allow-clear
               @press-enter="search"
-              placeholder="请输入代理账号"
+              placeholder="请输入所属代理"
             >
-              <template #addonBefore>代理账号</template>
+              <template #addonBefore>所属代理</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
@@ -444,9 +444,9 @@ onMounted(() => {
               v-model:value="query.Username"
               allow-clear
               @press-enter="search"
-              placeholder="请输入代理账号"
+              placeholder="请输入所属代理"
             >
-              <template #addonBefore>代理账号</template>
+              <template #addonBefore>所属代理</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
@@ -554,9 +554,9 @@ onMounted(() => {
               v-model:value="query.AdminAccount"
               allow-clear
               @press-enter="search"
-              placeholder="请输入代理账号"
+              placeholder="请输入所属代理"
             >
-              <template #addonBefore>代理账号</template>
+              <template #addonBefore>所属代理</template>
             </Input>
           </div>
           <Space.Compact>

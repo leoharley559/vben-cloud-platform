@@ -18,6 +18,7 @@ import {
 
 import { createAccountAdjustApi } from '#/api/operationManage/account-adjust';
 import {
+  fetchPlayerBasicInfoApi,
   fetchPlayerWalletListApi,
   recoverAllPlayerWalletApi,
   recoverPlayerWalletApi,
@@ -127,9 +128,12 @@ async function loadWallet() {
   }
   loading.value = true;
   try {
-    const result = await fetchPlayerWalletListApi(props.playerId);
-    walletGold.value = result?.Gold ?? 0;
-    walletList.value = result?.Items || [];
+    const [player, wallet] = await Promise.all([
+      fetchPlayerBasicInfoApi(props.playerId),
+      fetchPlayerWalletListApi(props.playerId),
+    ]);
+    walletGold.value = player?.Gold ?? 0;
+    walletList.value = wallet?.Items || [];
   } finally {
     loading.value = false;
   }
@@ -286,7 +290,13 @@ onMounted(async () => {
         <Button v-if="canAdjust" type="primary" @click="openAdjust">
           账户调账
         </Button>
-        <Button v-if="canRecoverAll" @click="handleRecoverAll">全部回收</Button>
+        <Button
+          v-if="canRecoverAll"
+          :disabled="subWalletTotal === 0"
+          @click="handleRecoverAll"
+        >
+          全部回收
+        </Button>
       </div>
     </div>
 

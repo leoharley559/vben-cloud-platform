@@ -152,7 +152,7 @@ const playerConfig: CreditPanelConfig = {
     },
     {
       field: 'PackageId',
-      label: '产品包',
+      label: '所属产品',
       options: [
         { label: '全部', value: '' },
         ...(projectConfig.value?.RealPackageIdNameMap || []).map((item) => ({

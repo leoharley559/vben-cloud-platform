@@ -724,6 +724,30 @@ onMounted(() => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">所属产品</span>
+            <Select
+              v-model:value="filterPackageId"
+              :options="
+                packageOptions.map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+              "
+              placeholder="请选择所属产品"
+            />
+          </Space.Compact>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">渠道</span>
+            <ChannelSelect
+              v-model="filterChannelIds"
+              placeholder="请输入渠道号"
+            />
+          </Space.Compact>
+        </div>
+        <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
             allow-clear
@@ -744,18 +768,6 @@ onMounted(() => {
             <template #addonBefore>玩家ID</template>
           </Input>
         </div>
-
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterOrderId"
-            allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入订单编号"
-          >
-            <template #addonBefore>订单编号</template>
-          </Input>
-        </div>
-
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterAccountNum"
@@ -810,41 +822,24 @@ onMounted(() => {
             <template #addonBefore>出款通道</template>
           </Input>
         </div>
-
         <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">渠道</span>
-            <ChannelSelect
-              v-model="filterChannelIds"
-              placeholder="请输入渠道号"
-            />
-          </Space.Compact>
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            @press-enter="handleSearch"
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
         </div>
-
         <div class="flex flex-col gap-1">
           <Space.Compact>
-            <span class="query-field-addon">产品</span>
-            <Select
-              v-model:value="filterPackageId"
-              :options="
-                packageOptions.map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-              "
-              placeholder="请选择产品"
-            />
-          </Space.Compact>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <Space.Compact>
-            <span class="query-field-addon">状态</span>
+            <span class="query-field-addon">订单状态</span>
             <Select
               v-model:value="filterWithdrawStatus"
               allow-clear
               :options="WITHDRAW_STATUS_OPTIONS"
-              placeholder="请选择状态"
+              placeholder="请选择订单状态"
             />
           </Space.Compact>
         </div>

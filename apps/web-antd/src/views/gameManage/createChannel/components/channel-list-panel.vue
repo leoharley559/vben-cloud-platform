@@ -582,9 +582,9 @@ onBeforeUnmount(() => {
           v-model:value="filters.PromoterAdminUserName"
           allow-clear
           @press-enter="handleSearch"
-          placeholder="请输入推广账号"
+          placeholder="请输入所属代理"
         >
-          <template #addonBefore>推广账号</template>
+          <template #addonBefore>所属代理</template>
         </Input>
         <Input
           v-model:value="filters.PromoterAdminName"

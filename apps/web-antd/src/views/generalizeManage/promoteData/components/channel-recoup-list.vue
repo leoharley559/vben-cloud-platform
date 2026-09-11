@@ -324,7 +324,7 @@ onMounted(() => {
             v-else
             v-model:value="filterAdminSearch"
             allow-clear
-            placeholder="请输入推广账号"
+            placeholder="请输入所属代理"
           />
         </Space.Compact>
         <Space.Compact>

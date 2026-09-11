@@ -411,11 +411,11 @@ void loadReport();
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
           <Space.Compact>
-            <span class="query-field-addon">选择产品</span>
+            <span class="query-field-addon">所属产品</span>
             <Select
               v-model:value="reportFilters.PackageIds"
               :options="packageOptions"
-              placeholder="请选择产品"
+              placeholder="请选择所属产品"
               show-search
             />
           </Space.Compact>
@@ -551,11 +551,11 @@ void loadReport();
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
           <Space.Compact>
-            <span class="query-field-addon">选择产品</span>
+            <span class="query-field-addon">所属产品</span>
             <Select
               v-model:value="detailFilters.PackageIds"
               :options="packageOptions"
-              placeholder="请选择产品"
+              placeholder="请选择所属产品"
               show-search
             />
           </Space.Compact>

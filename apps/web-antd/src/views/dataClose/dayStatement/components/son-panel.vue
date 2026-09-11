@@ -314,7 +314,7 @@ onMounted(() => {
         />
       </Space.Compact>
       <Space.Compact>
-        <span class="query-field-addon">产品名称</span>
+        <span class="query-field-addon">所属产品</span>
         <Select
           v-model:value="platformGameTypes"
           allow-clear
@@ -322,7 +322,7 @@ onMounted(() => {
           mode="multiple"
           :max-tag-count="1"
           :options="platformGameTypeOptions"
-          placeholder="请选择产品名称"
+          placeholder="请选择所属产品"
         />
       </Space.Compact>
       <div class="query-filter-wide">

@@ -121,7 +121,7 @@ const gridOptions: VxeTableGridOptions<BonusManageItem> = {
       field: 'Username',
       minWidth: 130,
       slots: { default: 'username' },
-      title: '代理账号',
+      title: '所属代理',
     },
     {
       field: 'WalletType',
@@ -330,9 +330,9 @@ onMounted(() => {
           <Input
             v-model:value="auditFilters.Username"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <Space.Compact>
@@ -454,7 +454,7 @@ onMounted(() => {
     >
       <Form layout="vertical">
         <template v-if="isSingleAudit && auditCurrentRow">
-          <Form.Item label="代理账号">
+          <Form.Item label="所属代理">
             <Input :value="auditCurrentRow.Username" disabled />
           </Form.Item>
           <Form.Item label="申请金额">

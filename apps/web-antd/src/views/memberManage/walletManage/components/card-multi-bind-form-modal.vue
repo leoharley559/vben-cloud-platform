@@ -113,7 +113,7 @@ async function handleSubmit() {
           v-model:value="packageId"
           :field-names="{ label: 'PackageName', value: 'PackageId' }"
           :options="packageSelectOptions"
-          placeholder="请选择产品"
+          placeholder="请选择所属产品"
           show-search
         />
       </Form.Item>

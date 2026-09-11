@@ -43,7 +43,7 @@ import { AUTH_RECORD_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 defineOptions({ name: 'AuthRecordList' });
 
 const router = useRouter();
-const { packageOptions } = useOperationOptions();
+const { packageSelectOptions } = useOperationOptions();
 const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 
 const exportLoading = ref(false);
@@ -59,14 +59,6 @@ const filterAuthScenario = ref(-1);
 const filterStatus = ref<number | string>('');
 const filterUploadDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
 const filterVerifyDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>();
-
-const packageSelectOptions = computed(() => [
-  { label: '全部', value: '' as number | string },
-  ...packageOptions.value.map((item) => ({
-    label: item.PackageName,
-    value: item.PackageId,
-  })),
-]);
 
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
@@ -130,7 +122,7 @@ const gridOptions: VxeTableGridOptions<PlayerAuthRecordItem> = {
       field: 'Username',
       minWidth: 110,
       slots: { default: 'username' },
-      title: '代理账号',
+      title: '所属代理',
     },
     {
       field: 'AuthScenario',
@@ -306,12 +298,12 @@ onMounted(() => {
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
-          <span class="query-field-addon">产品</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
             :options="packageSelectOptions"
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
       </div>
@@ -327,7 +319,7 @@ onMounted(() => {
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
-          <span class="query-field-addon">代理账号</span>
+          <span class="query-field-addon">所属代理</span>
           <AccountSelect v-model="filterAgentId" :multiple="false" />
         </Space.Compact>
       </div>

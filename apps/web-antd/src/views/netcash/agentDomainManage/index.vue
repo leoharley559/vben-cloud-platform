@@ -118,7 +118,7 @@ const columns: VxeTableGridOptions<AgentDomainRow>['columns'] = [
     field: 'Username',
     minWidth: 130,
     slots: { default: 'username' },
-    title: '代理账号',
+    title: '所属代理',
   },
   { field: 'Name', minWidth: 130, title: '代理名称' },
   {
@@ -322,7 +322,7 @@ async function exportExcel() {
     const data = result.Items.map((row) => ({
       代理名称: row.Name,
       代理类型: agentTypeText(row.Type),
-      代理账号: row.Username,
+      所属代理: row.Username,
       专属APP域名: row.NetCashDomain,
       专属H5域名: row.NetCashH5Domain,
       创建时间: dateTime(row.CreateTime),
@@ -357,10 +357,10 @@ async function exportExcel() {
           <Input
             v-model:value="filters.Username"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
             @press-enter="reloadFirstPage"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
           <Space.Compact>
             <span class="query-field-addon">代理类型</span>
@@ -486,11 +486,11 @@ async function exportExcel() {
         }"
         :wrapper-col="{ span: 17 }"
       >
-        <Form.Item label="代理账号" name="Username">
+        <Form.Item label="所属代理" name="Username">
           <Input
             v-model:value="form.Username"
             disabled
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           />
         </Form.Item>
         <Form.Item label="分配渠道">

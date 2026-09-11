@@ -71,7 +71,7 @@ const gridOptions: VxeTableGridOptions<AgencyRegisterItem> = {
       minWidth: 165,
       title: '申请时间',
     },
-    { field: 'Username', minWidth: 120, title: '代理账号' },
+    { field: 'Username', minWidth: 120, title: '所属代理' },
     { field: 'Mobile', minWidth: 120, title: '手机号' },
     { field: 'Email', minWidth: 160, title: '邮箱' },
     { field: 'DeveloperName', minWidth: 120, title: '发展人' },
@@ -174,9 +174,9 @@ onMounted(() => canView.value && gridApi.reload());
           <Input
             v-model:value="username"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">

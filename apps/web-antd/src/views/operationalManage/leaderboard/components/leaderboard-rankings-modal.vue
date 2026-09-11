@@ -134,12 +134,12 @@ watch(
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <Space.Compact>
-          <span class="query-field-addon">产品包</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
             :options="packageOptions"
-            placeholder="请选择产品包"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <div class="flex flex-col gap-1">
@@ -151,16 +151,20 @@ watch(
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterVipLevel"
-          :options="[
-            { label: '全部', value: -1 },
-            ...Array.from({ length: 16 }, (_, level) => ({
-              label: `VIP${level}`,
-              value: level,
-            })),
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            :options="[
+              { label: '全部', value: -1 },
+              ...Array.from({ length: 16 }, (_, level) => ({
+                label: `VIP${level}`,
+                value: level,
+              })),
+            ]"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
         </div>

@@ -89,6 +89,9 @@ const props = withDefaults(
 
 const isPlayerScope = computed(() => props.scope === 'player');
 
+/** 临时隐藏部分查询条件；恢复时改为 true */
+const SHOW_EXTRA_QUERY_FILTERS = false;
+
 const TIMEZONE_OPTIONS = [
   { label: 'Default', value: '' },
   ...Array.from({ length: 27 }, (_, i) => {
@@ -102,7 +105,7 @@ const TIMEZONE_OPTIONS = [
 const router = useRouter();
 const { checkPermission } = useCloudPermission();
 const { ensureGameConfig, gameConfig } = useGameConfig();
-const { packageOptions } = useOperationOptions();
+const { packageSelectOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
 const canExport = computed(() => checkPermission(12_206));
@@ -176,14 +179,6 @@ watch(
   },
 );
 
-const packageSelectOptions = computed(() => [
-  { label: '全部', value: '' },
-  ...packageOptions.value.map((item) => ({
-    label: item.PackageName,
-    value: item.PackageId,
-  })),
-]);
-
 const gameGroupOptions = computed(() => {
   const groups = (projectConfig.value?.GameGroups || []) as Array<{
     AdminIds?: string;
@@ -196,11 +191,16 @@ const gameGroupOptions = computed(() => {
   }));
 });
 
+function isConfigOpen(raw: unknown) {
+  return Number(raw ?? 1) === 1;
+}
+
 const platformGameOptions = computed(() =>
   Object.entries(gameConfig.value.platformGameList)
     .filter(
       ([, game]) =>
-        Number((game as { IsVirtualGame?: number }).IsVirtualGame) === 0,
+        Number((game as { IsVirtualGame?: number }).IsVirtualGame) === 0 &&
+        isConfigOpen(game.IsOpen),
     )
     .map(([value, game]) => {
       const shortName = String(game.gameName || value);
@@ -217,10 +217,12 @@ const platformGameOptions = computed(() =>
 );
 
 const venueTypeOptions = computed(() =>
-  Object.entries(gameConfig.value.GameTypeLangGroup).map(([value]) => ({
-    label: getGameCategoryName(value, gameConfig.value.GameTypeLangGroup),
-    value,
-  })),
+  Object.entries(gameConfig.value.GameTypeLangGroup)
+    .filter(([, item]) => isConfigOpen(item.IsOpen))
+    .map(([value]) => ({
+      label: getGameCategoryName(value, gameConfig.value.GameTypeLangGroup),
+      value,
+    })),
 );
 
 function normalizeClientClassify(raw: unknown): Array<number | string> {
@@ -243,18 +245,20 @@ function classifyIncludes(
 }
 
 const subGameOptions = computed(() =>
-  Object.entries(gameConfig.value.games).map(([id, game]) => {
-    const parentName =
-      game.ParentId == null
-        ? ''
-        : gameConfig.value.games[String(game.ParentId)]?.gameName;
-    return {
-      label: parentName
-        ? `${game.gameName}(${parentName})`
-        : game.gameName || id,
-      value: id,
-    };
-  }),
+  Object.entries(gameConfig.value.games)
+    .filter(([, game]) => isConfigOpen(game.IsOpen))
+    .map(([id, game]) => {
+      const parentName =
+        game.ParentId == null
+          ? ''
+          : gameConfig.value.games[String(game.ParentId)]?.gameName;
+      return {
+        label: parentName
+          ? `${game.gameName}(${parentName})`
+          : game.gameName || id,
+        value: id,
+      };
+    }),
 );
 
 const inviteSiteOptions = computed(() => {
@@ -459,7 +463,7 @@ const gridOptions: VxeTableGridOptions<PlayerBetRecordItem> = {
       field: 'Username',
       minWidth: 110,
       slots: { default: 'username' },
-      title: '代理账号',
+      title: '所属代理',
     },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     {
@@ -575,7 +579,11 @@ function handleVenuesTempChange(values: string[]) {
     .join(',')
     .split(',')
     .map((item) => item.trim())
-    .filter(Boolean);
+    .filter((id) => {
+      if (!id) return false;
+      const game = gameConfig.value.platformGameList[id];
+      return game ? isConfigOpen(game.IsOpen) : false;
+    });
   filterGameIds.value = [...new Set(ids)];
 }
 
@@ -586,6 +594,9 @@ function handleVenueTypeChange(values: Array<number | string>) {
   }
   const next: string[] = [];
   for (const [key, game] of Object.entries(gameConfig.value.platformGameList)) {
+    if (!isConfigOpen(game.IsOpen)) {
+      continue;
+    }
     const classify = normalizeClientClassify(
       (game as { ClientClassify?: unknown }).ClientClassify,
     );
@@ -714,7 +725,7 @@ async function handleCopy() {
       '玩家状态',
       '玩家标签',
       'VIP等级',
-      '代理账号',
+      '所属代理',
       '产品名称',
       '场馆名称',
       '场馆编号',
@@ -805,7 +816,7 @@ onMounted(async () => {
   <div>
     <OpsListPanel>
       <template #filters>
-        <div v-if="!isPlayerScope">
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">场馆模版</span>
             <Select
@@ -819,30 +830,25 @@ onMounted(async () => {
             />
           </Space.Compact>
         </div>
-        <div>
-          <Space.Compact>
-            <span class="query-field-addon">场馆名称</span>
-            <Select
-              v-model:value="filterGameIds"
-              allow-clear
-              show-search
-              option-filter-prop="label"
-              mode="multiple"
-              :max-tag-count="1"
-              :options="platformGameOptions"
-              placeholder="请选择场馆名称"
-            />
-          </Space.Compact>
-        </div>
         <div v-if="!isPlayerScope">
           <Space.Compact>
-            <span class="query-field-addon">产品</span>
+            <span class="query-field-addon">所属产品</span>
             <Select
               v-model:value="filterPackageId"
               :options="packageSelectOptions"
-              placeholder="请选择产品"
+              placeholder="请选择所属产品"
             />
           </Space.Compact>
+        </div>
+        
+        <div v-if="!isPlayerScope">
+          <Input
+            v-model:value="filterUsername"
+            allow-clear
+            placeholder="请输入所属代理"
+          >
+            <template #addonBefore>所属代理</template>
+          </Input>
         </div>
         <div v-if="!isPlayerScope">
           <Space.Compact>
@@ -850,19 +856,6 @@ onMounted(async () => {
             <ChannelSelect
               v-model="filterChannelIds"
               placeholder="请输入渠道号"
-            />
-          </Space.Compact>
-        </div>
-        <div v-if="!isPlayerScope">
-          <Space.Compact>
-            <span class="query-field-addon">游戏名称</span>
-            <Select
-              v-model:value="filterSubGameId"
-              allow-clear
-              show-search
-              option-filter-prop="label"
-              :options="subGameOptions"
-              placeholder="请选择游戏名称"
             />
           </Space.Compact>
         </div>
@@ -886,7 +879,8 @@ onMounted(async () => {
             </template>
           </Input>
         </div>
-        <div v-if="!isPlayerScope">
+        
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">场馆类型</span>
             <Select
@@ -904,14 +898,33 @@ onMounted(async () => {
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope">
-          <Input
-            v-model:value="filterUsername"
-            allow-clear
-            placeholder="请输入代理账号"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
+        <div class="query-filter-wide">
+          <Space.Compact>
+            <span class="query-field-addon">场馆名称</span>
+            <Select
+              v-model:value="filterGameIds"
+              allow-clear
+              show-search
+              option-filter-prop="label"
+              mode="multiple"
+              :max-tag-count="1"
+              :options="platformGameOptions"
+              placeholder="请选择场馆名称"
+            />
+          </Space.Compact>
+        </div>
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
+          <Space.Compact>
+            <span class="query-field-addon">游戏名称</span>
+            <Select
+              v-model:value="filterSubGameId"
+              allow-clear
+              show-search
+              option-filter-prop="label"
+              :options="subGameOptions"
+              placeholder="请选择游戏名称"
+            />
+          </Space.Compact>
         </div>
         <div>
           <Input
@@ -924,16 +937,16 @@ onMounted(async () => {
         </div>
         <div>
           <Space.Compact>
-            <span class="query-field-addon">状态</span>
+            <span class="query-field-addon">注单状态</span>
             <Select
               v-model:value="filterStatus"
               allow-clear
               :options="BET_STATUS_OPTIONS"
-              placeholder="请选择状态"
+              placeholder="请选择注单状态"
             />
           </Space.Compact>
         </div>
-        <div>
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
           <Input
             v-model:value="filterRoundId"
             allow-clear
@@ -977,7 +990,7 @@ onMounted(async () => {
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope">
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">邀请站点</span>
             <Select
@@ -1003,7 +1016,7 @@ onMounted(async () => {
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope">
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
           <Input
             v-model:value="filterTagName"
             allow-clear
@@ -1012,7 +1025,7 @@ onMounted(async () => {
             <template #addonBefore>玩家标签</template>
           </Input>
         </div>
-        <div v-if="!isPlayerScope">
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">站点类型</span>
             <Select
@@ -1025,7 +1038,7 @@ onMounted(async () => {
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope">
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">上架包</span>
             <Select
@@ -1038,7 +1051,7 @@ onMounted(async () => {
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope">
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">设备类型</span>
             <Select
@@ -1051,7 +1064,7 @@ onMounted(async () => {
             />
           </Space.Compact>
         </div>
-        <div v-if="!isPlayerScope">
+        <div v-if="SHOW_EXTRA_QUERY_FILTERS && !isPlayerScope">
           <Space.Compact>
             <span class="query-field-addon">时区</span>
             <Select

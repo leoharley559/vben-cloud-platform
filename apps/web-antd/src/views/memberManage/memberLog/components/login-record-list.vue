@@ -29,7 +29,7 @@ defineOptions({ name: 'LoginRecordList' });
 
 const router = useRouter();
 const { checkPermission } = useCloudPermission();
-const { packageOptions } = useOperationOptions();
+const { packageSelectOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
 const canViewTable = computed(() => checkPermission(12_221));
@@ -50,14 +50,6 @@ const filterIp = ref('');
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
-]);
-
-const packageSelectOptions = computed(() => [
-  { label: '全部', value: '' },
-  ...packageOptions.value.map((item) => ({
-    label: item.PackageName,
-    value: item.PackageId,
-  })),
 ]);
 
 const devicePlatformOptions = computed(() => {
@@ -241,34 +233,14 @@ onMounted(() => {
   <OpsListPanel>
     <template #filters>
       <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
         <Space.Compact>
-          <span class="query-field-addon">产品名称</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             :options="packageSelectOptions"
-            placeholder="请选择产品名称"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
-      </div>
-      <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterPlayerId"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入玩家ID"
-        >
-          <template #addonBefore>玩家ID</template>
-        </Input>
       </div>
       <div class="flex flex-col gap-1">
         <Space.Compact>
@@ -281,6 +253,27 @@ onMounted(() => {
         </Space.Compact>
       </div>
       <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterPlayerId"
+          allow-clear
+          @press-enter="handleSearch"
+          placeholder="请输入玩家ID"
+        >
+          <template #addonBefore>玩家ID</template>
+        </Input>
+      </div>
+      
+      <!-- <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">设备类型</span>
           <Select
@@ -290,7 +283,7 @@ onMounted(() => {
             placeholder="请选择设备类型"
           />
         </Space.Compact>
-      </div>
+      </div> -->
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterIp"

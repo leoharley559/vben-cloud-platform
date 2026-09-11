@@ -223,7 +223,7 @@ const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
           </Input>
         </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="bindTimeRange" />
+          <QueryDatetimeRangePicker v-model="bindTimeRange" label="绑定时间" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>

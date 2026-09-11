@@ -188,7 +188,7 @@ const allColumns = computed<TableColumnsType>(() => {
     );
   }
   result.push(
-    { dataIndex: 'Username', fixed: 'left', title: '代理账号', width: 130 },
+    { dataIndex: 'Username', fixed: 'left', title: '所属代理', width: 130 },
     { key: 'Type', title: isTeam.value ? '团队类型' : '代理类型', width: 95 },
     { dataIndex: 'MainUsername', title: '上级账号', width: 120 },
   );
@@ -826,7 +826,7 @@ onMounted(async () => {
 </Form.Item>
           </Col>
           <Col :lg="4" :md="6" :sm="12" :xs="24">
-            <Form.Item label="代理账号">
+            <Form.Item label="所属代理">
 <Input v-model:value="query.AgentAccount" allow-clear />
 </Form.Item>
           </Col>
@@ -981,13 +981,13 @@ onMounted(async () => {
             :sm="24"
             :xs="24"
           >
-            <Form.Item label="产品">
+            <Form.Item label="所属产品">
               <Select
                 v-model:value="packageIds"
                 allow-clear
                 mode="multiple"
                 :options="packageOptions"
-                placeholder="请选择产品"
+                placeholder="请选择所属产品"
               />
             </Form.Item>
           </Col>
@@ -1256,7 +1256,7 @@ onMounted(async () => {
       @ok="submitAdjust"
     >
       <Form ref="adjustFormRef" :model="adjustForm" :label-col="{ span: 7 }">
-        <Form.Item label="代理账号">
+        <Form.Item label="所属代理">
 <Input v-model:value="adjustForm.UserName" disabled />
 </Form.Item>
         <Form.Item label="发放月份">
@@ -1340,7 +1340,7 @@ onMounted(async () => {
         size="small"
         bordered
       >
-        <Table.Column v-if="isTeam" data-index="Account" title="代理账号" />
+        <Table.Column v-if="isTeam" data-index="Account" title="所属代理" />
         <Table.Column v-else data-index="GameName" title="场馆" />
         <Table.Column
           v-if="isTeam"

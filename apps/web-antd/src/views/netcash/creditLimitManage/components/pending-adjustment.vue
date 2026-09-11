@@ -55,7 +55,7 @@ const query = reactive({
 const columns = [
   { key: 'seq', title: '序号', width: 70 },
   { dataIndex: 'OrderId', key: 'OrderId', title: '订单号' },
-  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '代理账号' },
+  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '所属代理' },
   { dataIndex: 'AccountType', key: 'AccountType', title: '代理类型' },
   { dataIndex: 'TransferType', key: 'TransferType', title: '申请类型' },
   { dataIndex: 'AdjustAmount', key: 'AdjustAmount', title: '申请金额（元）' },
@@ -190,9 +190,9 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
             v-model:value="query.AgentAccount"
             allow-clear
             @press-enter="search"
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <Space.Compact>
@@ -357,7 +357,7 @@ onMounted(() => Promise.all([load(), loadPlatformCredit()]));
       @ok="submitReview"
     >
       <Form layout="vertical">
-        <Form.Item v-if="reviewRows.length === 1" label="代理账号">
+        <Form.Item v-if="reviewRows.length === 1" label="所属代理">
 <Input :value="String(reviewRows[0]?.AgentAccount || '')" disabled />
 </Form.Item>
         <Form.Item v-if="reviewRows.length === 1" label="申请金额（元）">

@@ -4,7 +4,15 @@ import type { WithdrawWhiteItem } from '#/types/withdraw-extra';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Button, Input, message, Modal, Result, Select } from 'ant-design-vue';
+import {
+  Button,
+  Input,
+  message,
+  Modal,
+  Result,
+  Select,
+  Space,
+} from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -138,17 +146,21 @@ onMounted(() => {
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterPackageId"
-          :options="
-            packageOptions
-              .filter((item) => item.PackageId !== '')
-              .map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-          "
-        />
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="
+              packageOptions
+                .filter((item) => item.PackageId !== '')
+                .map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">
             查询

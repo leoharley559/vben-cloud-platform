@@ -8,6 +8,7 @@ import {
   Radio,
   Row,
   Select,
+  Space,
   Table,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -81,14 +82,14 @@ const summaryColumns = {
 const detailColumns = {
   device: [
     { dataIndex: 'DeviceId', key: 'DeviceId', title: '设备编号' },
-    { dataIndex: 'UserName', key: 'UserName', title: '代理账号' },
+    { dataIndex: 'UserName', key: 'UserName', title: '所属代理' },
     { dataIndex: 'RealName', key: 'RealName', title: '真实姓名' },
     { dataIndex: 'Recharged', key: 'Recharged', title: '总提款' },
     { dataIndex: 'LoginCount', key: 'LoginCount', title: '登录次数' },
   ],
   ip: [
     { dataIndex: 'Ip', key: 'Ip', title: '登录 IP' },
-    { dataIndex: 'UserName', key: 'UserName', title: '代理账号' },
+    { dataIndex: 'UserName', key: 'UserName', title: '所属代理' },
     { dataIndex: 'RealName', key: 'RealName', title: '真实姓名' },
     { dataIndex: 'Recharged', key: 'Recharged', title: '总提款' },
     { dataIndex: 'LoginCount', key: 'LoginCount', title: '登录次数' },
@@ -186,7 +187,14 @@ onMounted(loadAll);
   <div class="space-y-4">
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
-        <Select v-model:value="createTime" :options="dateOptions" />
+        <Space.Compact>
+          <span class="query-field-addon">时间范围</span>
+          <Select
+            v-model:value="createTime"
+            :options="dateOptions"
+            placeholder="请选择时间范围"
+          />
+        </Space.Compact>
         <div class="query-filter-actions">
           <Button type="primary" @click="loadAll">查询</Button>
           <Button @click="reset">重置</Button>

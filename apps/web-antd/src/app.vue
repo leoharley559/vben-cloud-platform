@@ -8,6 +8,7 @@ import { App, ConfigProvider, theme } from 'ant-design-vue';
 
 import { useAppVersionCheck } from '#/composables/use-app-version-check';
 import { useAuthTokenPoller } from '#/composables/use-auth-token-poller';
+import { useModalEnterSubmit } from '#/composables/use-modal-enter-submit';
 import { useUserInfoRefreshOnActivity } from '#/composables/use-user-info-refresh';
 import { antdLocale } from '#/locales';
 import { ensureAuthToken } from '#/utils/ensure-auth-token';
@@ -20,6 +21,8 @@ useAuthTokenPoller();
 useAppVersionCheck();
 /** 对齐旧 App.vue funMouseMove：活动后定时刷新 islogin */
 useUserInfoRefreshOnActivity();
+/** 表单弹窗输入框回车 = 点击确定，对齐登录页 */
+useModalEnterSubmit();
 
 const { isDark } = usePreferences();
 const { tokens } = useAntdDesignTokens();

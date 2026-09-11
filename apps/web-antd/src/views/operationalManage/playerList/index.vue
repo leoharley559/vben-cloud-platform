@@ -54,6 +54,7 @@ import { vipLevelGridColumn } from '#/utils/vip-level';
 import { PLAYER_LIST_EXPORT_PAGE_ID } from '#/utils/security-page-ids';
 
 import PlayerAdvancedSearchModal from './components/player-advanced-search-modal.vue';
+import PlayerBanModal from './components/player-ban-modal.vue';
 import PlayerBatchEditModal from './components/player-batch-edit-modal.vue';
 import PlayerBulkAccountModal from './components/player-bulk-account-modal.vue';
 import PlayerKickModal from './components/player-kick-modal.vue';
@@ -86,7 +87,7 @@ const COLUMN_OPTIONS = [
   { label: '玩家状态', value: 'PlayerStatus' },
   { label: '会员类型', value: 'DataFlag' },
   { label: '上级账号', value: 'InviterLoginAccount' },
-  { label: '推广账号', value: 'PromoterUserName' },
+  { label: '所属代理', value: 'PromoterUserName' },
   { label: '渠道号', value: 'ChannelId' },
   { label: '渠道名称', value: 'ChannelName' },
   { label: 'VIP等级', value: 'VipLevel' },
@@ -115,7 +116,7 @@ const COLUMN_OPTIONS = [
 
 const router = useRouter();
 const { checkPermission } = useCloudPermission();
-const { memberTypeOptions, packageOptions } = useOperationOptions();
+const { memberTypeOptions, packageSelectOptions } = useOperationOptions();
 const { projectConfig } = useProjectConfig();
 
 const canViewPage = computed(() => checkPermission(10_012));
@@ -146,6 +147,9 @@ const canFilterTag = computed(() => checkPermission(12_158));
 const canFilterFirstPay = computed(() => checkPermission(13_205));
 const canFilterMemberType = computed(() => checkPermission(12_296));
 const canFilterRegDate = computed(() => checkPermission(11_399));
+
+/** 临时隐藏部分查询条件；恢复时改为 true */
+const SHOW_EXTRA_QUERY_FILTERS = false;
 
 const filterStatus = ref<number[]>([]);
 const filterLoginAccount = ref('');
@@ -221,6 +225,9 @@ const bulkOpen = ref(false);
 const kickOpen = ref(false);
 const kickPlayerId = ref<null | number | string>(null);
 const kickLastBlockTime = ref(0);
+const banOpen = ref(false);
+const banPlayerId = ref<null | number | string>(null);
+const banPlayerName = ref('');
 const tagOpen = ref(false);
 const tagPlayerId = ref<null | number | string>(null);
 const tagIdCsv = ref('');
@@ -362,7 +369,7 @@ function buildDynamicColumns(): VxeTableGridOptions<PlayerListItem>['columns'] {
       title: '会员类型',
     },
     { field: 'InviterLoginAccount', minWidth: 120, title: '上级账号' },
-    { field: 'PromoterUserName', minWidth: 120, title: '推广账号' },
+    { field: 'PromoterUserName', minWidth: 120, title: '所属代理' },
     { field: 'ChannelId', minWidth: 90, title: '渠道号' },
     { field: 'ChannelName', minWidth: 120, title: '渠道名称' },
     {
@@ -608,43 +615,36 @@ function openRemark(row: PlayerListItem) {
 
 async function switchStatus(row: PlayerListItem, status: number) {
   const name = String(row.LoginAccount || row.PlayerName || row.PlayerId);
-  let remark: string | undefined;
 
   if (status === 3) {
-    const input = window.prompt(`确认封号玩家「${name}」，请填写原因：`, '');
-    if (input === null) {
-      return;
-    }
-    if (!String(input).trim()) {
-      message.warning('封号原因必填');
-      return;
-    }
-    remark = String(input).trim();
-  } else {
-    const label =
-      status === 7
-        ? '重置短信次数'
-        : formatPlayerStatus(status) || String(status);
-    const ok = await new Promise<boolean>((resolve) => {
-      Modal.confirm({
-        content:
-          status === 7
-            ? `确认对玩家「${name}」执行「重置短信次数」？`
-            : `确认将玩家「${name}」设置为「${label}」？`,
-        title: '提示',
-        onOk: () => resolve(true),
-        onCancel: () => resolve(false),
-      });
+    banPlayerId.value = row.PlayerId ?? null;
+    banPlayerName.value = name;
+    banOpen.value = true;
+    return;
+  }
+
+  const label =
+    status === 7
+      ? '重置短信次数'
+      : formatPlayerStatus(status) || String(status);
+  const ok = await new Promise<boolean>((resolve) => {
+    Modal.confirm({
+      content:
+        status === 7
+          ? `确认对玩家「${name}」执行「重置短信次数」？`
+          : `确认将玩家「${name}」设置为「${label}」？`,
+      title: '提示',
+      onOk: () => resolve(true),
+      onCancel: () => resolve(false),
     });
-    if (!ok) {
-      return;
-    }
+  });
+  if (!ok) {
+    return;
   }
 
   await updatePlayerExtApi({
     PlayerId: row.PlayerId!,
     Status: status,
-    ...(remark ? { Remark: remark } : {}),
   });
   message.success('操作成功');
   handleSearch();
@@ -832,20 +832,32 @@ onMounted(async () => {
     <Card>
       <OpsListPanel>
         <template #filters>
-          <div v-if="canFilterStatus" class="flex flex-col gap-1">
+          <div v-if="canFilterPackage" class="flex flex-col gap-1">
             <Space.Compact>
-              <span class="query-field-addon">玩家状态</span>
+              <span class="query-field-addon">所属产品</span>
               <Select
-                v-model:value="filterStatus"
-                mode="multiple"
-                allow-clear
-                :options="
-                  PLAYER_STATUS_OPTIONS.filter((i) =>
-                    [0, 1, 2, 3, 4, 6, 8].includes(i.value),
-                  )
-                "
-                :max-tag-count="1"
-                placeholder="请选择玩家状态"
+                v-model:value="filterPackageId"
+                :options="packageSelectOptions"
+                placeholder="请选择所属产品"
+              />
+            </Space.Compact>
+          </div>
+          
+          <div v-if="canFilterPromoter" class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterPromoter"
+              allow-clear
+              placeholder="请输入所属代理"
+            >
+              <template #addonBefore>所属代理</template>
+            </Input>
+          </div>
+          <div v-if="canFilterChannel" class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">渠道</span>
+              <ChannelSelect
+                v-model="filterChannelIds"
+                placeholder="请输入渠道号"
               />
             </Space.Compact>
           </div>
@@ -869,42 +881,6 @@ onMounted(async () => {
               </template>
             </Input>
           </div>
-          <div v-if="canFilterPassword" class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterPlayerPassword"
-              allow-clear
-              placeholder="请输入同密码查重"
-            >
-              <template #addonBefore>同密码查重</template>
-            </Input>
-          </div>
-          <div v-if="canFilterPhone" class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterPhoneNo"
-              allow-clear
-              placeholder="请输入手机号"
-            >
-              <template #addonBefore>手机号</template>
-            </Input>
-          </div>
-          <div v-if="canFilterEmail" class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterEmail"
-              allow-clear
-              placeholder="请输入邮箱"
-            >
-              <template #addonBefore>邮箱</template>
-            </Input>
-          </div>
-          <div v-if="canFilterPromoter" class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterPromoter"
-              allow-clear
-              placeholder="请输入推广账号"
-            >
-              <template #addonBefore>推广账号</template>
-            </Input>
-          </div>
           <div v-if="canFilterPlayerIds" class="flex flex-col gap-1">
             <Input
               v-model:value="filterPlayerIdsStr"
@@ -914,59 +890,33 @@ onMounted(async () => {
               <template #addonBefore>玩家ID</template>
             </Input>
           </div>
-          <div v-if="canFilterChannel" class="flex flex-col gap-1">
+          <div v-if="canFilterVip" class="flex flex-col gap-1">
             <Space.Compact>
-              <span class="query-field-addon">渠道</span>
-              <ChannelSelect
-                v-model="filterChannelIds"
-                placeholder="请输入渠道号"
+              <span class="query-field-addon">VIP等级</span>
+              <Select
+                v-model:value="filterVipLevel"
+                allow-clear
+                :options="vipOptions"
+                placeholder="请选择VIP等级"
               />
             </Space.Compact>
           </div>
-          <div v-if="canFilterInviter" class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterInviterLoginAccount"
-              allow-clear
-              placeholder="请输入上级账号"
-            >
-              <template #addonBefore>上级账号</template>
-            </Input>
-          </div>
-          <div v-if="canFilterRegIp" class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterRegIp"
-              allow-clear
-              placeholder="请输入注册IP"
-            >
-              <template #addonBefore>注册IP</template>
-            </Input>
-          </div>
-          <div v-if="canFilterLastIp" class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterLastIp"
-              allow-clear
-              placeholder="请输入最后登录IP"
-            >
-              <template #addonBefore>最后登录IP</template>
-            </Input>
-          </div>
-          <div v-if="canFilterDeviceId" class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterDeviceId"
-              allow-clear
-              placeholder="请输入设备号"
-            >
-              <template #addonBefore>设备号</template>
-            </Input>
-          </div>
-          <div v-if="canFilterLastDevice" class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterLastDevice"
-              allow-clear
-              placeholder="请输入最后登录设备"
-            >
-              <template #addonBefore>最后登录设备</template>
-            </Input>
+          <div v-if="canFilterStatus" class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">玩家状态</span>
+              <Select
+                v-model:value="filterStatus"
+                mode="multiple"
+                allow-clear
+                :options="
+                  PLAYER_STATUS_OPTIONS.filter((i) =>
+                    [0, 1, 2, 3, 4, 6, 8].includes(i.value),
+                  )
+                "
+                :max-tag-count="1"
+                placeholder="请选择玩家状态"
+              />
+            </Space.Compact>
           </div>
           <div v-if="canFilterRealName" class="flex flex-col gap-1">
             <Input
@@ -986,54 +936,10 @@ onMounted(async () => {
               <template #addonBefore>银行卡</template>
             </Input>
           </div>
-          <div v-if="canFilterPackage" class="flex flex-col gap-1">
-            <Space.Compact>
-              <span class="query-field-addon">所属产品</span>
-              <Select
-                v-model:value="filterPackageId"
-                :options="[
-                  { label: '全部', value: '' },
-                  ...packageOptions.map((item) => ({
-                    label: item.PackageName,
-                    value: item.PackageId,
-                  })),
-                ]"
-                placeholder="请选择所属产品"
-              />
-            </Space.Compact>
-          </div>
-          <div v-if="canFilterVip" class="flex flex-col gap-1">
-            <Space.Compact>
-              <span class="query-field-addon">VIP等级</span>
-              <Select
-                v-model:value="filterVipLevel"
-                allow-clear
-                :options="vipOptions"
-                placeholder="请选择VIP等级"
-              />
-            </Space.Compact>
-          </div>
-          <div v-if="canFilterPlayerLevel" class="flex flex-col gap-1">
-            <Space.Compact>
-              <span class="query-field-addon">会员层级</span>
-              <Select
-                v-model:value="filterPlayerLevelId"
-                :options="levelFilterOptions"
-                placeholder="请选择会员层级"
-              />
-            </Space.Compact>
-          </div>
-          <div v-if="canFilterMemberType" class="flex flex-col gap-1">
-            <Space.Compact>
-              <span class="query-field-addon">会员类型</span>
-              <Select
-                v-model:value="filterDataSearchType"
-                :options="memberTypeOptions"
-                placeholder="请选择会员类型"
-              />
-            </Space.Compact>
-          </div>
-          <div v-if="canFilterBindPhone" class="flex flex-col gap-1">
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterBindPhone"
+            class="flex flex-col gap-1"
+          >
             <Space.Compact>
               <span class="query-field-addon">绑定手机</span>
               <Select
@@ -1047,13 +953,133 @@ onMounted(async () => {
               />
             </Space.Compact>
           </div>
-          <div v-if="canFilterTag" class="flex flex-col gap-1">
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterPhone"
+            class="flex flex-col gap-1"
+          >
+            <Input
+              v-model:value="filterPhoneNo"
+              allow-clear
+              placeholder="请输入手机号"
+            >
+              <template #addonBefore>手机号</template>
+            </Input>
+          </div>
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterEmail"
+            class="flex flex-col gap-1"
+          >
+            <Input
+              v-model:value="filterEmail"
+              allow-clear
+              placeholder="请输入邮箱"
+            >
+              <template #addonBefore>邮箱</template>
+            </Input>
+          </div>
+          <div v-if="canFilterRegIp" class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterRegIp"
+              allow-clear
+              placeholder="请输入注册IP"
+            >
+              <template #addonBefore>注册IP</template>
+            </Input>
+          </div>
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterLastIp"
+            class="flex flex-col gap-1"
+          >
+            <Input
+              v-model:value="filterLastIp"
+              allow-clear
+              placeholder="请输入最后登录IP"
+            >
+              <template #addonBefore>最后登录IP</template>
+            </Input>
+          </div>
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterDeviceId"
+            class="flex flex-col gap-1"
+          >
+            <Input
+              v-model:value="filterDeviceId"
+              allow-clear
+              placeholder="请输入设备号"
+            >
+              <template #addonBefore>设备号</template>
+            </Input>
+          </div>
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterLastDevice"
+            class="flex flex-col gap-1"
+          >
+            <Input
+              v-model:value="filterLastDevice"
+              allow-clear
+              placeholder="请输入最后登录设备"
+            >
+              <template #addonBefore>最后登录设备</template>
+            </Input>
+          </div>
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterPlayerLevel"
+            class="flex flex-col gap-1"
+          >
+            <Space.Compact>
+              <span class="query-field-addon">会员层级</span>
+              <Select
+                v-model:value="filterPlayerLevelId"
+                :options="levelFilterOptions"
+                placeholder="请选择会员层级"
+              />
+            </Space.Compact>
+          </div>
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterMemberType"
+            class="flex flex-col gap-1"
+          >
+            <Space.Compact>
+              <span class="query-field-addon">会员类型</span>
+              <Select
+                v-model:value="filterDataSearchType"
+                :options="memberTypeOptions"
+                placeholder="请选择会员类型"
+              />
+            </Space.Compact>
+          </div>
+          
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterTag"
+            class="flex flex-col gap-1"
+          >
             <Input
               v-model:value="filterTagName"
               allow-clear
               placeholder="请输入标签"
             >
               <template #addonBefore>标签</template>
+            </Input>
+          </div>
+          <div v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterPassword" class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterPlayerPassword"
+              allow-clear
+              placeholder="请输入同密码查重"
+            >
+              <template #addonBefore>同密码查重</template>
+            </Input>
+          </div>
+          <div
+            v-if="SHOW_EXTRA_QUERY_FILTERS && canFilterInviter"
+            class="flex flex-col gap-1"
+          >
+            <Input
+              v-model:value="filterInviterLoginAccount"
+              allow-clear
+              placeholder="请输入上级账号"
+            >
+              <template #addonBefore>上级账号</template>
             </Input>
           </div>
           <div v-if="canFilterRegDate" class="query-filter-wide">
@@ -1084,10 +1110,8 @@ onMounted(async () => {
           <div class="query-filter-actions">
             <Button type="primary" @click="handleSearch">查询</Button>
             <Button @click="handleReset">重置</Button>
-            <Button type="default" @click="advancedOpen = true">
-高级搜索
-</Button>
-            <Button @click="handleCopy">复制</Button>
+            <Button type="default" @click="advancedOpen = true">高级搜索</Button>
+            <!-- <Button @click="handleCopy">复制</Button> -->
             <Button
               v-if="canExport"
               :loading="exportLoading"
@@ -1229,6 +1253,12 @@ onMounted(async () => {
       v-model:open="bulkOpen"
       :initial-value="filterLoginAccount"
       @confirm="handleBulkConfirm"
+    />
+    <PlayerBanModal
+      v-model:open="banOpen"
+      :player-id="banPlayerId"
+      :player-name="banPlayerName"
+      @success="handleSearch"
     />
     <PlayerKickModal
       v-model:open="kickOpen"

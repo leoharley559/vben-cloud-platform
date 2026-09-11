@@ -53,7 +53,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       field: 'BlackAccount',
       minWidth: 140,
       slots: { default: 'blackAccount' },
-      title: '代理账号',
+      title: '所属代理',
     },
     { field: 'Desc', minWidth: 180, title: '备注' },
     { field: 'CreateAccount', minWidth: 120, title: '创建人' },
@@ -107,7 +107,7 @@ function resetAndReload() {
 
 async function saveBlack() {
   if (!form.Account) {
-    message.warning('代理账号必填');
+    message.warning('所属代理必填');
     return;
   }
   try {
@@ -196,7 +196,7 @@ function removeBlack(row: Record<string, unknown>) {
       @ok="saveBlack"
     >
       <Form layout="vertical">
-        <Form.Item label="代理账号" required>
+        <Form.Item label="所属代理" required>
           <Input v-model:value="form.Account" />
         </Form.Item>
         <Form.Item label="备注">

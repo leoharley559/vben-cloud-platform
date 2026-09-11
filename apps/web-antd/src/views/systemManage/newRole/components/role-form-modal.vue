@@ -24,6 +24,8 @@ import {
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import {
   buildRolePermissionTree,
+  collectRoleTreeAncestorKeys,
+  echoRoleTreeCheckState,
   isSystemBuiltinRole,
   mergeRoleCheckedKeys,
   splitCheckedRoleKeys,
@@ -46,8 +48,14 @@ const visible = ref(false);
 const loading = ref(false);
 const mode = ref<'create' | 'update'>('create');
 const readonly = ref(false);
-/** 对齐旧站：回显勾选时先 check-strictly，避免级联改写已保存节点 */
+/**
+ * 勾选走级联（父子关联）。回显只把「子孙已全部授权」的节点放进 checkedKeys，
+ * 半选父节点放 halfChecked，打开级联时不会把未授权子节点勾满。
+ */
 const treeCheckStrictly = ref(false);
+const permTreeRef = ref<{ halfCheckedKeys?: Array<number | string> } | null>(
+  null,
+);
 
 const formModel = ref<RoleFormModel>({
   Description: '',
@@ -77,6 +85,16 @@ const treeData = computed(() => {
   const nav = adminInfo.value?.Nav || [];
   const subMenus = adminInfo.value?.SubMenus || [];
   return buildRolePermissionTree(nav, subMenus);
+});
+
+const treeCheckedKeysProp = computed(() => {
+  if (treeCheckStrictly.value) {
+    return {
+      checked: checkedKeys.value,
+      halfChecked: halfCheckedKeys.value,
+    };
+  }
+  return checkedKeys.value;
 });
 
 const modalTitle = computed(() => {
@@ -147,6 +165,7 @@ async function open(nextMode: 'create' | 'update', id?: number) {
   resetForm();
 
   if (nextMode === 'create' || !id) {
+    treeCheckStrictly.value = false;
     return;
   }
 
@@ -162,12 +181,17 @@ async function open(nextMode: 'create' | 'update', id?: number) {
       ParamIds: parseIdList(detail.ParamIds),
     };
     readonly.value = isSystemBuiltinRole(detail);
-    // 对齐旧站 handleUpdate：先严格勾选再恢复级联
-    treeCheckStrictly.value = true;
-    checkedKeys.value = mergeRoleCheckedKeys(detail.MenuIds, detail.SubMenuIds);
-    halfCheckedKeys.value = [];
-    await nextTick();
     treeCheckStrictly.value = false;
+    const savedKeys = mergeRoleCheckedKeys(detail.MenuIds, detail.SubMenuIds);
+    if (treeData.value.length > 0) {
+      const echo = echoRoleTreeCheckState(treeData.value, savedKeys);
+      checkedKeys.value = echo.checked;
+      halfCheckedKeys.value = echo.halfChecked;
+    } else {
+      checkedKeys.value = savedKeys;
+      halfCheckedKeys.value = [];
+    }
+    await nextTick();
   } catch {
     message.error('加载角色详情失败');
     close();
@@ -185,12 +209,14 @@ function handleTreeCheck(
   checked:
     | Array<number | string>
     | { checked: Array<number | string>; halfChecked: Array<number | string> },
+  info?: { halfCheckedKeys?: Array<number | string> },
 ) {
   if (readonly.value) {
     return;
   }
   if (Array.isArray(checked)) {
     checkedKeys.value = checked;
+    halfCheckedKeys.value = info?.halfCheckedKeys ?? [];
     return;
   }
   checkedKeys.value = checked.checked;
@@ -270,6 +296,19 @@ function validateForm() {
   }
 }
 
+function asIdList(value: unknown): Array<number | string> {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (value && typeof value === 'object' && 'value' in value) {
+    const inner = (value as { value: unknown }).value;
+    if (Array.isArray(inner)) {
+      return inner;
+    }
+  }
+  return [];
+}
+
 function handleConfirm() {
   if (readonly.value) {
     close();
@@ -278,7 +317,12 @@ function handleConfirm() {
 
   try {
     validateForm();
-    const mergedKeys = [...checkedKeys.value, ...halfCheckedKeys.value];
+    const mergedKeys = [
+      ...checkedKeys.value,
+      ...halfCheckedKeys.value,
+      ...asIdList(permTreeRef.value?.halfCheckedKeys),
+      ...collectRoleTreeAncestorKeys(treeData.value, checkedKeys.value),
+    ];
     const { menuIds, subMenuIds } = splitCheckedRoleKeys(mergedKeys);
     emit('submit', {
       form: {
@@ -343,9 +387,9 @@ defineExpose({
         <Form.Item label="权限节点">
           <div class="max-h-[420px] overflow-y-auto rounded border p-3">
             <Tree
-              :checked-keys="checkedKeys"
+              ref="permTreeRef"
+              :checked-keys="treeCheckedKeysProp"
               :check-strictly="treeCheckStrictly"
-              :half-checked-keys="halfCheckedKeys"
               checkable
               :field-names="{
                 title: 'title',

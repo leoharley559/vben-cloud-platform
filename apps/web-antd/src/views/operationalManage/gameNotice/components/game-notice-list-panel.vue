@@ -430,7 +430,7 @@ function handleDelete(row: NoticeRow) {
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
-        <div class="query-filter-actions">
+        <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
           <Button @click="resetFilters">重置</Button>
         </div>

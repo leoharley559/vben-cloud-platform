@@ -657,7 +657,7 @@ onMounted(() => {
           <Select
             v-model:value="addForm.PackageId"
             :options="addPackageOptions"
-            placeholder="请选择产品包"
+            placeholder="请选择所属产品"
             style="width: 100%"
             @change="resolvePlayer"
           />

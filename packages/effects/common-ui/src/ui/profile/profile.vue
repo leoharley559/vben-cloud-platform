@@ -26,7 +26,7 @@ const tabsValue = defineModel<string>('modelValue');
 </script>
 <template>
   <Page auto-content-height>
-    <div class="flex size-full">
+    <div class="flex size-full min-h-0">
       <Card class="w-1/6 flex-none">
         <div class="mt-4 flex-col-center h-40 gap-4">
           <VbenAvatar
@@ -54,8 +54,10 @@ const tabsValue = defineModel<string>('modelValue');
           </TabsList>
         </Tabs>
       </Card>
-      <Card class="ml-4 min-w-0 w-5/6 flex-auto overflow-hidden p-8">
-        <slot name="content"></slot>
+      <Card class="ml-4 flex min-h-0 min-w-0 w-5/6 flex-auto flex-col overflow-hidden p-8">
+        <div class="min-h-0 flex-1 overflow-auto">
+          <slot name="content"></slot>
+        </div>
       </Card>
     </div>
   </Page>

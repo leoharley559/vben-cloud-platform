@@ -228,7 +228,7 @@ onMounted(async () => {
           :value="Array.isArray(adminSearch) ? '' : adminSearch"
           style="width: 180px"
           allow-clear
-          placeholder="请输入代理账号"
+          placeholder="请输入所属代理"
           @update:value="(v) => (adminSearch = v)"
         />
       </Space.Compact>
@@ -258,7 +258,7 @@ onMounted(async () => {
         />
       </Space.Compact>
       <Space.Compact>
-        <span class="query-field-addon">产品</span>
+        <span class="query-field-addon">所属产品</span>
         <Select
           v-model:value="packageId"
           :options="
@@ -270,7 +270,7 @@ onMounted(async () => {
           style="width: 160px"
           show-search
           allow-clear
-          placeholder="请选择产品"
+          placeholder="请选择所属产品"
         />
       </Space.Compact>
       <Space.Compact>

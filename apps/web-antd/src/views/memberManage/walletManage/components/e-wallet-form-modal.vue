@@ -12,7 +12,11 @@ import {
   updateEWalletApi,
 } from '#/api/memberManage/e-wallet';
 import { queryPlayerByAccountApi } from '#/api/operationManage/player';
-import PassPopup from '#/components/security/pass-popup.vue';
+import GoogleCodeField from '#/components/security/google-code-field.vue';
+import {
+  googleCodePayload,
+  needGoogleCode,
+} from '#/components/security/security-utils';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import { E_WALLET_PAY_TYPES } from '#/types/e-wallet';
 import { createRequestHash } from '#/utils/crypto';
@@ -34,8 +38,8 @@ const ACCOUNT_PATTERN = /^(?=.{11,12}$)(09|639|\*)[0-9*]*$/;
 
 const { packageOptions } = useOperationOptions();
 
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const submitting = ref(false);
+const validCode = ref('');
 const loginAccount = ref('');
 const packageId = ref<number | string>('');
 const packageName = ref('');
@@ -55,6 +59,7 @@ watch(
     if (!open) {
       return;
     }
+    validCode.value = '';
     if (props.mode === 'edit' && props.row) {
       walletId.value = props.row.Id || '';
       loginAccount.value = String(props.row.LoginAccount || '');
@@ -131,10 +136,14 @@ async function requestSubmit() {
       return;
     }
   }
-  passPopupRef.value?.validate(E_WALLET_SECURITY_PAGE_ID);
+  if (needGoogleCode(E_WALLET_SECURITY_PAGE_ID, validCode.value)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void handleSubmit();
 }
 
-async function handleSubmit(extra: Record<string, unknown> = {}) {
+async function handleSubmit() {
   submitting.value = true;
   try {
     const payload = {
@@ -144,7 +153,7 @@ async function handleSubmit(extra: Record<string, unknown> = {}) {
       PackageId: packageId.value || props.row?.PackageId,
       PayType: payType.value,
       PlayerId: playerId.value,
-      ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
+      ...googleCodePayload(validCode.value),
       ...(props.mode === 'edit' ? { Id: walletId.value } : {}),
     };
     if (props.mode === 'create') {
@@ -190,7 +199,7 @@ async function handleSubmit(extra: Record<string, unknown> = {}) {
           v-model:value="packageId"
           :field-names="{ label: 'PackageName', value: 'PackageId' }"
           :options="packageSelectOptions"
-          placeholder="请选择产品"
+          placeholder="请选择所属产品"
           show-search
           @change="onPackageChange"
         />
@@ -220,8 +229,10 @@ async function handleSubmit(extra: Record<string, unknown> = {}) {
           placeholder="请输入账户名称"
         />
       </Form.Item>
+      <GoogleCodeField
+        :page-id="E_WALLET_SECURITY_PAGE_ID"
+        v-model:value="validCode"
+      />
     </Form>
   </Modal>
-
-  <PassPopup ref="passPopupRef" title="安全验证" @confirm="handleSubmit" />
 </template>

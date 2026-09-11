@@ -279,12 +279,12 @@ function handlePreview(path?: string) {
         <div class="ops-query-filters">
           <div class="flex flex-col gap-1">
             <Space.Compact>
-              <span class="query-field-addon">产品</span>
+              <span class="query-field-addon">所属产品</span>
               <Select
                 v-model:value="filterPackageId"
                 :field-names="{ label: 'PackageName', value: 'PackageId' }"
                 :options="packageOptions"
-                placeholder="请选择产品"
+                placeholder="请选择所属产品"
               />
             </Space.Compact>
           </div>

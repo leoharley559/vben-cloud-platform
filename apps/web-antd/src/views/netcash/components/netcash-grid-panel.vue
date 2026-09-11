@@ -208,18 +208,18 @@ defineExpose({
           <Input
             v-model:value="filterUsername"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <div v-if="enabledFilters.has('agent')" class="flex flex-col gap-1">
           <Input
             v-model:value="filterAgentAccount"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <div v-if="enabledFilters.has('login')" class="flex flex-col gap-1">
@@ -241,13 +241,13 @@ defineExpose({
           </Input>
         </div>
         <Space.Compact>
-          <span class="query-field-addon">产品包</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-if="enabledFilters.has('package')"
             v-model:value="filterPackageId"
             allow-clear
             :options="packageOptions"
-            placeholder="请选择产品包"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Space.Compact>

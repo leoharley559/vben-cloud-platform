@@ -202,7 +202,7 @@ const gridOptions: VxeTableGridOptions<EmailRow> = {
       formatter: ({ cellValue }) => String(cellValue || '-'),
       minWidth: 120,
       showOverflow: 'tooltip',
-      title: '代理/推广账号',
+      title: '所属代理',
     },
     { field: 'Sender', minWidth: 100, title: '发送人' },
     {
@@ -436,7 +436,7 @@ async function openReadPlayers(row: EmailRow) {
         </div>
 
         <Space.Compact>
-          <span class="query-field-addon">代理/推广账号</span>
+          <span class="query-field-addon">所属代理</span>
           <AccountSelect v-model="filterUsername" return-name />
         </Space.Compact>
 

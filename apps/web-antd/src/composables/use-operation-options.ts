@@ -21,6 +21,13 @@ export function useOperationOptions() {
     return normalized;
   });
 
+  const packageSelectOptions = computed(() =>
+    packageOptions.value.map((item) => ({
+      label: item.PackageName,
+      value: item.PackageId,
+    })),
+  );
+
   const memberTypeOptions = [
     { label: '全部', value: 2 },
     { label: '正式', value: 0 },
@@ -30,5 +37,6 @@ export function useOperationOptions() {
   return {
     memberTypeOptions,
     packageOptions,
+    packageSelectOptions,
   };
 }

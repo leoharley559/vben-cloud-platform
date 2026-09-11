@@ -200,7 +200,7 @@ onMounted(load);
             v-model:value="form.PackageId"
             :options="options"
             allow-clear
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
             show-search
           />
         </Form.Item>

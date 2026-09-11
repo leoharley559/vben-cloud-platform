@@ -104,6 +104,7 @@ export function exportPlayerListApi(params: Record<string, unknown>) {
  * @returns 玩家基础信息对象
  * @see views/operationalManage/playerDetails/index.vue
  * @see views/operationalManage/playerDetails/components/player-basic-info.vue
+ * @see views/operationalManage/playerDetails/components/player-wallet.vue
  */
 export function fetchPlayerBasicInfoApi(playerId: number | string) {
   return requestClient.get<PlayerBasicInfo>(`/backend/playerinfo/${playerId}`);
@@ -151,7 +152,7 @@ export function queryPlayerByExcelApi(data: {
  * 获取玩家各场馆钱包列表。
  *
  * @param playerId 玩家 ID
- * @returns 钱包列表及汇总信息
+ * @returns 场馆钱包 Items（Balance 由页面累加为场馆钱包总金额）
  * @see views/operationalManage/playerDetails/components/player-wallet.vue
  */
 export function fetchPlayerWalletListApi(playerId: number | string) {
@@ -273,7 +274,7 @@ export function updatePlayerOtherApi(data: Record<string, unknown>) {
 /**
  * 编辑玩家绑定手机号。
  *
- * @param data PlayerId、BindPhone、DialingCode 及可选 UpField
+ * @param data PlayerId、BindPhone、DialingCode 及可选 UpField、ValidCode
  * @returns 接口响应
  * @see views/operationalManage/playerDetails/components/player-basic-info.vue
  */
@@ -282,6 +283,7 @@ export function updatePlayerBindPhoneApi(data: {
   DialingCode?: string;
   PlayerId: number | string;
   UpField?: string;
+  ValidCode?: string;
 }) {
   return requestClient.put('/backend/playerinfo/editbindphone', data);
 }
@@ -303,16 +305,20 @@ export function updatePlayerInviterApi(data: {
 /**
  * 修改玩家登录密码。
  *
- * @param data PlayerId、NewPassword 及可选 ValidCode
+ * 对齐旧站 `updateBasicPwd`：PUT 整份玩家资料表单，并覆盖 NewPassword、UpField、ValidCode。
+ *
+ * @param data 玩家基础信息 + NewPassword、UpField、可选 ValidCode
  * @returns 接口响应
  * @see views/operationalManage/playerDetails/components/player-basic-info.vue
  */
-export function updatePlayerPasswordApi(data: {
-  NewPassword: string;
-  PlayerId: number | string;
-  UpField?: string;
-  ValidCode?: string;
-}) {
+export function updatePlayerPasswordApi(
+  data: Record<string, unknown> & {
+    NewPassword: string;
+    PlayerId: number | string;
+    UpField?: string;
+    ValidCode?: string;
+  },
+) {
   return requestClient.put('/backend/playerinfo/editpassword', data);
 }
 
@@ -396,6 +402,7 @@ export function walletZeroApi(params: {
  *
  * @param data PlayerId、Status 及可选 Remark、BlockTime
  * @returns 接口响应
+ * @see views/operationalManage/playerList/components/player-ban-modal.vue
  * @see views/operationalManage/playerList/components/player-kick-modal.vue
  * @see views/operationalManage/playerDetails/components/player-basic-info.vue
  */

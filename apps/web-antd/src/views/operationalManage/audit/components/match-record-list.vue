@@ -474,18 +474,8 @@ onMounted(() => {
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterLoginAccount"
-            allow-clear
-            @change="normalizeLoginAccount"
-            placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
         <Space.Compact>
-          <span class="query-field-addon">产品名称</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
@@ -497,7 +487,34 @@ onMounted(() => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
             "
-            placeholder="请选择产品名称"
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="normalizeLoginAccount"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            :options="VIP_LEVEL_OPTIONS"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">玩家状态</span>
+          <Select
+            v-model:value="filterPlayerStatus"
+            allow-clear
+            :options="PLAYER_STATUS_OPTIONS"
+            placeholder="请选择玩家状态"
           />
         </Space.Compact>
         <div class="flex flex-col gap-1">
@@ -545,19 +562,21 @@ onMounted(() => {
             placeholder="请选择审核状态"
           />
         </Space.Compact>
+        
+        
         <Space.Compact>
-          <span class="query-field-addon">玩家状态</span>
+          <span class="query-field-addon">风控信息</span>
           <Select
-            v-model:value="filterPlayerStatus"
-            allow-clear
-            :options="PLAYER_STATUS_OPTIONS"
-            placeholder="请选择玩家状态"
+            v-model:value="filterReviewNote"
+            :options="reviewNoteOptions"
+            placeholder="请选择风控信息"
           />
         </Space.Compact>
-        <Select v-model:value="filterVipLevel" :options="VIP_LEVEL_OPTIONS" />
-        <Select v-model:value="filterReviewNote" :options="reviewNoteOptions" />
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="申请时间"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">

@@ -1050,19 +1050,31 @@ function handleStepChange(next: number) {
   activeStep.value = next;
 }
 
-function leaveEditor() {
-  if (saving.value) return;
-  if (!isDirty.value) {
-    void router.push('/gameManage/inclusionDeploy');
-    return;
+function confirmDiscardUnsaved(content: string): Promise<boolean> {
+  if (saving.value) {
+    return Promise.resolve(false);
   }
-  Modal.confirm({
-    content: '当前修改尚未保存，确认离开？',
-    onOk: () => {
-      initialized.value = false;
-      return router.push('/gameManage/inclusionDeploy');
-    },
-    title: '放弃修改',
+  if (!isDirty.value || !initialized.value) {
+    return Promise.resolve(true);
+  }
+  return new Promise((resolve) => {
+    Modal.confirm({
+      content,
+      title: '放弃修改',
+      onOk: () => {
+        initialized.value = false;
+        resolve(true);
+      },
+      onCancel: () => resolve(false),
+    });
+  });
+}
+
+function leaveEditor() {
+  void confirmDiscardUnsaved('当前修改尚未保存，确认离开？').then((ok) => {
+    if (ok) {
+      void router.push('/gameManage/inclusionDeploy');
+    }
   });
 }
 
@@ -1072,15 +1084,12 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
   event.returnValue = '';
 }
 
-onBeforeRouteLeave(() => {
-  if (saving.value) return false;
-  if (!isDirty.value || !initialized.value) return true;
-  return window.confirm('当前修改尚未保存，确认离开？');
-});
+onBeforeRouteLeave(() =>
+  confirmDiscardUnsaved('当前修改尚未保存，确认离开？'),
+);
 onBeforeRouteUpdate((to, from) => {
-  if (saving.value) return false;
-  if (to.query.id !== from.query.id && isDirty.value && initialized.value) {
-    return window.confirm('当前修改尚未保存，确认切换产品？');
+  if (to.query.id !== from.query.id) {
+    return confirmDiscardUnsaved('当前修改尚未保存，确认切换产品？');
   }
   return true;
 });

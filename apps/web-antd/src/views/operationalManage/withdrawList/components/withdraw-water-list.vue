@@ -319,17 +319,21 @@ onMounted(() => {
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterPackageId"
-          :options="
-            packageOptions
-              .filter((item) => item.PackageId !== '')
-              .map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-          "
-        />
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="
+              packageOptions
+                .filter((item) => item.PackageId !== '')
+                .map((item) => ({
+                  label: item.PackageName,
+                  value: item.PackageId,
+                }))
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterChannelId"
@@ -339,7 +343,14 @@ onMounted(() => {
             <template #addonBefore>渠道号</template>
           </Input>
         </div>
-        <Select v-model:value="filterStatus" :options="statusOptions" />
+        <Space.Compact>
+          <span class="query-field-addon">状态</span>
+          <Select
+            v-model:value="filterStatus"
+            :options="statusOptions"
+            placeholder="请选择状态"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterHandlerName"
@@ -350,7 +361,7 @@ onMounted(() => {
           </Input>
         </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="时间" />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">

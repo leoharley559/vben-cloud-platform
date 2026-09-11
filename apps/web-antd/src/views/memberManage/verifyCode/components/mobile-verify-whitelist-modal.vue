@@ -42,7 +42,7 @@ const filterChannelId = ref('');
 const addAccount = ref('');
 const addPackageId = ref<number | string>('');
 
-const packageSelectOptions = computed(() =>
+const realPackageOptions = computed(() =>
   packageOptions.value.filter((item) => item.PackageId !== ''),
 );
 
@@ -63,7 +63,7 @@ watch(open, (value) => {
     filterPackageId.value = '';
     filterChannelId.value = '';
     addAccount.value = '';
-    addPackageId.value = packageSelectOptions.value[0]?.PackageId ?? '';
+    addPackageId.value = realPackageOptions.value[0]?.PackageId ?? '';
     selectedRowKeys.value = [];
     loadList();
   }
@@ -109,7 +109,7 @@ async function handleAdd() {
     message.warning('请填写账号并选择产品');
     return;
   }
-  const pkg = packageSelectOptions.value.find(
+  const pkg = realPackageOptions.value.find(
     (item) => item.PackageId === addPackageId.value,
   );
   adding.value = true;
@@ -196,10 +196,7 @@ function handleTableChange(pagination: {
           <Select
             v-model:value="filterPackageId"
             :field-names="{ label: 'PackageName', value: 'PackageId' }"
-            :options="[
-              { PackageId: '', PackageName: '全部' },
-              ...packageSelectOptions,
-            ]"
+            :options="packageOptions"
             show-search
             placeholder="请选择所属产品"
           />
@@ -236,7 +233,7 @@ function handleTableChange(pagination: {
             <Select
               v-model:value="addPackageId"
               :field-names="{ label: 'PackageName', value: 'PackageId' }"
-              :options="packageSelectOptions"
+              :options="realPackageOptions"
               show-search
               placeholder="请选择所属产品"
             />

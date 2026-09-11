@@ -258,13 +258,13 @@ onMounted(() => {
         />
       </Space.Compact>
       <Space.Compact>
-        <span class="query-field-addon">产品</span>
+        <span class="query-field-addon">所属产品</span>
         <Select
           v-model:value="filters.PackageId"
           :options="packageSelectOptions"
           allow-clear
           class="w-40"
-          placeholder="请选择产品"
+          placeholder="请选择所属产品"
         />
       </Space.Compact>
       <Space.Compact>

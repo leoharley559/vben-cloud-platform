@@ -72,7 +72,7 @@ export const gameProfitRankColumns: OperationListConfig['columns'] = [
 ];
 
 export const channelAgentColumns: OperationListConfig['columns'] = [
-  { field: 'Username', minWidth: 120, title: '代理账号' },
+  { field: 'Username', minWidth: 120, title: '所属代理' },
   { field: 'Agentname', minWidth: 120, title: '代理名称' },
   { field: 'SumDevice', minWidth: 100, title: '新增设备' },
   { field: 'SumReg', minWidth: 100, title: '注册人数' },

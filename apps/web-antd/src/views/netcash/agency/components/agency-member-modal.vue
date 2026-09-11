@@ -75,16 +75,16 @@ const importPreviewRows = ref<Row[]>([]);
 const columns = [
   { dataIndex: 'PlayerAccount', key: 'PlayerAccount', title: '游戏账号', width: 180 },
   { dataIndex: 'PackageName', key: 'PackageName', title: '所属产品', width: 120 },
-  { dataIndex: 'OriginalAdmin', key: 'OriginalAdmin', title: '转代前代理账号', width: 150 },
-  { dataIndex: 'AdminName', key: 'AdminName', title: '转代后代理账号', width: 150 },
+  { dataIndex: 'OriginalAdmin', key: 'OriginalAdmin', title: '转代前所属代理', width: 150 },
+  { dataIndex: 'AdminName', key: 'AdminName', title: '转代后所属代理', width: 150 },
   { dataIndex: 'Note', key: 'Note', title: '备注', width: 240 },
 ];
 
 const importPreviewColumns = [
   { dataIndex: 'PlayerAccount', key: 'PlayerAccount', title: '游戏账号', width: 180 },
   { dataIndex: 'PackageName', key: 'PackageName', title: '所属产品', width: 120 },
-  { dataIndex: 'OriginalAdmin', key: 'OriginalAdmin', title: '转代前代理账号', width: 130 },
-  { dataIndex: 'AdminName', key: 'AdminName', title: '转代后代理账号', width: 130 },
+  { dataIndex: 'OriginalAdmin', key: 'OriginalAdmin', title: '转代前所属代理', width: 130 },
+  { dataIndex: 'AdminName', key: 'AdminName', title: '转代后所属代理', width: 130 },
   { dataIndex: 'Note', key: 'Note', title: '备注', width: 180 },
 ];
 

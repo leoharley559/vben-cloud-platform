@@ -530,7 +530,7 @@ async function handleSubmit() {
       return;
     }
     if (form.Username.length > 0 && restrictedPackages.value.length === 0) {
-      message.error('所选代理/推广账号与产品包不匹配');
+      message.error('所选所属代理与产品包不匹配');
       return;
     }
   } else if (!form.PlayerList) {
@@ -618,7 +618,7 @@ async function handleSubmit() {
       </Form.Item>
 
       <template v-if="form.IsAll === 1">
-        <Form.Item label="代理/推广账号">
+        <Form.Item label="所属代理">
           <AccountSelect
             v-model="form.Username"
             :disabled="createLocked"

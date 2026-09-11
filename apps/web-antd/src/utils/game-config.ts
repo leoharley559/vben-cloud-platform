@@ -11,6 +11,7 @@ export interface GameInfo {
   apiId?: number | string;
   gameCode?: number | string;
   gameName?: string;
+  IsOpen?: number | string;
   ParentId?: number | string;
   resType?: number;
   rooms?: Record<string, string>;
@@ -37,6 +38,7 @@ export interface GameTypeLanguage {
 export interface GameTypeLangGroupItem {
   [key: string]: unknown;
   Classify?: number | string;
+  IsOpen?: number | string;
   Langs?: GameTypeLanguage[];
 }
 

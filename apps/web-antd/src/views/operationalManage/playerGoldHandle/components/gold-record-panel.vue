@@ -621,6 +621,30 @@ async function handleExport() {
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
@@ -651,32 +675,6 @@ async function handleExport() {
             <template #addonBefore>玩家昵称</template>
           </Input>
         </div>
-
-        <Space.Compact>
-          <span class="query-field-addon">所属产品</span>
-          <Select
-            v-model:value="filterPackageId"
-            allow-clear
-            :options="packageSelectOptions"
-            show-search
-            :filter-option="
-              (input, option) =>
-                String(option?.label ?? '')
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-            "
-            placeholder="请选择所属产品"
-          />
-        </Space.Compact>
-
-        <Space.Compact>
-          <span class="query-field-addon">渠道号</span>
-          <ChannelSelect
-            v-model="filterChannelIds"
-            placeholder="请输入渠道号"
-          />
-        </Space.Compact>
-
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterOrderId"
@@ -697,7 +695,7 @@ async function handleExport() {
         </Space.Compact>
 
         <Space.Compact>
-          <span class="query-field-addon">状态</span>
+          <span class="query-field-addon">发放状态</span>
           <Select
             v-model:value="filterDone"
             allow-clear
@@ -709,7 +707,7 @@ async function handleExport() {
         </Space.Compact>
 
         <Space.Compact>
-          <span class="query-field-addon">类型</span>
+          <span class="query-field-addon">红利类型</span>
           <Select
             v-model:value="filterReason"
             allow-clear

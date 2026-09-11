@@ -409,27 +409,8 @@ onMounted(() => {
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterOrderId"
-            allow-clear
-            placeholder="请输入订单编号"
-          >
-            <template #addonBefore>订单编号</template>
-          </Input>
-        </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterLoginAccount"
-            allow-clear
-            @change="normalizeLoginAccount"
-            placeholder="请输入游戏账号"
-          >
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
         <Space.Compact>
-          <span class="query-field-addon">产品名称</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
@@ -441,7 +422,7 @@ onMounted(() => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
             "
-            placeholder="请选择产品名称"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Space.Compact>
@@ -451,27 +432,50 @@ onMounted(() => {
             placeholder="请输入渠道号"
           />
         </Space.Compact>
+        
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterLoginAccount"
+            allow-clear
+            @change="normalizeLoginAccount"
+            placeholder="请输入游戏账号"
+          >
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
         <Space.Compact>
-          <span class="query-field-addon">类型</span>
+          <span class="query-field-addon">红利类型</span>
           <Select
             v-model:value="filterReason"
             allow-clear
             mode="multiple"
             :max-tag-count="1"
             :options="BONUS_AUDIT_REASON_OPTIONS"
-            placeholder="请选择类型"
+            placeholder="请选择红利类型"
           />
         </Space.Compact>
-        <Select
-          v-model:value="filterWaterType"
-          :options="[
-            { label: '全部', value: 0 },
-            { label: '倍数', value: 1 },
-            { label: '金额', value: 2 },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">流水要求类型</span>
+          <Select
+            v-model:value="filterWaterType"
+            :options="[
+              { label: '全部', value: 0 },
+              { label: '倍数', value: 1 },
+              { label: '金额', value: 2 },
+            ]"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterOrderId"
+            allow-clear
+            placeholder="请输入订单编号"
+          >
+            <template #addonBefore>订单编号</template>
+          </Input>
+        </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+          <QueryDatetimeRangePicker v-model="filterDateRange" label="申请时间" />
         </div>
         <div class="query-filter-actions">
           <Button :loading="loading" type="primary" @click="gridApi.reload()">

@@ -151,7 +151,7 @@ const totalData = ref<Record<string, number>>({});
 const COLUMN_STORAGE_KEY = 'agencyListMore';
 /** 显示列候选（含默认选中项，对齐会员列表交互） */
 const COLUMN_OPTIONS = [
-  { label: '代理账号', value: 'Username' },
+  { label: '所属代理', value: 'Username' },
   { label: '状态', value: 'Status' },
   { label: '姓名', value: 'Name' },
   { label: '手机号', value: 'MobileNumber' },
@@ -261,7 +261,7 @@ function buildColumns(): VxeTableGridOptions<AgencyListItem>['columns'] {
       fixed: 'left',
       minWidth: 130,
       slots: { default: 'username' },
-      title: '代理账号',
+      title: '所属代理',
     },
     {
       field: 'Status',
@@ -611,8 +611,8 @@ const summaryItems = computed(() => {
       label: '提款',
       value: formatAmountFromCent(
         totalData.value.SumWithDrawMoney ??
-          totalData.value.TotalWithDrawMoney ??
-          0,
+        totalData.value.TotalWithDrawMoney ??
+        0,
       ),
     },
     {
@@ -639,7 +639,7 @@ async function exportAgencyList() {
     });
     const data = (result?.Items || []).map((row) => ({
       状态: AGENCY_STATUS_MAP[Number(row.Status)] || row.Status,
-      代理账号: row.Username,
+      所属代理: row.Username,
       姓名: row.Name,
       手机号: row.MobileNumber,
       发展人: row.DeveloperName,
@@ -703,146 +703,82 @@ onMounted(() => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterUsername"
-            allow-clear
-            placeholder="请输入代理账号"
-          >
-            <template #addonBefore>代理账号</template>
+          <Input v-model:value="filterUsername" allow-clear placeholder="请输入所属代理">
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterTeamName"
-            allow-clear
-            placeholder="请输入团队名称"
-          >
+          <Input v-model:value="filterTeamName" allow-clear placeholder="请输入团队名称">
             <template #addonBefore>团队名称</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterDeveloperName"
-            allow-clear
-            placeholder="请输入发展人"
-          >
+          <Input v-model:value="filterDeveloperName" allow-clear placeholder="请输入发展人">
             <template #addonBefore>发展人</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterMaintainerName"
-            allow-clear
-            placeholder="请输入维护人"
-          >
+          <Input v-model:value="filterMaintainerName" allow-clear placeholder="请输入维护人">
             <template #addonBefore>维护人</template>
           </Input>
         </div>
         <Space.Compact>
           <span class="query-field-addon">状态</span>
-          <Select
-            v-model:value="filterStatus"
-            allow-clear
-            :options="[
-              { label: '启用', value: 1 },
-              { label: '停用', value: 2 },
-            ]"
-            placeholder="请选择状态"
-          />
+          <Select v-model:value="filterStatus" allow-clear :options="[
+            { label: '启用', value: 1 },
+            { label: '停用', value: 2 },
+          ]" placeholder="请选择状态" />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">代理类型</span>
-          <Select
-            v-model:value="filterType"
-            allow-clear
-            mode="multiple"
-            :max-tag-count="1"
-            :options="[
-              { label: '普通', value: 1 },
-              { label: '官方', value: 2 },
-              { label: '测试', value: 3 },
-            ]"
-            placeholder="请选择代理类型"
-          />
+          <Select v-model:value="filterType" allow-clear mode="multiple" :max-tag-count="1" :options="[
+            { label: '普通', value: 1 },
+            { label: '官方', value: 2 },
+            { label: '测试', value: 3 },
+          ]" placeholder="请选择代理类型" />
         </Space.Compact>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterMobile"
-            allow-clear
-            placeholder="请输入手机号"
-          >
+          <Input v-model:value="filterMobile" allow-clear placeholder="请输入手机号">
             <template #addonBefore>手机号</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterMainUsername"
-            allow-clear
-            placeholder="请输入上级账号"
-          >
+          <Input v-model:value="filterMainUsername" allow-clear placeholder="请输入上级账号">
             <template #addonBefore>上级账号</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterParentAdminId"
-            allow-clear
-            placeholder="请输入下级代理 ID"
-          >
+          <Input v-model:value="filterParentAdminId" allow-clear placeholder="请输入下级代理 ID">
             <template #addonBefore>下级代理 ID</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterWithdrawAccName"
-            allow-clear
-            placeholder="请输入银行姓名"
-          >
+          <Input v-model:value="filterWithdrawAccName" allow-clear placeholder="请输入银行姓名">
             <template #addonBefore>银行姓名</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterWithdrawAccNum"
-            allow-clear
-            placeholder="请输入银行卡号"
-          >
+          <Input v-model:value="filterWithdrawAccNum" allow-clear placeholder="请输入银行卡号">
             <template #addonBefore>银行卡号</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterRegistIP"
-            allow-clear
-            placeholder="请输入注册 IP"
-          >
+          <Input v-model:value="filterRegistIP" allow-clear placeholder="请输入注册 IP">
             <template #addonBefore>注册 IP</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterLastLoginIP"
-            allow-clear
-            placeholder="请输入最后登录 IP"
-          >
+          <Input v-model:value="filterLastLoginIP" allow-clear placeholder="请输入最后登录 IP">
             <template #addonBefore>最后登录 IP</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterRegistDevice"
-            allow-clear
-            placeholder="请输入注册设备"
-          >
+          <Input v-model:value="filterRegistDevice" allow-clear placeholder="请输入注册设备">
             <template #addonBefore>注册设备</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterLastLoginDevice"
-            allow-clear
-            placeholder="请输入最后登录设备"
-          >
+          <Input v-model:value="filterLastLoginDevice" allow-clear placeholder="请输入最后登录设备">
             <template #addonBefore>最后登录设备</template>
           </Input>
         </div>
@@ -850,31 +786,21 @@ onMounted(() => {
           <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker
-            v-model="statisticsRange"
-            label="统计时间"
-          />
+          <QueryDatetimeRangePicker v-model="statisticsRange" label="统计时间" />
         </div>
         <div class="query-filter-wide">
           <Space.Compact>
             <span class="query-field-addon">显示列</span>
-            <Select
-              v-model:value="visibleColumns"
-              allow-clear
-              mode="multiple"
-              :max-tag-count="1"
-              :options="COLUMN_OPTIONS"
-              placeholder="请选择显示列"
-              @change="persistColumns"
-            />
+            <Select v-model:value="visibleColumns" allow-clear mode="multiple" :max-tag-count="1"
+              :options="COLUMN_OPTIONS" placeholder="请选择显示列" @change="persistColumns" />
           </Space.Compact>
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>
           <Button @click="resetFilters">重置</Button>
           <Button :loading="exportLoading" @click="exportAgencyList">
-导出 Excel
-</Button>
+            导出 Excel
+          </Button>
           <Button v-if="canAdd" type="primary" @click="openCreateModal">
             新增代理
           </Button>
@@ -882,10 +808,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <div
-      v-if="drillPath.length > 0"
-      class="mb-3 flex items-center gap-1 text-sm"
-    >
+    <div v-if="drillPath.length > 0" class="mb-3 flex items-center gap-1 text-sm">
       <Button size="small" type="link" @click="drillBack(0)">全部代理</Button>
       <template v-for="(item, index) in drillPath" :key="item.id">
         <span>/</span>
@@ -903,12 +826,7 @@ onMounted(() => {
         </Tag>
       </template>
       <template #lowerAgent="{ row }">
-        <Button
-          v-if="Number(row.LowerAgent || 0) > 0"
-          size="small"
-          type="link"
-          @click="drillDown(row)"
-        >
+        <Button v-if="Number(row.LowerAgent || 0) > 0" size="small" type="link" @click="drillDown(row)">
           {{ row.LowerAgent ?? 0 }}
         </Button>
         <span v-else>0</span>
@@ -924,9 +842,7 @@ onMounted(() => {
         </Button>
       </template>
       <template #winLoss="{ row }">
-        <span
-          :class="winLossClass(getWinLossAmount(asAmountInput(row.SumWinGold)))"
-        >
+        <span :class="winLossClass(getWinLossAmount(asAmountInput(row.SumWinGold)))">
           {{
             formatAmountFromCent(
               getWinLossAmount(asAmountInput(row.SumWinGold)),
@@ -940,110 +856,57 @@ onMounted(() => {
         </Button>
       </template>
       <template #username="{ row }">
-        <AgencyAccountLink
-          :admin-id="resolveAgencyAdminId(row)"
-          :query="{
-            Name: String(row.Name || row.Username || ''),
-            CountBeginTime: statisticsRange?.[0]?.startOf('day').unix() || '',
-            CountEndTime: statisticsRange?.[1]?.endOf('day').unix() || '',
-          }"
-          :username="asDisplayText(row.Username)"
-        />
+        <AgencyAccountLink :admin-id="resolveAgencyAdminId(row)" :query="{
+          Name: String(row.Name || row.Username || ''),
+          CountBeginTime: statisticsRange?.[0]?.startOf('day').unix() || '',
+          CountEndTime: statisticsRange?.[1]?.endOf('day').unix() || '',
+        }" :username="asDisplayText(row.Username)" />
       </template>
       <template #mainUsername="{ row }">
-        <AgencyAccountLink
-          :admin-id="resolveAgencyAdminId(row, 'MainAdminId', 'ParentAdminId')"
-          :username="asDisplayText(row.MainUsername)"
-        />
+        <AgencyAccountLink :admin-id="resolveAgencyAdminId(row, 'MainAdminId', 'ParentAdminId')"
+          :username="asDisplayText(row.MainUsername)" />
       </template>
       <template #action="{ row }">
         <Space>
-          <Button
-            v-if="canEdit"
-            size="small"
-            type="link"
-            @click="openEditModal(row)"
-          >
+          <Button v-if="canEdit" size="small" type="link" @click="openEditModal(row)">
             编辑
           </Button>
-          <Button
-            v-if="canSwitch && Number(row.Status) === 2"
-            size="small"
-            type="link"
-            @click="handleSwitch(row, 1)"
-          >
+          <Button v-if="canSwitch && Number(row.Status) === 2" size="small" type="link" @click="handleSwitch(row, 1)">
             启用
           </Button>
-          <Button
-            v-if="canSwitch && Number(row.Status) === 1"
-            size="small"
-            type="link"
-            @click="handleSwitch(row, 2)"
-          >
+          <Button v-if="canSwitch && Number(row.Status) === 1" size="small" type="link" @click="handleSwitch(row, 2)">
             停用
           </Button>
-          <Button
-            v-if="canAddMember && Number(row.Type) !== 3"
-            size="small"
-            type="link"
-            @click="openMemberModal(row)"
-          >
+          <Button v-if="canAddMember && Number(row.Type) !== 3" size="small" type="link" @click="openMemberModal(row)">
             添加会员
           </Button>
         </Space>
       </template>
     </Grid>
 
-    <AgencyFormModal
-      v-model:open="formModalOpen"
-      :mode="formModalMode"
-      :row="formModalRow"
-      @success="gridApi.reload()"
-    />
-    <AgencyMemberModal
-      v-model:open="memberModalOpen"
-      :admin-id="resolveRowAdminId(memberRow)"
-      :admin-name="
-        memberRow?.Username == null || memberRow.Username === ''
-          ? undefined
-          : String(memberRow.Username)
-      "
-      @success="gridApi.reload()"
-    />
+    <AgencyFormModal v-model:open="formModalOpen" :mode="formModalMode" :row="formModalRow"
+      @success="gridApi.reload()" />
+    <AgencyMemberModal v-model:open="memberModalOpen" :admin-id="resolveRowAdminId(memberRow)" :admin-name="memberRow?.Username == null || memberRow.Username === ''
+        ? undefined
+        : String(memberRow.Username)
+      " @success="gridApi.reload()" />
     <AgencyFanDianModal v-model:open="fanDianOpen" :row="fanDianRow" />
-    <AgencyMemberDetailModal
-      v-model:open="memberDetailOpen"
-      :active-only="memberDetailActiveOnly"
-      :admin-id="resolveRowAdminId(memberDetailRow)"
-      :begin-time="statisticsRange?.[0]?.startOf('day').unix() || ''"
-      :end-time="statisticsRange?.[1]?.endOf('day').unix() || ''"
-      :username="
-        memberDetailRow?.Username == null || memberDetailRow.Username === ''
+    <AgencyMemberDetailModal v-model:open="memberDetailOpen" :active-only="memberDetailActiveOnly"
+      :admin-id="resolveRowAdminId(memberDetailRow)" :begin-time="statisticsRange?.[0]?.startOf('day').unix() || ''"
+      :end-time="statisticsRange?.[1]?.endOf('day').unix() || ''" :username="memberDetailRow?.Username == null || memberDetailRow.Username === ''
           ? undefined
           : String(memberDetailRow.Username)
-      "
-    />
-    <Modal
-      v-model:open="statusModalOpen"
-      :confirm-loading="statusSubmitting"
-      :title="statusModalTitle"
-      @ok="submitStatus"
-    >
+        " />
+    <Modal v-model:open="statusModalOpen" :confirm-loading="statusSubmitting" :title="statusModalTitle"
+      @ok="submitStatus">
+      <div class="mb-4 text-sm text-red-500">
+        {{ statusTarget === 2 ? '停用' : '启用' }}{{ statusRow?.Username || '' }}代理后，旗下玩家也将{{ statusTarget === 2 ? '无法登陆' : '恢复登陆' }}，确认{{ statusTarget === 2 ? '停用' : '启用' }}？
+      </div>
       <Form layout="vertical">
         <Form.Item label="备注" required>
-          <Input
-            v-model:value="statusRemark"
-            :maxlength="400"
-            placeholder="请输入备注"
-            @press-enter="submitStatus"
-          />
+          <Input v-model:value="statusRemark" :maxlength="400" placeholder="请输入备注" @press-enter="submitStatus" />
         </Form.Item>
       </Form>
-      <p class="mt-1 text-sm text-gray-600">
-        确认{{ statusTarget === 2 ? '停用' : '启用' }}代理
-        <span class="text-orange-500">{{ statusRow?.Username || '' }}</span>
-        ？
-      </p>
     </Modal>
   </div>
 </template>

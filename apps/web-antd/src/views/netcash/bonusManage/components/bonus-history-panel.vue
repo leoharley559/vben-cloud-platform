@@ -95,7 +95,7 @@ const gridOptions: VxeTableGridOptions<BonusManageItem> = {
       field: 'Username',
       minWidth: 130,
       slots: { default: 'username' },
-      title: '代理账号',
+      title: '所属代理',
     },
     {
       field: 'WalletType',
@@ -237,7 +237,7 @@ async function exportHistory() {
       [
         '状态',
         '订单编号',
-        '代理账号',
+        '所属代理',
         '钱包类型',
         '红利类型',
         '申请时间',
@@ -271,9 +271,9 @@ onMounted(() => {
           <Input
             v-model:value="historyFilters.Username"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <Space.Compact>

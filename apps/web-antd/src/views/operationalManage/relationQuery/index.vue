@@ -44,7 +44,7 @@ const LOGIN_ACCOUNT_RE = /^[a-zA-Z0-9]{4,20}$/;
 
 const router = useRouter();
 const { checkPermission } = useCloudPermission();
-const { packageOptions } = useOperationOptions();
+const { packageSelectOptions } = useOperationOptions();
 
 const canViewPage = computed(() => checkPermission(10_023));
 
@@ -81,13 +81,6 @@ const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs] | null>([
   dayjs.unix(defaultRange.EndTime),
 ]);
 
-const packageSelectOptions = computed(() => [
-  { label: '全部', value: '' },
-  ...packageOptions.value.map((item) => ({
-    label: item.PackageName,
-    value: item.PackageId,
-  })),
-]);
 function formatDateTime(value?: number | string) {
   if (!value || Number(value) === 0) {
     return '-';
@@ -300,19 +293,6 @@ onMounted(() => {
       <OpsListPanel>
         <template #filters>
           <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterLoginAccount"
-              allow-clear
-              @press-enter="handleSearch"
-              @blur="
-                filterLoginAccount = normalizeLoginAccount(filterLoginAccount)
-              "
-              placeholder="请输入游戏账号"
-            >
-              <template #addonBefore>游戏账号</template>
-            </Input>
-          </div>
-          <div class="flex flex-col gap-1">
             <Space.Compact>
               <span class="query-field-addon">所属产品</span>
               <Select
@@ -330,6 +310,44 @@ onMounted(() => {
               />
             </Space.Compact>
           </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <Select
+                class="query-auto-select"
+                :popup-match-select-width="false"
+                v-model:value="channelSearchType"
+                :options="[
+                  { label: '渠道模糊', value: 0 },
+                  { label: '渠道精准', value: 1 },
+                ]"
+              />
+              <ChannelSelect
+                v-if="channelSearchType === 0"
+                v-model="filterChannelIds"
+                placeholder="请输入渠道号"
+              />
+              <Input
+                v-else
+                v-model:value="filterChannelExact"
+                allow-clear
+                placeholder="请输入渠道"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterLoginAccount"
+              allow-clear
+              @press-enter="handleSearch"
+              @blur="
+                filterLoginAccount = normalizeLoginAccount(filterLoginAccount)
+              "
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filterInviterLoginAccount"
@@ -357,30 +375,7 @@ onMounted(() => {
               <template #addonBefore>登录IP</template>
             </Input>
           </div>
-          <div class="flex flex-col gap-1">
-            <Space.Compact>
-              <Select
-                class="query-auto-select"
-                :popup-match-select-width="false"
-                v-model:value="channelSearchType"
-                :options="[
-                  { label: '渠道模糊', value: 0 },
-                  { label: '渠道精准', value: 1 },
-                ]"
-              />
-              <ChannelSelect
-                v-if="channelSearchType === 0"
-                v-model="filterChannelIds"
-                placeholder="请输入渠道号"
-              />
-              <Input
-                v-else
-                v-model:value="filterChannelExact"
-                allow-clear
-                placeholder="请输入渠道"
-              />
-            </Space.Compact>
-          </div>
+          
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filterLoginAddress"

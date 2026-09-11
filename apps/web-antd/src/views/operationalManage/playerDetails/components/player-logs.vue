@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { PlayerLogItem } from '#/types/player-detail';
+import type { PlayerLogItem, PlayerLogTypeOption } from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, Input, Result, Space } from 'ant-design-vue';
+import { Button, Input, Result, Select, Space } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -25,11 +25,20 @@ const canViewTable = computed(() => checkPermission(13_313));
 
 const defaultRange = getCurrentMonthRangeSeconds();
 
-const filterType = ref('');
+const filterType = ref<number | string>('');
 const filterUsername = ref('');
+const logTypeList = ref<PlayerLogTypeOption[]>([]);
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
+]);
+
+const logTypeOptions = computed(() => [
+  { label: '全部类型', value: '' },
+  ...logTypeList.value.map((item) => ({
+    label: item.LogType || String(item.ActionType ?? ''),
+    value: item.ActionType ?? '',
+  })),
 ]);
 
 function formatDateTime(value?: number | string) {
@@ -41,6 +50,16 @@ function formatDateTime(value?: number | string) {
   return parsed.isValid()
     ? parsed.format('YYYY-MM-DD HH:mm:ss')
     : String(value);
+}
+
+function formatActionType(value?: number | string) {
+  if (value === undefined || value === null || value === '') {
+    return '-';
+  }
+  const matched = logTypeList.value.find(
+    (item) => String(item.ActionType) === String(value),
+  );
+  return matched?.LogType || String(value);
 }
 
 function getQueryParams() {
@@ -65,6 +84,7 @@ const gridOptions: VxeTableGridOptions<PlayerLogItem> = {
     },
     {
       field: 'ActionType',
+      formatter: ({ cellValue }) => formatActionType(cellValue),
       minWidth: 120,
       title: '类型',
     },
@@ -101,6 +121,10 @@ const gridOptions: VxeTableGridOptions<PlayerLogItem> = {
           PageSize: page.pageSize,
           Sort: sortParam,
         });
+
+        if (Array.isArray(result?.LogType) && result.LogType.length > 0) {
+          logTypeList.value = result.LogType;
+        }
 
         return {
           items: result?.Items || [],
@@ -160,16 +184,22 @@ onMounted(() => {
           </Input>
         </div>
 
-        <div class="flex flex-col gap-1">
-          <Input
+        <Space.Compact>
+          <span class="query-field-addon">类型</span>
+          <Select
             v-model:value="filterType"
             allow-clear
-            @press-enter="handleSearch"
-            placeholder="请输入类型"
-          >
-            <template #addonBefore>类型</template>
-          </Input>
-        </div>
+            :options="logTypeOptions"
+            placeholder="请选择类型"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+          />
+        </Space.Compact>
 
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker

@@ -204,7 +204,7 @@ const gridOptions: VxeTableGridOptions<Record<string, unknown>> = {
       field: 'ApplyAccount',
       minWidth: 130,
       slots: { default: 'applyAccount' },
-      title: '代理账号',
+      title: '所属代理',
     },
     {
       field: 'CreateTime',
@@ -754,9 +754,9 @@ onUnmounted(() => {
           <Input
             v-model:value="withdrawQuery.Applicant"
             allow-clear
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
@@ -813,32 +813,46 @@ onUnmounted(() => {
             placeholder="请选择提款方式"
           />
         </Space.Compact>
-        <Select
-          v-model:value="withdrawQuery.AmountType"
-          :options="[
-            { label: '申请金额', value: 1 },
-            { label: '实际出款', value: 2 },
-          ]"
-        />
-        <Select
-          v-model:value="withdrawQuery.SelectTimeType"
-          :options="[
-            { label: '申请时间', value: 1 },
-            { label: '结束时间', value: 2 },
-            { label: '财务响应时间', value: 3 },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">金额类型</span>
+          <Select
+            v-model:value="withdrawQuery.AmountType"
+            :options="[
+              { label: '申请金额', value: 1 },
+              { label: '实际出款', value: 2 },
+            ]"
+            placeholder="请选择金额类型"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">时间类型</span>
+          <Select
+            v-model:value="withdrawQuery.SelectTimeType"
+            :options="[
+              { label: '申请时间', value: 1 },
+              { label: '结束时间', value: 2 },
+              { label: '财务响应时间', value: 3 },
+            ]"
+            placeholder="请选择时间类型"
+          />
+        </Space.Compact>
         <div class="query-filter-wide">
           <QueryDatetimeRangePicker v-model="withdrawRange" />
         </div>
-        <InputNumber
-          v-model:value="withdrawQuery.AmountMin"
-          placeholder="请输入最小金额"
-        />
-        <InputNumber
-          v-model:value="withdrawQuery.AmountMax"
-          placeholder="请输入最大金额"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">最小金额</span>
+          <InputNumber
+            v-model:value="withdrawQuery.AmountMin"
+            placeholder="请输入最小金额"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">最大金额</span>
+          <InputNumber
+            v-model:value="withdrawQuery.AmountMax"
+            placeholder="请输入最大金额"
+          />
+        </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">状态</span>
           <Select

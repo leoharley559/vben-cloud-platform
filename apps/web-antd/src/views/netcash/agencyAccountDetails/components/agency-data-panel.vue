@@ -452,7 +452,7 @@ function columns(kind: 'agent' | 'member' | 'personal') {
     {
       dataIndex: kind === 'member' ? 'LoginAccount' : 'Username',
       key: 'account',
-      title: kind === 'member' ? '游戏账号' : '代理账号',
+      title: kind === 'member' ? '游戏账号' : '所属代理',
       width: 150,
     },
     ...amountFields.map((item) => ({

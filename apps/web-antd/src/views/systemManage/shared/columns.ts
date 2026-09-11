@@ -35,7 +35,7 @@ export const languageGroupColumns: OperationListConfig['columns'] = [
 ];
 
 export const goldSellColumns: OperationListConfig['columns'] = [
-  { field: 'AgentName', minWidth: 120, title: '代理账号' },
+  { field: 'AgentName', minWidth: 120, title: '所属代理' },
   {
     field: 'TotalDebitRmb',
     formatter: (value) => formatAmountFromCent(Number(value)),
@@ -57,7 +57,7 @@ export const goldSellRecordColumns: OperationListConfig['columns'] = [
     minWidth: 160,
     title: '时间',
   },
-  { field: 'AgentName', minWidth: 120, title: '代理账号' },
+  { field: 'AgentName', minWidth: 120, title: '所属代理' },
   {
     field: 'DebitRmb',
     formatter: (value) => formatAmountFromCent(Number(value)),

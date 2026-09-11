@@ -194,7 +194,7 @@ const exportColumns = [
     value: (row: BonusRecordListItem) => formatDateTime(row.FirstPayTime),
   },
   {
-    header: '代理账号',
+    header: '所属代理',
     value: (row: BonusRecordListItem) => row.Username || '-',
   },
   {
@@ -306,7 +306,7 @@ const gridOptions: VxeTableGridOptions<BonusRecordListItem> = {
       field: 'Username',
       minWidth: 120,
       slots: { default: 'username' },
-      title: '代理账号',
+      title: '所属代理',
     },
     { ...vipLevelGridColumn, title: '会员等级' },
     {
@@ -493,6 +493,38 @@ onMounted(() => {
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <div class="flex flex-col gap-1">
+          <Input
+            v-model:value="filterUsername"
+            allow-clear
+            placeholder="请输入所属代理"
+          >
+            <template #addonBefore>所属代理</template>
+          </Input>
+        </div>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
@@ -503,10 +535,22 @@ onMounted(() => {
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterPlayerStatus"
-          :options="playerStatusOptions"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            :options="VIP_LEVEL_OPTIONS"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">玩家状态</span>
+          <Select
+            v-model:value="filterPlayerStatus"
+            :options="playerStatusOptions"
+            placeholder="请选择玩家状态"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterOrderId"
@@ -555,31 +599,32 @@ onMounted(() => {
             <template #addonBefore>红利标题</template>
           </Input>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterUsername"
-            allow-clear
-            placeholder="请输入代理账号"
-          >
-            <template #addonBefore>代理账号</template>
-          </Input>
-        </div>
-        <Select v-model:value="filterIsWater" :options="IS_WATER_OPTIONS" />
-        <Select
-          v-model:value="filterStatus"
-          :options="BONUS_ORDER_STATUS_OPTIONS"
-        />
+        
         <Space.Compact>
-          <span class="query-field-addon">渠道号</span>
-          <ChannelSelect
-            v-model="filterChannelIds"
-            placeholder="请输入渠道号"
+          <span class="query-field-addon">是否需要流水</span>
+          <Select
+            v-model:value="filterIsWater"
+            :options="IS_WATER_OPTIONS"
+            placeholder="请选择是否需要流水"
           />
         </Space.Compact>
-        <Select
-          v-model:value="filterWaterType"
-          :options="WATER_TYPE_FILTER_OPTIONS"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">发放状态</span>
+          <Select
+            v-model:value="filterStatus"
+            :options="BONUS_ORDER_STATUS_OPTIONS"
+            placeholder="请选择发放状态"
+          />
+        </Space.Compact>
+        
+        <Space.Compact>
+          <span class="query-field-addon">流水类型</span>
+          <Select
+            v-model:value="filterWaterType"
+            :options="WATER_TYPE_FILTER_OPTIONS"
+            placeholder="请选择流水类型"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterPageTitle"
@@ -589,29 +634,32 @@ onMounted(() => {
             <template #addonBefore>活动分页</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterActivityType"
-          :options="ACTIVITY_TYPE_OPTIONS"
-        />
-        <Select v-model:value="filterPageType" :options="PAGE_TYPE_OPTIONS" />
-        <Select v-model:value="filterSendType" :options="SEND_TYPE_OPTIONS" />
         <Space.Compact>
-          <span class="query-field-addon">产品名称</span>
+          <span class="query-field-addon">活动类型</span>
           <Select
-            v-model:value="filterPackageId"
-            allow-clear
-            :options="packageSelectOptions"
-            show-search
-            :filter-option="
-              (input, option) =>
-                String(option?.label ?? '')
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-            "
-            placeholder="请选择产品名称"
+            v-model:value="filterActivityType"
+            :options="ACTIVITY_TYPE_OPTIONS"
+            placeholder="请选择活动类型"
           />
         </Space.Compact>
-        <Select v-model:value="filterVipLevel" :options="VIP_LEVEL_OPTIONS" />
+        <Space.Compact>
+          <span class="query-field-addon">活动分类</span>
+          <Select
+            v-model:value="filterPageType"
+            :options="PAGE_TYPE_OPTIONS"
+            placeholder="请选择活动分类"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">发放方式</span>
+          <Select
+            v-model:value="filterSendType"
+            :options="SEND_TYPE_OPTIONS"
+            placeholder="请选择发放方式"
+          />
+        </Space.Compact>
+        
+        
         <Space.Compact>
           <span class="query-field-addon">红利类型</span>
           <Select

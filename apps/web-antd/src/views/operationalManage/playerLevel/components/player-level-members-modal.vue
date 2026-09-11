@@ -3,7 +3,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
 import { computed, ref, watch } from 'vue';
 
-import { Button, Input, message, Modal, Select } from 'ant-design-vue';
+import { Button, Input, message, Modal, Select, Space } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -33,7 +33,7 @@ interface MemberRow {
 
 const open = defineModel<boolean>('open', { default: false });
 const { checkPermission } = useCloudPermission();
-const { packageOptions } = useOperationOptions();
+const { packageSelectOptions } = useOperationOptions();
 const canFilter = computed(() => checkPermission(12_282));
 
 const filterLoginAccount = ref('');
@@ -42,14 +42,6 @@ const filterChannelIds = ref('');
 const filterPackageId = ref<number | string>('');
 const selectedIds = ref<Array<number | string>>([]);
 const deleting = ref(false);
-
-const packageSelectOptions = computed(() => [
-  { label: '全部', value: '' },
-  ...packageOptions.value.map((item) => ({
-    label: item.PackageName,
-    value: item.PackageId,
-  })),
-]);
 
 function buildQuery(page: { currentPage: number; pageSize: number }) {
   const loginAccount = filterLoginAccount.value
@@ -205,10 +197,14 @@ watch(open, (visible) => {
             <template #addonBefore>渠道号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterPackageId"
-          :options="packageSelectOptions"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            :options="packageSelectOptions"
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
         <div class="query-filter-actions query-filter-actions-single">
           <Button type="primary" @click="handleSearch">查询</Button>
           <Button

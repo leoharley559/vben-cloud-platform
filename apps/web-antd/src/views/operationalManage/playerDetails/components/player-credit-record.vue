@@ -171,12 +171,19 @@ onMounted(() => props.playerId && gridApi.reload());
             <template #addonBefore>订单编号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="filterWalletType"
-          :options="CREDIT_WALLET_TYPE_OPTIONS"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">钱包类型</span>
+          <Select
+            v-model:value="filterWalletType"
+            :options="CREDIT_WALLET_TYPE_OPTIONS"
+            placeholder="请选择钱包类型"
+          />
+        </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="操作时间"
+          />
         </div>
         <div class="query-filter-actions query-filter-actions-single">
           <Space>

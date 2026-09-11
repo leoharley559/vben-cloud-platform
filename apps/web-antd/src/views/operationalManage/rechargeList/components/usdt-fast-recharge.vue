@@ -231,7 +231,7 @@ onMounted(() => {
           </Input>
         </div>
         <Space.Compact>
-          <span class="query-field-addon">产品</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             :options="
@@ -242,7 +242,7 @@ onMounted(() => {
                   value: item.PackageId,
                 }))
             "
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Space.Compact>

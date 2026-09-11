@@ -43,7 +43,7 @@ const query = reactive({
 const columns = [
   { key: 'seq', title: '序号', width: 70 },
   { dataIndex: 'OrderId', key: 'OrderId', title: '订单号' },
-  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '代理账号' },
+  { dataIndex: 'AgentAccount', key: 'AgentAccount', title: '所属代理' },
   { dataIndex: 'AccountType', key: 'AccountType', title: '代理类型' },
   { dataIndex: 'TransferType', key: 'TransferType', title: '还款类型' },
   { dataIndex: 'CreateTime', key: 'CreateTime', title: '还款时间', width: 180 },
@@ -116,9 +116,9 @@ onMounted(load);
             v-model:value="query.AgentAccounts"
             allow-clear
             @press-enter="search"
-            placeholder="请输入代理账号"
+            placeholder="请输入所属代理"
           >
-            <template #addonBefore>代理账号</template>
+            <template #addonBefore>所属代理</template>
           </Input>
         </div>
         <Space.Compact>

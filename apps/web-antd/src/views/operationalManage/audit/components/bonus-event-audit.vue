@@ -29,6 +29,7 @@ import VipLevelTag from '#/components/global/vip-level-tag.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
+import { useOperationOptions } from '#/composables/use-operation-options';
 import { useCloudPlatformStore } from '#/store/cloud-platform';
 import {
   formatBonusApprove,
@@ -56,6 +57,7 @@ import BonusAuditActionModal from './bonus-audit-action-modal.vue';
 defineOptions({ name: 'BonusEventAudit' });
 
 const { checkPermission } = useCloudPermission();
+const { packageSelectOptions } = useOperationOptions();
 const cloudStore = useCloudPlatformStore();
 const { projectConfig } = storeToRefs(cloudStore);
 
@@ -81,7 +83,7 @@ const summaryItems = computed(() => [
 ]);
 
 const filterLoginAccount = ref('');
-const filterPackageName = ref('');
+const filterPackageId = ref<number | string>('');
 const filterTitle = ref('');
 const filterPageTitle = ref('');
 const filterOrderId = ref('');
@@ -192,7 +194,7 @@ function getQueryParams() {
       .toLowerCase()
       .replaceAll(/\s/g, ''),
     OrderId: filterOrderId.value.trim(),
-    PackageName: filterPackageName.value.trim(),
+    PackageId: filterPackageId.value || '',
     PageTitle: filterPageTitle.value.trim(),
     PageType: filterPageType.value,
     PlayerStatus: filterPlayerStatus.value,
@@ -398,7 +400,7 @@ function openReject(row?: BonusAuditListItem) {
 
 function resetFilters() {
   filterLoginAccount.value = '';
-  filterPackageName.value = '';
+  filterPackageId.value = '';
   filterTitle.value = '';
   filterPageTitle.value = '';
   filterOrderId.value = '';
@@ -504,6 +506,29 @@ onMounted(() => {
   <div v-if="canViewTable">
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filterPackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            show-search
+            :filter-option="
+              (input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+            "
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filterChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterLoginAccount"
@@ -514,15 +539,23 @@ onMounted(() => {
             <template #addonBefore>游戏账号</template>
           </Input>
         </div>
-        <div class="flex flex-col gap-1">
-          <Input
-            v-model:value="filterPackageName"
-            allow-clear
-            placeholder="请输入产品名称"
-          >
-            <template #addonBefore>产品名称</template>
-          </Input>
-        </div>
+        <Space.Compact>
+          <span class="query-field-addon">VIP等级</span>
+          <Select
+            v-model:value="filterVipLevel"
+            :options="VIP_LEVEL_OPTIONS"
+            placeholder="请选择VIP等级"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">玩家状态</span>
+          <Select
+            v-model:value="filterPlayerStatus"
+            :options="playerStatusOptions"
+            placeholder="请选择玩家状态"
+          />
+        </Space.Compact>
+        
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterTitle"
@@ -532,7 +565,14 @@ onMounted(() => {
             <template #addonBefore>红利标题</template>
           </Input>
         </div>
-        <Select v-model:value="filterPageType" :options="pageTypeOptions" />
+        <Space.Compact>
+          <span class="query-field-addon">活动分类</span>
+          <Select
+            v-model:value="filterPageType"
+            :options="pageTypeOptions"
+            placeholder="请选择活动分类"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filterPageTitle"
@@ -551,14 +591,8 @@ onMounted(() => {
             <template #addonBefore>订单号</template>
           </Input>
         </div>
-        <Space.Compact>
-          <span class="query-field-addon">渠道号</span>
-          <ChannelSelect
-            v-model="filterChannelIds"
-            placeholder="请输入渠道号"
-          />
-        </Space.Compact>
-        <Space.Compact>
+        
+        <!-- <Space.Compact>
           <span class="query-field-addon">上架包</span>
           <Select
             v-model:value="filterAppUrl"
@@ -573,23 +607,9 @@ onMounted(() => {
             "
             placeholder="请选择上架包"
           />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">玩家状态</span>
-          <Select
-            v-model:value="filterPlayerStatus"
-            :options="playerStatusOptions"
-            placeholder="请选择玩家状态"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">VIP等级</span>
-          <Select
-            v-model:value="filterVipLevel"
-            :options="VIP_LEVEL_OPTIONS"
-            placeholder="请选择VIP等级"
-          />
-        </Space.Compact>
+        </Space.Compact> -->
+        
+        
         <Space.Compact>
           <span class="query-field-addon">审核状态</span>
           <Select

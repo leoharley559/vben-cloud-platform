@@ -458,16 +458,23 @@ onMounted(() => {
             <template #addonBefore>副线账号</template>
           </Input>
         </div>
-        <Select
-          v-model:value="teamQuery.Type"
-          :options="[
-            { label: '全部类型', value: -1 },
-            { label: '普通团队', value: 1 },
-            { label: '正式团队', value: 2 },
-          ]"
-        />
+        <Space.Compact>
+          <span class="query-field-addon">团队类型</span>
+          <Select
+            v-model:value="teamQuery.Type"
+            :options="[
+              { label: '全部类型', value: -1 },
+              { label: '普通团队', value: 1 },
+              { label: '正式团队', value: 2 },
+            ]"
+            placeholder="请选择团队类型"
+          />
+        </Space.Compact>
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="teamDateRange" />
+          <QueryDatetimeRangePicker
+            v-model="teamDateRange"
+            label="创建时间"
+          />
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="searchTeams">查询</Button>

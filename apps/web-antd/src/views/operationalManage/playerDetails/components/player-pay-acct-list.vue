@@ -21,7 +21,11 @@ import {
   fetchPlayerPayAcctListApi,
   updateEWalletApi,
 } from '#/api/memberManage/e-wallet';
-import PassPopup from '#/components/security/pass-popup.vue';
+import GoogleCodeField from '#/components/security/google-code-field.vue';
+import {
+  googleCodePayload,
+  needGoogleCode,
+} from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useProjectConfig } from '#/composables/use-project-config';
 
@@ -74,15 +78,16 @@ const allList = ref<EWalletListItem[]>([]);
 const formOpen = ref(false);
 const formMode = ref<'create' | 'edit'>('create');
 const currentPayType = ref(201);
+const deleteOpen = ref(false);
 const deleteIsBlack = ref(false);
 const pendingDeleteId = ref<number | string>('');
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
-const passAction = ref<'delete' | 'save'>('save');
+const deleteValidCode = ref('');
 
 const form = reactive({
   Account: '',
   Id: '' as number | string,
   Name: '',
+  ValidCode: '',
 });
 
 const columns = [
@@ -143,6 +148,7 @@ function openCreate(payType: number) {
   form.Id = '';
   form.Name = '';
   form.Account = '';
+  form.ValidCode = '';
   formOpen.value = true;
 }
 
@@ -152,6 +158,7 @@ function openEdit(payType: number, row: EWalletListItem) {
   form.Id = row.Id ?? '';
   form.Name = String(row.Name || '').replaceAll('*', '');
   form.Account = String(row.Account || '');
+  form.ValidCode = '';
   formOpen.value = true;
 }
 
@@ -168,11 +175,14 @@ function requestSave() {
   }
   form.Name = name;
   form.Account = account;
-  passAction.value = 'save';
-  passPopupRef.value?.validate(PAY_ACCT_SECURITY_PAGE_ID);
+  if (needGoogleCode(PAY_ACCT_SECURITY_PAGE_ID, form.ValidCode)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doSave();
 }
 
-async function doSave(extra: Record<string, unknown> = {}) {
+async function doSave() {
   saving.value = true;
   try {
     const payload = {
@@ -180,7 +190,7 @@ async function doSave(extra: Record<string, unknown> = {}) {
       Name: form.Name,
       PayType: currentPayType.value,
       PlayerId: props.playerId,
-      ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
+      ...googleCodePayload(form.ValidCode),
     };
     if (formMode.value === 'create') {
       await createEWalletApi(payload);
@@ -202,11 +212,19 @@ function requestDelete(row: EWalletListItem) {
   }
   pendingDeleteId.value = row.Id;
   deleteIsBlack.value = false;
-  passAction.value = 'delete';
-  passPopupRef.value?.prompt(PAY_ACCT_SECURITY_PAGE_ID);
+  deleteValidCode.value = '';
+  deleteOpen.value = true;
 }
 
-async function doDelete(extra: Record<string, unknown> = {}) {
+function requestDeleteConfirm() {
+  if (needGoogleCode(PAY_ACCT_SECURITY_PAGE_ID, deleteValidCode.value)) {
+    message.warning('请输入6位谷歌验证码');
+    return;
+  }
+  void doDelete();
+}
+
+async function doDelete() {
   if (pendingDeleteId.value === '') {
     return;
   }
@@ -214,22 +232,15 @@ async function doDelete(extra: Record<string, unknown> = {}) {
   try {
     await deleteEWalletApi(pendingDeleteId.value, {
       IsBlack: deleteIsBlack.value,
-      ...(extra.ValidCode ? { ValidCode: String(extra.ValidCode) } : {}),
+      ...googleCodePayload(deleteValidCode.value),
     });
     message.success('已删除');
+    deleteOpen.value = false;
     await loadList();
   } finally {
     loading.value = false;
     pendingDeleteId.value = '';
   }
-}
-
-function handlePassConfirm(data: Record<string, unknown>) {
-  if (passAction.value === 'delete') {
-    void doDelete(data);
-    return;
-  }
-  void doSave(data);
 }
 
 const currentPlatformName = computed(
@@ -334,20 +345,33 @@ onMounted(() => {
             placeholder="09/639 开头手机号"
           />
         </Form.Item>
+        <GoogleCodeField
+          :page-id="PAY_ACCT_SECURITY_PAGE_ID"
+          v-model:value="form.ValidCode"
+        />
       </Form>
     </Modal>
 
-    <PassPopup
-      ref="passPopupRef"
-      :prompt-msg="passAction === 'delete' ? '确认删除该电子钱包账号？' : ''"
-      :title="passAction === 'delete' ? '删除账号' : '安全验证'"
-      @confirm="handlePassConfirm"
+    <Modal
+      v-model:open="deleteOpen"
+      :confirm-loading="loading"
+      destroy-on-close
+      title="删除账号"
+      @ok="requestDeleteConfirm"
     >
-      <template v-if="passAction === 'delete'" #extra>
-        <Checkbox v-model:checked="deleteIsBlack" class="mt-3">
-          删除同时加入黑名单
-        </Checkbox>
-      </template>
-    </PassPopup>
+      <div class="mb-3 text-sm text-gray-700">确认删除该电子钱包账号？</div>
+      <Form layout="vertical" class="pt-2">
+        <GoogleCodeField
+          compact
+          :page-id="PAY_ACCT_SECURITY_PAGE_ID"
+          v-model:value="deleteValidCode"
+        />
+        <Form.Item class="!mb-0">
+          <Checkbox v-model:checked="deleteIsBlack">
+            删除同时加入黑名单
+          </Checkbox>
+        </Form.Item>
+      </Form>
+    </Modal>
   </div>
 </template>

@@ -573,13 +573,13 @@ onMounted(() => {
         </div>
 
         <Space.Compact>
-          <span class="query-field-addon">产品</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
             allow-clear
             class="w-[250px]"
             :options="packageSelectOptions"
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
             show-search
             :filter-option="
               (input, option) =>
@@ -610,13 +610,13 @@ onMounted(() => {
           </Input>
         </div>
 
-        <div v-if="canFilterQuestType" class="flex items-center gap-1">
-          <span class="whitespace-nowrap text-sm text-gray-500">问题类型</span>
+        <Space.Compact v-if="canFilterQuestType">
+          <span class="query-field-addon">问题类型</span>
           <Select
             v-model:value="filterWorkQuestionType"
             allow-clear
             :options="workQuestOptions"
-            placeholder="请选择"
+            placeholder="请选择问题类型"
             show-search
             :filter-option="
               (input, option) =>
@@ -625,33 +625,36 @@ onMounted(() => {
                   .includes(input.toLowerCase())
             "
           />
-        </div>
+        </Space.Compact>
 
-        <div class="flex items-center gap-1">
-          <span class="whitespace-nowrap text-sm text-gray-500">结束理由</span>
+        <Space.Compact>
+          <span class="query-field-addon">结束理由</span>
           <Select
             v-model:value="filterEndReasonType"
             allow-clear
             :options="endReasonOptions"
-            placeholder="请选择"
+            placeholder="请选择结束理由"
           />
-        </div>
+        </Space.Compact>
 
-        <div class="flex items-center gap-1">
-          <span class="whitespace-nowrap text-sm text-gray-500">工单状态</span>
+        <Space.Compact>
+          <span class="query-field-addon">工单状态</span>
           <Select
             v-model:value="filterStatus"
             allow-clear
             :max-tag-count="1"
             mode="multiple"
             :options="statusOptions"
-            placeholder="请选择"
+            placeholder="请选择工单状态"
             @change="(value) => onStatusChange((value as Array<number | string>) || [])"
           />
-        </div>
+        </Space.Compact>
 
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker v-model="filterDateRange" />
+          <QueryDatetimeRangePicker
+            v-model="filterDateRange"
+            label="申请时间"
+          />
         </div>
         <div class="query-filter-actions">
           <Button type="primary" @click="gridApi.reload()">查询</Button>

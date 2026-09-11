@@ -31,7 +31,7 @@ import RechargeBlackPlayerModal from './recharge-black-player-modal.vue';
 defineOptions({ name: 'BlacklistGameAccount' });
 
 const { checkPermission } = useCloudPermission();
-const { packageOptions } = useOperationOptions();
+const { packageSelectOptions } = useOperationOptions();
 const { formatPayTypes } = useRechargePayTypeOptions();
 
 const canViewTable = computed(() => checkPermission(10_285));
@@ -248,20 +248,12 @@ onMounted(() => {
           </Input>
         </div>
         <Space.Compact>
-          <span class="query-field-addon">产品</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filterPackageId"
-            :options="[
-              { label: '全部产品', value: '' },
-              ...packageOptions
-                .filter((item) => item.PackageId !== '')
-                .map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                })),
-            ]"
+            :options="packageSelectOptions"
             allow-clear
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <div class="flex flex-col gap-1">

@@ -458,7 +458,7 @@ onMounted(async () => {
           />
         </Space.Compact>
         <Space.Compact>
-          <span class="query-field-addon">产品</span>
+          <span class="query-field-addon">所属产品</span>
           <Select
             v-model:value="filters.PackageId"
             allow-clear
@@ -466,7 +466,7 @@ onMounted(async () => {
             style="min-width: 160px"
             show-search
             option-filter-prop="label"
-            placeholder="请选择产品"
+            placeholder="请选择所属产品"
           />
         </Space.Compact>
         <Space.Compact>

@@ -450,29 +450,39 @@ onMounted(load);
     <template v-else>
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
-          <DatePicker
-            v-if="activeTab === 'commission'"
-            v-model:value="month"
-            picker="month"
-            placeholder="佣金月份"
-          />
+          <Space.Compact v-if="activeTab === 'commission'">
+            <span class="query-field-addon">佣金月份</span>
+            <DatePicker
+              v-model:value="month"
+              picker="month"
+              placeholder="请选择佣金月份"
+            />
+          </Space.Compact>
           <template v-else-if="activeTab === 'bonus'">
-            <Select
-              v-model:value="bonusType"
-              :options="[
-                { label: '全部红利类型', value: '' },
-                { label: '代理红利', value: 1 },
-              ]"
-            />
-            <Select
-              v-model:value="approve"
-              :options="[
-                { label: '全部订单状态', value: '' },
-                { label: '待处理', value: 1 },
-                { label: '已发放', value: 2 },
-                { label: '已拒绝', value: 3 },
-              ]"
-            />
+            <Space.Compact>
+              <span class="query-field-addon">红利类型</span>
+              <Select
+                v-model:value="bonusType"
+                :options="[
+                  { label: '全部红利类型', value: '' },
+                  { label: '代理红利', value: 1 },
+                ]"
+                placeholder="请选择红利类型"
+              />
+            </Space.Compact>
+            <Space.Compact>
+              <span class="query-field-addon">订单状态</span>
+              <Select
+                v-model:value="approve"
+                :options="[
+                  { label: '全部订单状态', value: '' },
+                  { label: '待处理', value: 1 },
+                  { label: '已发放', value: 2 },
+                  { label: '已拒绝', value: 3 },
+                ]"
+                placeholder="请选择订单状态"
+              />
+            </Space.Compact>
             <div class="query-filter-wide">
               <QueryDatetimeRangePicker
                 v-model="bonusDateRange"
@@ -481,7 +491,14 @@ onMounted(load);
             </div>
           </template>
           <template v-else>
-            <Select v-model:value="transferType" :options="transferOptions" />
+            <Space.Compact>
+              <span class="query-field-addon">账变类型</span>
+              <Select
+                v-model:value="transferType"
+                :options="transferOptions"
+                placeholder="请选择账变类型"
+              />
+            </Space.Compact>
             <div class="query-filter-wide">
               <QueryDatetimeRangePicker
                 v-model="logDateRange"

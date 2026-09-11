@@ -162,7 +162,7 @@ const gridOptions: VxeTableGridOptions<EvoSideBetListItem> = {
       slots: { default: 'playerStatus' },
       title: '玩家状态',
     },
-    { field: 'Username', minWidth: 110, title: '代理账号' },
+    { field: 'Username', minWidth: 110, title: '所属代理' },
     { field: 'PackageName', minWidth: 120, title: '所属产品' },
     { field: 'GameId', minWidth: 90, title: '场馆编号' },
     {
@@ -356,7 +356,7 @@ async function handleExport() {
           header: '玩家状态',
           value: (row) => formatPlayerStatus(row.PlayerStatus),
         },
-        { header: '代理账号', value: (row) => row.Username || '-' },
+        { header: '所属代理', value: (row) => row.Username || '-' },
         { header: '所属产品', value: (row) => row.PackageName || '-' },
         { header: '场馆编号', value: (row) => String(row.GameId || '-') },
         {
@@ -424,7 +424,7 @@ onMounted(async () => {
         <div class="ops-query-filters">
           <div class="flex flex-col gap-1">
             <Space.Compact>
-              <span class="query-field-addon">产品</span>
+              <span class="query-field-addon">所属产品</span>
               <Select
                 v-model:value="filterPackageId"
                 allow-clear
@@ -434,7 +434,7 @@ onMounted(async () => {
                     value: item.PackageId,
                   }))
                 "
-                placeholder="请选择产品"
+                placeholder="请选择所属产品"
               />
             </Space.Compact>
           </div>
@@ -472,9 +472,9 @@ onMounted(async () => {
             <Input
               v-model:value="filterUsername"
               allow-clear
-              placeholder="请输入代理账号"
+              placeholder="请输入所属代理"
             >
-              <template #addonBefore>代理账号</template>
+              <template #addonBefore>所属代理</template>
             </Input>
           </div>
           <div class="flex flex-col gap-1">
