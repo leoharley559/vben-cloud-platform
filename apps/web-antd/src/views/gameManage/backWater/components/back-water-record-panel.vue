@@ -597,14 +597,31 @@ onMounted(async () => {
 
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
-        <Space.Compact v-if="activeType === 'summary'">
-          <span class="query-field-addon">订单号</span>
-          <Input
-            v-model:value="filters.OrderId"
-            allow-clear
-            placeholder="请输入订单号"
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filters.PackId"
+            :options="packageSelectOptions"
+            placeholder="请选择所属产品"
+            show-search
           />
         </Space.Compact>
+        <Space.Compact v-if="activeType === 'summary'">
+          <span class="query-field-addon">所属代理</span>
+          <Input
+            v-model:value="filters.AdminName"
+            allow-clear
+            placeholder="请输入所属代理"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filters.ChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+        
         <Space.Compact>
           <span class="query-field-addon">游戏账号</span>
           <Input
@@ -618,6 +635,13 @@ onMounted(async () => {
           <Select v-model:value="filters.VipLevel" :options="vipOptions" />
         </Space.Compact>
         <Space.Compact>
+          <span class="query-field-addon">会员类型</span>
+          <Select
+            v-model:value="filters.DataSearchType"
+            :options="memberTypeOptions"
+          />
+        </Space.Compact>
+        <Space.Compact>
           <span class="query-field-addon">层级</span>
           <Select
             v-model:value="filters.LevelId"
@@ -626,34 +650,11 @@ onMounted(async () => {
           />
         </Space.Compact>
         <Space.Compact v-if="activeType === 'summary'">
-          <span class="query-field-addon">所属代理</span>
+          <span class="query-field-addon">订单号</span>
           <Input
-            v-model:value="filters.AdminName"
+            v-model:value="filters.OrderId"
             allow-clear
-            placeholder="请输入所属代理"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">所属产品</span>
-          <Select
-            v-model:value="filters.PackId"
-            :options="packageSelectOptions"
-            placeholder="请选择所属产品"
-            show-search
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">渠道号</span>
-          <ChannelSelect
-            v-model="filters.ChannelIds"
-            placeholder="请输入渠道号"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">会员类型</span>
-          <Select
-            v-model:value="filters.DataSearchType"
-            :options="memberTypeOptions"
+            placeholder="请输入订单号"
           />
         </Space.Compact>
         <Space.Compact v-if="activeType === 'detail'">

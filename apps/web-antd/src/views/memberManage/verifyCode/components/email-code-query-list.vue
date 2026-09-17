@@ -135,16 +135,6 @@ function handleReset() {
   <OpsListPanel v-if="canView">
     <template #filters>
       <div class="flex flex-col gap-1">
-        <Input
-          v-model:value="filterLoginAccount"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入游戏账号"
-        >
-          <template #addonBefore>游戏账号</template>
-        </Input>
-      </div>
-      <div class="flex flex-col gap-1">
         <Space.Compact>
           <span class="query-field-addon">所属产品</span>
           <Select
@@ -155,6 +145,17 @@ function handleReset() {
           />
         </Space.Compact>
       </div>
+      <div class="flex flex-col gap-1">
+        <Input
+          v-model:value="filterLoginAccount"
+          allow-clear
+          @press-enter="handleSearch"
+          placeholder="请输入游戏账号"
+        >
+          <template #addonBefore>游戏账号</template>
+        </Input>
+      </div>
+      
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="filterEmailAccount"

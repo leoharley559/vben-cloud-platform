@@ -499,6 +499,26 @@ onMounted(() => {
   >
     <Card>
       <ReportQueryCard title="查询条件">
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filters.PackageId"
+            allow-clear
+            :options="packageSelectOptions"
+            style="min-width: 160px"
+            show-search
+            option-filter-prop="label"
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filters.ChannelId"
+            style="min-width: 180px"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input
             v-model:value="filters.LoginAccount"
@@ -524,26 +544,8 @@ onMounted(() => {
           <span class="query-field-addon">账号</span>
           <AccountSelect v-model="filters.AdminIds" style="min-width: 200px" />
         </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">渠道号</span>
-          <ChannelSelect
-            v-model="filters.ChannelId"
-            style="min-width: 180px"
-            placeholder="请输入渠道号"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">所属产品</span>
-          <Select
-            v-model:value="filters.PackageId"
-            allow-clear
-            :options="packageSelectOptions"
-            style="min-width: 160px"
-            show-search
-            option-filter-prop="label"
-            placeholder="请选择所属产品"
-          />
-        </Space.Compact>
+        
+        
         <Space.Compact>
           <span class="query-field-addon">数据类型</span>
           <Select

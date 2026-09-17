@@ -20,7 +20,6 @@ import {
   message,
   Modal,
   Result,
-  Space,
   Tag,
   Tooltip,
 } from 'ant-design-vue';
@@ -373,9 +372,12 @@ const gridOptions: VxeTableGridOptions<PackageListItem> = {
       title: '未成年配置',
     },
     {
+      className: 'col--package-actions',
       field: 'action',
       fixed: 'right',
-      minWidth: 350,
+      headerClassName: 'col--package-actions',
+      minWidth: 280,
+      showOverflow: false,
       slots: { default: 'action' },
       title: '操作',
     },
@@ -612,27 +614,29 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
               <template #addonBefore>产品名称</template>
             </Input>
           </div>
-          <div class="query-filter-actions">
+          <div class="query-filter-actions inclusion-deploy-actions">
             <Button type="primary" @click="handleSearch">查询</Button>
             <Button @click="handleReset">重置</Button>
-            <span v-if="canViewList" class="text-sm text-gray-500">
-              已创建 {{ total }} 个产品
-              <template v-if="packageCapacity !== undefined">
-                / 可创建 {{ packageCapacity }} 个
-              </template>
-            </span>
-            <Space wrap>
-              <Button
-                v-if="canBuyQuota"
-                :loading="quotaLoading"
-                @click="handleBuyQuota"
-              >
-                购买产品额度
-              </Button>
-              <Button v-if="canCreate" type="primary" @click="handleCreate">
-                创建产品
-              </Button>
-            </Space>
+            <div class="inclusion-deploy-extra">
+              <span v-if="canViewList" class="text-sm text-gray-500">
+                已创建 {{ total }} 个产品
+                <template v-if="packageCapacity !== undefined">
+                  / 可创建 {{ packageCapacity }} 个
+                </template>
+              </span>
+              <div class="flex flex-wrap gap-1">
+                <Button
+                  v-if="canBuyQuota"
+                  :loading="quotaLoading"
+                  @click="handleBuyQuota"
+                >
+                  购买产品额度
+                </Button>
+                <Button v-if="canCreate" type="primary" @click="handleCreate">
+                  创建产品
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -682,7 +686,7 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
         </template>
 
         <template #action="{ row }">
-          <Space :size="2" wrap>
+          <div class="package-action-btns">
             <Button
               v-if="canEdit"
               size="small"
@@ -707,18 +711,16 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
             >
               备注
             </Button>
-            <template v-if="canUnderage">
-              <Tooltip title="未成年登录设置">
-                <Button size="small" type="link" @click="openUnderage(row, 1)">
-                  登录设置
-                </Button>
-              </Tooltip>
-              <Tooltip title="未成年注册设置">
-                <Button size="small" type="link" @click="openUnderage(row, 2)">
-                  注册设置
-                </Button>
-              </Tooltip>
-            </template>
+            <Tooltip v-if="canUnderage" title="未成年登录设置">
+              <Button size="small" type="link" @click="openUnderage(row, 1)">
+                登录设置
+              </Button>
+            </Tooltip>
+            <Tooltip v-if="canUnderage" title="未成年注册设置">
+              <Button size="small" type="link" @click="openUnderage(row, 2)">
+                注册设置
+              </Button>
+            </Tooltip>
             <Button
               v-if="canOpenSettings"
               size="small"
@@ -737,7 +739,7 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
             >
               删除
             </Button>
-          </Space>
+          </div>
         </template>
       </Grid>
 
@@ -795,6 +797,71 @@ function openSettings(row: PackageListItem, initialTab?: SettingsTabKey) {
 </template>
 
 <style scoped>
+.ops-query-filters .inclusion-deploy-actions {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  .ops-query-filters .inclusion-deploy-actions {
+    grid-column: 2 / -1;
+  }
+}
+
+@container ops-list (min-width: 520px) {
+  .ops-query-filters .inclusion-deploy-actions {
+    grid-column: 2 / -1;
+  }
+}
+
+.inclusion-deploy-extra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.package-action-btns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.package-action-btns > * {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 1 25%;
+  justify-content: center;
+  min-width: min-content;
+}
+
+.package-action-btns :deep(.ant-btn) {
+  padding-inline: 6px;
+  white-space: nowrap;
+}
+
+:deep(.col--package-actions .vxe-cell) {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 4px 8px;
+  line-height: normal;
+  white-space: normal !important;
+  text-overflow: clip !important;
+}
+
+:deep(.col--package-actions .vxe-cell--wrapper) {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+:deep(.vxe-body--column.col--package-actions),
+:deep(.vxe-header--column.col--package-actions) {
+  height: auto !important;
+  max-height: none !important;
+}
+
 .package-preview-frame {
   width: 100%;
   height: min(76vh, 820px);

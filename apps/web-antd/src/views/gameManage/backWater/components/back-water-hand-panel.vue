@@ -245,6 +245,14 @@ onMounted(() => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="query.PackageName"
+            :options="packageSelectOptions"
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
           <span class="query-field-addon">游戏账号</span>
           <Input
             v-model:value="query.LoginAccount"
@@ -253,14 +261,7 @@ onMounted(() => {
             @press-enter="handleQuery"
           />
         </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">所属产品</span>
-          <Select
-            v-model:value="query.PackageName"
-            :options="packageSelectOptions"
-            placeholder="请选择所属产品"
-          />
-        </Space.Compact>
+        
         <Space.Compact>
           <span class="query-field-addon">发放日期</span>
           <DatePicker

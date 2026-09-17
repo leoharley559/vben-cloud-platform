@@ -260,6 +260,22 @@ onMounted(() => {
     <Card>
       <ReportQueryCard>
         <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="packageId"
+            :options="
+              packageOptions.map((item) => ({
+                label: item.PackageName,
+                value: item.PackageId,
+              }))
+            "
+            style="width: 160px"
+            show-search
+            allow-clear
+            placeholder="请选择所属产品"
+          />
+        </Space.Compact>
+        <Space.Compact>
           <Select
             class="query-auto-select"
             :popup-match-select-width="false"
@@ -306,22 +322,7 @@ onMounted(() => {
             placeholder="请输入渠道"
           />
         </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">所属产品</span>
-          <Select
-            v-model:value="packageId"
-            :options="
-              packageOptions.map((item) => ({
-                label: item.PackageName,
-                value: item.PackageId,
-              }))
-            "
-            style="width: 160px"
-            show-search
-            allow-clear
-            placeholder="请选择所属产品"
-          />
-        </Space.Compact>
+        
         <Space.Compact>
           <span class="query-field-addon">注册/设备平台</span>
           <Select

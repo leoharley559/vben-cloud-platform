@@ -447,6 +447,26 @@ onMounted(() => {
     </div>
     <ReportQueryCard actions-single title="查询条件">
       <Space.Compact>
+        <span class="query-field-addon">所属产品</span>
+        <Select
+          v-model:value="filters.PackageId"
+          :options="packageSelectOptions"
+          allow-clear
+          class="w-40"
+          show-search
+          option-filter-prop="label"
+          placeholder="请选择所属产品"
+        />
+      </Space.Compact>
+      <Space.Compact>
+        <span class="query-field-addon">渠道号</span>
+        <ChannelSelect
+          v-model="filters.ChannelIds"
+          class="min-w-[180px]"
+          placeholder="请输入渠道号"
+        />
+      </Space.Compact>
+      <Space.Compact>
         <span class="query-field-addon">数据类型</span>
         <Select
           v-model:value="filters.DataSearchType"
@@ -458,26 +478,6 @@ onMounted(() => {
       <Space.Compact>
         <span class="query-field-addon">账号</span>
         <AccountSelect v-model="filters.AdminIds" class="min-w-[180px]" />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">渠道号</span>
-        <ChannelSelect
-          v-model="filters.ChannelIds"
-          class="min-w-[180px]"
-          placeholder="请输入渠道号"
-        />
-      </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="filters.PackageId"
-          :options="packageSelectOptions"
-          allow-clear
-          class="w-40"
-          show-search
-          option-filter-prop="label"
-          placeholder="请选择所属产品"
-        />
       </Space.Compact>
       <div v-if="reportType === 1" class="query-filter-wide">
         <QueryDatetimeRangePicker

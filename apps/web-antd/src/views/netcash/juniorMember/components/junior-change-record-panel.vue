@@ -114,6 +114,15 @@ onMounted(() => {
 <template>
   <div class="ops-query-scope mb-3">
     <div class="ops-query-filters">
+      <Space.Compact>
+        <span class="query-field-addon">所属产品</span>
+        <Select
+          v-model:value="recordFilters.PackageId"
+          allow-clear
+          :options="packageOptions"
+          placeholder="请选择所属产品"
+        />
+      </Space.Compact>
       <div class="flex flex-col gap-1">
         <Input
           v-model:value="recordFilters.LoginAccount"
@@ -124,15 +133,6 @@ onMounted(() => {
           <template #addonBefore>游戏账号</template>
         </Input>
       </div>
-      <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="recordFilters.PackageId"
-          allow-clear
-          :options="packageOptions"
-          placeholder="请选择所属产品"
-        />
-      </Space.Compact>
       <div class="query-filter-wide">
         <QueryDatetimeRangePicker v-model="recordFilters.Time" />
       </div>

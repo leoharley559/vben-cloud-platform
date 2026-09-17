@@ -201,8 +201,14 @@ onMounted(() => {
   <div>
     <ReportQueryCard>
       <Space.Compact>
-        <span class="query-field-addon">账号</span>
-        <AccountSelect v-model="adminIds" class="w-56" />
+        <span class="query-field-addon">所属产品</span>
+        <Select
+          v-model:value="packageId"
+          allow-clear
+          class="w-44"
+          :options="packageOptions"
+          placeholder="请选择所属产品"
+        />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">渠道号</span>
@@ -213,14 +219,8 @@ onMounted(() => {
         />
       </Space.Compact>
       <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="packageId"
-          allow-clear
-          class="w-44"
-          :options="packageOptions"
-          placeholder="请选择所属产品"
-        />
+        <span class="query-field-addon">账号</span>
+        <AccountSelect v-model="adminIds" class="w-56" />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">上架包</span>

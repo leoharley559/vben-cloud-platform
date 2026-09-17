@@ -69,14 +69,14 @@ const summaryItems = computed(() => [
     title: '投注总计',
     value: displayCent(
       asNumber(totalSum.value.SumSelfBetGold) +
-        asNumber(totalSum.value.SumNotSelfBetGold),
+      asNumber(totalSum.value.SumNotSelfBetGold),
     ),
   },
   {
     title: '派送总计',
     value: displayCent(
       asNumber(totalSum.value.SumSelfWinGold) +
-        asNumber(totalSum.value.SumNotSelfWinGold),
+      asNumber(totalSum.value.SumNotSelfWinGold),
     ),
   },
   {
@@ -234,8 +234,8 @@ async function handleExport() {
       PositiveProfit: displayCent(total.SumPositive),
       ProfitLoss: displayCent(
         asNumber(total.SumSelfBetGold) -
-          asNumber(total.SumSelfWinGold) +
-          asNumber(total.SumSelfOtherGold),
+        asNumber(total.SumSelfWinGold) +
+        asNumber(total.SumSelfOtherGold),
       ),
       ReportDay: '总计:',
       SelfBetGold: displayCent(total.SumSelfBetGold),
@@ -285,57 +285,30 @@ onMounted(() => {
 
 <template>
   <div>
-    <StatementAgentTree
-      :agents="agencyList"
-      :path="adminPath"
-      @drill="onDrill"
-      @jump="onJump"
-    />
+    <StatementAgentTree :agents="agencyList" :path="adminPath" @drill="onDrill" @jump="onJump" />
     <ReportQueryCard>
       <Space.Compact>
+        <span class="query-field-addon">所属产品</span>
+        <Select v-model:value="platformGameTypes" allow-clear class="w-48" mode="multiple" :max-tag-count="1"
+          :options="platformGameTypeOptions" placeholder="请选择所属产品" />
+      </Space.Compact>
+      <Space.Compact>
         <span class="query-field-addon">数据类型</span>
-        <Select
-          v-model:value="dataSearchType"
-          class="w-36"
-          :options="dataSearchTypeOptions"
-          placeholder="请选择数据类型"
-        />
+        <Select v-model:value="dataSearchType" class="w-36" :options="dataSearchTypeOptions" placeholder="请选择数据类型" />
       </Space.Compact>
       <Space.Compact>
         <span class="query-field-addon">上架包</span>
-        <Select
-          v-model:value="appUrls"
-          allow-clear
-          class="w-48"
-          mode="multiple"
-          :max-tag-count="1"
-          :options="iosAppStoreOptions"
-          placeholder="请选择上架包"
-        />
+        <Select v-model:value="appUrls" allow-clear class="w-48" mode="multiple" :max-tag-count="1"
+          :options="iosAppStoreOptions" placeholder="请选择上架包" />
       </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="platformGameTypes"
-          allow-clear
-          class="w-48"
-          mode="multiple"
-          :max-tag-count="1"
-          :options="platformGameTypeOptions"
-          placeholder="请选择所属产品"
-        />
-      </Space.Compact>
+
       <div class="query-filter-wide">
-        <QueryDatetimeRangePicker
-          v-model="dateRange"
-          label="时间范围"
-          precision="date"
-        />
+        <QueryDatetimeRangePicker v-model="dateRange" label="时间范围" precision="date" />
       </div>
       <template #actions>
         <Button type="primary" :loading="loading" @click="loadList">
-查询
-</Button>
+          查询
+        </Button>
         <Button :disabled="loading" @click="reset">重置</Button>
         <Button v-if="canExport" :disabled="loading" @click="handleExport">
           导出 Excel
@@ -348,16 +321,8 @@ onMounted(() => {
 
     <ReportSummaryCards :items="summaryItems" />
 
-    <Table
-      v-if="canList"
-      :columns="columns"
-      :data-source="tableData"
-      :loading="loading"
-      :pagination="false"
-      bordered
-      row-key="_rowKey"
-      size="small"
-    >
+    <Table v-if="canList" :columns="columns" :data-source="tableData" :loading="loading" :pagination="false" bordered
+      row-key="_rowKey" size="small">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'SelfBetGold'">
           {{ displayAmount(record.SelfBetGold) }}
@@ -401,8 +366,8 @@ onMounted(() => {
               {{
                 displayCent(
                   asNumber(totalSum.SumSelfBetGold) -
-                    asNumber(totalSum.SumSelfWinGold) +
-                    asNumber(totalSum.SumSelfOtherGold),
+                  asNumber(totalSum.SumSelfWinGold) +
+                  asNumber(totalSum.SumSelfOtherGold),
                 )
               }}
             </Table.Summary.Cell>
@@ -413,18 +378,14 @@ onMounted(() => {
               {{ displayCent(totalSum.SumNegative) }}
             </Table.Summary.Cell>
             <Table.Summary.Cell v-if="canDetail" :index="9">
--
-</Table.Summary.Cell>
+              -
+            </Table.Summary.Cell>
           </Table.Summary.Row>
         </Table.Summary>
       </template>
     </Table>
     <div v-else class="py-8 text-center text-muted-foreground">无列表权限</div>
 
-    <SonDetailModal
-      v-model:open="detailOpen"
-      :inquire-id="inquireId"
-      :row="detailRow"
-    />
+    <SonDetailModal v-model:open="detailOpen" :inquire-id="inquireId" :row="detailRow" />
   </div>
 </template>

@@ -551,19 +551,23 @@ onMounted(async () => {
   <template v-if="canViewTable">
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
-        <div class="flex flex-col gap-1">
-          <Input v-model:value="filters.LoginAccount" allow-clear @press-enter="searchMembers" placeholder="请输入游戏账号">
-            <template #addonBefore>游戏账号</template>
-          </Input>
-        </div>
+        <Space.Compact>
+          <span class="query-field-addon">所属产品</span>
+          <Select v-model:value="filters.PackageId" allow-clear :options="packageOptions" placeholder="请选择所属产品" />
+        </Space.Compact>
         <div class="flex flex-col gap-1">
           <Input v-model:value="filters.Promoter" allow-clear @press-enter="searchMembers" placeholder="请输入归属代理">
             <template #addonBefore>归属代理</template>
           </Input>
         </div>
+        <div class="flex flex-col gap-1">
+          <Input v-model:value="filters.LoginAccount" allow-clear @press-enter="searchMembers" placeholder="请输入游戏账号">
+            <template #addonBefore>游戏账号</template>
+          </Input>
+        </div>
         <Space.Compact>
-          <span class="query-field-addon">所属产品</span>
-          <Select v-model:value="filters.PackageId" allow-clear :options="packageOptions" placeholder="请选择所属产品" />
+          <span class="query-field-addon">VIP等级</span>
+          <Select v-model:value="filters.VipLevel" allow-clear :options="vipOptions" placeholder="请选择VIP等级" />
         </Space.Compact>
         <Space.Compact>
           <span class="query-field-addon">玩家状态</span>
@@ -580,10 +584,7 @@ onMounted(async () => {
             { label: '活跃', value: 1 },
           ]" placeholder="请选择活跃状态" />
         </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">VIP等级</span>
-          <Select v-model:value="filters.VipLevel" allow-clear :options="vipOptions" placeholder="请选择VIP等级" />
-        </Space.Compact>
+        
         <Space.Compact>
           <span class="query-field-addon">佣金算法</span>
           <Select v-model:value="filters.AlgorithmTemplateId" allow-clear :options="algorithmOptions"

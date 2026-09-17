@@ -268,16 +268,15 @@ onMounted(() => {
     <Card>
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
-          <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="filterLoginAccount"
+          <Space.Compact>
+            <span class="query-field-addon">所属产品</span>
+            <Select
+              v-model:value="filterPackageId"
               allow-clear
-              @press-enter="search"
-              placeholder="请输入游戏账号"
-            >
-              <template #addonBefore>游戏账号</template>
-            </Input>
-          </div>
+              :options="packageOptions"
+              placeholder="请选择所属产品"
+            />
+          </Space.Compact>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="filterAccount"
@@ -288,13 +287,28 @@ onMounted(() => {
               <template #addonBefore>申请代理</template>
             </Input>
           </div>
-          <Space.Compact>
-            <span class="query-field-addon">所属产品</span>
-            <Select
-              v-model:value="filterPackageId"
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filterLoginAccount"
               allow-clear
-              :options="packageOptions"
-              placeholder="请选择所属产品"
+              @press-enter="search"
+              placeholder="请输入游戏账号"
+            >
+              <template #addonBefore>游戏账号</template>
+            </Input>
+          </div>
+          <Space.Compact>
+            <span class="query-field-addon">VIP等级</span>
+            <Select
+              v-model:value="filterVipLevel"
+              :options="[
+                { label: '全部 VIP', value: -1 },
+                ...Array.from({ length: 11 }, (_, value) => ({
+                  label: `VIP${value}`,
+                  value,
+                })),
+              ]"
+              placeholder="请选择VIP等级"
             />
           </Space.Compact>
           <Space.Compact>
@@ -311,20 +325,7 @@ onMounted(() => {
               placeholder="请选择状态"
             />
           </Space.Compact>
-          <Space.Compact>
-            <span class="query-field-addon">VIP等级</span>
-            <Select
-              v-model:value="filterVipLevel"
-              :options="[
-                { label: '全部 VIP', value: -1 },
-                ...Array.from({ length: 11 }, (_, value) => ({
-                  label: `VIP${value}`,
-                  value,
-                })),
-              ]"
-              placeholder="请选择VIP等级"
-            />
-          </Space.Compact>
+          
           <div class="query-filter-wide">
             <QueryDatetimeRangePicker v-model="filterDateRange" />
           </div>

@@ -376,6 +376,15 @@ onMounted(() => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <template v-if="kind === 'standard'">
+          <Space.Compact>
+            <span class="query-field-addon">所属产品</span>
+            <Select
+              v-model:value="query.PackageId"
+              allow-clear
+              :options="packages"
+              placeholder="请选择所属产品"
+            />
+          </Space.Compact>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="query.AgentAccount"
@@ -397,6 +406,17 @@ onMounted(() => {
               <template #addonBefore>游戏账号</template>
             </Input>
           </div>
+          <Space.Compact v-if="config.showDataType">
+            <span class="query-field-addon">数据类型</span>
+            <Select
+              v-model:value="query.DataSearchType"
+              :options="dataTypes"
+              placeholder="请选择数据类型"
+            />
+          </Space.Compact>
+        </template>
+
+        <template v-else-if="kind === 'bonus'">
           <Space.Compact>
             <span class="query-field-addon">所属产品</span>
             <Select
@@ -406,18 +426,16 @@ onMounted(() => {
               placeholder="请选择所属产品"
             />
           </Space.Compact>
-          <Space.Compact>
-            <span class="query-field-addon">数据类型</span>
-            <Select
-              v-if="config.showDataType"
-              v-model:value="query.DataSearchType"
-              :options="dataTypes"
-              placeholder="请选择数据类型"
-            />
-          </Space.Compact>
-        </template>
-
-        <template v-else-if="kind === 'bonus'">
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.Username"
+              allow-clear
+              @press-enter="search"
+              placeholder="请输入所属代理"
+            >
+              <template #addonBefore>所属代理</template>
+            </Input>
+          </div>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="query.LoginAccount"
@@ -429,26 +447,14 @@ onMounted(() => {
               <template #addonBefore>游戏账号</template>
             </Input>
           </div>
-          <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="query.OrderId"
-              allow-clear
-              @press-enter="search"
-              placeholder="请输入订单号"
-            >
-              <template #addonBefore>订单号</template>
-            </Input>
-          </div>
-          <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="query.Username"
-              allow-clear
-              @press-enter="search"
-              placeholder="请输入所属代理"
-            >
-              <template #addonBefore>所属代理</template>
-            </Input>
-          </div>
+          <Space.Compact>
+            <span class="query-field-addon">会员等级</span>
+            <Select
+              v-model:value="query.VipLevel"
+              :options="vipLevels"
+              placeholder="请选择会员等级"
+            />
+          </Space.Compact>
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="query.BonusTitle"
@@ -477,6 +483,7 @@ onMounted(() => {
               </template>
             </Input>
           </div>
+          
           <div class="flex flex-col gap-1">
             <Input
               v-model:value="query.OperatorRemark"
@@ -496,15 +503,6 @@ onMounted(() => {
             </Input>
           </div>
           <Space.Compact>
-            <span class="query-field-addon">所属产品</span>
-            <Select
-              v-model:value="query.PackageId"
-              allow-clear
-              :options="packages"
-              placeholder="请选择所属产品"
-            />
-          </Space.Compact>
-          <Space.Compact>
             <span class="query-field-addon">红利类型</span>
             <Select
               v-model:value="query.BonusType"
@@ -514,14 +512,7 @@ onMounted(() => {
               placeholder="请选择红利类型"
             />
           </Space.Compact>
-          <Space.Compact>
-            <span class="query-field-addon">会员等级</span>
-            <Select
-              v-model:value="query.VipLevel"
-              :options="vipLevels"
-              placeholder="请选择会员等级"
-            />
-          </Space.Compact>
+          
           <Space.Compact>
             <span class="query-field-addon">数据类型</span>
             <Select
@@ -546,6 +537,16 @@ onMounted(() => {
               placeholder="请选择状态"
             />
           </Space.Compact>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="query.OrderId"
+              allow-clear
+              @press-enter="search"
+              placeholder="请输入订单号"
+            >
+              <template #addonBefore>订单号</template>
+            </Input>
+          </div>
         </template>
 
         <template v-else>

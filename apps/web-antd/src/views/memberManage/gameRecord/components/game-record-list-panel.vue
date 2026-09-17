@@ -807,7 +807,9 @@ async function loadAppUrlOptions() {
 
 onMounted(async () => {
   await ensureGameConfig();
-  void loadAppUrlOptions();
+  if (SHOW_EXTRA_QUERY_FILTERS) {
+    void loadAppUrlOptions();
+  }
   gridApi.reload();
 });
 </script>

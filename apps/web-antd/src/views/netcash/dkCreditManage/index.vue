@@ -146,11 +146,6 @@ const playerConfig: CreditPanelConfig = {
   },
   filters: [
     {
-      field: 'LoginAccount',
-      label: '会员账号',
-      placeholder: '必须输入会员账号',
-    },
-    {
       field: 'PackageId',
       label: '所属产品',
       options: [
@@ -161,6 +156,11 @@ const playerConfig: CreditPanelConfig = {
         })),
       ],
       type: 'select',
+    },
+    {
+      field: 'LoginAccount',
+      label: '会员账号',
+      placeholder: '必须输入会员账号',
     },
   ],
   // 操作列常驻；按钮权限在模板内判断（避免 setup 时 .value 固化）

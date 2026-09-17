@@ -557,13 +557,30 @@ onMounted(async () => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <Space.Compact>
-          <span class="query-field-addon">订单号</span>
-          <Input
-            v-model:value="filters.OrderId"
-            allow-clear
-            placeholder="请输入订单号"
+          <span class="query-field-addon">所属产品</span>
+          <Select
+            v-model:value="filters.PackId"
+            :options="packageOptionsList"
+            placeholder="请选择所属产品"
+            show-search
           />
         </Space.Compact>
+        <Space.Compact v-if="mode === 'system'">
+          <span class="query-field-addon">所属代理</span>
+          <Input
+            v-model:value="filters.AdminName"
+            allow-clear
+            placeholder="请输入所属代理"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">渠道号</span>
+          <ChannelSelect
+            v-model="filters.ChannelIds"
+            placeholder="请输入渠道号"
+          />
+        </Space.Compact>
+        
         <Space.Compact>
           <span class="query-field-addon">游戏账号</span>
           <Input
@@ -580,30 +597,8 @@ onMounted(async () => {
           <span class="query-field-addon">层级</span>
           <Select v-model:value="filters.LevelId" :options="levelOptions" />
         </Space.Compact>
-        <Space.Compact v-if="mode === 'system'">
-          <span class="query-field-addon">所属代理</span>
-          <Input
-            v-model:value="filters.AdminName"
-            allow-clear
-            placeholder="请输入所属代理"
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">所属产品</span>
-          <Select
-            v-model:value="filters.PackId"
-            :options="packageOptionsList"
-            placeholder="请选择所属产品"
-            show-search
-          />
-        </Space.Compact>
-        <Space.Compact>
-          <span class="query-field-addon">渠道号</span>
-          <ChannelSelect
-            v-model="filters.ChannelIds"
-            placeholder="请输入渠道号"
-          />
-        </Space.Compact>
+        
+        
         <Space.Compact v-if="mode === 'system'">
           <span class="query-field-addon">方案</span>
           <Select v-model:value="filters.ConfigId" :options="schemeOptions" />
@@ -636,6 +631,14 @@ onMounted(async () => {
             :min="0"
             class="!w-full"
             placeholder="请输入最大申请金额"
+          />
+        </Space.Compact>
+        <Space.Compact>
+          <span class="query-field-addon">订单号</span>
+          <Input
+            v-model:value="filters.OrderId"
+            allow-clear
+            placeholder="请输入订单号"
           />
         </Space.Compact>
         <div class="query-filter-wide">

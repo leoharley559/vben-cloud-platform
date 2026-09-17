@@ -969,35 +969,15 @@ onMounted(() => {
       <OpsListPanel>
         <template #filters>
           <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="filters.LoginAccount"
-              allow-clear
-              @press-enter="handleSearch"
-              placeholder="请输入玩家账号"
-            >
-              <template #addonBefore>玩家账号</template>
-            </Input>
-          </div>
-          <div class="flex flex-col gap-1">
-            <Input
-              v-model:value="filters.PlayerId"
-              allow-clear
-              @press-enter="handleSearch"
-              placeholder="请输入玩家ID"
-            >
-              <template #addonBefore>玩家ID</template>
-            </Input>
-          </div>
-          <div class="flex flex-col gap-1">
             <Space.Compact>
-              <span class="query-field-addon">玩家状态</span>
+              <span class="query-field-addon">所属产品</span>
               <Select
-                v-model:value="filters.Status"
+                v-model:value="filters.PackageId"
                 allow-clear
-                mode="multiple"
-                :max-tag-count="1"
-                :options="playerStatusOptions"
-                placeholder="请选择玩家状态"
+                :options="packageSelectOptions"
+                show-search
+                option-filter-prop="label"
+                placeholder="请选择所属产品"
               />
             </Space.Compact>
           </div>
@@ -1021,17 +1001,24 @@ onMounted(() => {
             </Space.Compact>
           </div>
           <div class="flex flex-col gap-1">
-            <Space.Compact>
-              <span class="query-field-addon">所属产品</span>
-              <Select
-                v-model:value="filters.PackageId"
-                allow-clear
-                :options="packageSelectOptions"
-                show-search
-                option-filter-prop="label"
-                placeholder="请选择所属产品"
-              />
-            </Space.Compact>
+            <Input
+              v-model:value="filters.LoginAccount"
+              allow-clear
+              @press-enter="handleSearch"
+              placeholder="请输入玩家账号"
+            >
+              <template #addonBefore>玩家账号</template>
+            </Input>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Input
+              v-model:value="filters.PlayerId"
+              allow-clear
+              @press-enter="handleSearch"
+              placeholder="请输入玩家ID"
+            >
+              <template #addonBefore>玩家ID</template>
+            </Input>
           </div>
           <div class="flex flex-col gap-1">
             <Space.Compact>
@@ -1041,6 +1028,19 @@ onMounted(() => {
                 allow-clear
                 :options="vipSelectOptions"
                 placeholder="请选择VIP等级"
+              />
+            </Space.Compact>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Space.Compact>
+              <span class="query-field-addon">玩家状态</span>
+              <Select
+                v-model:value="filters.Status"
+                allow-clear
+                mode="multiple"
+                :max-tag-count="1"
+                :options="playerStatusOptions"
+                placeholder="请选择玩家状态"
               />
             </Space.Compact>
           </div>

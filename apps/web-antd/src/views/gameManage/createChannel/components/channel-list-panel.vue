@@ -563,6 +563,14 @@ onBeforeUnmount(() => {
     <div class="ops-query-scope mb-4">
       <div class="ops-query-filters">
         <Input
+          v-model:value="filters.PromoterAdminUserName"
+          allow-clear
+          @press-enter="handleSearch"
+          placeholder="请输入所属代理"
+        >
+          <template #addonBefore>所属代理</template>
+        </Input>
+        <Input
           v-model:value="filters.ChannelId"
           allow-clear
           @press-enter="handleSearch"
@@ -578,14 +586,7 @@ onBeforeUnmount(() => {
         >
           <template #addonBefore>渠道名称</template>
         </Input>
-        <Input
-          v-model:value="filters.PromoterAdminUserName"
-          allow-clear
-          @press-enter="handleSearch"
-          placeholder="请输入所属代理"
-        >
-          <template #addonBefore>所属代理</template>
-        </Input>
+        
         <Input
           v-model:value="filters.PromoterAdminName"
           allow-clear

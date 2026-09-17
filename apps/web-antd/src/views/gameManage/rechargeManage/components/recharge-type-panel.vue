@@ -20,6 +20,7 @@ import {
   Space,
   Switch,
   Table,
+  Tag,
   Tooltip,
 } from 'ant-design-vue';
 
@@ -291,9 +292,14 @@ function confirmMutation(
   });
 }
 
-function toggleTypeSwitch(checked: boolean) {
-  const row = currentType.value;
-  if (!row) return;
+function canShowExpand(type: RechargePayTypeConfig) {
+  return (
+    canTypeSwitch.value &&
+    !['0', '100', '200'].includes(String(type.PayType))
+  );
+}
+
+function toggleTypeSwitch(row: RechargePayTypeConfig, checked: boolean) {
   const next = checked ? 1 : 2;
   confirmMutation(
     `type-switch-${row.Id}`,
@@ -303,9 +309,11 @@ function toggleTypeSwitch(checked: boolean) {
   );
 }
 
-function toggleTypeFlag(flag: 'IsExpand' | 'IsHot', checked: boolean) {
-  const row = currentType.value;
-  if (!row) return;
+function toggleTypeFlag(
+  row: RechargePayTypeConfig,
+  flag: 'IsExpand' | 'IsHot',
+  checked: boolean,
+) {
   const next = checked ? 1 : 2;
   confirmMutation(
     `type-${flag}-${row.Id}`,
@@ -320,14 +328,13 @@ function toggleTypeFlag(flag: 'IsExpand' | 'IsHot', checked: boolean) {
   );
 }
 
-function moveType(offset: -1 | 1) {
-  const row = currentType.value;
-  if (!row) return;
+function moveType(index: number, offset: -1 | 1) {
   const ids = typeList.value.map((item) => item.Id);
-  const index = ids.findIndex((id) => String(id) === String(row.Id));
   const target = index + offset;
   if (target < 0 || target >= ids.length) return;
   [ids[index], ids[target]] = [ids[target]!, ids[index]!];
+  const row = typeList.value[index];
+  if (!row) return;
   confirmMutation(
     `type-sort-${row.Id}`,
     '调整支付类型排序',
@@ -484,30 +491,97 @@ onMounted(() => void load(true));
 
     <div class="manager-layout">
       <aside class="type-nav">
-        <button
-          v-for="type in typeList"
+        <div
+          v-for="(type, index) in typeList"
           :key="type.Id"
-          class="type-item"
-          :class="{ active: String(type.PayType) === String(selectedPayType) }"
-          type="button"
+          class="type-card"
+          :class="{
+            active: String(type.PayType) === String(selectedPayType),
+            disabled: Number(type.Switch) !== 1,
+          }"
           @click="selectType(type)"
         >
-          <span
-            class="status-dot"
-            :class="Number(type.Switch) === 1 ? 'enabled' : 'disabled'"
-          ></span>
-          <span class="min-w-0 flex-1 truncate">
-            {{ payTypeName(type.PayType) }}
-          </span>
-          <span class="whitespace-nowrap text-xs text-gray-500">
-            {{ type.Opened ?? 0 }}/{{ type.Closed ?? 0 }}
-          </span>
-          <span v-if="Number(type.IsHot) === 1" aria-label="热门" class="hot">
-            🔥
-          </span>
-        </button>
+          <div class="type-card-head">
+            <div class="type-card-title">
+              {{ payTypeName(type.PayType) }}
+            </div>
+            <div class="type-card-actions" @click.stop>
+              <span class="switch-label">开关</span>
+              <Switch
+                v-if="canTypeSwitch"
+                :checked="Number(type.Switch) === 1"
+                :loading="actionKey === `type-switch-${type.Id}`"
+                checked-children="开"
+                size="small"
+                un-checked-children="关"
+                @change="(checked) => toggleTypeSwitch(type, !!checked)"
+              />
+              <Tag
+                v-else
+                :color="Number(type.Switch) === 1 ? 'success' : 'default'"
+              >
+                {{ Number(type.Switch) === 1 ? '开' : '关' }}
+              </Tag>
+            </div>
+          </div>
+          <div class="type-card-body">
+            <div class="type-meta-row">
+              <span>通道</span>
+              <span class="meta-value range">
+                {{ type.Opened ?? 0 }}/{{ type.Closed ?? 0 }}
+              </span>
+            </div>
+            <div v-if="canHot" class="type-meta-row" @click.stop>
+              <span>热门</span>
+              <Switch
+                :checked="Number(type.IsHot) === 1"
+                :loading="actionKey === `type-IsHot-${type.Id}`"
+                checked-children="开"
+                size="small"
+                un-checked-children="关"
+                @change="(checked) => toggleTypeFlag(type, 'IsHot', !!checked)"
+              />
+            </div>
+            <div
+              v-if="canShowExpand(type)"
+              class="type-meta-row"
+              @click.stop
+            >
+              <span>展开</span>
+              <Switch
+                :checked="Number(type.IsExpand) === 1"
+                :loading="actionKey === `type-IsExpand-${type.Id}`"
+                checked-children="开"
+                size="small"
+                un-checked-children="关"
+                @change="
+                  (checked) => toggleTypeFlag(type, 'IsExpand', !!checked)
+                "
+              />
+            </div>
+          </div>
+          <div v-if="canTypeSort" class="type-card-sort" @click.stop>
+            <Button
+              :disabled="index === 0"
+              size="small"
+              type="link"
+              @click="moveType(index, -1)"
+            >
+              上移
+            </Button>
+            <Button
+              :disabled="index === typeList.length - 1"
+              size="small"
+              type="link"
+              @click="moveType(index, 1)"
+            >
+              下移
+            </Button>
+          </div>
+        </div>
         <Empty
           v-if="!loading && typeList.length === 0"
+          class="py-6"
           description="暂无支付类型"
           :image="Empty.PRESENTED_IMAGE_SIMPLE"
         />
@@ -528,52 +602,6 @@ onMounted(() => void load(true));
               刷新
             </Button>
           </Tooltip>
-          <label v-if="canTypeSwitch" class="control-label">
-            开关
-            <Switch
-              :checked="Number(currentType.Switch) === 1"
-              :loading="actionKey === `type-switch-${currentType.Id}`"
-              @change="toggleTypeSwitch(!!$event)"
-            />
-          </label>
-          <label v-if="canHot" class="control-label">
-            热门
-            <Switch
-              :checked="Number(currentType.IsHot) === 1"
-              :loading="actionKey === `type-IsHot-${currentType.Id}`"
-              @change="toggleTypeFlag('IsHot', !!$event)"
-            />
-          </label>
-          <label
-            v-if="
-              canTypeSwitch &&
-              !['0', '100', '200'].includes(String(selectedPayType))
-            "
-            class="control-label"
-          >
-            展开
-            <Switch
-              :checked="Number(currentType.IsExpand) === 1"
-              :loading="actionKey === `type-IsExpand-${currentType.Id}`"
-              @change="toggleTypeFlag('IsExpand', !!$event)"
-            />
-          </label>
-          <Space v-if="canTypeSort" compact>
-            <Button
-              :disabled="typeList[0]?.Id === currentType.Id"
-              size="small"
-              @click="moveType(-1)"
-            >
-              上移类型
-            </Button>
-            <Button
-              :disabled="typeList[typeList.length - 1]?.Id === currentType.Id"
-              size="small"
-              @click="moveType(1)"
-            >
-              下移类型
-            </Button>
-          </Space>
         </div>
 
         <template v-if="isSpecialized">
@@ -758,61 +786,95 @@ onMounted(() => void load(true));
 }
 
 .type-nav {
-  flex: 0 0 220px;
+  display: flex;
+  flex: 0 0 260px;
+  flex-direction: column;
+  gap: 12px;
   align-self: flex-start;
-  width: 220px;
-  overflow: hidden;
-  border: 1px solid var(--ant-color-border, #e5e7eb);
-  border-radius: 6px;
+  width: 260px;
+  padding-right: 4px;
+  border-right: 2px dashed var(--ant-color-border, #e5e7eb);
 }
 
-.type-item {
+.type-card {
+  cursor: pointer;
+  background: hsl(var(--background));
+  border: 1px solid var(--ant-color-border, #e5e7eb);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.type-card:hover {
+  border-color: hsl(var(--primary) / 40%);
+}
+
+.type-card.active {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 20%);
+}
+
+.type-card.disabled {
+  background: #f6eced;
+}
+
+.type-card-head {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 12px 8px;
+}
+
+.type-card-title {
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.type-card-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+  align-items: center;
+}
+
+.switch-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.type-card-body {
+  padding: 0 12px 10px;
+}
+
+.type-meta-row {
   display: flex;
   gap: 8px;
   align-items: center;
-  width: 100%;
-  min-height: 46px;
-  padding: 8px 10px;
-  text-align: left;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid hsl(var(--border));
+  justify-content: space-between;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #666;
 }
 
-.type-item:hover,
-.type-item.active {
-  background: hsl(var(--primary) / 14%);
+.meta-value {
+  font-weight: 600;
 }
 
-.type-item:last-child {
-  border-bottom: 0;
+.meta-value.range {
+  color: #ff6d00;
 }
 
-.status-dot {
-  flex: 0 0 10px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.status-dot.enabled {
-  background: #16a34a;
-}
-
-.status-dot.disabled {
-  background: #ef4444;
-}
-
-.hot {
-  font-size: 14px;
-}
-
-.control-label {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  white-space: nowrap;
+.type-card-sort {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  padding: 0 8px 6px;
+  border-top: 1px solid var(--ant-color-border-secondary, #f0f0f0);
 }
 
 :deep(.channel-disabled > td) {
@@ -826,17 +888,10 @@ onMounted(() => void load(true));
   }
 
   .type-nav {
-    display: flex;
     flex-basis: auto;
     width: 100%;
-    overflow-x: auto;
-  }
-
-  .type-item {
-    flex: 0 0 190px;
-    width: 190px;
-    border-right: 1px solid hsl(var(--border));
-    border-bottom: 0;
+    padding-right: 0;
+    border-right: 0;
   }
 }
 </style>

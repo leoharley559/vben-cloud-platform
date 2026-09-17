@@ -209,6 +209,22 @@ onMounted(async () => {
   <div v-else>
     <ReportQueryCard actions-single>
       <Space.Compact>
+        <span class="query-field-addon">所属产品</span>
+        <Select
+          v-model:value="packageId"
+          :options="
+            packageOptions.map((item) => ({
+              label: item.PackageName,
+              value: item.PackageId,
+            }))
+          "
+          style="width: 160px"
+          show-search
+          allow-clear
+          placeholder="请选择所属产品"
+        />
+      </Space.Compact>
+      <Space.Compact>
         <Select
           class="query-auto-select"
           :popup-match-select-width="false"
@@ -257,22 +273,7 @@ onMounted(async () => {
           @update:value="(v) => (channelSearch = v)"
         />
       </Space.Compact>
-      <Space.Compact>
-        <span class="query-field-addon">所属产品</span>
-        <Select
-          v-model:value="packageId"
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          style="width: 160px"
-          show-search
-          allow-clear
-          placeholder="请选择所属产品"
-        />
-      </Space.Compact>
+      
       <Space.Compact>
         <span class="query-field-addon">代理模板</span>
         <Select

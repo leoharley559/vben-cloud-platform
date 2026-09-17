@@ -344,6 +344,7 @@ const tabs = computed(() =>
         ],
         exportPermission: checkPermission(10_450),
         fetchApi: fetchRecordGameListApi,
+        showDataType: true,
         summaryItems: [
           {
             columnField: 'AddGold',
