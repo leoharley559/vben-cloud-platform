@@ -631,13 +631,13 @@ function validate() {
   validationMessage.value = '';
   const username = form.Username.trim();
   if (!username) {
-    return failValidate('请输入所属代理');
+    return failValidate('请输入代理账号');
   }
   if (
     props.mode === 'create' &&
     !/^[a-zA-Z][a-zA-Z0-9_]{7,11}$/.test(username)
   ) {
-    return failValidate('所属代理须以字母开头，8-12位字母数字下划线');
+    return failValidate('代理账号须以字母开头，8-12位字母数字下划线');
   }
   if (props.mode === 'create') {
     if (!form.Password || form.Password.length < 6) {
@@ -871,11 +871,11 @@ async function handleSubmit() {
     </div>
     <Form v-else layout="vertical">
       <div class="grid grid-cols-1 gap-x-4 md:grid-cols-2">
-        <Form.Item label="所属代理" required>
+        <Form.Item label="代理账号" required>
           <Input
             v-model:value="form.Username"
             :disabled="mode === 'edit'"
-            placeholder="请输入所属代理"
+            placeholder="请输入代理账号"
             @input="handleUsernameInput"
           />
         </Form.Item>

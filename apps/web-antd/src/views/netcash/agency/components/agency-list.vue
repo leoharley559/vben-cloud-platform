@@ -151,7 +151,7 @@ const totalData = ref<Record<string, number>>({});
 const COLUMN_STORAGE_KEY = 'agencyListMore';
 /** 显示列候选（含默认选中项，对齐会员列表交互） */
 const COLUMN_OPTIONS = [
-  { label: '所属代理', value: 'Username' },
+  { label: '代理账号', value: 'Username' },
   { label: '状态', value: 'Status' },
   { label: '姓名', value: 'Name' },
   { label: '手机号', value: 'MobileNumber' },
@@ -261,7 +261,7 @@ function buildColumns(): VxeTableGridOptions<AgencyListItem>['columns'] {
       fixed: 'left',
       minWidth: 130,
       slots: { default: 'username' },
-      title: '所属代理',
+      title: '代理账号',
     },
     {
       field: 'Status',
@@ -639,7 +639,7 @@ async function exportAgencyList() {
     });
     const data = (result?.Items || []).map((row) => ({
       状态: AGENCY_STATUS_MAP[Number(row.Status)] || row.Status,
-      所属代理: row.Username,
+      代理账号: row.Username,
       姓名: row.Name,
       手机号: row.MobileNumber,
       发展人: row.DeveloperName,
@@ -703,8 +703,8 @@ onMounted(() => {
     <div class="ops-query-scope mb-3">
       <div class="ops-query-filters">
         <div class="flex flex-col gap-1">
-          <Input v-model:value="filterUsername" allow-clear placeholder="请输入所属代理">
-            <template #addonBefore>所属代理</template>
+          <Input v-model:value="filterUsername" allow-clear placeholder="请输入代理账号">
+            <template #addonBefore>代理账号</template>
           </Input>
         </div>
         <div class="flex flex-col gap-1">
