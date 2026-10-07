@@ -1,7 +1,10 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { GameRecordListQuery } from '#/types/game-record';
-import type { PlayerBetRecordItem } from '#/types/player-detail';
+import type {
+  PlayerBetRecordItem,
+  PlayerBetSummary,
+} from '#/types/player-detail';
 
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -136,6 +139,8 @@ const summary = ref({
   SumValidWater: 0,
   SumWinGold: 0,
 });
+/** 避免快速连续查询时，旧的 SumAll 响应覆盖新结果 */
+let summaryQuerySeq = 0;
 
 const filterVenuesTemp = ref<string[]>([]);
 const filterGameIds = ref<Array<number | string>>([]);
@@ -293,8 +298,12 @@ const betTotalText = computed(() =>
   ),
 );
 
+/** 对齐旧站：输赢总计 = 返奖 - 下注（用 SumBetGold，不用 SumTotalBetGold） */
 const winLossTotalText = computed(() =>
-  formatAmountFromCent(summary.value.SumWinGold),
+  formatAmountFromCent(
+    Number(summary.value.SumWinGold || 0) -
+      Number(summary.value.SumBetGold || 0),
+  ),
 );
 
 const summaryItems = computed(() => [
@@ -385,7 +394,10 @@ function getQueryParams(extra?: {
           DataSearchType: 2,
           PlayerId: String(props.playerId),
         }
-      : {}),
+      : {
+          // 对齐旧站 listQuery.DataSearchType 默认 0
+          DataSearchType: 0,
+        }),
     PlayerStatus: filterPlayerStatus.value,
     RoundId: filterRoundId.value.trim(),
     SelectTimeType: filterSelectTimeType.value,
@@ -416,19 +428,55 @@ function validateDateRange() {
   return true;
 }
 
-async function loadSummary() {
-  const result = await fetchGameRecordListApi({
-    ...getQueryParams(),
+function hasSummaryPayload(more?: null | PlayerBetSummary) {
+  if (!more || typeof more !== 'object') {
+    return false;
+  }
+  return ['SumBetGold', 'SumTotalBetGold', 'SumValidWater', 'SumWinGold'].some(
+    (key) => {
+      const value = more[key];
+      return value !== undefined && value !== null && value !== '';
+    },
+  );
+}
+
+function applySummary(more?: null | PlayerBetSummary) {
+  summary.value = {
+    SumBetGold: Number(more?.SumBetGold || 0),
+    SumTotalBetGold: Number(more?.SumTotalBetGold || 0),
+    SumValidWater: Number(more?.SumValidWater || 0),
+    SumWinGold: Number(more?.SumWinGold || 0),
+  };
+}
+
+/**
+ * 对齐旧站 fnGetList_s(SumAll=1) 与列表并行。
+ * SumAll 失败时不阻塞列表；无 SumAll 汇总时回退列表 MoreItems，保证改时间后统计会刷新。
+ */
+function fetchSumAllMoreItems(listQuery: GameRecordListQuery) {
+  return fetchGameRecordListApi({
+    ...listQuery,
     Page: 1,
     PageSize: 1,
     SumAll: 1,
-  });
-  summary.value = {
-    SumBetGold: Number(result.MoreItems?.SumBetGold || 0),
-    SumTotalBetGold: Number(result.MoreItems?.SumTotalBetGold || 0),
-    SumValidWater: Number(result.MoreItems?.SumValidWater || 0),
-    SumWinGold: Number(result.MoreItems?.SumWinGold || 0),
-  };
+  })
+    .then((result) => result.MoreItems)
+    .catch(() => undefined);
+}
+
+function commitSummary(
+  seq: number,
+  sumAllMore?: null | PlayerBetSummary,
+  listMoreItems?: null | PlayerBetSummary,
+) {
+  if (seq !== summaryQuerySeq) {
+    return;
+  }
+  if (hasSummaryPayload(sumAllMore)) {
+    applySummary(sumAllMore);
+    return;
+  }
+  applySummary(listMoreItems);
 }
 
 const gridOptions: VxeTableGridOptions<PlayerBetRecordItem> = {
@@ -535,16 +583,27 @@ const gridOptions: VxeTableGridOptions<PlayerBetRecordItem> = {
     autoLoad: false,
     ajax: {
       query: async ({ page }) => {
-        await loadSummary();
-        const result = await fetchGameRecordListApi({
-          ...getQueryParams(),
+        const listQuery = getQueryParams({
           Page: page.currentPage,
           PageSize: page.pageSize,
           Sort: sortParam.value,
         });
+        const seq = ++summaryQuerySeq;
+        // 对齐旧站：SumAll 与列表并行，互不 await 阻塞
+        const sumAllPromise = fetchSumAllMoreItems(listQuery);
+        const result = await fetchGameRecordListApi(listQuery);
         const items = (result.Items || []) as PlayerBetRecordItem[];
         tableRows.value = items;
         totalCount.value = Number(result.Pagination?.MaxCount || items.length);
+
+        // 列表若已带汇总，先刷新一版，避免 SumAll 慢/失败时统计停在旧值
+        if (hasSummaryPayload(result.MoreItems)) {
+          commitSummary(seq, undefined, result.MoreItems);
+        }
+        void sumAllPromise.then((sumAllMore) => {
+          commitSummary(seq, sumAllMore, result.MoreItems);
+        });
+
         return { items, total: totalCount.value };
       },
     },
@@ -1106,7 +1165,10 @@ onMounted(async () => {
       </template>
 
       <template #summary>
-        <SummaryCards :items="summaryItems" />
+        <SummaryCards
+          :key="summaryItems.map((item) => `${item.label}:${item.value}`).join('|')"
+          :items="summaryItems"
+        />
       </template>
 
       <Grid>

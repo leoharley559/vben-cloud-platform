@@ -122,6 +122,12 @@ const filterChannelIds = ref<Array<number | string>>([]);
 const filterNickName = ref('');
 const filterStatus = ref<number | string>();
 const filterDataSearchType = ref(0);
+/** 对齐旧站 SearchTypeTwo TimeType：1=发起时间，2=到账时间 */
+const filterTimeType = ref(1);
+const TIME_TYPE_OPTIONS = [
+  { label: '发起时间', value: 1 },
+  { label: '到账时间', value: 2 },
+];
 const filterDateRange = ref<[dayjs.Dayjs, dayjs.Dayjs]>([
   dayjs.unix(defaultRange.BeginTime),
   dayjs.unix(defaultRange.EndTime),
@@ -152,7 +158,7 @@ function getQueryParams() {
     PackageId: filterPackageId.value,
     PlayerId: filterPlayerId.value,
     Status: filterStatus.value ?? '',
-    TimeType: 1,
+    TimeType: filterTimeType.value,
   };
 }
 
@@ -333,6 +339,7 @@ function handleReset() {
   filterNickName.value = '';
   filterStatus.value = undefined;
   filterDataSearchType.value = 0;
+  filterTimeType.value = 1;
   filterDateRange.value = [
     dayjs.unix(defaultRange.BeginTime),
     dayjs.unix(defaultRange.EndTime),
@@ -441,11 +448,19 @@ defineExpose({
           </Space.Compact>
         </div>
 
+        <div class="flex flex-col gap-1">
+          <Space.Compact>
+            <span class="query-field-addon">时间类型</span>
+            <Select
+              v-model:value="filterTimeType"
+              :options="TIME_TYPE_OPTIONS"
+              placeholder="请选择时间类型"
+            />
+          </Space.Compact>
+        </div>
+
         <div class="query-filter-wide">
-          <QueryDatetimeRangePicker
-            v-model="filterDateRange"
-            label="创建时间"
-          />
+          <QueryDatetimeRangePicker v-model="filterDateRange" />
         </div>
         <div class="query-filter-actions">
           <Space>

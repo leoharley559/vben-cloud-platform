@@ -119,8 +119,8 @@ const deviceOptions = computed(() => {
   const cfg = projectConfig.value as {
     DevicePlatformAll?: Record<string, string>;
     DevicePlatformMy?:
-      | Array<{ device: string; name: string }>
-      | Record<string, string>;
+    | Array<{ device: string; name: string }>
+    | Record<string, string>;
   };
   const my = cfg?.DevicePlatformMy;
   if (Array.isArray(my)) {
@@ -249,18 +249,18 @@ function parseLangText(raw: unknown): LangItem[] {
       if (Array.isArray(parsed)) {
         return groups.length > 0
           ? groups.map((group, index) => {
-              const hit =
-                parsed.find(
-                  (item) =>
-                    Number((item as LangItem).LangGroupId) === Number(group.Id),
-                ) || parsed[index];
-              const row = (hit || {}) as Record<string, unknown>;
-              return {
-                LangGroupId: group.Id,
-                NoticeRaw: String(row.NoticeRaw || row.Notice || ''),
-                Title: String(row.Title || ''),
-              };
-            })
+            const hit =
+              parsed.find(
+                (item) =>
+                  Number((item as LangItem).LangGroupId) === Number(group.Id),
+              ) || parsed[index];
+            const row = (hit || {}) as Record<string, unknown>;
+            return {
+              LangGroupId: group.Id,
+              NoticeRaw: String(row.NoticeRaw || row.Notice || ''),
+              Title: String(row.Title || ''),
+            };
+          })
           : (parsed as LangItem[]);
       }
       obj = parsed as Record<string, Record<string, unknown>>;
@@ -581,9 +581,9 @@ function validateForm() {
     return false;
   }
   if (form.IsPush === 1 && !disablePush.value && (!form.PushTitle.trim() || !form.PushContent.trim())) {
-      message.warning('开启推送时请填写推送标题和内容');
-      return false;
-    }
+    message.warning('开启推送时请填写推送标题和内容');
+    return false;
+  }
   return true;
 }
 
@@ -610,164 +610,76 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <Modal
-    :confirm-loading="submitting"
-    :open="open"
-    :title="isEdit ? '编辑公告' : '新增公告'"
-    :width="860"
-    destroy-on-close
-    @cancel="closeModal"
-    @ok="handleSubmit"
-  >
-    <Form
-      :label-col="{ span: 5 }"
-      class="mt-2 max-h-[70vh] overflow-y-auto pr-2"
-      layout="horizontal"
-    >
+  <Modal :confirm-loading="submitting" :open="open" :title="isEdit ? '编辑公告' : '新增公告'" :width="860" destroy-on-close
+    @cancel="closeModal" @ok="handleSubmit">
+    <Form :label-col="{ span: 5 }" class="mt-2 max-h-[70vh] overflow-y-auto pr-2" layout="horizontal">
       <!-- 多语言标题/内容 -->
       <template v-if="form.LangText.length <= 1 && form.LangText[0]">
         <Form.Item label="公告标题" required>
-          <Input
-            v-model:value="form.LangText[0]!.Title"
-            allow-clear
-            placeholder="请输入公告标题"
-          />
+          <Input v-model:value="form.LangText[0]!.Title" allow-clear placeholder="请输入公告标题" />
         </Form.Item>
         <Form.Item label="公告内容" required>
-          <RichTextEditor
-            v-model="form.LangText[0]!.NoticeRaw"
-            placeholder="请输入公告内容"
-          />
+          <RichTextEditor v-model="form.LangText[0]!.NoticeRaw" placeholder="请输入公告内容" />
         </Form.Item>
       </template>
-      <Tabs
-        v-else
-        v-model:active-key="activeLangTab"
-        class="mb-3"
-        type="line"
-        size="small"
-      >
-        <Tabs.TabPane
-          v-for="lang in form.LangText"
-          :key="String(lang.LangGroupId)"
-          :tab="`语言组 ${lang.LangGroupId}`"
-        >
+      <Tabs v-else v-model:active-key="activeLangTab" class="mb-3" type="line" size="small">
+        <Tabs.TabPane v-for="lang in form.LangText" :key="String(lang.LangGroupId)" :tab="`语言组 ${lang.LangGroupId}`">
           <Form.Item label="公告标题" required>
-            <Input
-              v-model:value="lang.Title"
-              allow-clear
-              placeholder="请输入公告标题"
-            />
+            <Input v-model:value="lang.Title" allow-clear placeholder="请输入公告标题" />
           </Form.Item>
           <Form.Item label="公告内容" required>
-            <RichTextEditor
-              v-model="lang.NoticeRaw"
-              placeholder="请输入公告内容"
-            />
+            <RichTextEditor v-model="lang.NoticeRaw" placeholder="请输入公告内容" />
           </Form.Item>
         </Tabs.TabPane>
       </Tabs>
 
       <Form.Item label="公告类型" required>
-        <Radio.Group
-          v-model:value="form.ShowStage"
-          :options="showStageOptions"
-        />
+        <Radio.Group v-model:value="form.ShowStage" :options="showStageOptions" />
       </Form.Item>
 
       <!-- 普通/重要/停机/充值：生效游戏包 -->
       <Form.Item v-if="!isEmergent" label="生效游戏包" required>
-        <Select
-          v-model:value="form.GamePackages"
-          :loading="loading"
-          :options="
-            packageOptions.map((item) => ({
-              label: item.PackageName,
-              value: item.PackageId,
-            }))
-          "
-          allow-clear
-          mode="multiple"
-          placeholder="请选择产品包"
-          show-search
-          style="width: 100%"
-        />
+        <Select v-model:value="form.GamePackages" :loading="loading" :options="packageOptions.map((item) => ({
+          label: item.PackageName,
+          value: item.PackageId,
+        }))
+          " allow-clear mode="multiple" placeholder="请选择产品包" show-search style="width: 100%" />
       </Form.Item>
 
       <!-- 紧急：生效/屏蔽产品、渠道、设备 -->
       <template v-if="isEmergent">
         <Form.Item label="生效产品">
           <div class="flex flex-col gap-2">
-            <Select
-              v-model:value="form.PackageMode"
-              :options="packageModeOptions"
-              style="width: 220px"
-            />
-            <Select
-              v-if="form.PackageMode === 1"
-              v-model:value="form.Packages"
-              :options="
-                packageOptions.map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-              "
-              mode="multiple"
-              placeholder="指定产品"
-              style="width: 100%"
-            />
+            <Select v-model:value="form.PackageMode" :options="packageModeOptions" style="width: 220px" />
+            <Select v-if="form.PackageMode === 1" v-model:value="form.Packages" :options="packageOptions.map((item) => ({
+              label: item.PackageName,
+              value: item.PackageId,
+            }))
+              " mode="multiple" placeholder="指定产品" style="width: 100%" />
           </div>
         </Form.Item>
         <Form.Item label="屏蔽产品">
           <div class="flex flex-col gap-2">
-            <Select
-              v-model:value="form.ShieldPackageMode"
-              :options="shieldPackageModeOptions"
-              style="width: 220px"
-            />
-            <Select
-              v-if="form.ShieldPackageMode === 1"
-              v-model:value="form.ShieldPackages"
-              :options="
-                packageOptions.map((item) => ({
-                  label: item.PackageName,
-                  value: item.PackageId,
-                }))
-              "
-              mode="multiple"
-              placeholder="屏蔽产品"
-              style="width: 100%"
-            />
+            <Select v-model:value="form.ShieldPackageMode" :options="shieldPackageModeOptions" style="width: 220px" />
+            <Select v-if="form.ShieldPackageMode === 1" v-model:value="form.ShieldPackages" :options="packageOptions.map((item) => ({
+              label: item.PackageName,
+              value: item.PackageId,
+            }))
+              " mode="multiple" placeholder="屏蔽产品" style="width: 100%" />
           </div>
         </Form.Item>
         <Form.Item label="生效渠道">
           <div class="flex flex-col gap-2">
-            <Select
-              v-model:value="form.ChannelIdMode"
-              :options="channelModeOptions"
-              style="width: 220px"
-            />
-            <ChannelSelect
-              v-if="form.ChannelIdMode === 1"
-              v-model="form.ChannelIds"
-              style="width: 100%"
-              placeholder="请输入渠道号"
-            />
+            <Select v-model:value="form.ChannelIdMode" :options="channelModeOptions" style="width: 220px" />
+            <ChannelSelect v-if="form.ChannelIdMode === 1" v-model="form.ChannelIds" style="width: 100%"
+              placeholder="请输入渠道号" />
           </div>
         </Form.Item>
         <Form.Item label="屏蔽渠道">
           <div class="flex flex-col gap-2">
-            <Select
-              v-model:value="form.ShieldChannelIdMode"
-              :options="shieldChannelModeOptions"
-              style="width: 220px"
-            />
-            <ChannelSelect
-              v-if="form.ShieldChannelIdMode === 1"
-              v-model="form.ShieldChannelIds"
-              style="width: 100%"
-              placeholder="请输入渠道号"
-            />
+            <Select v-model:value="form.ShieldChannelIdMode" :options="shieldChannelModeOptions" style="width: 220px" />
+            <ChannelSelect v-if="form.ShieldChannelIdMode === 1" v-model="form.ShieldChannelIds" style="width: 100%"
+              placeholder="请输入渠道号" />
           </div>
         </Form.Item>
         <Form.Item label="显示页面">
@@ -776,42 +688,24 @@ async function handleSubmit() {
           </Radio.Group>
         </Form.Item>
         <Form.Item label="展示设备" required>
-          <Checkbox.Group
-            v-model:value="form.VisibleDevice"
-            :options="deviceOptions"
-          />
+          <Checkbox.Group v-model:value="form.VisibleDevice" :options="deviceOptions" />
         </Form.Item>
         <Form.Item label="极光跳转类型">
-          <Select
-            v-model:value="form.OpenType2"
-            :options="openTypeOptions"
-            style="width: 220px"
-            @change="form.Jump2 = ''"
-          />
+          <Select v-model:value="form.OpenType2" :options="openTypeOptions" style="width: 220px"
+            @change="form.Jump2 = ''" />
         </Form.Item>
         <Form.Item v-if="form.OpenType2 === 1" label="跳转参数">
           <Input v-model:value="form.Jump2 as string" placeholder="网址" />
         </Form.Item>
         <Form.Item v-else-if="form.OpenType2 === 4" label="跳转参数">
-          <Select
-            v-model:value="form.Jump2"
-            :options="noticeJumpOptions"
-            allow-clear
-            placeholder="选择公告"
-            style="width: 100%"
-          />
+          <Select v-model:value="form.Jump2" :options="noticeJumpOptions" allow-clear placeholder="选择公告"
+            style="width: 100%" />
         </Form.Item>
       </template>
 
       <Form.Item v-if="showVipAndPush" label="生效VIP等级">
-        <Select
-          v-model:value="form.VipLevels"
-          :options="vipOptions"
-          allow-clear
-          mode="multiple"
-          placeholder="不选=不限；可多选"
-          style="width: 100%"
-        />
+        <Select v-model:value="form.VipLevels" :options="vipOptions" allow-clear mode="multiple" placeholder="不选=不限；可多选"
+          style="width: 100%" />
       </Form.Item>
 
       <Form.Item v-if="showVipAndPush" label="是否推送">
@@ -823,67 +717,40 @@ async function handleSubmit() {
 
       <template v-if="showVipAndPush && form.IsPush === 1">
         <Form.Item label="推送标题">
-          <Input
-            v-model:value="form.PushTitle"
-            :disabled="disablePush"
-            allow-clear
-          />
+          <Input v-model:value="form.PushTitle" :disabled="disablePush" allow-clear />
         </Form.Item>
         <Form.Item label="推送内容">
-          <Input
-            v-model:value="form.PushContent"
-            :disabled="disablePush"
-            allow-clear
-          />
+          <Input v-model:value="form.PushContent" :disabled="disablePush" allow-clear />
         </Form.Item>
         <Form.Item label="跳转类型">
-          <Select
-            v-model:value="form.OpenType"
-            :options="openTypeOptions"
-            style="width: 220px"
-            @change="form.Jump = ''"
-          />
+          <Select v-model:value="form.OpenType" :options="openTypeOptions" style="width: 220px"
+            @change="form.Jump = ''" />
         </Form.Item>
         <Form.Item v-if="form.OpenType === 1" label="跳转参数">
           <Input v-model:value="form.Jump as string" placeholder="网址" />
         </Form.Item>
         <Form.Item v-else-if="form.OpenType === 4" label="跳转参数">
-          <Select
-            v-model:value="form.Jump"
-            :options="noticeJumpOptions"
-            allow-clear
-            placeholder="选择公告"
-            style="width: 100%"
-          />
+          <Select v-model:value="form.Jump" :options="noticeJumpOptions" allow-clear placeholder="选择公告"
+            style="width: 100%" />
         </Form.Item>
       </template>
 
       <Form.Item label="排序" required>
-        <InputNumber
-          v-model:value="form.ShowIdx"
-          :max="10000"
-          :min="1"
-          class="w-40"
-        />
-        <span class="ml-2 text-xs text-red-500">数值越大越靠前</span>
+        <InputNumber v-model:value="form.ShowIdx" :max="10000" :min="1" class="w-40" />
+        <!-- <span class="ml-2 text-xs text-red-500">数值越大越靠前</span> -->
+        <div class="text-xs mt-2 text-red-500">
+        <p>
+          *建议：普通公告1-100；充值公告101-200；重要公告201-300；停机公告301-400；紧急公告401-500
+        </p>
+      </div>
       </Form.Item>
-
+      
       <Form.Item label="生效时间" required>
         <div class="flex items-center gap-2">
-          <DatePicker
-            v-model:value="form.StartTime"
-            placeholder="开始时间"
-            show-time
-            style="width: 100%"
-          />
+          <DatePicker v-model:value="form.StartTime" placeholder="开始时间" show-time style="width: 100%" />
           <span>至</span>
-          <DatePicker
-            v-model:value="form.EndTime"
-            allow-clear
-            placeholder="结束时间(可空=长期)"
-            show-time
-            style="width: 100%"
-          />
+          <DatePicker v-model:value="form.EndTime" allow-clear placeholder="结束时间(可空=长期)" show-time
+            style="width: 100%" />
         </div>
       </Form.Item>
 
@@ -894,24 +761,13 @@ async function handleSubmit() {
             <Radio :value="0">每次登录</Radio>
             <Radio :value="1">每日首次登录</Radio>
           </Radio.Group>
-          <InputNumber
-            v-if="form.DailyCount === 1"
-            v-model:value="form.DailyCountValue"
-            :max="99999"
-            :min="1"
-            class="ml-2 w-28"
-            placeholder="次数"
-          />
+          <InputNumber v-if="form.DailyCount === 1" v-model:value="form.DailyCountValue" :max="99999" :min="1"
+            class="ml-2 w-28" placeholder="次数" />
         </Form.Item>
         <Form.Item label="展示总次">
           <div class="flex items-center gap-2">
             <Switch v-model:checked="form.IsTotalCount" />
-            <InputNumber
-              v-model:value="form.TotalCount"
-              :disabled="!form.IsTotalCount"
-              :min="1"
-              class="w-28"
-            />
+            <InputNumber v-model:value="form.TotalCount" :disabled="!form.IsTotalCount" :min="1" class="w-28" />
           </div>
         </Form.Item>
         <Form.Item label="首存后不展示">

@@ -208,47 +208,13 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
       sortable: true,
       title: '结束日期',
     },
-    {
-      field: 'CreateTime',
-      formatter: ({ cellValue }) =>
-        formatOperationDateTime(cellValue as string),
-      minWidth: 160,
-      sortable: true,
-      title: '创建时间',
-    },
     { field: 'ShowIdx', minWidth: 80, sortable: true, title: '排序' },
-    {
-      field: 'Packages',
-      formatter: ({ row }) => resolvePackages(row.Packages),
-      minWidth: 160,
-      showOverflow: 'tooltip',
-      title: '生效产品',
-    },
-    {
-      field: 'UpdateTime',
-      formatter: ({ cellValue }) =>
-        formatOperationDateTime(cellValue as string),
-      minWidth: 160,
-      title: '操作时间',
-    },
-    {
-      field: 'HandlerName',
-      formatter: ({ row }) => String(row.HandlerName || row.Creator || '-'),
-      minWidth: 100,
-      title: '操作人',
-    },
     {
       field: 'ShowStage',
       formatter: ({ cellValue }) =>
         SHOW_STAGE_MAP[Number(cellValue)] || String(cellValue ?? '-'),
       minWidth: 100,
       title: '公告类型',
-    },
-    {
-      field: 'IsPush',
-      formatter: ({ cellValue }) => (Number(cellValue) === 1 ? '是' : '否'),
-      minWidth: 90,
-      title: '是否推送',
     },
     {
       field: 'Title',
@@ -263,6 +229,40 @@ const gridOptions: VxeTableGridOptions<NoticeRow> = {
       minWidth: 160,
       showOverflow: 'tooltip',
       title: '公告内容',
+    },
+    {
+      field: 'IsPush',
+      formatter: ({ cellValue }) => (Number(cellValue) === 1 ? '是' : '否'),
+      minWidth: 90,
+      title: '是否推送',
+    },
+    {
+      field: 'Packages',
+      formatter: ({ row }) => resolvePackages(row.Packages),
+      minWidth: 160,
+      showOverflow: 'tooltip',
+      title: '生效产品',
+    },
+    {
+      field: 'HandlerName',
+      formatter: ({ row }) => String(row.HandlerName || row.Creator || '-'),
+      minWidth: 100,
+      title: '操作人',
+    },
+    {
+      field: 'CreateTime',
+      formatter: ({ cellValue }) =>
+        formatOperationDateTime(cellValue as string),
+      minWidth: 160,
+      sortable: true,
+      title: '创建时间',
+    },
+    {
+      field: 'UpdateTime',
+      formatter: ({ cellValue }) =>
+        formatOperationDateTime(cellValue as string),
+      minWidth: 160,
+      title: '操作时间',
     },
     {
       field: 'action',
