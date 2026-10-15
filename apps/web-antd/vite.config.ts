@@ -42,15 +42,10 @@ export default defineConfig(async (config) => {
       plugins: [emitAppVersionPlugin()],
       server: {
         proxy: {
-          // resource 上传/列表需保留 /api 前缀（对齐旧站 UPLOAD_MD5_IMG）
-          '/api/resource': {
-            changeOrigin: true,
-            target: proxyTarget,
-            ws: true,
-          },
+          // 目标为站点根（如 https://cloud.dk888.link）时保留 /api，由对方 Nginx 反代到后端。
+          // 勿再 rewrite 掉 /api：剥掉后会打到静态页 HTML，登录验证码等接口会失败。
           '/api': {
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, ''),
             target: proxyTarget,
             ws: true,
           },
