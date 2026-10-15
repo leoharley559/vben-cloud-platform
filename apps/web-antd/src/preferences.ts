@@ -27,6 +27,10 @@ export const overridesPreferences = defineOverridesPreferences({
     locale: 'zh-CN',
     name: import.meta.env.VITE_APP_TITLE,
   },
+  // 登录页底部 Copyright；改后需清本地 preferences 缓存才生效
+  copyright: {
+    enable: false,
+  },
   shortcutKeys: {
     globalPreferences: false,
   },
