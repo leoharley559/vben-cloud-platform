@@ -26,7 +26,6 @@ import ChannelSelect from '#/components/global/channel-select.vue';
 import PlayerAccountLink from '#/components/global/player-account-link.vue';
 import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-picker.vue';
 import SummaryCards from '#/components/global/summary-cards.vue';
-import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useOperationOptions } from '#/composables/use-operation-options';
 import {
@@ -60,9 +59,6 @@ const canReject = computed(() => checkPermission(10_102));
 const canBatchApprove = computed(() => checkPermission(10_103));
 const canBatchReject = computed(() => checkPermission(10_104));
 const canExport = computed(() => checkPermission(10_105));
-
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
-const pendingApprove = ref<null | { accounts: string; ids: string }>(null);
 
 const defaultRange = getLast3CalendarDaysRangeSeconds();
 const selectedRows = ref<PlayerAdjustListItem[]>([]);
@@ -334,30 +330,18 @@ function approveRows(ids: string, accounts: string) {
   Modal.confirm({
     content: `确认通过以下账号的调整申请？${accounts}`,
     title: '通过审核',
-    onOk: () => {
-      pendingApprove.value = { accounts, ids };
-      passPopupRef.value?.validate(ACCOUNT_ADJUST_AUDIT_PAGE_ID);
+    onOk: async () => {
+      // 对齐旧站 adjustAudit：确认后直接审批，不弹谷歌验证码
+      await disposeAccountAdjustAuditApi({
+        Approve: 2,
+        ApproveRemark: '',
+        Ids: ids,
+      });
+      message.success('审核通过');
+      selectedRows.value = [];
+      gridApi.reload();
     },
   });
-}
-
-async function handleApprovePassConfirm(data: Record<string, unknown>) {
-  if (!pendingApprove.value?.ids) {
-    return;
-  }
-  try {
-    await disposeAccountAdjustAuditApi({
-      Approve: 2,
-      ApproveRemark: '',
-      Ids: pendingApprove.value.ids,
-      ValidCode: data.ValidCode || '',
-    });
-    message.success('审核通过');
-    selectedRows.value = [];
-    gridApi.reload();
-  } finally {
-    pendingApprove.value = null;
-  }
 }
 
 function handleApprove(row: PlayerAdjustListItem) {
@@ -680,7 +664,6 @@ onMounted(() => {
       "
       @success="onRejectSuccess"
     />
-    <PassPopup ref="passPopupRef" @confirm="handleApprovePassConfirm" />
   </div>
 
   <Result

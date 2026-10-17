@@ -6,9 +6,7 @@ import { computed, ref, watch } from 'vue';
 import { Form, Input, message, Modal } from 'ant-design-vue';
 
 import { disposeAccountAdjustAuditApi } from '#/api/operationManage/account-adjust';
-import PassPopup from '#/components/security/pass-popup.vue';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { ACCOUNT_ADJUST_AUDIT_PAGE_ID } from '#/utils/security-page-ids';
 
 defineOptions({ name: 'AdjustAuditActionModal' });
 
@@ -24,7 +22,6 @@ const emit = defineEmits<{
   'update:open': [value: boolean];
 }>();
 
-const passPopupRef = ref<InstanceType<typeof PassPopup>>();
 const submitting = ref(false);
 const remark = ref('');
 
@@ -53,24 +50,20 @@ function closeModal() {
   emit('update:open', false);
 }
 
-function handleOk() {
+async function handleOk() {
   if (!remark.value.trim()) {
     message.warning('请填写拒绝备注');
     return;
   }
-  passPopupRef.value?.validate(ACCOUNT_ADJUST_AUDIT_PAGE_ID);
-}
-
-async function handlePassConfirm(data: Record<string, unknown>) {
   submitting.value = true;
   try {
+    // 对齐旧站 adjustAudit：拒绝只填备注后直接提交，不弹谷歌验证码
     await disposeAccountAdjustAuditApi({
       Approve: 3,
       ApproveRemark: remark.value,
       Ids: props.row?.Id || props.selectedIds,
       LoginAccount: displayAccount.value,
       PlayerId: props.row?.PlayerId || '',
-      ValidCode: data.ValidCode || '',
     });
     message.success('已拒绝');
     closeModal();
@@ -104,6 +97,5 @@ async function handlePassConfirm(data: Record<string, unknown>) {
         />
       </Form.Item>
     </Form>
-    <PassPopup ref="passPopupRef" @confirm="handlePassConfirm" />
   </Modal>
 </template>
