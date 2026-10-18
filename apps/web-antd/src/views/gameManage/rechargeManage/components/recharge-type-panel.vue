@@ -73,6 +73,8 @@ const total = ref(0);
 const typeBootstrapped = ref(false);
 const editorOpen = ref(false);
 const editingRow = ref<null | RechargeChannelItem>(null);
+/** 左侧快速切换时丢弃过期请求，避免旧响应盖住新选中 */
+let loadSeq = 0;
 
 const payTypeNameMap = computed(() => {
   const list = (
@@ -190,6 +192,7 @@ async function overridePrivateCardCounts() {
 }
 
 async function load(discover = false) {
+  const seq = ++loadSeq;
   loading.value = true;
   loadError.value = '';
   try {
@@ -204,8 +207,12 @@ async function load(discover = false) {
       PayType: requestPayType,
       Sort: sort.value,
     });
+    // 快速切换左侧类型时，只应用最后一次请求
+    if (seq !== loadSeq) return;
+
     mergeMetadata(result.TypeList, result.Total);
     await overridePrivateCardCounts();
+    if (seq !== loadSeq) return;
 
     if (!typeBootstrapped.value) {
       typeBootstrapped.value = true;
@@ -231,24 +238,30 @@ async function load(discover = false) {
       return;
     }
 
-    if (isSpecialized.value) {
+    // 仍以「发起请求时的类型」判断，避免 await 期间选中已变导致错写右侧列表
+    if (SPECIALIZED_TYPES.has(String(requestPayType))) {
       items.value = [];
       total.value = 0;
-    } else {
+    } else if (String(requestPayType) === String(selectedPayType.value)) {
       items.value = result.Items.toSorted(
         (a, b) => Number(b.Index || 0) - Number(a.Index || 0),
       );
       // 接口常缺 MaxCount，回退当前页条数（与空结果 0 区分）
       const maxCount = result.Pagination?.MaxCount;
       total.value = Number(
-        maxCount == null || String(maxCount) === '' ? items.value.length : maxCount,
+        maxCount == null || String(maxCount) === ''
+          ? items.value.length
+          : maxCount,
       );
     }
   } catch (error) {
+    if (seq !== loadSeq) return;
     loadError.value =
       error instanceof Error ? error.message : '通道数据加载失败';
   } finally {
-    loading.value = false;
+    if (seq === loadSeq) {
+      loading.value = false;
+    }
   }
 }
 
@@ -260,7 +273,7 @@ async function completeReload() {
 }
 
 function selectType(type: RechargePayTypeConfig) {
-  if (String(selectedPayType.value) === String(type.PayType)) return;
+  // 对齐旧站 titleClick：始终重新拉列表（含再点当前项），避免竞态后点不动
   selectedPayType.value = type.PayType;
   page.value = 1;
   void load(false);
