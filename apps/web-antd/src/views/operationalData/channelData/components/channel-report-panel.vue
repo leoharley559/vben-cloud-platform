@@ -81,7 +81,7 @@ const dateFormat = computed(() =>
   reportType.value === 2 ? 'YYYY-MM' : 'YYYY-MM-DD',
 );
 
-/** 月报快捷区间（日报/区间走 QueryDatetimeRangePicker 自带今日/昨日/本月/上月） */
+/** 月报快捷区间（日报/区间走 QueryDatetimeRangePicker 自带快捷项） */
 const monthRangePresets = computed(() => [
   {
     label: '本月',

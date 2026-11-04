@@ -143,18 +143,40 @@ function toggleOpen() {
   open.value = !open.value;
 }
 
+/** 含今天的自然日：近 N 天 = 今天往前 N-1 天 00:00 ～ 今天 23:59:59 */
+function recentDays(days: number): [Dayjs, Dayjs] {
+  return [
+    dayjs()
+      .subtract(days - 1, 'day')
+      .startOf('day'),
+    dayjs().endOf('day'),
+  ];
+}
+
+/** 滚动自然月：近 N 月 = N 个月前同一天 00:00 ～ 今天 23:59:59 */
+function recentMonths(months: number): [Dayjs, Dayjs] {
+  return [dayjs().subtract(months, 'month').startOf('day'), dayjs().endOf('day')];
+}
+
 const allPresets = [
-  {
-    label: '今日',
-    range: () =>
-      [dayjs().startOf('day'), dayjs().endOf('day')] as [Dayjs, Dayjs],
-  },
   {
     label: '昨日',
     range: () => {
       const day = dayjs().subtract(1, 'day');
       return [day.startOf('day'), day.endOf('day')] as [Dayjs, Dayjs];
     },
+  },
+  {
+    label: '今日',
+    range: () => recentDays(1),
+  },
+  {
+    label: '近3天',
+    range: () => recentDays(3),
+  },
+  {
+    label: '近7天',
+    range: () => recentDays(7),
   },
   {
     label: '本月',
@@ -170,6 +192,14 @@ const allPresets = [
         Dayjs,
       ];
     },
+  },
+  {
+    label: '近3月',
+    range: () => recentMonths(3),
+  },
+  {
+    label: '近6月',
+    range: () => recentMonths(6),
   },
 ];
 
