@@ -29,7 +29,7 @@ import { useGameConfig } from '#/composables/use-game-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatVenueName } from '#/utils/game-config';
+import { formatPlatformGameLabel } from '#/utils/game-config';
 import {
   formatPlatformTransferState,
   getPlatformTransferStateColor,
@@ -63,7 +63,7 @@ const gameOptions = computed(() => {
   const options = [{ label: '全部', value: '' }];
   for (const [gameId] of Object.entries(gameConfig.value.platformGameList)) {
     options.push({
-      label: formatVenueName(gameId, gameConfig.value),
+      label: formatPlatformGameLabel(gameId, gameConfig.value),
       value: gameId,
     });
   }
@@ -118,12 +118,12 @@ function formatGameAccount(
     if (transferType === 1) {
       return '中心钱包';
     }
-    return formatVenueName(gameId, gameConfig.value);
+    return formatPlatformGameLabel(gameId, gameConfig.value);
   }
   if (transferType !== 1) {
     return '中心钱包';
   }
-  return formatVenueName(gameId, gameConfig.value);
+  return formatPlatformGameLabel(gameId, gameConfig.value);
 }
 
 const gridOptions: VxeTableGridOptions<PlatformTransferItem> = {

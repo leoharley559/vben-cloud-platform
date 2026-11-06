@@ -60,7 +60,7 @@ import {
   getTodayRangeSeconds,
 } from '#/utils/date-range';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatVenueName } from '#/utils/game-config';
+import { formatPlatformGameLabel } from '#/utils/game-config';
 import { getGameCategoryName } from '#/views/dataClose/gameStatement/utils';
 import {
   formatPlayerStatus,
@@ -207,18 +207,10 @@ const platformGameOptions = computed(() =>
         Number((game as { IsVirtualGame?: number }).IsVirtualGame) === 0 &&
         isConfigOpen(game.IsOpen),
     )
-    .map(([value, game]) => {
-      const shortName = String(game.gameName || value);
-      const fullName = formatVenueName(value, gameConfig.value);
-      const label =
-        fullName &&
-        fullName !== '-' &&
-        fullName !== shortName &&
-        (fullName.includes(shortName) || shortName.includes(fullName))
-          ? fullName
-          : shortName;
-      return { label, value };
-    }),
+    .map(([value]) => ({
+      label: formatPlatformGameLabel(value, gameConfig.value),
+      value,
+    })),
 );
 
 const venueTypeOptions = computed(() =>
@@ -518,7 +510,9 @@ const gridOptions: VxeTableGridOptions<PlayerBetRecordItem> = {
       field: 'VendorCode',
       formatter: ({ cellValue, row }) =>
         String(
-          cellValue || formatVenueName(row.GameId, gameConfig.value) || '-',
+          cellValue ||
+            formatPlatformGameLabel(row.GameId, gameConfig.value) ||
+            '-',
         ),
       minWidth: 120,
       title: '场馆名称',
@@ -821,7 +815,8 @@ async function handleCopy() {
         formatVipLevelLabel(item.VipLevel as number | string | undefined),
         item.Username,
         item.PackageName,
-        formatVenueName(item.GameId, gameConfig.value),
+        item.VendorCode ||
+          formatPlatformGameLabel(item.GameId, gameConfig.value),
         item.GameId,
         betAmt,
         formatAmountFromCent(item.ValidWater),

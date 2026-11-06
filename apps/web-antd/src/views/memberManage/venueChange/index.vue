@@ -34,7 +34,7 @@ import { useGameConfig } from '#/composables/use-game-config';
 import { getTodayRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatVenueName } from '#/utils/game-config';
+import { formatPlatformGameLabel } from '#/utils/game-config';
 import {
   formatPlatformTransferState,
   getPlatformTransferStateColor,
@@ -87,7 +87,7 @@ const gameOptions = computed(() => {
   for (const [gameId, game] of Object.entries(gameConfig.value.games)) {
     if (Number(game.ParentId) === 0) {
       options.push({
-        label: formatVenueName(gameId, gameConfig.value),
+        label: formatPlatformGameLabel(gameId, gameConfig.value),
         value: gameId,
       });
     }
@@ -165,10 +165,10 @@ function formatGameAccount(
   if (isOut) {
     return transferType === 1
       ? '中心钱包'
-      : formatVenueName(gameId, gameConfig.value);
+      : formatPlatformGameLabel(gameId, gameConfig.value);
   }
   return transferType === 1
-    ? formatVenueName(gameId, gameConfig.value)
+    ? formatPlatformGameLabel(gameId, gameConfig.value)
     : '中心钱包';
 }
 

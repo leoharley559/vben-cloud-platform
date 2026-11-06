@@ -156,31 +156,46 @@ function lookupPlatformName(
   return '';
 }
 
-/** 按场馆编码/简称取 Description（dj → DB电竞）。不要用 GameId：venue-config 的 GameId 与当前平台可能不一致 */
-function lookupVenueDescriptionByCode(key: string, shortName = '') {
-  const venues = venueConfig.venues || [];
-  const upperKey = key.toUpperCase();
-  const upperShort = shortName.toUpperCase();
-  const hit = venues.find(
-    (item) =>
-      String(item.VenueName).toUpperCase() === upperKey ||
-      String(item.VenueCode).toUpperCase() === upperKey ||
-      (upperShort &&
-        (String(item.VenueName).toUpperCase() === upperShort ||
-          String(item.VenueCode).toUpperCase() === upperShort)),
-  );
-  return String(hit?.Description || '').trim();
+function namesCorrespond(full: string, short: string) {
+  const left = full.trim().toLowerCase();
+  const right = short.trim().toLowerCase();
+  if (!left || !right) return false;
+  if (left === right) return true;
+  // 简称至少 2 位，避免单字母把无关英文名配进来
+  if (right.length < 2) return false;
+  return left.includes(right) || right.includes(left);
 }
 
-/** venue-config Description：本环境中文全称（VenueName 多为 TY/PG） */
-function lookupVenueDescription(key: string, shortName = '', gameId = '') {
-  const byCode = lookupVenueDescriptionByCode(key, shortName);
-  if (byCode) return byCode;
-  const venues = venueConfig.venues || [];
-  const hit = venues.find(
-    (item) => String(item.GameId) === key || String(item.GameId) === gameId,
+/**
+ * 按场馆编码或简称取中文名（dj → DB电竞）。
+ * 不用 venue-config.GameId：这份配置里的数字 ID 和当前平台对不上。
+ */
+export function matchVenueDescription(...names: Array<string | undefined>) {
+  const wanted = new Set(
+    names
+      .map((name) => String(name || '').trim().toUpperCase())
+      .filter(Boolean),
   );
-  return String(hit?.Description || '').trim();
+  if (wanted.size === 0) return '';
+  for (const item of venueConfig.venues || []) {
+    const aliases = [
+      item.VenueName,
+      item.VenueCode,
+      ...((item as { Aliases?: string[] }).Aliases || []),
+    ];
+    const hit = aliases.some((alias) =>
+      wanted.has(String(alias || '').trim().toUpperCase()),
+    );
+    if (hit) return String(item.Description || '').trim();
+  }
+  return '';
+}
+
+/** 全称必须和本平台简称对得上，才允许覆盖场馆自己的名字 */
+function belongsToVenue(name: string, ownName: string, shortName: string) {
+  if (!name || isVenueAbbreviation(name)) return false;
+  if (!ownName && !shortName) return true;
+  return namesCorrespond(name, ownName) || namesCorrespond(name, shortName);
 }
 
 /** 接口若直接返回 TY/PG 等简称，仅按当前平台字典反查 ID，不用 venue-config.GameId */
@@ -231,7 +246,7 @@ export function formatVenueName(
   }
 
   const originalKey = String(gameType);
-  const byCode = lookupVenueDescriptionByCode(originalKey);
+  const byCode = matchVenueDescription(originalKey);
   if (byCode) return byCode;
 
   const cfg = config || {
@@ -247,6 +262,12 @@ export function formatVenueName(
   const key = resolveVenueKey(originalKey, cfg);
 
   const shortName = lookupPlatformName(cfg.platformGameType, key);
+  const ownName = String(
+    cfg.games[key]?.gameName || cfg.platformGameList[key]?.gameName || '',
+  ).trim();
+  const byOwn = matchVenueDescription(ownName, shortName);
+  if (byOwn) return byOwn;
+
   const byApi = findGameByApiFee(key, cfg);
   const gameId = String(
     (byApi ? findGameIdOf(byApi, cfg) : '') ||
@@ -254,51 +275,53 @@ export function formatVenueName(
       '',
   );
 
-  // 1. 旧站 gamePlatform：platformGameTypeAll（全称，含已关闭场馆）
+  // 全称必须和本平台场馆名对得上，避免英文名盖掉另一个场馆
   const fromAll = lookupPlatformName(cfg.platformGameTypeAll, key);
-  if (fromAll && !isVenueAbbreviation(fromAll)) return fromAll;
+  if (!ownName && !shortName) {
+    const byAll = matchVenueDescription(fromAll);
+    if (byAll) return byAll;
+  }
+  if (
+    fromAll &&
+    belongsToVenue(fromAll, ownName, shortName)
+  ) {
+    return fromAll;
+  }
 
-  // 2. venue-config Description（本环境中文全称）
-  const fromDesc = lookupVenueDescription(key, shortName || fromAll, gameId);
-  if (fromDesc) return fromDesc;
+  if (ownName && !isVenueAbbreviation(ownName)) return ownName;
 
-  if (fromAll) return fromAll;
-
-  // 3. GroupPlatformGameType.gamename
   const groupHit = findGroupVenue(key, cfg);
-  if (groupHit?.gamename && !isVenueAbbreviation(groupHit.gamename)) {
+  if (groupHit?.gamename && belongsToVenue(groupHit.gamename, ownName, shortName)) {
     return groupHit.gamename;
   }
 
-  // 4. 按 apiId 找到 gameId 后，再用 Group / Description
-  if (gameId) {
+  if (gameId && gameId !== key) {
     const byGameId = findGroupVenue(gameId, cfg);
-    if (byGameId?.gamename && !isVenueAbbreviation(byGameId.gamename)) {
+    const linkedName = String(
+      cfg.games[gameId]?.gameName ||
+        cfg.platformGameList[gameId]?.gameName ||
+        '',
+    ).trim();
+    const byLinked = matchVenueDescription(linkedName);
+    if (byLinked) return byLinked;
+    if (
+      byGameId?.gamename &&
+      belongsToVenue(byGameId.gamename, linkedName, shortName)
+    ) {
       return byGameId.gamename;
     }
-    const descById = lookupVenueDescription(gameId, shortName, gameId);
-    if (descById) return descById;
+    if (linkedName) return linkedName;
   }
 
-  // 5. ApiFee → platformGameType 简写 → 反查 Group 更长名称
   if (shortName) {
     for (const group of Object.values(cfg.GroupPlatformGameType || {})) {
       for (const item of group.gametypes || []) {
         const name = String(item.gamename ?? '').trim();
-        if (
-          name &&
-          (name === shortName ||
-            name.includes(shortName) ||
-            shortName.includes(name)) &&
-          name.length >= shortName.length
-        ) {
-          return name;
-        }
+        if (name && namesCorrespond(name, shortName)) return name;
       }
     }
   }
 
-  // 6. games / platformGameList（可能仍是简写）
   const fromGames = cfg.games[key]?.gameName || '';
   const fromPlatformList = cfg.platformGameList[key]?.gameName || '';
   const fromApiName = byApi?.gameName || '';
@@ -306,27 +329,44 @@ export function formatVenueName(
     if (name && !isVenueAbbreviation(name)) return name;
   }
 
-  if (gameId) {
-    const name =
-      cfg.games[gameId]?.gameName ||
-      cfg.platformGameList[gameId]?.gameName ||
-      '';
-    if (name) {
-      const desc = lookupVenueDescription(gameId, name, gameId);
-      if (desc) return desc;
-      return name;
-    }
-  }
-
-  // 7. 简写兜底
-  return (
+  const fallback =
     shortName ||
     fromApiName ||
     fromGames ||
     fromPlatformList ||
     groupHit?.gamename ||
-    key
-  );
+    key;
+  return matchVenueDescription(fallback) || fallback;
+}
+
+/**
+ * 对齐游戏记录场馆下拉：以本平台 gameName 为准。
+ * 全称只有包含这个名字时才采用。字典里没有这个场馆时显示「未知场馆」，不猜分类。
+ */
+export function formatPlatformGameLabel(
+  gameId?: null | number | string,
+  config?: null | ParsedGameConfig,
+) {
+  if (gameId === undefined || gameId === null || gameId === '') {
+    return '-';
+  }
+  const key = String(gameId);
+  const game = config?.platformGameList?.[key] || config?.games?.[key];
+  const shortName = String(game?.gameName || '').trim();
+  if (!shortName) {
+    return '未知场馆';
+  }
+  const fullName = formatVenueName(gameId, config);
+  if (
+    fullName &&
+    fullName !== '-' &&
+    fullName !== shortName &&
+    fullName !== key &&
+    (fullName.includes(shortName) || shortName.includes(fullName))
+  ) {
+    return fullName;
+  }
+  return shortName;
 }
 
 function findGroupVenue(key: string, config: ParsedGameConfig) {

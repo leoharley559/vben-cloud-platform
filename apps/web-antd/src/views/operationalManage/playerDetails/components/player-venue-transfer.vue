@@ -29,7 +29,7 @@ import { useGameConfig } from '#/composables/use-game-config';
 import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 import { exportRowsToCsv } from '#/utils/export-csv';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatVenueName } from '#/utils/game-config';
+import { formatPlatformGameLabel } from '#/utils/game-config';
 import {
   formatTransferAccount,
   formatVenueTransferState,
@@ -113,14 +113,14 @@ function formatOutAccount(row: PlayerVenueTransferItem) {
   if (Number(row.Type) === 1) {
     return formatTransferAccount(1);
   }
-  return formatVenueName(row.GameId, gameConfig.value);
+  return formatPlatformGameLabel(row.GameId, gameConfig.value);
 }
 
 function formatInAccount(row: PlayerVenueTransferItem) {
   if (Number(row.Type) !== 1) {
     return formatTransferAccount(1);
   }
-  return formatVenueName(row.GameId, gameConfig.value);
+  return formatPlatformGameLabel(row.GameId, gameConfig.value);
 }
 
 function getStateColor(state?: number | string) {

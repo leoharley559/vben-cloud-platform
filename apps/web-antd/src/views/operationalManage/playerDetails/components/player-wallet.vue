@@ -30,7 +30,7 @@ import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { createRequestHash } from '#/utils/crypto';
 import { formatAmountFromCent } from '#/utils/format-amount';
-import { formatVenueName } from '#/utils/game-config';
+import { formatPlatformGameLabel } from '#/utils/game-config';
 
 defineOptions({ name: 'PlayerWalletPanel' });
 
@@ -94,7 +94,7 @@ const summaryItems = computed(() => [
 ]);
 
 function venueName(gameId?: number | string) {
-  return formatVenueName(gameId, gameConfig.value);
+  return formatPlatformGameLabel(gameId, gameConfig.value);
 }
 
 const columns = [

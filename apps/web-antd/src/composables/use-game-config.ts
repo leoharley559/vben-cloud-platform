@@ -3,8 +3,7 @@ import type { GameConfigItem, ParsedGameConfig } from '#/utils/game-config';
 import { ref } from 'vue';
 
 import { getGameConfigApi } from '#/api/core/project';
-import venueConfig from '#/config/venue-config.json';
-import { parseGameConfig } from '#/utils/game-config';
+import { matchVenueDescription, parseGameConfig } from '#/utils/game-config';
 
 interface GameConfigResponse {
   [key: string]: unknown;
@@ -186,51 +185,28 @@ function enrichWithVenueConfigDescriptions(
   map: Record<string, string>,
   config: ParsedGameConfig,
 ) {
-  const venues = venueConfig.venues || [];
-  const byGameId = new Map(
-    venues.map((item) => [String(item.GameId), item] as const),
-  );
-  const byVenueName = new Map(
-    venues.map((item) => [String(item.VenueName).toUpperCase(), item] as const),
-  );
-  const byVenueCode = new Map(
-    venues.map((item) => [String(item.VenueCode).toUpperCase(), item] as const),
-  );
-
-  for (const venue of venues) {
-    const desc = String(venue.Description || '').trim();
-    if (!desc) continue;
-    map[String(venue.GameId)] = preferVenueName(
-      map[String(venue.GameId)],
-      desc,
-    );
-  }
-
   for (const [apiFee, shortName] of Object.entries(
     config.platformGameType || {},
   )) {
-    const hit =
-      byVenueName.get(String(shortName).toUpperCase()) ||
-      byVenueCode.get(String(shortName).toUpperCase());
-    if (hit?.Description) {
-      map[apiFee] = preferVenueName(map[apiFee], hit.Description);
-    }
+    const desc = matchVenueDescription(shortName);
+    if (desc) map[apiFee] = desc;
   }
 
   for (const [gameId, game] of Object.entries(config.games || {})) {
-    const shortName = String(game.gameName || '').trim();
-    const hit =
-      byGameId.get(gameId) ||
-      byVenueName.get(shortName.toUpperCase()) ||
-      byVenueCode.get(shortName.toUpperCase());
-    const desc = String(hit?.Description || '').trim();
+    const desc = matchVenueDescription(String(game.gameName || ''));
     if (!desc) continue;
-    map[gameId] = preferVenueName(map[gameId], desc);
+    map[gameId] = desc;
     for (const raw of [game.apiId, game.ApiFee, game.gameCode]) {
-      if (raw !== undefined && raw !== null && raw !== '') {
-        const key = String(raw);
-        map[key] = preferVenueName(map[key], desc);
-      }
+      if (raw === undefined || raw === null || raw === '') continue;
+      const key = String(raw);
+      const ownerName = String(
+        config.games[key]?.gameName ||
+          config.platformGameList[key]?.gameName ||
+          '',
+      );
+      const ownerDesc = matchVenueDescription(ownerName);
+      if (ownerDesc && ownerDesc !== desc) continue;
+      map[key] = desc;
     }
   }
 
