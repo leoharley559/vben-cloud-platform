@@ -25,7 +25,6 @@ import {
   updateWalletUnlockWaterApi,
   walletZeroApi,
 } from '#/api/operationManage/player';
-import SummaryCards from '#/components/global/summary-cards.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { useGameConfig } from '#/composables/use-game-config';
 import { createRequestHash } from '#/utils/crypto';
@@ -46,6 +45,8 @@ const canRecoverOne = computed(() => checkPermission(10_439));
 const canRecoverAll = computed(() => checkPermission(10_434));
 const canZero = computed(() => checkPermission(10_438));
 const canAdjust = computed(() => checkPermission(10_435));
+
+const RECOVER_REFRESH_DELAY = 2000;
 
 const loading = ref(false);
 const saving = ref(false);
@@ -82,17 +83,6 @@ const subWalletTotal = computed(() =>
   walletList.value.reduce((sum, item) => sum + Number(item.Balance || 0), 0),
 );
 
-const summaryItems = computed(() => [
-  {
-    label: '中心钱包总金额',
-    value: formatAmountFromCent(walletGold.value),
-  },
-  {
-    label: '场馆钱包总金额',
-    value: formatAmountFromCent(subWalletTotal.value),
-  },
-]);
-
 function venueName(gameId?: number | string) {
   return formatPlatformGameLabel(gameId, gameConfig.value);
 }
@@ -121,6 +111,18 @@ const columns = [
   { dataIndex: 'status', key: 'status', title: '状态', width: 100 },
   { key: 'action', title: '操作', width: 220 },
 ];
+
+function wait(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+/** 回收后等三方回写，间隔两秒再拉一次余额。 */
+async function refreshWalletAfterRecover() {
+  await wait(RECOVER_REFRESH_DELAY);
+  await loadWallet();
+}
 
 async function loadWallet() {
   if (!props.playerId) {
@@ -183,8 +185,8 @@ function handleRecoverOne(row: PlayerWalletItem) {
         GameId: row.GameId as number | string,
         PlayerId: props.playerId,
       });
-      message.success('回收成功');
-      await loadWallet();
+      message.success('回收已提交');
+      await refreshWalletAfterRecover();
     },
     title: '回收钱包',
   });
@@ -196,7 +198,7 @@ function handleRecoverAll() {
     onOk: async () => {
       await recoverAllPlayerWalletApi({ PlayerId: props.playerId });
       message.success('全部回收已提交');
-      await loadWallet();
+      await refreshWalletAfterRecover();
     },
     title: '全部回收',
   });
@@ -284,14 +286,45 @@ onMounted(async () => {
 
 <template>
   <div>
-    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-      <SummaryCards class="!mb-0 min-w-0 flex-1" :items="summaryItems" />
-      <div class="flex shrink-0 items-center gap-2">
-        <Button v-if="canAdjust" type="primary" @click="openAdjust">
+    <div class="mb-2 flex flex-col gap-2 lg:flex-row lg:items-center">
+      <div
+        class="ops-summary-cards !mb-0 grid w-full min-w-0 flex-[3] !grid-cols-1 gap-2 text-sm sm:!grid-cols-2"
+      >
+        <div class="ops-summary-card min-w-0 rounded border p-2">
+          <span class="ops-summary-label">中心钱包总金额：</span>
+          <span class="ops-summary-value break-all">{{
+            formatAmountFromCent(walletGold)
+          }}</span>
+        </div>
+        <div class="ops-summary-card min-w-0 rounded border p-2">
+          <span class="ops-summary-label">场馆钱包总金额：</span>
+          <span class="ops-summary-value break-all">{{
+            formatAmountFromCent(subWalletTotal)
+          }}</span>
+        </div>
+      </div>
+      <div
+        class="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap lg:w-auto lg:flex-[2] lg:justify-end"
+      >
+        <Button
+          class="!w-full sm:!w-auto sm:flex-1 lg:!flex-none"
+          type="primary"
+          :loading="loading"
+          @click="loadWallet"
+        >
+          刷新金额
+        </Button>
+        <Button
+          v-if="canAdjust"
+          class="!w-full sm:!w-auto sm:flex-1 lg:!flex-none"
+          type="primary"
+          @click="openAdjust"
+        >
           账户调账
         </Button>
         <Button
           v-if="canRecoverAll"
+          class="!w-full sm:!w-auto sm:flex-1 lg:!flex-none"
           :disabled="subWalletTotal === 0"
           @click="handleRecoverAll"
         >
@@ -300,60 +333,64 @@ onMounted(async () => {
       </div>
     </div>
 
-    <Table
-      v-if="canViewTable || walletList.length >= 0"
-      bordered
-      :columns="columns"
-      :data-source="walletList"
-      :loading="loading"
-      :pagination="false"
-      :row-key="(record) => String(record.GameId ?? record.GameName ?? '')"
-      size="small"
-    >
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'Balance'">
-          {{ formatAmountFromCent(record.Balance) }}
+    <div class="overflow-x-auto">
+      <Table
+        v-if="canViewTable || walletList.length >= 0"
+        bordered
+        :columns="columns"
+        :data-source="walletList"
+        :loading="loading"
+        :pagination="false"
+        :row-key="(record) => String(record.GameId ?? record.GameName ?? '')"
+        :scroll="{ x: 760 }"
+        size="small"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'Balance'">
+            {{ formatAmountFromCent(record.Balance) }}
+          </template>
+          <template v-else-if="column.key === 'UnlockWater'">
+            {{ formatAmountFromCent(record.UnlockWater) }}
+          </template>
+          <template v-else-if="column.key === 'status'">
+            <Tag :color="Number(record.UnlockWater) > 0 ? 'error' : 'success'">
+              {{ Number(record.UnlockWater) > 0 ? '冻结' : '正常' }}
+            </Tag>
+          </template>
+          <template v-else-if="column.key === 'action'">
+            <Space :size="0">
+              <!--<Button
+                v-if="canEditUnlock"
+                size="small"
+                type="link"
+                @click="openEditUnlock(record)"
+              >
+                {{ Number(record.UnlockWater) > 0 ? '改流水/解锁' : '设冻结' }}
+              </Button>
+              -->
+              <Button
+                v-if="canZero"
+                size="small"
+                type="link"
+                :disabled="Number(record.Balance) >= 0"
+                @click="handleWalletZero(record)"
+              >
+                清零
+              </Button>
+              <Button
+                v-if="canRecoverOne"
+                size="small"
+                type="link"
+                :disabled="Number(record.UnlockWater) > 0"
+                @click="handleRecoverOne(record)"
+              >
+                回收
+              </Button>
+            </Space>
+          </template>
         </template>
-        <template v-else-if="column.key === 'UnlockWater'">
-          {{ formatAmountFromCent(record.UnlockWater) }}
-        </template>
-        <template v-else-if="column.key === 'status'">
-          <Tag :color="Number(record.UnlockWater) > 0 ? 'error' : 'success'">
-            {{ Number(record.UnlockWater) > 0 ? '冻结' : '正常' }}
-          </Tag>
-        </template>
-        <template v-else-if="column.key === 'action'">
-          <Space :size="0">
-            <Button
-              v-if="canEditUnlock"
-              size="small"
-              type="link"
-              @click="openEditUnlock(record)"
-            >
-              {{ Number(record.UnlockWater) > 0 ? '改流水/解锁' : '设冻结' }}
-            </Button>
-            <Button
-              v-if="canZero"
-              size="small"
-              type="link"
-              :disabled="Number(record.Balance) >= 0"
-              @click="handleWalletZero(record)"
-            >
-              清零
-            </Button>
-            <Button
-              v-if="canRecoverOne"
-              size="small"
-              type="link"
-              :disabled="Number(record.UnlockWater) > 0"
-              @click="handleRecoverOne(record)"
-            >
-              回收
-            </Button>
-          </Space>
-        </template>
-      </template>
-    </Table>
+      </Table>
+    </div>
 
     <Modal
       v-model:open="editOpen"
