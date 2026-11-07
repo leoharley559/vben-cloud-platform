@@ -64,6 +64,7 @@ import {
   WITHDRAW_STATUS_OPTIONS,
   WITHDRAW_TIME_TYPE_OPTIONS,
 } from '#/utils/withdraw-status';
+import { resolveWithdrawPayAccountKind } from '#/utils/withdraw-pay-account';
 import {
   formatDuration,
   payTypeLabel,
@@ -90,7 +91,7 @@ const canBatchReject = computed(() => checkPermission(12_259));
 
 const selectedRows = ref<WithdrawListItem[]>([]);
 const actionOpen = ref(false);
-const actionMode = ref<'agree' | 'manual' | 'reject'>('manual');
+const actionMode = ref<'agree' | 'manual' | 'reject' | 'view'>('manual');
 const actionRow = ref<null | WithdrawListItem>(null);
 const batchLoading = ref(false);
 const remarkOpen = ref(false);
@@ -330,6 +331,12 @@ const gridOptions: VxeTableGridOptions<WithdrawListItem> = {
       title: '真实姓名',
     },
     {
+      field: 'payInfo',
+      minWidth: 100,
+      slots: { default: 'payInfo' },
+      title: '出款信息',
+    },
+    {
       field: 'Amount',
       formatter: ({ cellValue }) => formatAmountFromCent(cellValue),
       minWidth: 110,
@@ -515,15 +522,22 @@ const [Grid, gridApi] = useVbenVxeGrid({
 const loading = computed(() => gridApi.grid?.loading ?? false);
 const hasSelection = computed(() => selectedRows.value.length > 0);
 
+function isBankWithdrawType(row: WithdrawListItem) {
+  return resolveWithdrawPayAccountKind(row.AccountType) === 'bank';
+}
+
 function openWithdrawAction(
   row: WithdrawListItem,
-  mode: 'agree' | 'manual' | 'reject',
+  mode: 'agree' | 'manual' | 'reject' | 'view',
 ) {
   if (
     (mode === 'agree' || mode === 'manual') &&
     isWithdrawRiskBlockingPay(row)
   ) {
     message.warning('风控状态未审核，无法出款');
+    return;
+  }
+  if (mode === 'view' && isBankWithdrawType(row)) {
     return;
   }
   actionRow.value = row;
@@ -905,6 +919,16 @@ onMounted(() => {
           :permission-id="10388"
           :player-id="row.PlayerId"
         />
+      </template>
+      <template #payInfo="{ row }">
+        <Button
+          size="small"
+          type="link"
+          :disabled="isBankWithdrawType(row)"
+          @click="openWithdrawAction(row, 'view')"
+        >
+          查看
+        </Button>
       </template>
       <template #withdrawStatus="{ row }">
         <Tag

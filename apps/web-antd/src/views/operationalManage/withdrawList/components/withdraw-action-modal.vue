@@ -24,8 +24,9 @@ import {
   manualWithdrawApi,
   refuseWithdrawApi,
 } from '#/api/operationManage/withdraw';
-import { formatAmountFromCent } from '#/utils/format-amount';
 import { mergePlayerPayAccountListResult } from '#/utils/bank-card';
+import { formatAmountFromCent } from '#/utils/format-amount';
+import { getGameImageUrl } from '#/utils/media';
 import {
   matchWithdrawPayAccount,
   resolveWithdrawPayAccountKind,
@@ -35,7 +36,7 @@ import {
 defineOptions({ name: 'WithdrawActionModal' });
 
 const props = defineProps<{
-  mode: 'agree' | 'manual' | 'reject';
+  mode: 'agree' | 'manual' | 'reject' | 'view';
   row: null | WithdrawListItem;
 }>();
 
@@ -78,7 +79,7 @@ const manualPayAccountNum = computed(() => {
 });
 
 const manualPayQrCodeUrl = computed(() =>
-  String(matchedPayAccount.value?.qrCodeUrl || '').trim(),
+  getGameImageUrl(matchedPayAccount.value?.qrCodeUrl),
 );
 
 const showManualPayQrCode = computed(() => {
@@ -103,6 +104,7 @@ function buildManualPayCopyText() {
     `账号姓名：${manualPayAccountName.value}`,
     `出款账号：${manualPayAccountNum.value}`,
     `出款金额：${manualPayAmountText.value}`,
+    '*注意：出款时请核对账号与姓名是否一致，否则请停止出款',
   ].join('\n');
 }
 
@@ -123,11 +125,21 @@ const title = computed(() => {
     case 'manual': {
       return '人工出款';
     }
+    case 'view': {
+      return '出款信息';
+    }
     default: {
       return '拒绝出款';
     }
   }
 });
+
+const showPayAccountInfo = computed(
+  () =>
+    props.mode === 'manual' ||
+    props.mode === 'agree' ||
+    props.mode === 'view',
+);
 
 function applyRejectReason(key: string) {
   const found = rejectOptions.value.find((item) => item.key === key);
@@ -273,7 +285,7 @@ watch(
       await loadRejectReasons();
     }
 
-    if (props.mode === 'manual') {
+    if (props.mode === 'manual' || props.mode === 'view') {
       await loadManualPayAccount();
     }
   },
@@ -282,6 +294,10 @@ watch(
 
 async function handleOk() {
   if (!props.row?.Id) {
+    return;
+  }
+  if (props.mode === 'view') {
+    visible.value = false;
     return;
   }
   submitting.value = true;
@@ -359,8 +375,10 @@ async function handleOk() {
 
 <template>
   <Modal
-    :centered="mode === 'agree' || mode === 'manual'"
+    :centered="mode === 'agree' || mode === 'manual' || mode === 'view'"
     :confirm-loading="submitting"
+    :ok-button-props="mode === 'view' ? { style: { display: 'none' } } : undefined"
+    :cancel-text="mode === 'view' ? '关闭' : undefined"
     :open="visible"
     :title="title"
     width="640px"
@@ -384,7 +402,7 @@ async function handleOk() {
     </Descriptions>
   </div>
 
-  <div v-if="mode === 'manual' || mode === 'agree'" class="mb-3">
+  <div v-if="showPayAccountInfo" class="mb-3">
     <div class="mb-2 flex items-center justify-between gap-2">
       <div class="text-sm font-medium">出款账号信息</div>
       <Button
@@ -428,6 +446,7 @@ async function handleOk() {
     </Spin>
   </div>
     <Form
+      v-if="mode !== 'view'"
       :label-col="{ style: { width: '80px' } }"
       :wrapper-col="{ style: { flex: 1 } }"
       layout="horizontal"

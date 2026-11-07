@@ -25,8 +25,9 @@ import {
 import GoogleCodeField from '#/components/security/google-code-field.vue';
 import { checkSecured } from '#/components/security/security-utils';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
-import { createRequestHash } from '#/utils/crypto';
 import { parsePlayerPayAccountList } from '#/utils/bank-card';
+import { createRequestHash } from '#/utils/crypto';
+import { getGameImageUrl } from '#/utils/media';
 
 defineOptions({ name: 'PlayerAlipayList' });
 
@@ -141,7 +142,7 @@ function openEdit(row: BankCardListItem) {
 function openQrPreview(row: BankCardListItem) {
   qrPreview.name = String(row.AlipayName || '');
   qrPreview.account = String(row.AlipayAccount || '');
-  qrPreview.url = String(row.QrCodeUrl || '').trim();
+  qrPreview.url = getGameImageUrl(row.QrCodeUrl);
   qrPreviewOpen.value = true;
 }
 

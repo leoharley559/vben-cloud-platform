@@ -26,6 +26,7 @@ import QueryDatetimeRangePicker from '#/components/global/query-datetime-range-p
 import PassPopup from '#/components/security/pass-popup.vue';
 import { useCloudPermission } from '#/composables/use-cloud-permission';
 import { parsePlayerPayAccountList } from '#/utils/bank-card';
+import { getGameImageUrl } from '#/utils/media';
 
 import PayAccountFormModal from './pay-account-form-modal.vue';
 
@@ -240,7 +241,7 @@ async function openQrPreview(row: BankCardListItem) {
     );
     if (matched) {
       qrPreview.name = resolveRowName(matched) || qrPreview.name;
-      qrPreview.url = String(matched.QrCodeUrl || '').trim();
+      qrPreview.url = getGameImageUrl(matched.QrCodeUrl);
     }
   } finally {
     qrPreviewLoading.value = false;

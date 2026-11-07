@@ -192,15 +192,41 @@ const perMultiOptions = [-1, 0, 10, 50, 100, 500, 1000, 5000, 10_000].map(
   }),
 );
 
-const payTypeName = (type?: number) =>
-  ({
-    1: '银行卡',
-    2: '支付宝',
-    3: 'USDT',
-    4: '极速通道',
-    5: 'CNYB',
-    6: '易币付',
-  })[Number(type)] || `类型 ${type}`;
+const FALLBACK_PAY_TYPE_NAME: Record<number, string> = {
+  1: '银行卡',
+  2: '支付宝',
+  3: 'USDT',
+  4: '极速通道',
+  5: 'CNYB',
+  6: '易币付',
+  13: '微信',
+};
+
+const withdrawTypeMap = computed(() => {
+  const source = projectConfig.value?.WithdrawTypeList as
+    | Array<{
+        I18nKey?: string;
+        Key?: number | string;
+        Name?: string;
+        ShowName?: string;
+      }>
+    | undefined;
+  return new Map(
+    (source ?? []).map((item) => [
+      String(item.Key ?? ''),
+      item.ShowName || item.Name || item.I18nKey || String(item.Key ?? ''),
+    ]),
+  );
+});
+
+const payTypeName = (type?: number) => {
+  const key = Number(type);
+  return (
+    withdrawTypeMap.value.get(String(key)) ||
+    FALLBACK_PAY_TYPE_NAME[key] ||
+    `类型 ${type}`
+  );
+};
 
 function formatScriptStatus(row: WithdrawAccountRow) {
   if (row.HandleType !== 2) {
