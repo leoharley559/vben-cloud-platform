@@ -1,12 +1,10 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { PlayerGoldChangeItem } from '#/types/player-detail';
 
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
-import { Card } from 'ant-design-vue';
+import { Card, Table } from 'ant-design-vue';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchPlayerGoldChangeListApi } from '#/api/operationManage/player';
 import { useGameConfig } from '#/composables/use-game-config';
 import { formatGoldReason } from '#/utils/game-config';
@@ -20,95 +18,101 @@ const props = defineProps<{
 }>();
 
 const { ensureGameConfig, gameConfig } = useGameConfig();
+const loading = ref(false);
+const list = ref<Array<PlayerGoldChangeItem & { _rowKey: string }>>([]);
+const sortOrder = ref<'ascend' | 'descend' | null>(null);
 
-const gridOptions: VxeTableGridOptions<PlayerGoldChangeItem> = {
-  columns: [
-    {
-      field: 'Reason',
-      formatter: ({ cellValue }) =>
-        formatGoldReason(cellValue, gameConfig.value.goldSource),
-      minWidth: 180,
-      title: '来源',
-    },
-    {
-      field: 'Total',
-      minWidth: 120,
-      slots: { default: 'total' },
-      sortable: true,
-      title: '金币',
-    },
-  ],
-  height: 'auto',
-  pagerConfig: {
-    enabled: false,
+const columns = computed(() => [
+  {
+    dataIndex: 'Reason',
+    key: 'Reason',
+    title: '来源',
   },
-  proxyConfig: {
-    autoLoad: false,
-    ajax: {
-      query: async ({ sort }) => {
-        const sortField = sort?.field;
-        const sortOrder = sort?.order;
-        let sortParam = '';
-        if (sortField && sortOrder) {
-          sortParam = `${sortField} ${sortOrder === 'asc' ? 'asc' : 'desc'}`;
-        }
-
-        const result = await fetchPlayerGoldChangeListApi({
-          BeginTime: props.beginTime,
-          EndTime: props.endTime,
-          Page: 1,
-          PageSize: 9999,
-          PlayerId: String(props.playerId),
-          Sort: sortParam,
-        });
-
-        const items = (result?.Items || []).map((item) => ({
-          ...item,
-          Total: Number(item.Total || 0) / 100,
-        }));
-
-        return {
-          items,
-          total: items.length,
-        };
-      },
-    },
+  {
+    dataIndex: 'Total',
+    key: 'Total',
+    sorter: true,
+    sortOrder: sortOrder.value,
+    title: '金币',
+    width: 140,
   },
-};
+]);
 
-const [Grid, gridApi] = useVbenVxeGrid({ gridOptions });
-
-const loading = computed(() => gridApi.grid?.loading ?? false);
-
-function reload() {
-  if (props.playerId) {
-    gridApi.reload();
+async function loadList() {
+  if (!props.playerId) {
+    list.value = [];
+    return;
   }
+  loading.value = true;
+  try {
+    let sortParam = '';
+    if (sortOrder.value) {
+      sortParam = `Total ${sortOrder.value === 'ascend' ? 'asc' : 'desc'}`;
+    }
+    const result = await fetchPlayerGoldChangeListApi({
+      BeginTime: props.beginTime,
+      EndTime: props.endTime,
+      Page: 1,
+      PageSize: 9999,
+      PlayerId: String(props.playerId),
+      Sort: sortParam,
+    });
+    list.value = (result?.Items || []).map((item, index) => ({
+      ...item,
+      Total: Number(item.Total || 0) / 100,
+      _rowKey: `${item.Reason ?? 'row'}-${index}`,
+    }));
+  } finally {
+    loading.value = false;
+  }
+}
+
+function handleTableChange(
+  _pagination: unknown,
+  _filters: unknown,
+  sorter: { order?: 'ascend' | 'descend' | null } | Array<{ order?: 'ascend' | 'descend' | null }>,
+) {
+  const current = Array.isArray(sorter) ? sorter[0] : sorter;
+  sortOrder.value = current?.order || null;
+  loadList();
 }
 
 watch(
   () => [props.playerId, props.beginTime, props.endTime],
   () => {
-    reload();
+    loadList();
   },
 );
 
 onMounted(async () => {
   await ensureGameConfig();
-  reload();
+  await loadList();
 });
 </script>
 
 <template>
-  <Card :loading="loading" size="small" title="全局金币变化">
-    <Grid class="max-w-2xl">
-      <template #total="{ row }">
-        <span
-          :class="Number(row.Total) > 0 ? 'text-green-600' : 'text-red-500'"
-        >
-          {{ Number(row.Total).toFixed(2) }}
-        </span>
+  <Card :loading="loading" class="h-full" size="small" title="全局金币变化">
+    <Table
+      bordered
+      :columns="columns"
+      :data-source="list"
+      :pagination="false"
+      row-key="_rowKey"
+      size="small"
+      @change="handleTableChange"
+    >
+      <template #bodyCell="{ column, record }">
+        <template v-if="column.key === 'Reason'">
+          {{ formatGoldReason(record.Reason, gameConfig.goldSource) }}
+        </template>
+        <template v-else-if="column.key === 'Total'">
+          <span
+            :class="Number(record.Total) > 0 ? 'text-green-600' : 'text-red-500'"
+          >
+            {{ Number(record.Total).toFixed(2) }}
+          </span>
+        </template>
       </template>
-    </Grid>
+    </Table>
   </Card>
 </template>

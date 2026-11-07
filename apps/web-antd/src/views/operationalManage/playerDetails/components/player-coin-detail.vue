@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { getCurrentMonthRangeSeconds } from '#/utils/date-range';
 
 import PlayerCoinPeriodPanel from './player-coin-period.vue';
+import PlayerCoinSettlePanel from './player-coin-settle.vue';
 import PlayerGoldChangePanel from './player-gold-change.vue';
 
 defineOptions({ name: 'PlayerCoinDetailPanel' });
@@ -28,10 +29,19 @@ function handleDateChange(begin: number, end: number) {
       :player-id="playerId"
       @date-change="handleDateChange"
     />
-    <PlayerGoldChangePanel
-      :begin-time="beginTime"
-      :end-time="endTime"
-      :player-id="playerId"
-    />
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <PlayerCoinSettlePanel
+        class="min-w-0"
+        :begin-time="beginTime"
+        :end-time="endTime"
+        :player-id="playerId"
+      />
+      <PlayerGoldChangePanel
+        class="min-w-0"
+        :begin-time="beginTime"
+        :end-time="endTime"
+        :player-id="playerId"
+      />
+    </div>
   </div>
 </template>

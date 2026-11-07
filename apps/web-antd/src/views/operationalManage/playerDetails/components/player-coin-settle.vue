@@ -83,7 +83,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Card :loading="loading" class="mt-4 max-w-2xl" size="small" title="场馆结算">
+  <Card :loading="loading" class="h-full" size="small" title="场馆结算">
     <Table
       bordered
       :columns="columns"

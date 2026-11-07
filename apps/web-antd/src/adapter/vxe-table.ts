@@ -82,7 +82,8 @@ setupVbenVxeTable({
 });
 
 /**
- * height:'auto' → 按「表头 + 每页条数」计算高度（默认 40×21=840）；
+ * height:'auto' → 按「表头 + 每页条数」计算固定高度（默认约 700）；
+ * height:'content' → 按实际行数撑开（不强制最小高度）；
  * 弹窗等已显式传 number 高度的不覆盖。
  */
 export const useVbenVxeGrid = <T extends Record<string, any>>(
@@ -95,6 +96,23 @@ export const useVbenVxeGrid = <T extends Record<string, any>>(
   }
 
   const height = gridOptions.height;
+  if (height === 'content') {
+    const enhanced = {
+      ...options,
+      gridOptions: {
+        ...gridOptions,
+        height: 'auto',
+        minHeight: gridOptions.minHeight ?? 0,
+      },
+    };
+    return useGrid(
+      enhanced as Parameters<
+        typeof useGrid<T, ComponentType, ComponentPropsMap>
+      >[0],
+      ...(others as []),
+    );
+  }
+
   const isAutoHeight = height === 'auto' || height === undefined;
   if (!isAutoHeight) {
     return useGrid(...rest);
