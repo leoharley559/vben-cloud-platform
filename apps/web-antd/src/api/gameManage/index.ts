@@ -199,7 +199,11 @@ export function updateWithdrawPayTypeConfigApi(
   id: number | string,
   data: Record<string, unknown>,
 ) {
-  return requestClient.put(`/backend/withdrawpaytypeconfig/${id}`, data);
+  // 旧站 updateAccountInfo 会把 Id 放进 body；后端写库依赖 body.Id，仅路径 id 会 10001
+  return requestClient.put(`/backend/withdrawpaytypeconfig/${id}`, {
+    ...data,
+    Id: data.Id ?? id,
+  });
 }
 
 /**

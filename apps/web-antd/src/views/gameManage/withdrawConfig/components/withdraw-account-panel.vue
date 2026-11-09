@@ -540,10 +540,12 @@ async function savePayType() {
   }
   payTypeSaving.value = true;
   try {
+    // 对齐旧站 updateAccountInfo：body 同步带 Id（路径 id 不够，后端仍读 body.Id）
     await updateWithdrawPayTypeConfigApi(payTypeForm.Id, {
       AllowInput: payTypeForm.AllowInput,
       DeviceList: payTypeForm.DeviceList.join(','),
       GoldList: goldNumbers.toSorted((a, b) => a - b).join(','),
+      Id: payTypeForm.Id,
       MaxAmount: payTypeForm.MaxAmount,
       MinAmount: payTypeForm.MinAmount,
       PayType: payTypeForm.PayType,
@@ -586,7 +588,9 @@ function handlePayTypeSwitch(row: PayTypeRow, checked: boolean) {
     content: `确认${checked ? '开启' : '关闭'}「${payTypeName(row.PayType)}」？`,
     onCancel: () => loadPayTypes(),
     onOk: async () => {
+      // 对齐旧站：body 必须带 Id，否则后端写库会报「数据库异常」
       await updateWithdrawPayTypeConfigApi(row.Id, {
+        Id: row.Id,
         MaxAmount: row.MaxAmount,
         MinAmount: row.MinAmount,
         ServiceRate: row.ServiceRate,

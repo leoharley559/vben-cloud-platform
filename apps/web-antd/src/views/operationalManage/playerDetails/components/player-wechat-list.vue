@@ -315,18 +315,18 @@ onMounted(() => {
       :footer="null"
       destroy-on-close
       title="微信收款码"
-      width="420px"
+      width="560px"
     >
       <div class="space-y-3 pt-1">
         <div class="text-sm">
           <div>账号名：{{ qrPreview.name || '-' }}</div>
           <div class="mt-1">账号：{{ qrPreview.account || '-' }}</div>
         </div>
-        <div class="flex min-h-[200px] items-center justify-center rounded border border-dashed border-gray-200 bg-gray-50 p-4">
+        <div class="flex min-h-[360px] items-center justify-center rounded border border-dashed border-gray-200 bg-gray-50 p-4">
           <img
             v-if="qrPreview.url"
             :alt="`${qrPreview.name || '微信'}收款码`"
-            class="max-h-[280px] max-w-full object-contain"
+            class="max-h-[420px] max-w-full object-contain"
             :src="qrPreview.url"
           />
           <span v-else class="text-sm text-gray-400">玩家暂未上传</span>

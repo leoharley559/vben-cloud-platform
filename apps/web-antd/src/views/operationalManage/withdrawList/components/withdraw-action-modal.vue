@@ -381,70 +381,86 @@ async function handleOk() {
     :cancel-text="mode === 'view' ? '关闭' : undefined"
     :open="visible"
     :title="title"
-    width="640px"
+    :width="showManualPayQrCode && showPayAccountInfo ? '960px' : '640px'"
+    :wrap-class-name="
+      showManualPayQrCode && showPayAccountInfo
+        ? 'withdraw-action-modal withdraw-action-modal--with-qr'
+        : 'withdraw-action-modal'
+    "
     @cancel="visible = false"
     @ok="handleOk"
   >
-  <div class="mb-3 mt-4">
-    <Descriptions v-if="row" bordered :column="2" size="small">
-      <Descriptions.Item label="游戏账号">
-        {{ row.LoginAccount || '-' }}
-      </Descriptions.Item>
-      <Descriptions.Item label="真实姓名">
-        {{ row.RealName || '-' }}
-      </Descriptions.Item>
-      <Descriptions.Item label="申请金额">
-        {{ formatAmountFromCent(row.Amount) }}
-      </Descriptions.Item>
-      <Descriptions.Item label="实际金额">
-        {{ formatAmountFromCent(row.RealAmount) }}
-      </Descriptions.Item>
-    </Descriptions>
-  </div>
+    <div
+      class="main-info-layout mt-3 mb-3"
+      :class="{ 'with-qr': showPayAccountInfo && showManualPayQrCode }"
+    >
+      <div class="main-info-left">
+        <div class="mb-2 text-sm font-medium">玩家信息</div>
+        <Descriptions v-if="row" bordered :column="2" size="small">
+          <Descriptions.Item label="游戏账号">
+            {{ row.LoginAccount || '-' }}
+          </Descriptions.Item>
+          <Descriptions.Item label="真实姓名">
+            {{ row.RealName || '-' }}
+          </Descriptions.Item>
+          <Descriptions.Item label="申请金额">
+            {{ formatAmountFromCent(row.Amount) }}
+          </Descriptions.Item>
+          <Descriptions.Item label="实际金额">
+            {{ formatAmountFromCent(row.RealAmount) }}
+          </Descriptions.Item>
+        </Descriptions>
 
-  <div v-if="showPayAccountInfo" class="mb-3">
-    <div class="mb-2 flex items-center justify-between gap-2">
-      <div class="text-sm font-medium">出款账号信息</div>
-      <Button
-        :disabled="payAccountLoading"
-        size="small"
-        type="link"
-        @click="copyManualPayInfo"
-      >
-        复制信息
-      </Button>
-    </div>
-    <Spin :spinning="payAccountLoading">
-      <Descriptions bordered :column="2" size="small">
-        <Descriptions.Item label="提现方式">
-          {{ manualPayTypeLabel }}
-        </Descriptions.Item>
-        <Descriptions.Item label="账号姓名">
-          {{ manualPayAccountName }}
-        </Descriptions.Item>
-        <Descriptions.Item label="出款账号">
-          {{ manualPayAccountNum }}
-        </Descriptions.Item>
-        <Descriptions.Item label="出款金额">
-          {{ manualPayAmountText }}
-        </Descriptions.Item>
-      </Descriptions>
-      <div v-if="showManualPayQrCode" class="mt-3">
-        <div class="mb-2 text-sm text-gray-600">收款码</div>
-        <div
-          class="flex min-h-[200px] items-center justify-center rounded border border-dashed border-gray-200 bg-gray-50 p-4"
-        >
-          <img
-            v-if="manualPayQrCodeUrl"
-            :alt="`${manualPayAccountName || '收款'}码`"
-            class="max-h-[280px] max-w-full object-contain"
-            :src="manualPayQrCodeUrl"
-          />
-          <span v-else class="text-sm text-gray-400">玩家暂未上传</span>
+        <div v-if="showPayAccountInfo" class="mt-8">
+          <div class="mb-2 flex items-center justify-between gap-2">
+            <div class="text-sm font-medium">玩家出款账号信息</div>
+            <Button
+              :disabled="payAccountLoading"
+              size="small"
+              type="link"
+              @click="copyManualPayInfo"
+            >
+              复制信息
+            </Button>
+          </div>
+          <Spin :spinning="payAccountLoading">
+            <Descriptions bordered :column="2" size="small">
+              <Descriptions.Item label="提现方式">
+                {{ manualPayTypeLabel }}
+              </Descriptions.Item>
+              <Descriptions.Item label="账号姓名">
+                {{ manualPayAccountName }}
+              </Descriptions.Item>
+              <Descriptions.Item label="出款账号">
+                {{ manualPayAccountNum }}
+              </Descriptions.Item>
+              <Descriptions.Item label="出款金额">
+                {{ manualPayAmountText }}
+              </Descriptions.Item>
+            </Descriptions>
+          </Spin>
         </div>
       </div>
-    </Spin>
-  </div>
+
+      <div
+        v-if="showPayAccountInfo && showManualPayQrCode"
+        class="pay-qr-panel"
+      >
+        <div class="mb-2 text-sm font-medium">收款码</div>
+        <Spin :spinning="payAccountLoading">
+          <div class="pay-qr-frame">
+            <img
+              v-if="manualPayQrCodeUrl"
+              :alt="`${manualPayAccountName || '收款'}码`"
+              class="pay-qr-image"
+              :src="manualPayQrCodeUrl"
+            />
+            <span v-else class="text-sm text-gray-400">玩家暂未上传</span>
+          </div>
+        </Spin>
+      </div>
+    </div>
+
     <Form
       v-if="mode !== 'view'"
       :label-col="{ style: { width: '80px' } }"
@@ -478,39 +494,39 @@ async function handleOk() {
             <Radio :value="2">否</Radio>
           </Radio.Group>
         </Form.Item>
-          <Form.Item label="拒绝原因" required class="mb-3">
-            <Select
-              v-model:value="rejectReasonKey"
-              :options="
-                rejectOptions.map((item) => ({
-                  label: item.title,
-                  value: item.key,
-                }))
-              "
-              placeholder="请选择拒绝原因"
-            />
-            <Input
-              v-if="rejectReasonKey === 'other'"
-              v-model:value="refuseTitle"
-              class="mt-2"
-              allow-clear
-              placeholder="请输入拒绝原因"
-            />
-          </Form.Item>
-          <Form.Item label="邮件内容" required class="mb-3">
-            <Input.TextArea
-              v-model:value="refuseEmailBody"
-              :disabled="rejectReasonKey !== 'other'"
-              :rows="4"
-              placeholder="请填写邮件内容"
-            />
-          </Form.Item>
+        <Form.Item label="拒绝原因" required class="mb-3">
+          <Select
+            v-model:value="rejectReasonKey"
+            :options="
+              rejectOptions.map((item) => ({
+                label: item.title,
+                value: item.key,
+              }))
+            "
+            placeholder="请选择拒绝原因"
+          />
+          <Input
+            v-if="rejectReasonKey === 'other'"
+            v-model:value="refuseTitle"
+            class="mt-2"
+            allow-clear
+            placeholder="请输入拒绝原因"
+          />
+        </Form.Item>
+        <Form.Item label="邮件内容" required class="mb-3">
+          <Input.TextArea
+            v-model:value="refuseEmailBody"
+            :disabled="rejectReasonKey !== 'other'"
+            :rows="4"
+            placeholder="请填写邮件内容"
+          />
+        </Form.Item>
       </template>
 
       <Form.Item label="备注" class="mb-0">
         <Input.TextArea
           v-model:value="remark"
-          :rows="4"
+          :rows="mode === 'reject' ? 4 : 2"
           allow-clear
           placeholder="请输入备注"
         />
@@ -518,3 +534,97 @@ async function handleOk() {
     </Form>
   </Modal>
 </template>
+
+<style scoped>
+.main-info-layout {
+  display: block;
+}
+
+.main-info-layout.with-qr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 460px;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.main-info-left {
+  min-width: 0;
+}
+
+.pay-qr-panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.pay-qr-frame {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 440px;
+  padding: 8px;
+  border: 1px dashed #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.pay-qr-image {
+  width: 100%;
+  max-width: 440px;
+  max-height: 440px;
+  object-fit: contain;
+}
+
+@media (max-width: 920px) {
+  .main-info-layout.with-qr {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pay-qr-frame {
+    min-height: min(70vw, 360px);
+  }
+
+  .pay-qr-image {
+    max-width: min(70vw, 360px);
+    max-height: min(70vw, 360px);
+  }
+}
+
+@media (max-width: 576px) {
+  .pay-qr-frame {
+    min-height: min(78vw, 320px);
+    padding: 6px;
+  }
+
+  .pay-qr-image {
+    max-width: min(78vw, 320px);
+    max-height: min(78vw, 320px);
+  }
+}
+</style>
+
+<style>
+/* Modal 挂到 body，需非 scoped 才能控宽度 */
+.withdraw-action-modal .ant-modal {
+  max-width: calc(100vw - 24px);
+  margin: 12px auto;
+}
+
+.withdraw-action-modal--with-qr .ant-modal {
+  width: min(960px, calc(100vw - 24px)) !important;
+}
+
+@media (max-width: 920px) {
+  .withdraw-action-modal .ant-modal {
+    top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .withdraw-action-modal .ant-modal-body {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+  }
+}
+</style>
