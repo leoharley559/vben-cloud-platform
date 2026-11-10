@@ -260,7 +260,7 @@ onMounted(() => {
 
 <template>
   <div v-if="canSection" class="mt-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
       <div class="text-sm font-medium">支付宝</div>
       <Button v-if="canCreate" size="small" type="primary" @click="openCreate">
         新增支付宝
@@ -275,6 +275,7 @@ onMounted(() => {
       :loading="loading"
       :pagination="false"
       :row-key="(record) => String(record.Id ?? record.AlipayAccount)"
+      :scroll="{ x: 'max-content' }"
       size="small"
     >
       <template #bodyCell="{ column, record }">
@@ -315,18 +316,21 @@ onMounted(() => {
       :footer="null"
       destroy-on-close
       title="支付宝收款码"
-      width="560px"
+      :width="560"
+      wrap-class-name="player-detail-qr-modal"
     >
       <div class="space-y-3 pt-1">
         <div class="text-sm">
           <div>账号名：{{ qrPreview.name || '-' }}</div>
           <div class="mt-1">账号：{{ qrPreview.account || '-' }}</div>
         </div>
-        <div class="flex min-h-[360px] items-center justify-center rounded border border-dashed border-gray-200 bg-gray-50 p-4">
+        <div
+          class="flex min-h-[220px] items-center justify-center rounded border border-dashed border-gray-200 bg-gray-50 p-4 sm:min-h-[360px]"
+        >
           <img
             v-if="qrPreview.url"
             :alt="`${qrPreview.name || '支付宝'}收款码`"
-            class="max-h-[420px] max-w-full object-contain"
+            class="max-h-[280px] max-w-full object-contain sm:max-h-[420px]"
             :src="qrPreview.url"
           />
           <span v-else class="text-sm text-gray-400">玩家暂未上传</span>

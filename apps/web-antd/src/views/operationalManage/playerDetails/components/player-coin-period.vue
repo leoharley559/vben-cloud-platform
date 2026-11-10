@@ -228,6 +228,7 @@ onMounted(() => {
         total: pagination.total,
       }"
       row-key="ReportDay"
+      :scroll="{ x: 'max-content' }"
       size="small"
       @change="handleTableChange"
     >

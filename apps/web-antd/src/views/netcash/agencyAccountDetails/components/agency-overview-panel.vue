@@ -292,7 +292,12 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <Spin :spinning="loading">
-      <Descriptions v-if="canBasics" bordered :column="2" size="small">
+      <Descriptions
+        v-if="canBasics"
+        bordered
+        :column="{ xs: 1, sm: 1, md: 2 }"
+        size="small"
+      >
         <Descriptions.Item label="所属代理">
           {{ detail.Username || '-' }}
         </Descriptions.Item>

@@ -39,8 +39,12 @@ resolveDefaultType();
 
 <template>
   <div>
-    <div class="mb-3">
-      <Radio.Group v-model:value="activeType" button-style="solid">
+    <div class="mb-3 overflow-x-auto">
+      <Radio.Group
+        v-model:value="activeType"
+        button-style="solid"
+        class="flex w-max max-w-full flex-wrap"
+      >
         <Radio.Button v-if="canDetailRecord" value="record">
           详情记录
         </Radio.Button>

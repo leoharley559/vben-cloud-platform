@@ -254,7 +254,7 @@ onMounted(() => {
 
 <template>
   <div v-if="canSection" class="mt-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
       <div class="text-sm font-medium">虚拟币地址</div>
       <Button v-if="canCreate" size="small" type="primary" @click="openCreate">
         新增地址
@@ -269,6 +269,7 @@ onMounted(() => {
       :loading="loading"
       :pagination="false"
       :row-key="(record) => String(record.Id ?? record.DigitalAddress)"
+      :scroll="{ x: 'max-content' }"
       size="small"
     >
       <template #bodyCell="{ column, record }">

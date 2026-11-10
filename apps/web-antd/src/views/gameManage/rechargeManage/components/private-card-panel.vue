@@ -781,7 +781,7 @@ onMounted(() => {
   <div v-else class="space-y-3">
     <Card size="small">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <Descriptions :column="2" size="small">
+        <Descriptions :column="{ xs: 1, sm: 1, md: 2 }" size="small">
           <Descriptions.Item label="已开启">
             {{ Number(total.Opened || 0) }}
           </Descriptions.Item>

@@ -98,6 +98,7 @@ onMounted(async () => {
       :data-source="list"
       :pagination="false"
       row-key="_rowKey"
+      :scroll="{ x: 'max-content' }"
       size="small"
       @change="handleTableChange"
     >

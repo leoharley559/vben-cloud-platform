@@ -90,6 +90,7 @@ onMounted(async () => {
       :data-source="list"
       :pagination="false"
       row-key="GameId"
+      :scroll="{ x: 'max-content' }"
       size="small"
     >
       <template #bodyCell="{ column, record }">

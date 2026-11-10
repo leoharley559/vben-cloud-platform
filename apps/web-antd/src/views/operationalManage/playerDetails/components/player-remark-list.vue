@@ -176,7 +176,7 @@ onMounted(() => {
 
 <template>
   <div v-if="canSection" class="mt-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
       <div class="text-sm font-medium">玩家备注</div>
       <Button v-if="canCreate" size="small" type="primary" @click="openCreate">
         新增备注
@@ -197,6 +197,7 @@ onMounted(() => {
         total,
       }"
       :row-key="(record) => String(record.Id ?? record.CreateTime)"
+      :scroll="{ x: 'max-content' }"
       size="small"
       @change="handleTableChange"
     >

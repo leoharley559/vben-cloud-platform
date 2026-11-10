@@ -85,7 +85,10 @@ const manualPayQrCodeUrl = computed(() =>
 const showManualPayQrCode = computed(() => {
   const kind =
     matchedPayAccount.value?.kind ??
-    resolveWithdrawPayAccountKind(props.row?.AccountType);
+    resolveWithdrawPayAccountKind(
+      props.row?.AccountType,
+      props.row?.AccountBank,
+    );
   return kind !== 'bank';
 });
 
@@ -219,6 +222,7 @@ async function loadManualPayAccount() {
         props.row?.AccountType,
         props.row?.AccountNum,
         result,
+        props.row?.AccountBank,
       ) || null;
   } finally {
     payAccountLoading.value = false;
@@ -396,7 +400,12 @@ async function handleOk() {
     >
       <div class="main-info-left">
         <div class="mb-2 text-sm font-medium">玩家信息</div>
-        <Descriptions v-if="row" bordered :column="2" size="small">
+        <Descriptions
+          v-if="row"
+          bordered
+          :column="{ xs: 1, sm: 1, md: 2 }"
+          size="small"
+        >
           <Descriptions.Item label="游戏账号">
             {{ row.LoginAccount || '-' }}
           </Descriptions.Item>
@@ -424,7 +433,11 @@ async function handleOk() {
             </Button>
           </div>
           <Spin :spinning="payAccountLoading">
-            <Descriptions bordered :column="2" size="small">
+            <Descriptions
+              bordered
+              :column="{ xs: 1, sm: 1, md: 2 }"
+              size="small"
+            >
               <Descriptions.Item label="提现方式">
                 {{ manualPayTypeLabel }}
               </Descriptions.Item>

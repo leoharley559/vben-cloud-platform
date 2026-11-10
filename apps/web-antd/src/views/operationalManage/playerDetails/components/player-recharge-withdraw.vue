@@ -28,8 +28,12 @@ const activeType = ref<'credit' | 'easyrecharge' | 'recharge' | 'withdraw'>(
 
 <template>
   <div>
-    <div class="mb-3">
-      <Radio.Group v-model:value="activeType" button-style="solid">
+    <div class="mb-3 overflow-x-auto">
+      <Radio.Group
+        v-model:value="activeType"
+        button-style="solid"
+        class="flex w-max max-w-full flex-wrap"
+      >
         <Radio.Button value="recharge">充值记录</Radio.Button>
         <Radio.Button value="withdraw">兑换记录</Radio.Button>
         <Radio.Button v-if="canCreditRecord" value="credit">

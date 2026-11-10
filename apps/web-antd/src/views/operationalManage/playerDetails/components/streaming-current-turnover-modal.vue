@@ -101,6 +101,7 @@ function closeModal() {
         :data-source="gameTypeRows"
         :pagination="false"
         row-key="key"
+        :scroll="{ x: 'max-content' }"
         size="small"
       />
     </Card>
@@ -121,6 +122,7 @@ function closeModal() {
         :data-source="gameVenueRows"
         :pagination="false"
         row-key="key"
+        :scroll="{ x: 'max-content' }"
         size="small"
       />
     </Card>

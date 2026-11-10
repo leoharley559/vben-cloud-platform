@@ -922,7 +922,12 @@ onMounted(() => {
       </Button>
     </div>
 
-    <Descriptions bordered :column="2" size="small" title="基础信息">
+    <Descriptions
+      bordered
+      :column="{ xs: 1, sm: 1, md: 2 }"
+      size="small"
+      title="基础信息"
+    >
       <Descriptions.Item label="玩家 ID">
         {{ info.PlayerId ?? '-' }}
       </Descriptions.Item>

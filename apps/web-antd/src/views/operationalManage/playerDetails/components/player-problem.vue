@@ -118,8 +118,12 @@ onMounted(() => {
 
 <template>
   <div v-if="canViewTab">
-    <div class="mb-3">
-      <Radio.Group v-model:value="activeTab" button-style="solid">
+    <div class="mb-3 overflow-x-auto">
+      <Radio.Group
+        v-model:value="activeTab"
+        button-style="solid"
+        class="flex w-max max-w-full flex-wrap"
+      >
         <Radio.Button v-if="canViewSearch" value="search">
           搜索记录
         </Radio.Button>

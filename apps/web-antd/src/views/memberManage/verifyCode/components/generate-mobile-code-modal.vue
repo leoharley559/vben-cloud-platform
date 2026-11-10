@@ -149,7 +149,7 @@ async function handleGenerate() {
       v-if="playerInfo"
       bordered
       class="mb-4"
-      :column="2"
+      :column="{ xs: 1, sm: 1, md: 2 }"
       size="small"
       title="玩家信息"
     >

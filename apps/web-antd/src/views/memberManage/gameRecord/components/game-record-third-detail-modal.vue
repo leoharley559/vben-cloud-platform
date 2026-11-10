@@ -189,7 +189,11 @@ watch(open, (visible) => {
                     >
                       {{ group.title }}
                     </div>
-                    <Descriptions bordered :column="2" size="small">
+                    <Descriptions
+                      bordered
+                      :column="{ xs: 1, sm: 1, md: 2 }"
+                      size="small"
+                    >
                       <Descriptions.Item
                         v-for="field in group.fields"
                         :key="field.key"
@@ -201,7 +205,12 @@ watch(open, (visible) => {
                   </div>
                 </div>
               </template>
-              <Descriptions v-else bordered :column="2" size="small">
+              <Descriptions
+                v-else
+                bordered
+                :column="{ xs: 1, sm: 1, md: 2 }"
+                size="small"
+              >
                 <Descriptions.Item
                   v-for="field in section.fields || []"
                   :key="field.key"

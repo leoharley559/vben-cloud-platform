@@ -18,15 +18,37 @@ export interface WithdrawMatchedPayAccount {
 
 const WITHDRAW_BANK_ACCOUNT_TYPES = new Set([1, 204]);
 const WITHDRAW_ALIPAY_ACCOUNT_TYPES = new Set([2, 206]);
-/** 微信 / 扫码类提款（对齐旧站 withdrawType 扩展） */
-const WITHDRAW_WECHAT_ACCOUNT_TYPES = new Set([207, 210]);
+/** 微信 / 扫码类提款（含站点常用 13，以及第三方映射 207/210） */
+const WITHDRAW_WECHAT_ACCOUNT_TYPES = new Set([13, 207, 210]);
 
 function normalizeAccount(value: unknown) {
   return String(value ?? '').trim();
 }
 
+function resolveKindFromLabel(label?: string): WithdrawPayAccountKind {
+  const text = String(label ?? '').trim().toLowerCase();
+  if (!text) {
+    return 'unknown';
+  }
+  if (
+    text.includes('微信') ||
+    text.includes('wechat') ||
+    text.includes('weixin')
+  ) {
+    return 'wechat';
+  }
+  if (text.includes('支付宝') || text.includes('alipay')) {
+    return 'alipay';
+  }
+  if (text.includes('银行') || text.includes('bank')) {
+    return 'bank';
+  }
+  return 'unknown';
+}
+
 export function resolveWithdrawPayAccountKind(
   accountType?: number | string,
+  accountBank?: string,
 ): WithdrawPayAccountKind {
   const type = Number(accountType);
   if (WITHDRAW_BANK_ACCOUNT_TYPES.has(type)) {
@@ -38,7 +60,12 @@ export function resolveWithdrawPayAccountKind(
   if (WITHDRAW_WECHAT_ACCOUNT_TYPES.has(type)) {
     return 'wechat';
   }
-  return 'unknown';
+  // 兜底：按 PAY_TYPE_MAP / AccountBank 文案归类，避免漏配类型时误走跨列表匹配
+  const fromPayType = resolveKindFromLabel(payTypeLabel(type));
+  if (fromPayType !== 'unknown') {
+    return fromPayType;
+  }
+  return resolveKindFromLabel(accountBank);
 }
 
 function mapBankCardItem(
@@ -137,33 +164,59 @@ function matchAcrossLists(
   target: string,
   listResult: BankCardListResult,
   typeLabel: string,
+  kindHint: WithdrawPayAccountKind = 'unknown',
 ) {
-  const bank = matchBankAccount(target, listResult.Items || [], typeLabel);
-  if (bank) {
-    return bank;
-  }
   const alipay = matchAlipayAccount(target, listResult, typeLabel);
+  const wechat = matchWechatAccount(target, listResult, typeLabel);
+
+  // 未知类型撞号时，若文案能提示提现方式，优先按提示选
+  if (kindHint === 'alipay' && alipay) {
+    return alipay;
+  }
+  if (kindHint === 'wechat' && wechat) {
+    return wechat;
+  }
+  if (kindHint === 'bank') {
+    return matchBankAccount(target, listResult.Items || [], typeLabel);
+  }
+
+  if (alipay?.qrCodeUrl && !wechat?.qrCodeUrl) {
+    return alipay;
+  }
+  if (wechat?.qrCodeUrl && !alipay?.qrCodeUrl) {
+    return wechat;
+  }
+  if (alipay && wechat) {
+    // 两边都有码且账号相同：无法可靠区分，宁可不展示错误二维码
+    return null;
+  }
   if (alipay) {
     return alipay;
   }
-  return matchWechatAccount(target, listResult, typeLabel);
+  if (wechat) {
+    return wechat;
+  }
+  return matchBankAccount(target, listResult.Items || [], typeLabel);
 }
 
 /**
  * 按提款订单 AccountType + AccountNum 匹配玩家绑定账号（对齐玩家概览 playerbankcard/list）
+ * @param accountBank 订单 AccountBank 文案，用于类型码漏配时的兜底归类
  */
 export function matchWithdrawPayAccount(
   accountType?: number | string,
   accountNum?: string,
   listResult?: BankCardListResult,
+  accountBank?: string,
 ): null | WithdrawMatchedPayAccount {
   const target = normalizeAccount(accountNum);
   if (!target || !listResult) {
     return null;
   }
 
-  const typeLabel = payTypeLabel(accountType);
-  const kind = resolveWithdrawPayAccountKind(accountType);
+  const typeLabel =
+    String(accountBank || '').trim() || payTypeLabel(accountType);
+  const kind = resolveWithdrawPayAccountKind(accountType, accountBank);
 
   if (kind === 'bank') {
     return matchBankAccount(target, listResult.Items || [], typeLabel);
@@ -174,5 +227,5 @@ export function matchWithdrawPayAccount(
   if (kind === 'wechat') {
     return matchWechatAccount(target, listResult, typeLabel);
   }
-  return matchAcrossLists(target, listResult, typeLabel);
+  return matchAcrossLists(target, listResult, typeLabel, kind);
 }

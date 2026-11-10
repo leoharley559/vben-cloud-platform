@@ -268,7 +268,7 @@ onMounted(() => {
       :key="platform.id"
       class="rounded border border-gray-100 p-3"
     >
-      <div class="mb-2 flex items-center justify-between">
+      <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div class="text-sm font-medium">{{ platform.name }}</div>
         <Button
           v-if="canCreate"
@@ -288,6 +288,7 @@ onMounted(() => {
         :loading="loading"
         :pagination="false"
         :row-key="(record) => String(record.Id ?? record.Account)"
+        :scroll="{ x: 'max-content' }"
         size="small"
       >
         <template #bodyCell="{ column, record }">

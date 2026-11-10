@@ -64,7 +64,12 @@ onMounted(() => {
       无预约取款规则查看权限 (11911)
     </div>
     <template v-else>
-      <Descriptions bordered class="mb-4" size="small" :column="2">
+      <Descriptions
+        bordered
+        class="mb-4"
+        size="small"
+        :column="{ xs: 1, sm: 1, md: 2 }"
+      >
         <Descriptions.Item label="活动开关">
           <Tag :color="Number(config.Switch) === 1 ? 'success' : 'default'">
             {{ Number(config.Switch) === 1 ? '开启' : '关闭' }}

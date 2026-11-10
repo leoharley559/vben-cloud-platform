@@ -17,8 +17,12 @@ const activeType = ref<'record' | 'statistics'>('record');
 
 <template>
   <div>
-    <div class="mb-3 flex flex-wrap items-center justify-between gap-4">
-      <Radio.Group v-model:value="activeType" button-style="solid">
+    <div class="mb-3 overflow-x-auto">
+      <Radio.Group
+        v-model:value="activeType"
+        button-style="solid"
+        class="flex w-max max-w-full flex-wrap"
+      >
         <Radio.Button value="record">登录记录</Radio.Button>
         <Radio.Button value="statistics">登录统计</Radio.Button>
       </Radio.Group>

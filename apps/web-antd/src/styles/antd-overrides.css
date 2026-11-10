@@ -531,8 +531,9 @@ html.dark .ant-image-preview-mask {
   background: hsl(var(--overlay));
 }
 
-/* 手机端：横向 Form 上下堆叠，并清除 offset，避免底部按钮区撑出横向滚动 */
+/* 手机端轻量兼容：查询区已有 container query，这里兜底表格/弹窗/Tabs 等 */
 @media (max-width: 767px) {
+  /* 横向 Form 上下堆叠，并清除 offset，避免底部按钮区撑出横向滚动 */
   .ant-form-horizontal .ant-form-item-row {
     flex-wrap: wrap;
   }
@@ -554,5 +555,103 @@ html.dark .ant-image-preview-mask {
   .ant-form-horizontal .ant-form-item-control-input-content > .ant-space {
     flex-wrap: wrap;
     row-gap: 8px;
+  }
+
+  /* Page / Card：略减内边距，给内容更多宽度 */
+  .vben-page > .p-4,
+  .vben-page > [class*='p-4'] {
+    padding: 8px !important;
+  }
+
+  .ant-card .ant-card-body {
+    padding: 8px !important;
+  }
+
+  .ant-card .ant-card-head {
+    min-height: 40px;
+    padding-inline: 8px;
+  }
+
+  /* 弹窗：定宽弹窗不撑破视口 */
+  .ant-modal {
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px auto !important;
+    padding-bottom: 0;
+  }
+
+  .ant-modal .ant-modal-content {
+    max-width: 100%;
+  }
+
+  .ant-modal .ant-modal-body {
+    padding: 12px;
+  }
+
+  .player-detail-qr-modal .ant-modal,
+  .ops-mobile-modal .ant-modal {
+    max-width: calc(100vw - 24px);
+    margin: 12px auto;
+  }
+
+  .player-detail-qr-modal .ant-modal-body,
+  .ops-mobile-modal .ant-modal-body {
+    padding: 12px;
+  }
+
+  /* Ant Table：无 scroll.x 时也允许横向滚动，避免整页被撑开 */
+  .ant-table-wrapper,
+  .ant-table-content,
+  .ant-table-body {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ant-table {
+    min-width: 0;
+  }
+
+  /* Tabs：收紧字号，导航可横滑 */
+  .ant-tabs-nav {
+    margin-bottom: 8px !important;
+  }
+
+  .ant-tabs-tab {
+    padding-inline: 10px !important;
+    font-size: 13px;
+  }
+
+  .ant-tabs-nav-list {
+    flex-wrap: nowrap;
+  }
+
+  /* Descriptions：小屏更易读 */
+  .ant-descriptions .ant-descriptions-item-label,
+  .ant-descriptions .ant-descriptions-item-content {
+    padding: 8px !important;
+    font-size: 13px;
+    word-break: break-word;
+  }
+
+  /* Radio.Button / Space：允许换行，减少横向溢出 */
+  .ant-radio-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    max-width: 100%;
+    row-gap: 6px;
+  }
+
+  .ant-space {
+    flex-wrap: wrap !important;
+    row-gap: 8px;
+  }
+
+  .ant-space-compact {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  /* Drawer 同弹窗限宽思路 */
+  .ant-drawer-content-wrapper {
+    max-width: 100vw !important;
   }
 }

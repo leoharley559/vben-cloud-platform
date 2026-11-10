@@ -523,7 +523,9 @@ const loading = computed(() => gridApi.grid?.loading ?? false);
 const hasSelection = computed(() => selectedRows.value.length > 0);
 
 function isBankWithdrawType(row: WithdrawListItem) {
-  return resolveWithdrawPayAccountKind(row.AccountType) === 'bank';
+  return (
+    resolveWithdrawPayAccountKind(row.AccountType, row.AccountBank) === 'bank'
+  );
 }
 
 function openWithdrawAction(

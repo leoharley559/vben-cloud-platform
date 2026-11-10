@@ -325,7 +325,7 @@ onMounted(async () => {
 
 <template>
   <Page auto-content-height :title="pageTitle">
-    <Card>
+    <Card class="player-details-page">
       <div class="ops-query-scope mb-3">
         <div class="ops-query-filters">
           <Space.Compact>
@@ -567,3 +567,33 @@ onMounted(async () => {
     </Modal>
   </Page>
 </template>
+
+<style scoped>
+.player-details-page :deep(.ant-tabs-nav) {
+  margin-bottom: 12px;
+}
+
+.player-details-page :deep(.ant-tabs-nav-list) {
+  flex-wrap: nowrap;
+}
+
+.player-details-page :deep(.ant-tabs-nav-operations) {
+  /* 保留 Ant Tabs 溢出箭头，便于移动端切换 */
+  display: flex;
+}
+
+@media (max-width: 767px) {
+  .player-details-page :deep(.ant-card-body) {
+    padding: 8px !important;
+  }
+
+  .player-details-page :deep(.ant-tabs-tab) {
+    padding-inline: 10px;
+    font-size: 13px;
+  }
+
+  .player-details-page :deep(.ant-modal) {
+    max-width: calc(100vw - 24px);
+  }
+}
+</style>
