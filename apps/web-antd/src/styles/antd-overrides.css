@@ -610,6 +610,33 @@ html.dark .ant-image-preview-mask {
     min-width: 0;
   }
 
+  /*
+   * Ant Table 移动端解除 sticky 固定列，内容仍在同一单元格，只取消钉住。
+   * VXE 固定列内容在独立 fixed wrapper 中渲染，不能用 display:none 藏层，
+   * 改由 adapter/vxe-table.ts 在移动端移除 columns.fixed。
+   */
+  .ant-table-cell-fix-left,
+  .ant-table-cell-fix-right,
+  .ant-table-cell.ant-table-cell-fix-left,
+  .ant-table-cell.ant-table-cell-fix-right {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .ant-table-cell-fix-left::before,
+  .ant-table-cell-fix-left::after,
+  .ant-table-cell-fix-right::before,
+  .ant-table-cell-fix-right::after,
+  .ant-table-ping-left:not(.ant-table-has-fix-left) .ant-table-container::before,
+  .ant-table-ping-right:not(.ant-table-has-fix-right) .ant-table-container::after {
+    display: none !important;
+    box-shadow: none !important;
+  }
+
   /* Tabs：收紧字号，导航可横滑 */
   .ant-tabs-nav {
     margin-bottom: 8px !important;
